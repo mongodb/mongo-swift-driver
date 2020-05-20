@@ -85,7 +85,7 @@ public final class ClientSession {
     }
 
     /// The address of the mongos this session is pinned to, if any.
-    internal var pinnedServerAddress: Address? {
+    internal var pinnedServerAddress: ServerAddress? {
         guard let serverID = self.serverID, case let .started(_, connection) = self.state else {
             return nil
         }

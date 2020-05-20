@@ -51,7 +51,7 @@ open class MongoSwiftTestCase: XCTestCase {
     }
 
     /// Get a connection string for the specified host only.
-    public static func getConnectionString(forHost serverAddress: Address) -> String {
+    public static func getConnectionString(forHost serverAddress: ServerAddress) -> String {
         Self.getConnectionStringPerHost().first { $0.contains(String(describing: serverAddress)) }!
     }
 
@@ -249,8 +249,8 @@ public struct TestError: LocalizedError {
     }
 }
 
-/// Makes `Address` `Decodable` for the sake of constructing it from spec test files.
-extension Address: Decodable {
+/// Makes `ServerAddress` `Decodable` for the sake of constructing it from spec test files.
+extension ServerAddress: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let hostPortPair = try container.decode(String.self)

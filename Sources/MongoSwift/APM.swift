@@ -81,7 +81,7 @@ public enum CommandEvent: Publishable {
     }
 
     /// The address of the server the command was run against.
-    public var serverAddress: Address {
+    public var serverAddress: ServerAddress {
         self.event.serverAddress
     }
 }
@@ -99,7 +99,7 @@ private protocol CommandEventProtocol {
     var operationID: Int64 { get }
 
     /// The address of the server the command was run against.
-    var serverAddress: Address { get }
+    var serverAddress: ServerAddress { get }
 }
 
 /// An event published when a command starts.
@@ -134,7 +134,7 @@ public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
     public let operationID: Int64
 
     /// The address of the server the command was run against.
-    public let serverAddress: Address
+    public let serverAddress: ServerAddress
 
     fileprivate init(mongocEvent: MongocCommandStartedEvent) {
         // we have to copy because libmongoc owns the pointer.
@@ -143,7 +143,7 @@ public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
         self.commandName = String(cString: mongoc_apm_command_started_get_command_name(mongocEvent.ptr))
         self.requestID = mongoc_apm_command_started_get_request_id(mongocEvent.ptr)
         self.operationID = mongoc_apm_command_started_get_operation_id(mongocEvent.ptr)
-        self.serverAddress = Address(mongoc_apm_command_started_get_host(mongocEvent.ptr))
+        self.serverAddress = ServerAddress(mongoc_apm_command_started_get_host(mongocEvent.ptr))
     }
 
     fileprivate func toPublishable() -> CommandEvent {
@@ -183,7 +183,7 @@ public struct CommandSucceededEvent: MongoSwiftEvent, CommandEventProtocol {
     public let operationID: Int64
 
     /// The address of the server the command was run against.
-    public let serverAddress: Address
+    public let serverAddress: ServerAddress
 
     fileprivate init(mongocEvent: MongocCommandSucceededEvent) {
         // TODO: SWIFT-349 add logging to check and warn of unlikely int size issues
@@ -193,7 +193,7 @@ public struct CommandSucceededEvent: MongoSwiftEvent, CommandEventProtocol {
         self.commandName = String(cString: mongoc_apm_command_succeeded_get_command_name(mongocEvent.ptr))
         self.requestID = mongoc_apm_command_succeeded_get_request_id(mongocEvent.ptr)
         self.operationID = mongoc_apm_command_succeeded_get_operation_id(mongocEvent.ptr)
-        self.serverAddress = Address(mongoc_apm_command_succeeded_get_host(mongocEvent.ptr))
+        self.serverAddress = ServerAddress(mongoc_apm_command_succeeded_get_host(mongocEvent.ptr))
     }
 
     fileprivate func toPublishable() -> CommandEvent {
@@ -233,7 +233,7 @@ public struct CommandFailedEvent: MongoSwiftEvent, CommandEventProtocol {
     public let operationID: Int64
 
     /// The connection id for the command.
-    public let serverAddress: Address
+    public let serverAddress: ServerAddress
 
     fileprivate init(mongocEvent: MongocCommandFailedEvent) {
         self.duration = Int(mongoc_apm_command_failed_get_duration(mongocEvent.ptr))
@@ -244,7 +244,7 @@ public struct CommandFailedEvent: MongoSwiftEvent, CommandEventProtocol {
         self.failure = extractMongoError(error: error, reply: reply) // should always return a CommandError
         self.requestID = mongoc_apm_command_failed_get_request_id(mongocEvent.ptr)
         self.operationID = mongoc_apm_command_failed_get_operation_id(mongocEvent.ptr)
-        self.serverAddress = Address(mongoc_apm_command_failed_get_host(mongocEvent.ptr))
+        self.serverAddress = ServerAddress(mongoc_apm_command_failed_get_host(mongocEvent.ptr))
     }
 
     fileprivate func toPublishable() -> CommandEvent {
@@ -305,7 +305,7 @@ public struct ServerDescriptionChangedEvent: MongoSwiftEvent {
     }
 
     /// The connection ID (host/port pair) of the server.
-    public let serverAddress: Address
+    public let serverAddress: ServerAddress
 
     /// A unique identifier for the topology.
     public let topologyID: ObjectID
@@ -317,7 +317,7 @@ public struct ServerDescriptionChangedEvent: MongoSwiftEvent {
     public let newDescription: ServerDescription
 
     fileprivate init(mongocEvent: MongocServerChangedEvent) {
-        self.serverAddress = Address(mongoc_apm_server_changed_get_host(mongocEvent.ptr))
+        self.serverAddress = ServerAddress(mongoc_apm_server_changed_get_host(mongocEvent.ptr))
         var oid = bson_oid_t()
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_changed_get_topology_id(mongocEvent.ptr, oidPtr)
@@ -349,13 +349,13 @@ public struct ServerOpeningEvent: MongoSwiftEvent {
     }
 
     /// The connection ID (host/port pair) of the server.
-    public let serverAddress: Address
+    public let serverAddress: ServerAddress
 
     /// A unique identifier for the topology.
     public let topologyID: ObjectID
 
     fileprivate init(mongocEvent: MongocServerOpeningEvent) {
-        self.serverAddress = Address(mongoc_apm_server_opening_get_host(mongocEvent.ptr))
+        self.serverAddress = ServerAddress(mongoc_apm_server_opening_get_host(mongocEvent.ptr))
         var oid = bson_oid_t()
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_opening_get_topology_id(mongocEvent.ptr, oidPtr)
@@ -384,13 +384,13 @@ public struct ServerClosedEvent: MongoSwiftEvent {
     }
 
     /// The connection ID (host/port pair) of the server.
-    public let serverAddress: Address
+    public let serverAddress: ServerAddress
 
     /// A unique identifier for the topology.
     public let topologyID: ObjectID
 
     fileprivate init(mongocEvent: MongocServerClosedEvent) {
-        self.serverAddress = Address(mongoc_apm_server_closed_get_host(mongocEvent.ptr))
+        self.serverAddress = ServerAddress(mongoc_apm_server_closed_get_host(mongocEvent.ptr))
         var oid = bson_oid_t()
         withUnsafeMutablePointer(to: &oid) { oidPtr in
             mongoc_apm_server_closed_get_topology_id(mongocEvent.ptr, oidPtr)
@@ -522,10 +522,10 @@ public struct ServerHeartbeatStartedEvent: MongoSwiftEvent {
     }
 
     /// The address of the server.
-    public let serverAddress: Address
+    public let serverAddress: ServerAddress
 
     fileprivate init(mongocEvent: MongocServerHeartbeatStartedEvent) {
-        self.serverAddress = Address(mongoc_apm_server_heartbeat_started_get_host(mongocEvent.ptr))
+        self.serverAddress = ServerAddress(mongoc_apm_server_heartbeat_started_get_host(mongocEvent.ptr))
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
@@ -555,13 +555,13 @@ public struct ServerHeartbeatSucceededEvent: MongoSwiftEvent {
     public let reply: Document
 
     /// The address of the server.
-    public let serverAddress: Address
+    public let serverAddress: ServerAddress
 
     fileprivate init(mongocEvent: MongocServerHeartbeatSucceededEvent) {
         self.duration = Int(mongoc_apm_server_heartbeat_succeeded_get_duration(mongocEvent.ptr))
         // we have to copy because libmongoc owns the pointer.
         self.reply = Document(copying: mongoc_apm_server_heartbeat_succeeded_get_reply(mongocEvent.ptr))
-        self.serverAddress = Address(mongoc_apm_server_heartbeat_succeeded_get_host(mongocEvent.ptr))
+        self.serverAddress = ServerAddress(mongoc_apm_server_heartbeat_succeeded_get_host(mongocEvent.ptr))
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
@@ -591,14 +591,14 @@ public struct ServerHeartbeatFailedEvent: MongoSwiftEvent {
     public let failure: MongoError
 
     /// The address of the server.
-    public let serverAddress: Address
+    public let serverAddress: ServerAddress
 
     fileprivate init(mongocEvent: MongocServerHeartbeatFailedEvent) {
         self.duration = Int(mongoc_apm_server_heartbeat_failed_get_duration(mongocEvent.ptr))
         var error = bson_error_t()
         mongoc_apm_server_heartbeat_failed_get_error(mongocEvent.ptr, &error)
         self.failure = extractMongoError(error: error)
-        self.serverAddress = Address(mongoc_apm_server_heartbeat_failed_get_host(mongocEvent.ptr))
+        self.serverAddress = ServerAddress(mongoc_apm_server_heartbeat_failed_get_host(mongocEvent.ptr))
     }
 
     fileprivate func toPublishable() -> SDAMEvent {
