@@ -1246,7 +1246,8 @@ private func bsonDecodingDirectlyError<T: BSONValue>(type _: T.Type, at codingPa
  *
  * Some example cases:
  *   - Decoding directly from the BSONDecoder top-level (e.g. BSONDecoder().decode(BSONObjectID.self, from: ...))
- *   - Encountering the wrong type of BSONValue (e.g. expected "_id" to be an `BSONObjectID`, got a `BSONDocument` instead)
+ *   - Encountering the wrong type of BSONValue (e.g. expected "_id" to be an `BSONObjectID`, got a `BSONDocument`
+ *     instead)
  *   - Attempting to decode a driver-introduced BSONValue with a non-BSONDecoder
  */
 internal func getDecodingError<T: BSONValue>(type _: T.Type, decoder: Decoder) -> DecodingError {

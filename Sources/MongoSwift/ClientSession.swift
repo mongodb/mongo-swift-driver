@@ -227,7 +227,7 @@ public final class ClientSession {
                     }
 
                     // swiftlint:disable:next force_unwrapping
-                    self.id = BSONDocument(copying: mongoc_client_session_get_lsid(sessionPtr)!) // always returns a value
+                    self.id = BSONDocument(copying: mongoc_client_session_get_lsid(sessionPtr)!) // never returns nil
                 }
         case .started:
             return self.client.operationExecutor.makeSucceededFuture(Void())

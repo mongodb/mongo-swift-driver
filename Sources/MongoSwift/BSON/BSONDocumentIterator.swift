@@ -116,7 +116,11 @@ public class BSONDocumentIterator: IteratorProtocol {
     // uses an iterator to copy (key, value) pairs of the provided document from range [startIndex, endIndex) into a new
     // document. starts at the startIndex-th pair and ends at the end of the document or the (endIndex-1)th index,
     // whichever comes first.
-    internal static func subsequence(of doc: BSONDocument, startIndex: Int = 0, endIndex: Int = Int.max) -> BSONDocument {
+    internal static func subsequence(
+        of doc: BSONDocument,
+        startIndex: Int = 0,
+        endIndex: Int = Int.max
+    ) -> BSONDocument {
         guard endIndex >= startIndex else {
             fatalError("endIndex must be >= startIndex")
         }

@@ -163,22 +163,23 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
 
         var error = bson_error_t()
 
-        let (success, reply) = self.collection.withMongocCollection(from: connection) { collPtr -> (Bool, BSONDocument) in
-            self.filter.withBSONPointer { filterPtr in
-                opts.withMongocOptions { optsPtr in
-                    withStackAllocatedMutableBSONPointer { replyPtr in
-                        let success = mongoc_collection_find_and_modify_with_opts(
-                            collPtr,
-                            filterPtr,
-                            optsPtr,
-                            replyPtr,
-                            &error
-                        )
-                        return (success, BSONDocument(copying: replyPtr))
+        let (success, reply) = self.collection
+            .withMongocCollection(from: connection) { collPtr -> (Bool, BSONDocument) in
+                self.filter.withBSONPointer { filterPtr in
+                    opts.withMongocOptions { optsPtr in
+                        withStackAllocatedMutableBSONPointer { replyPtr in
+                            let success = mongoc_collection_find_and_modify_with_opts(
+                                collPtr,
+                                filterPtr,
+                                optsPtr,
+                                replyPtr,
+                                &error
+                            )
+                            return (success, BSONDocument(copying: replyPtr))
+                        }
                     }
                 }
             }
-        }
 
         guard success else {
             throw extractMongoError(error: error, reply: reply)

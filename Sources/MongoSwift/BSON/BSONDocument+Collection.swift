@@ -51,8 +51,8 @@ extension BSONDocument: Collection {
         return (iter.currentKey, iter.currentValue)
     }
 
-    /// Allows access to a `KeyValuePair` from the `BSONDocument`, given a range of indices of the desired `KeyValuePair`'s
-    /// held within. This method does not guarantee constant-time (O(1)) access.
+    /// Allows access to a `KeyValuePair` from the `BSONDocument`, given a range of indices of the desired
+    /// `KeyValuePair`'s held within. This method does not guarantee constant-time (O(1)) access.
     public subscript(bounds: Range<Index>) -> BSONDocument {
         // TODO: SWIFT-252 should provide a more efficient implementation for this.
         BSONDocumentIterator.subsequence(of: self, startIndex: bounds.lowerBound, endIndex: bounds.upperBound)

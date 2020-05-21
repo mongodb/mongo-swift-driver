@@ -160,7 +160,8 @@ final class BSONCorpusTests: MongoSwiftTestCase {
 
                     // for cEJ input:
                     // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
-                    expect(try BSONDocument(fromJSON: cEJData).canonicalExtendedJSON).to(cleanEqual(test.canonicalExtJSON))
+                    expect(try BSONDocument(fromJSON: cEJData).canonicalExtendedJSON)
+                        .to(cleanEqual(test.canonicalExtJSON))
 
                     // native_to_bson( json_to_native(cEJ) ) = cB (unless lossy)
                     if !lossy {
@@ -187,7 +188,8 @@ final class BSONCorpusTests: MongoSwiftTestCase {
                     // for dEJ input (if it exists):
                     if let dEJ = test.degenerateExtJSON {
                         // native_to_canonical_extended_json( json_to_native(dEJ) ) = cEJ
-                        expect(try BSONDocument(fromJSON: dEJ).canonicalExtendedJSON).to(cleanEqual(test.canonicalExtJSON))
+                        expect(try BSONDocument(fromJSON: dEJ).canonicalExtendedJSON)
+                            .to(cleanEqual(test.canonicalExtJSON))
 
                         // native_to_bson( json_to_native(dEJ) ) = cB (unless lossy)
                         if !lossy {

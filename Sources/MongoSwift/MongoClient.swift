@@ -363,8 +363,8 @@ public class MongoClient {
      * Retrieves a list of databases in this client's MongoDB deployment.
      *
      * - Parameters:
-     *   - filter: Optional `BSONDocument` specifying a filter that the listed databases must pass. This filter can be based
-     *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
+     *   - filter: Optional `BSONDocument` specifying a filter that the listed databases must pass. This filter can be
+     *      based on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
