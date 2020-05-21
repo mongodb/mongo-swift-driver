@@ -206,12 +206,12 @@ private func transactions() throws {
         return commitFuture.flatMapError { error in
             guard
                 let labeledError = error as? LabeledError,
-                labeledError.errorLabels?.contains("UnknownTransactioncommitResult") == true
+                labeledError.errorLabels?.contains("UnknownTransactionCommitResult") == true
             else {
                 print("Error during commit...")
                 return eventLoop.makeFailedFuture(error)
             }
-            print("UnknownTransactioncommitResult, retrying commit operation...")
+            print("UnknownTransactionCommitResult, retrying commit operation...")
             return commitWithRetry(session: session)
         }
     }
