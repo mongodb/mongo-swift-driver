@@ -454,7 +454,7 @@ extension _BSONEncoder {
             try uuid.encode(to: self)
             return self.storage.popContainer()
         case .binary:
-            return try Binary(from: uuid)
+            return try BSONBinary(from: uuid)
         }
     }
 
@@ -464,7 +464,7 @@ extension _BSONEncoder {
             try data.encode(to: self)
             return self.storage.popContainer()
         case .binary:
-            return try Binary(data: data, subtype: .generic)
+            return try BSONBinary(data: data, subtype: .generic)
         case .base64:
             return data.base64EncodedString()
         case let .custom(f):

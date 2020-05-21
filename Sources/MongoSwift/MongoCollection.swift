@@ -59,7 +59,7 @@ public struct MongoCollection<T: Codable> {
 
     /// Initializes a new `MongoCollection` instance corresponding to a collection with name `name` in database with
     /// the provided options.
-    internal init(name: String, database: MongoDatabase, options: CollectionOptions?) {
+    internal init(name: String, database: MongoDatabase, options: MongoCollectionOptions?) {
         self.namespace = MongoNamespace(db: database.name, collection: name)
         self._client = database._client
 

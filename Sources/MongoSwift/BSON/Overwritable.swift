@@ -8,7 +8,7 @@ internal protocol Overwritable: BSONValue {
      *
      * - Throws:
      *   - `InternalError` if the `BSONValue` is an `Int` and cannot be written to BSON.
-     *   - `LogicError` if the `BSONValue` is a `Decimal128` or `ObjectID` and is improperly formatted.
+     *   - `LogicError` if the `BSONValue` is a `Decimal128` or `BSONObjectID` and is improperly formatted.
      */
     func writeToCurrentPosition(of iter: DocumentIterator) throws
 }
@@ -47,7 +47,7 @@ extension Decimal128: Overwritable {
     }
 }
 
-extension ObjectID: Overwritable {
+extension BSONObjectID: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) throws {
         withUnsafePointer(to: self.oid) { oidPtr in
             iter.withMutableBSONIterPointer { iterPtr in bson_iter_overwrite_oid(iterPtr, oidPtr) }
@@ -55,7 +55,7 @@ extension ObjectID: Overwritable {
     }
 }
 
-extension Timestamp: Overwritable {
+extension BSONTimestamp: Overwritable {
     internal func writeToCurrentPosition(of iter: DocumentIterator) {
         iter.withMutableBSONIterPointer { iterPtr in
             bson_iter_overwrite_timestamp(iterPtr, self.timestamp, self.increment)

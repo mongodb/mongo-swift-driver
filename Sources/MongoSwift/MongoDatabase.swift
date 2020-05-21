@@ -2,7 +2,7 @@ import CLibMongoC
 import NIO
 
 /// Options to set on a retrieved `MongoCollection`.
-public struct CollectionOptions: CodingStrategyProvider {
+public struct MongoCollectionOptions: CodingStrategyProvider {
     /// Specifies the `DataCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `Data`s already stored in this collection can be
     /// decoded using this strategy.
@@ -85,7 +85,7 @@ public struct MongoDatabase {
     public let writeConcern: WriteConcern?
 
     /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
-    internal init(name: String, client: MongoClient, options: DatabaseOptions?) {
+    internal init(name: String, client: MongoClient, options: MongoDatabaseOptions?) {
         self.namespace = MongoNamespace(db: name, collection: nil)
         self._client = client
 
@@ -132,8 +132,8 @@ public struct MongoDatabase {
     }
 
     /**
-     * Access a collection within this database. If an option is not specified in the `CollectionOptions` param, the
-     * collection will inherit the value from the parent database or the default if the db's option is not set.
+     * Access a collection within this database. If an option is not specified in the `MongoCollectionOptions` param,
+     * the collection will inherit the value from the parent database or the default if the db's option is not set.
      * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
      * specified in the options param (e.g. ReadConcern.serverDefault, not nil).
      *
@@ -143,14 +143,14 @@ public struct MongoDatabase {
      *
      * - Returns: the requested `MongoCollection<Document>`
      */
-    public func collection(_ name: String, options: CollectionOptions? = nil) -> MongoCollection<Document> {
+    public func collection(_ name: String, options: MongoCollectionOptions? = nil) -> MongoCollection<Document> {
         self.collection(name, withType: Document.self, options: options)
     }
 
     /**
      * Access a collection within this database, and associates the specified `Codable` type `T` with the
      * returned `MongoCollection`. This association only exists in the context of this particular
-     * `MongoCollection` instance. If an option is not specified in the `CollectionOptions` param, the
+     * `MongoCollection` instance. If an option is not specified in the `MongoCollectionOptions` param, the
      * collection will inherit the value from the parent database or the default if the db's option is not set.
      * To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
      * specified in the options param (e.g. ReadConcern.serverDefault, not nil).
@@ -164,7 +164,7 @@ public struct MongoDatabase {
     public func collection<T: Codable>(
         _ name: String,
         withType _: T.Type,
-        options: CollectionOptions? = nil
+        options: MongoCollectionOptions? = nil
     ) -> MongoCollection<T> {
         MongoCollection(name: name, database: self, options: options)
     }

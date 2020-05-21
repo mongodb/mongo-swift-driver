@@ -1,7 +1,7 @@
 @testable import struct MongoSwift.ReadPreference
 import MongoSwiftSync
 
-extension DatabaseOptions: Decodable {
+extension MongoDatabaseOptions: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let readConcern = try container.decodeIfPresent(ReadConcern.self, forKey: .readConcern)
@@ -15,7 +15,7 @@ extension DatabaseOptions: Decodable {
     }
 }
 
-extension CollectionOptions: Decodable {
+extension MongoCollectionOptions: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let readConcern = try container.decodeIfPresent(ReadConcern.self, forKey: .readConcern)
@@ -78,7 +78,7 @@ extension ReadPreference: Decodable {
     }
 }
 
-extension ClientOptions: Decodable {
+extension MongoClientOptions: Decodable {
     private enum CodingKeys: String, CodingKey {
         case retryReads, retryWrites, w, readConcernLevel, mode = "readPreference"
     }

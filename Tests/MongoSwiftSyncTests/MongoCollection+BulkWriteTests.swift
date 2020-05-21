@@ -75,9 +75,9 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     }
 
     func testBulkWriteErrors() throws {
-        let id = BSON.objectID(ObjectID())
-        let id2 = BSON.objectID(ObjectID())
-        let id3 = BSON.objectID(ObjectID())
+        let id = BSON.objectID()
+        let id2 = BSON.objectID()
+        let id3 = BSON.objectID()
 
         let doc = ["_id": id] as Document
 

@@ -71,7 +71,7 @@ public struct ChangeStreamOptions: Codable {
     /// The change stream will only provide changes that occurred at or after the specified timestamp.
     /// Any command run against the server will return an operation time that can be used here.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/method/db.runCommand/
-    public var startAtOperationTime: Timestamp?
+    public var startAtOperationTime: BSONTimestamp?
 
     /// Initializes a `ChangeStreamOptions`.
     public init(
@@ -80,7 +80,7 @@ public struct ChangeStreamOptions: Codable {
         fullDocument: FullDocument? = nil,
         maxAwaitTimeMS: Int? = nil,
         resumeAfter: ResumeToken? = nil,
-        startAtOperationTime: Timestamp? = nil
+        startAtOperationTime: BSONTimestamp? = nil
     ) {
         self.batchSize = batchSize
         self.collation = collation

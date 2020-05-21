@@ -48,7 +48,7 @@ public class BSONDecoder {
         /// Decode `UUID`s by deferring to their default decoding implementation.
         case deferredToUUID
 
-        /// Decode `UUID`s stored as the BSON `Binary` type (default).
+        /// Decode `UUID`s stored as the `BSONBinary` type (default).
         case binary
     }
 
@@ -67,7 +67,7 @@ public class BSONDecoder {
         /// the `Data` in BSON.
         case deferredToData
 
-        /// Decode `Data`s stored as the BSON `Binary` type (default).
+        /// Decode `Data`s stored as the `BSONBinary` type (default).
         case binary
 
         /// Decode `Data`s stored as base64 encoded strings.

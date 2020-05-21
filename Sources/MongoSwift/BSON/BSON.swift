@@ -17,14 +17,14 @@ public enum BSON {
     indirect case array([BSON])
 
     /// A BSON binary.
-    case binary(Binary)
+    case binary(BSONBinary)
 
     /// A BSON undefined.
     case undefined
 
     /// A BSON ObjectID.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/bson-types/#ObjectID
-    case objectID(ObjectID)
+    case objectID(BSONObjectID = BSONObjectID())
 
     /// A BSON boolean.
     case bool(Bool)
@@ -37,26 +37,26 @@ public enum BSON {
     case null
 
     /// A BSON regular expression.
-    case regex(RegularExpression)
+    case regex(BSONRegularExpression)
 
     /// A BSON dbPointer.
     case dbPointer(DBPointer)
 
     /// A BSON symbol.
-    case symbol(Symbol)
+    case symbol(BSONSymbol)
 
     /// A BSON JavaScript code.
-    case code(Code)
+    case code(BSONCode)
 
     /// A BSON JavaScript code with scope.
-    case codeWithScope(CodeWithScope)
+    case codeWithScope(BSONCodeWithScope)
 
     /// A BSON int32.
     case int32(Int32)
 
     /// A BSON timestamp.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/bson-types/#timestamps
-    case timestamp(Timestamp)
+    case timestamp(BSONTimestamp)
 
     /// A BSON int64.
     case int64(Int64)
@@ -94,24 +94,24 @@ public enum BSON {
         return i
     }
 
-    /// If this `BSON` is a `.regex`, return it as a `RegularExpression`. Otherwise, return nil.
-    public var regexValue: RegularExpression? {
+    /// If this `BSON` is a `.regex`, return it as a `BSONRegularExpression`. Otherwise, return nil.
+    public var regexValue: BSONRegularExpression? {
         guard case let .regex(r) = self else {
             return nil
         }
         return r
     }
 
-    /// If this `BSON` is a `.codeWithScope`, return it as a `CodeWithScope`. Otherwise, return nil.
-    public var codeWithScopeValue: CodeWithScope? {
+    /// If this `BSON` is a `.codeWithScope`, return it as a `BSONCodeWithScope`. Otherwise, return nil.
+    public var codeWithScopeValue: BSONCodeWithScope? {
         guard case let .codeWithScope(cws) = self else {
             return nil
         }
         return cws
     }
 
-    /// If this `BSON` is a `.code`, return it as a `Code`. Otherwise, return nil.
-    public var codeValue: Code? {
+    /// If this `BSON` is a `.code`, return it as a `BSONCode`. Otherwise, return nil.
+    public var codeValue: BSONCode? {
         guard case let .code(c) = self else {
             return nil
         }
@@ -126,8 +126,8 @@ public enum BSON {
         return i
     }
 
-    /// If this `BSON` is an `.objectID`, return it as an `ObjectID`. Otherwise, return nil.
-    public var objectIDValue: ObjectID? {
+    /// If this `BSON` is an `.objectID`, return it as an `BSONObjectID`. Otherwise, return nil.
+    public var objectIDValue: BSONObjectID? {
         guard case let .objectID(o) = self else {
             return nil
         }
@@ -174,8 +174,8 @@ public enum BSON {
         return b
     }
 
-    /// If this `BSON` is a `.binary`, return it as a `Binary`. Otherwise, return nil.
-    public var binaryValue: Binary? {
+    /// If this `BSON` is a `.binary`, return it as a `BSONBinary`. Otherwise, return nil.
+    public var binaryValue: BSONBinary? {
         guard case let .binary(b) = self else {
             return nil
         }
@@ -198,8 +198,8 @@ public enum BSON {
         return d
     }
 
-    /// If this `BSON` is a `.symbol`, return it as a `Symbol`. Otherwise, return nil.
-    public var symbolValue: Symbol? {
+    /// If this `BSON` is a `.symbol`, return it as a `BSONSymbol`. Otherwise, return nil.
+    public var symbolValue: BSONSymbol? {
         guard case let .symbol(s) = self else {
             return nil
         }
@@ -214,8 +214,8 @@ public enum BSON {
         return d
     }
 
-    /// If this `BSON` is a `.timestamp`, return it as a `Timestamp`. Otherwise, return nil.
-    public var timestampValue: Timestamp? {
+    /// If this `BSON` is a `.timestamp`, return it as a `BSONTimestamp`. Otherwise, return nil.
+    public var timestampValue: BSONTimestamp? {
         guard case let .timestamp(t) = self else {
             return nil
         }
@@ -307,20 +307,20 @@ extension BSON {
         BSONUndefined.self,
         MinKey.self,
         MaxKey.self,
-        Symbol.self,
+        BSONSymbol.self,
         Double.self,
         String.self,
         Document.self,
-        Binary.self,
-        ObjectID.self,
+        BSONBinary.self,
+        BSONObjectID.self,
         Bool.self,
         Date.self,
-        RegularExpression.self,
+        BSONRegularExpression.self,
         DBPointer.self,
-        Code.self,
-        CodeWithScope.self,
+        BSONCode.self,
+        BSONCodeWithScope.self,
         Int32.self,
-        Timestamp.self,
+        BSONTimestamp.self,
         Int64.self,
         [BSON].self,
         Decimal128.self

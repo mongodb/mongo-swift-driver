@@ -188,7 +188,7 @@ extension SpecTestFile {
     internal func populateData(using client: MongoSwiftSync.MongoClient) throws {
         let database = client.db(
             self.databaseName,
-            options: DatabaseOptions(writeConcern: try WriteConcern(w: .majority))
+            options: MongoDatabaseOptions(writeConcern: try WriteConcern(w: .majority))
         )
         try? database.drop()
 
@@ -261,7 +261,7 @@ internal protocol SpecTest: Decodable, FailPointConfigured {
     var description: String { get }
 
     /// Options used to configure the `MongoClient` used for this test.
-    var clientOptions: ClientOptions? { get }
+    var clientOptions: MongoClientOptions? { get }
 
     /// If true, the `MongoClient` for this test should be initialized with multiple mongos seed addresses.
     /// If false or omitted, only a single mongos address should be specified.

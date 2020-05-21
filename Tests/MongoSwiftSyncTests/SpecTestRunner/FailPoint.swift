@@ -9,7 +9,7 @@ internal protocol FailPointConfigured {
 
 extension FailPointConfigured {
     /// Sets the active fail point to the provided fail point and enables it.
-    internal mutating func activateFailPoint(_ failPoint: FailPoint, on serverAddress: Address? = nil) throws {
+    internal mutating func activateFailPoint(_ failPoint: FailPoint, on serverAddress: ServerAddress? = nil) throws {
         self.activeFailPoint = failPoint
         try self.activeFailPoint?.enable(on: serverAddress)
     }
@@ -44,7 +44,7 @@ internal struct FailPoint: Decodable {
         self.failPoint = try Document(from: decoder)
     }
 
-    internal func enable(on serverAddress: Address? = nil) throws {
+    internal func enable(on serverAddress: ServerAddress? = nil) throws {
         var commandDoc = ["configureFailPoint": self.failPoint["configureFailPoint"]!] as Document
         for (k, v) in self.failPoint {
             guard k != "configureFailPoint" else {

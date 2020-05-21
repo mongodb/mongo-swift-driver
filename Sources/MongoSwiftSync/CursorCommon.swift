@@ -11,7 +11,7 @@ internal protocol CursorProtocol: LazySequenceProtocol, IteratorProtocol {
      *
      * If this cursor is non-tailable, it will always be dead as soon as either `tryNext` returns `nil` or an error.
      *
-     * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `CursorType`.
+     * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `MongoCursorType`.
      */
     func isAlive() throws -> Bool
 

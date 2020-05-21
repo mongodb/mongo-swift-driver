@@ -10,12 +10,12 @@ extension MongoSwiftTestCase {
     /// Note: If a collection is not specified as part of the input namespace, this function will throw an error.
     internal func withTestNamespace<T>(
         ns: MongoNamespace? = nil,
-        clientOptions: ClientOptions? = nil,
+        MongoClientOptions: MongoClientOptions? = nil,
         collectionOptions: CreateCollectionOptions? = nil,
         f: (MongoClient, MongoDatabase, MongoCollection<Document>)
             throws -> T
     ) throws -> T {
-        let client = try MongoClient.makeTestClient(options: clientOptions)
+        let client = try MongoClient.makeTestClient(options: MongoClientOptions)
 
         return try self.withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in
             try f(client, db, coll)
@@ -88,9 +88,9 @@ extension MongoClient {
 
     static func makeTestClient(
         _ uri: String = MongoSwiftTestCase.getConnectionString(),
-        options: ClientOptions? = nil
+        options: MongoClientOptions? = nil
     ) throws -> MongoClient {
-        var opts = options ?? ClientOptions()
+        var opts = options ?? MongoClientOptions()
         if MongoSwiftTestCase.ssl {
             opts.tlsCAFile = URL(string: MongoSwiftTestCase.sslCAFilePath ?? "")
             opts.tlsCertificateKeyFile = URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
@@ -197,7 +197,7 @@ extension MongoSwiftSync.ClientSession {
 
     internal var id: Document? { self.asyncSession.id }
 
-    internal var pinnedServerAddress: Address? { self.asyncSession.pinnedServerAddress }
+    internal var pinnedServerAddress: ServerAddress? { self.asyncSession.pinnedServerAddress }
 
     internal typealias TransactionState = MongoSwift.ClientSession.TransactionState
 

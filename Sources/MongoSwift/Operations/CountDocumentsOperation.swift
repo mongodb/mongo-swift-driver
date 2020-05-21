@@ -6,7 +6,7 @@ public struct CountDocumentsOptions: Codable {
     public var collation: Document?
 
     /// A hint for the index to use.
-    public var hint: Hint?
+    public var hint: IndexHint?
 
     /// The maximum number of documents to count.
     public var limit: Int?
@@ -28,7 +28,7 @@ public struct CountDocumentsOptions: Codable {
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
         collation: Document? = nil,
-        hint: Hint? = nil,
+        hint: IndexHint? = nil,
         limit: Int? = nil,
         maxTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,

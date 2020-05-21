@@ -4,7 +4,7 @@ import NIO
 import NIOConcurrencyHelpers
 
 /// Options to use when creating a `MongoClient`.
-public struct ClientOptions: CodingStrategyProvider {
+public struct MongoClientOptions: CodingStrategyProvider {
     /// Specifies authentication options for use with the client.
     public var credential: MongoCredential?
 
@@ -119,7 +119,7 @@ public struct ClientOptions: CodingStrategyProvider {
 }
 
 /// Options to use when retrieving a `MongoDatabase` from a `MongoClient`.
-public struct DatabaseOptions: CodingStrategyProvider {
+public struct MongoDatabaseOptions: CodingStrategyProvider {
     /// Specifies the `DateCodingStrategy` to use for BSON encoding/decoding operations performed by this database and
     /// any collections that derive from it.
     public var dataCodingStrategy: DataCodingStrategy?
@@ -208,15 +208,15 @@ public class MongoClient {
 
     /**
      * Create a new client for a MongoDB deployment. For options that included in both the connection string URI
-     * and the ClientOptions struct, the final value is set in descending order of priority: the value specified in
-     * ClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
+     * and the MongoClientOptions struct, the final value is set in descending order of priority: the value specified in
+     * MongoClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
      *
      * - Parameters:
      *   - connectionString: the connection string to connect to.
      *   - eventLoopGroup: A SwiftNIO `EventLoopGroup` which the client will use for executing operations. It is the
      *                     user's responsibility to ensure the group remains active for as long as the client does, and
      *                     to ensure the group is properly shut down when it is no longer in use.
-     *   - options: optional `ClientOptions` to use for this client
+     *   - options: optional `MongoClientOptions` to use for this client
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
      *
@@ -226,7 +226,7 @@ public class MongoClient {
     public init(
         _ connectionString: String = "mongodb://localhost:27017",
         using eventLoopGroup: EventLoopGroup,
-        options: ClientOptions? = nil
+        options: MongoClientOptions? = nil
     ) throws {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
@@ -452,17 +452,17 @@ public class MongoClient {
 
     /**
      * Gets a `MongoDatabase` instance for the given database name. If an option is not specified in the optional
-     * `DatabaseOptions` param, the database will inherit the value from the parent client or the default if
+     * `MongoDatabaseOptions` param, the database will inherit the value from the parent client or the default if
      * the client’s option is not set. To override an option inherited from the client (e.g. a read concern) with the
      * default value, it must be explicitly specified in the options param (e.g. ReadConcern.serverDefault, not nil).
      *
      * - Parameters:
      *   - name: the name of the database to retrieve
-     *   - options: Optional `DatabaseOptions` to use for the retrieved database
+     *   - options: Optional `MongoDatabaseOptions` to use for the retrieved database
      *
      * - Returns: a `MongoDatabase` corresponding to the provided database name.
      */
-    public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
+    public func db(_ name: String, options: MongoDatabaseOptions? = nil) -> MongoDatabase {
         MongoDatabase(name: name, client: self, options: options)
     }
 

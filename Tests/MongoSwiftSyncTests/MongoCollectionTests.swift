@@ -140,7 +140,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         let res = try coll.insertMany([docNoId1, docNoId2, docId1, docId2])
 
         // the inserted IDs should either be the ones we set,
-        // or newly created ObjectIDs
+        // or newly created BSONObjectIDs
         for (_, v) in res!.insertedIDs {
             if let val = v.asInt() {
                 expect([10, 11]).to(contain(val))
@@ -153,10 +153,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(docNoId1).to(equal(["x": 1]))
         expect(docNoId2).to(equal(["x": 2]))
 
-        let newDoc1: Document = ["_id": .objectID(ObjectID())]
-        let newDoc2: Document = ["_id": .objectID(ObjectID())]
-        let newDoc3: Document = ["_id": .objectID(ObjectID())]
-        let newDoc4: Document = ["_id": .objectID(ObjectID())]
+        let newDoc1: Document = ["_id": .objectID()]
+        let newDoc2: Document = ["_id": .objectID()]
+        let newDoc3: Document = ["_id": .objectID()]
+        let newDoc4: Document = ["_id": .objectID()]
 
         let expectedResultOrdered = BulkWriteResult.new(insertedCount: 1, insertedIDs: [0: newDoc1["_id"]!])
         let expectedErrorsOrdered = [

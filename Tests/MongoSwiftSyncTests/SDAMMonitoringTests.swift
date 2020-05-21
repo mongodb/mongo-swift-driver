@@ -49,7 +49,7 @@ final class SDAMTests: MongoSwiftTestCase {
             XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
             return
         }
-        let hostAddress = try Address(host)
+        let hostAddress = try ServerAddress(host)
 
         // check event count and that events are of the expected types
         expect(receivedEvents.count).to(beGreaterThanOrEqualTo(5))

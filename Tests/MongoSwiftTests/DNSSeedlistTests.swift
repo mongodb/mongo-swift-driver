@@ -11,7 +11,7 @@ struct DNSSeedlistTestCase: Decodable {
     /// The expected set of initial seeds discovered from the SRV record.
     let seeds: [String]
     /// The discovered topology's list of hosts once SDAM completes a scan.
-    let hosts: [Address]
+    let hosts: [ServerAddress]
     /// The parsed connection string options as discovered from URI and TXT records.
     let options: Document?
     /// Additional options present in the connection string URI such as Userinfo (as user and password), and Auth
@@ -71,7 +71,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             // Enclose all of the potentially throwing code in `doTest`. Sometimes the expected errors come when
             // parsing the URI, and other times they are not until we try to select a server.
             func doTest() throws -> ConnectionString {
-                let opts = ClientOptions(
+                let opts = MongoClientOptions(
                     tlsAllowInvalidCertificates: true,
                     tlsCAFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
                     tlsCertificateKeyFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")

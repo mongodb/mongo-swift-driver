@@ -17,11 +17,11 @@ final class BSONValueTests: MongoSwiftTestCase {
         let sixteenBytes = Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!
 
         // UUIDs must have 16 bytes
-        expect(try Binary(data: twoBytes, subtype: .uuidDeprecated))
+        expect(try BSONBinary(data: twoBytes, subtype: .uuidDeprecated))
             .to(throwError(errorType: InvalidArgumentError.self))
-        expect(try Binary(data: twoBytes, subtype: .uuid)).to(throwError(errorType: InvalidArgumentError.self))
-        expect(try Binary(data: sixteenBytes, subtype: .uuidDeprecated)).toNot(throwError())
-        expect(try Binary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
+        expect(try BSONBinary(data: twoBytes, subtype: .uuid)).to(throwError(errorType: InvalidArgumentError.self))
+        expect(try BSONBinary(data: sixteenBytes, subtype: .uuidDeprecated)).toNot(throwError())
+        expect(try BSONBinary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
     }
 
     fileprivate func checkTrueAndFalse(val: BSON, alternate: BSON) {
@@ -46,13 +46,13 @@ final class BSONValueTests: MongoSwiftTestCase {
         self.checkTrueAndFalse(val: "some", alternate: "not some")
         // RegularExpression
         self.checkTrueAndFalse(
-            val: .regex(RegularExpression(pattern: ".*", options: "")),
-            alternate: .regex(RegularExpression(pattern: ".+", options: ""))
+            val: .regex(BSONRegularExpression(pattern: ".*", options: "")),
+            alternate: .regex(BSONRegularExpression(pattern: ".+", options: ""))
         )
         // Timestamp
         self.checkTrueAndFalse(
-            val: .timestamp(Timestamp(timestamp: 1, inc: 2)),
-            alternate: .timestamp(Timestamp(timestamp: 5, inc: 10))
+            val: .timestamp(BSONTimestamp(timestamp: 1, inc: 2)),
+            alternate: .timestamp(BSONTimestamp(timestamp: 5, inc: 10))
         )
         // Date
         self.checkTrueAndFalse(
@@ -62,17 +62,17 @@ final class BSONValueTests: MongoSwiftTestCase {
         // MinKey & MaxKey
         expect(BSON.minKey).to(equal(.minKey))
         expect(BSON.maxKey).to(equal(.maxKey))
-        // ObjectID
-        self.checkTrueAndFalse(val: .objectID(ObjectID()), alternate: .objectID(ObjectID()))
+        // BSONObjectID
+        self.checkTrueAndFalse(val: .objectID(), alternate: .objectID())
         // CodeWithScope
         self.checkTrueAndFalse(
-            val: .codeWithScope(CodeWithScope(code: "console.log('foo');", scope: [:])),
-            alternate: .codeWithScope(CodeWithScope(code: "console.log(x);", scope: ["x": 2]))
+            val: .codeWithScope(BSONCodeWithScope(code: "console.log('foo');", scope: [:])),
+            alternate: .codeWithScope(BSONCodeWithScope(code: "console.log(x);", scope: ["x": 2]))
         )
         // Binary
         self.checkTrueAndFalse(
-            val: .binary(try Binary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid)),
-            alternate: .binary(try Binary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid))
+            val: .binary(try BSONBinary(data: Data(base64Encoded: "c//SZESzTGmQ6OfR38A11A==")!, subtype: .uuid)),
+            alternate: .binary(try BSONBinary(data: Data(base64Encoded: "c//88KLnfdfefOfR33ddFA==")!, subtype: .uuid))
         )
         // Document
         self.checkTrueAndFalse(
@@ -97,11 +97,11 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(b0).toNot(equal(b1))
     }
 
-    /// Test object for ObjectIDRoundTrip
+    /// Test object for BSONObjectIDRoundTrip
     private struct TestObject: Codable, Equatable {
-        private let _id: ObjectID
+        private let _id: BSONObjectID
 
-        init(id: ObjectID) {
+        init(id: BSONObjectID) {
             self._id = id
         }
     }
@@ -121,7 +121,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // initialize a new oid with the oid_t ptr
         // expect the values to be equal
-        let objectId = ObjectID(bsonOid: oid_t)
+        let objectId = BSONObjectID(bsonOid: oid_t)
         expect(objectId.hex).to(equal(oid))
         expect(objectId.timestamp).to(equal(timestamp))
 
@@ -141,14 +141,14 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // expect that we can pull the correct timestamp if
         // initialized from the original string
-        let objectIdFromString = ObjectID(oid)!
+        let objectIdFromString = BSONObjectID(oid)!
         expect(objectIdFromString).to(equal(objectId))
         expect(objectIdFromString.hex).to(equal(oid))
         expect(objectIdFromString.timestamp).to(equal(timestamp))
     }
 
     func testObjectIDJSONCodable() throws {
-        let id = ObjectID()
+        let id = BSONObjectID()
         let obj = TestObject(id: id)
         let output = try JSONEncoder().encode(obj)
         let outputStr = String(decoding: output, as: UTF8.self)

@@ -26,12 +26,12 @@ public class MongoClient {
 
     /**
      * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
-     * and the ClientOptions struct, the final value is set in descending order of priority: the value specified in
-     * ClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
+     * and the MongoClientOptions struct, the final value is set in descending order of priority: the value specified in
+     * MongoClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
      *
      * - Parameters:
      *   - connectionString: the connection string to connect to.
-     *   - options: optional `ClientOptions` to use for this client
+     *   - options: optional `MongoClientOptions` to use for this client
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
      *
@@ -40,7 +40,7 @@ public class MongoClient {
      *   - A `InvalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
      *     built with TLS support.
      */
-    public init(_ connectionString: String = "mongodb://localhost:27017", options: ClientOptions? = nil) throws {
+    public init(_ connectionString: String = "mongodb://localhost:27017", options: MongoClientOptions? = nil) throws {
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 5)
         do {
             self.asyncClient = try MongoSwift.MongoClient(connectionString, using: eventLoopGroup, options: options)
@@ -158,17 +158,17 @@ public class MongoClient {
 
     /**
      * Gets a `MongoDatabase` instance for the given database name. If an option is not specified in the optional
-     * `DatabaseOptions` param, the database will inherit the value from the parent client or the default if
+     * `MongoDatabaseOptions` param, the database will inherit the value from the parent client or the default if
      * the client’s option is not set. To override an option inherited from the client (e.g. a read concern) with the
      * default value, it must be explicitly specified in the options param (e.g. ReadConcern.serverDefault, not nil).
      *
      * - Parameters:
      *   - name: the name of the database to retrieve
-     *   - options: Optional `DatabaseOptions` to use for the retrieved database
+     *   - options: Optional `MongoDatabaseOptions` to use for the retrieved database
      *
      * - Returns: a `MongoDatabase` corresponding to the provided database name
      */
-    public func db(_ name: String, options: DatabaseOptions? = nil) -> MongoDatabase {
+    public func db(_ name: String, options: MongoDatabaseOptions? = nil) -> MongoDatabase {
         MongoDatabase(client: self, asyncDB: self.asyncClient.db(name, options: options))
     }
 

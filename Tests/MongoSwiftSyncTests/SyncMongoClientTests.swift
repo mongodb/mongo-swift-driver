@@ -166,13 +166,13 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         var doc = try collDoc.find(["_id": defaultId]).next()?.get()
         expect(doc).toNot(beNil())
         expect(doc?["date"]?.dateValue).to(equal(date))
-        expect(doc?["uuid"]?.binaryValue).to(equal(try Binary(from: uuid)))
-        expect(doc?["data"]?.binaryValue).to(equal(try Binary(data: data, subtype: .generic)))
+        expect(doc?["uuid"]?.binaryValue).to(equal(try BSONBinary(from: uuid)))
+        expect(doc?["data"]?.binaryValue).to(equal(try BSONBinary(data: data, subtype: .generic)))
 
         expect(try collDefault.find(["_id": defaultId]).next()?.get()).to(equal(wrapper))
 
         // Customize strategies on the client
-        let custom = ClientOptions(
+        let custom = MongoClientOptions(
             dataCodingStrategy: .base64,
             dateCodingStrategy: .secondsSince1970,
             uuidCodingStrategy: .deferredToUUID
@@ -192,7 +192,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         expect(try collClient.find(["_id": collClientId]).next()?.get()).to(equal(wrapper))
 
         // Construct db with differing strategies from client
-        let dbOpts = DatabaseOptions(
+        let dbOpts = MongoDatabaseOptions(
             dataCodingStrategy: .binary,
             dateCodingStrategy: .deferredToDate,
             uuidCodingStrategy: .binary
@@ -206,13 +206,13 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         doc = try collDoc.find(["_id": customDbId]).next()?.get()
         expect(doc).toNot(beNil())
         expect(doc?["date"]?.doubleValue).to(beCloseTo(date.timeIntervalSinceReferenceDate, within: 0.001))
-        expect(doc?["uuid"]?.binaryValue).to(equal(try Binary(from: uuid)))
-        expect(doc?["data"]?.binaryValue).to(equal(try Binary(data: data, subtype: .generic)))
+        expect(doc?["uuid"]?.binaryValue).to(equal(try BSONBinary(from: uuid)))
+        expect(doc?["data"]?.binaryValue).to(equal(try BSONBinary(data: data, subtype: .generic)))
 
         expect(try collDb.find(["_id": customDbId]).next()?.get()).to(equal(wrapper))
 
         // Construct collection with differing strategies from database
-        let dbCollOpts = CollectionOptions(
+        let dbCollOpts = MongoCollectionOptions(
             dataCodingStrategy: .base64,
             dateCodingStrategy: .millisecondsSince1970,
             uuidCodingStrategy: .deferredToUUID

@@ -436,9 +436,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
 
         // turn off retryReads so that retry attempts can be distinguished from resume attempts.
-        let opts = ClientOptions(retryReads: false)
+        let opts = MongoClientOptions(retryReads: false)
 
-        try withTestNamespace(clientOptions: opts) { client, _, coll in
+        try withTestNamespace(MongoClientOptions: opts) { client, _, coll in
             guard try client.supportsFailCommand() else {
                 print("Skipping \(self.name) because server version doesn't support failCommand")
                 return

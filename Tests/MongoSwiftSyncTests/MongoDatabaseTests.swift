@@ -36,7 +36,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(db.name).to(equal(Self.testDatabase))
 
         // error code 59: CommandNotFound
-        expect(try db.runCommand(["asdfsadf": .objectID(ObjectID())]))
+        expect(try db.runCommand(["asdfsadf": .objectID()]))
             .to(throwError(CommandError.new(
                 code: 59,
                 codeName: "CommandNotFound",

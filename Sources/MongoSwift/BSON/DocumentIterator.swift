@@ -174,7 +174,7 @@ public class DocumentIterator: IteratorProtocol {
      *
      * - Throws:
      *   - `InternalError` if the new value is an `Int` and cannot be written to BSON.
-     *   - `LogicError` if the new value is a `Decimal128` or `ObjectID` and is improperly formatted.
+     *   - `LogicError` if the new value is a `Decimal128` or `BSONObjectID` and is improperly formatted.
      */
     internal func overwriteCurrentValue(with newValue: Overwritable) throws {
         let newValueType = type(of: newValue).bsonType
@@ -201,17 +201,17 @@ public class DocumentIterator: IteratorProtocol {
         .string: String.self,
         .document: Document.self,
         .array: [BSON].self,
-        .binary: Binary.self,
-        .objectID: ObjectID.self,
+        .binary: BSONBinary.self,
+        .objectID: BSONObjectID.self,
         .bool: Bool.self,
         .datetime: Date.self,
-        .regex: RegularExpression.self,
+        .regex: BSONRegularExpression.self,
         .dbPointer: DBPointer.self,
-        .code: Code.self,
-        .symbol: Symbol.self,
-        .codeWithScope: CodeWithScope.self,
+        .code: BSONCode.self,
+        .symbol: BSONSymbol.self,
+        .codeWithScope: BSONCodeWithScope.self,
         .int32: Int32.self,
-        .timestamp: Timestamp.self,
+        .timestamp: BSONTimestamp.self,
         .int64: Int64.self,
         .decimal128: Decimal128.self,
         .minKey: MinKey.self,

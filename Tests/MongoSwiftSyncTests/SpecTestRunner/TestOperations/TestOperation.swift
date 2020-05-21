@@ -87,10 +87,10 @@ struct TestOperationDescription: Decodable {
     let error: Bool?
 
     /// The parameters to pass to the database used for this operation.
-    let databaseOptions: DatabaseOptions?
+    let databaseOptions: MongoDatabaseOptions?
 
     /// The parameters to pass to the collection used for this operation.
-    let collectionOptions: CollectionOptions?
+    let collectionOptions: MongoCollectionOptions?
 
     /// Present only when the operation is `runCommand`. The name of the command to run.
     let commandName: String?
@@ -106,8 +106,8 @@ struct TestOperationDescription: Decodable {
         self.object = try container.decode(TestOperationObject.self, forKey: .object)
         self.result = try container.decodeIfPresent(TestOperationResult.self, forKey: .result)
         self.error = try container.decodeIfPresent(Bool.self, forKey: .error)
-        self.databaseOptions = try container.decodeIfPresent(DatabaseOptions.self, forKey: .databaseOptions)
-        self.collectionOptions = try container.decodeIfPresent(CollectionOptions.self, forKey: .collectionOptions)
+        self.databaseOptions = try container.decodeIfPresent(MongoDatabaseOptions.self, forKey: .databaseOptions)
+        self.collectionOptions = try container.decodeIfPresent(MongoCollectionOptions.self, forKey: .collectionOptions)
         self.commandName = try container.decodeIfPresent(String.self, forKey: .commandName)
     }
 

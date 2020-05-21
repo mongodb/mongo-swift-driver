@@ -65,12 +65,12 @@ final class WriteConcernTests: MongoSwiftTestCase {
             try checkWriteConcern(db1, empty, "db created with no WC provided from \(clientDesc)")
 
             // expect that a DB created from this client can override the client's default WC
-            let db2 = client.db(Self.testDatabase, options: DatabaseOptions(writeConcern: w2))
+            let db2 = client.db(Self.testDatabase, options: MongoDatabaseOptions(writeConcern: w2))
             try checkWriteConcern(db2, w2, "db created with w:2 from \(clientDesc)")
         }
 
         // test behavior of a client with w: 1
-        try self.withTestClient(options: ClientOptions(writeConcern: w1)) { client in
+        try self.withTestClient(options: MongoClientOptions(writeConcern: w1)) { client in
             let clientDesc = "client created with w:1"
             // although w:1 is default, if it is explicitly provided it should be set
             try checkWriteConcern(client, w1, clientDesc)
@@ -80,19 +80,19 @@ final class WriteConcernTests: MongoSwiftTestCase {
             try checkWriteConcern(db1, w1, "db created with no WC provided from \(clientDesc)")
 
             // expect that a DB created from this client can override the client's WC
-            let db2 = client.db(Self.testDatabase, options: DatabaseOptions(writeConcern: w2))
+            let db2 = client.db(Self.testDatabase, options: MongoDatabaseOptions(writeConcern: w2))
             try checkWriteConcern(db2, w2, "db created with w:2 from \(clientDesc)")
         }
 
         // test behavior of a client with w: 2
-        try self.withTestClient(options: ClientOptions(writeConcern: w2)) { client in
+        try self.withTestClient(options: MongoClientOptions(writeConcern: w2)) { client in
             let clientDesc = "client created with w:2"
             try checkWriteConcern(client, w2, clientDesc)
 
             // expect that a DB created from this client can override the client's WC with an unset one
             let db = client.db(
                 Self.testDatabase,
-                options: DatabaseOptions(writeConcern: empty)
+                options: MongoDatabaseOptions(writeConcern: empty)
             )
             try checkWriteConcern(db, empty, "db created with empty WC from \(clientDesc)")
         }
@@ -119,12 +119,12 @@ final class WriteConcernTests: MongoSwiftTestCase {
 
             // expect that a collection retrieved from a DB with default WC can override the DB's WC
             let coll2 =
-                db1.collection(self.getCollectionName(suffix: "2"), options: CollectionOptions(writeConcern: w1))
+                db1.collection(self.getCollectionName(suffix: "2"), options: MongoCollectionOptions(writeConcern: w1))
             try checkWriteConcern(coll2, w1, "collection retrieved with w:1 from \(dbDesc)")
 
             try db1.drop().wait()
 
-            let db2 = client.db(Self.testDatabase, options: DatabaseOptions(writeConcern: w1))
+            let db2 = client.db(Self.testDatabase, options: MongoDatabaseOptions(writeConcern: w1))
             defer { try? db2.drop().wait() }
             dbDesc = "db created with w:1"
 
@@ -138,7 +138,7 @@ final class WriteConcernTests: MongoSwiftTestCase {
 
             // expect that a collection retrieved from a DB with w:1 can override the DB's WC
             let coll4 =
-                db2.collection(self.getCollectionName(suffix: "4"), options: CollectionOptions(writeConcern: w2))
+                db2.collection(self.getCollectionName(suffix: "4"), options: MongoCollectionOptions(writeConcern: w2))
             try checkWriteConcern(coll4, w2, "collection retrieved with w:2 from \(dbDesc)")
         }
     }

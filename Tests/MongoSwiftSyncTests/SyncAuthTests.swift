@@ -131,13 +131,13 @@ final class SyncAuthTests: MongoSwiftTestCase {
         for user in testUsers {
             // - Explicitly specifying each mechanism the user supports.
             try user.mechanisms.forEach { mech in
-                let options = ClientOptions(credential: user.createCredential(mechanism: mech))
+                let options = MongoClientOptions(credential: user.createCredential(mechanism: mech))
                 let client = try MongoClient.makeTestClient(connString, options: options)
                 expect(try client.db("admin").runCommand(["dbstats": 1])).toNot(throwError())
             }
 
             // - Specifying no mechanism and relying on mechanism negotiation.
-            let options = ClientOptions(credential: user.createCredential())
+            let options = MongoClientOptions(credential: user.createCredential())
             let clientNoMech = try MongoClient.makeTestClient(connString, options: options)
             expect(try clientNoMech.db("admin").runCommand(["dbstats": 1])).toNot(throwError())
 
@@ -145,7 +145,7 @@ final class SyncAuthTests: MongoSwiftTestCase {
             //    fails.
             if user.mechanisms.count == 1 {
                 let wrongMech: MongoCredential.Mechanism = user.mechanisms[0] == .scramSHA1 ? .scramSHA256 : .scramSHA1
-                let options = ClientOptions(credential: user.createCredential(mechanism: wrongMech))
+                let options = MongoClientOptions(credential: user.createCredential(mechanism: wrongMech))
                 let clientWrongMech = try MongoClient.makeTestClient(connString, options: options)
                 expect(try clientWrongMech.db("admin").runCommand(["dbstats": 1]))
                     .to(throwError(errorType: AuthenticationError.self))
