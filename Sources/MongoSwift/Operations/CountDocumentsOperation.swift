@@ -3,7 +3,7 @@ import CLibMongoC
 /// Options to use when executing a `countDocuments` command on a `MongoCollection`.
 public struct CountDocumentsOptions: Codable {
     /// Specifies a collation.
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     /// A hint for the index to use.
     public var hint: IndexHint?
@@ -27,7 +27,7 @@ public struct CountDocumentsOptions: Codable {
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
-        collation: Document? = nil,
+        collation: BSONDocument? = nil,
         hint: IndexHint? = nil,
         limit: Int? = nil,
         maxTimeMS: Int? = nil,
@@ -52,10 +52,10 @@ public struct CountDocumentsOptions: Codable {
 /// An operation corresponding to a "count" command on a collection.
 internal struct CountDocumentsOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
-    private let filter: Document
+    private let filter: BSONDocument
     private let options: CountDocumentsOptions?
 
-    internal init(collection: MongoCollection<T>, filter: Document, options: CountDocumentsOptions?) {
+    internal init(collection: MongoCollection<T>, filter: BSONDocument, options: CountDocumentsOptions?) {
         self.collection = collection
         self.filter = filter
         self.options = options
@@ -64,7 +64,7 @@ internal struct CountDocumentsOperation<T: Codable>: Operation {
     internal func execute(using connection: Connection, session: ClientSession?) throws -> Int {
         let opts = try encodeOptions(options: options, session: session)
         var error = bson_error_t()
-        var reply = Document()
+        var reply = BSONDocument()
         let count = self.collection.withMongocCollection(from: connection) { collPtr in
             self.filter.withBSONPointer { filterPtr in
                 withOptionalBSONPointer(to: opts) { optsPtr in

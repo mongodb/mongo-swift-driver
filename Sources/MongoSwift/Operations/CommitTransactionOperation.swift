@@ -11,7 +11,7 @@ internal struct CommitTransactionOperation: Operation {
             try withStackAllocatedMutableBSONPointer { replyPtr in
                 var error = bson_error_t()
                 guard mongoc_client_session_commit_transaction(sessionPtr, replyPtr, &error) else {
-                    throw extractMongoError(error: error, reply: Document(copying: replyPtr))
+                    throw extractMongoError(error: error, reply: BSONDocument(copying: replyPtr))
                 }
             }
         }

@@ -13,7 +13,7 @@ public struct DatabaseSpecification: Codable {
 
     /// For sharded clusters, this field includes a document which maps each shard to the size in bytes of the database
     /// on disk on that shard. For non sharded environments, this field is nil.
-    public let shards: Document?
+    public let shards: BSONDocument?
 }
 
 /// Internal intermediate result of a ListDatabases command.
@@ -39,13 +39,13 @@ public struct ListDatabasesOptions {
 /// An operation corresponding to a "listDatabases" command on a collection.
 internal struct ListDatabasesOperation: Operation {
     private let client: MongoClient
-    private let filter: Document?
+    private let filter: BSONDocument?
     private let nameOnly: Bool?
     private let options: ListDatabasesOptions?
 
     internal init(
         client: MongoClient,
-        filter: Document?,
+        filter: BSONDocument?,
         nameOnly: Bool?,
         options: ListDatabasesOptions?
     ) {
@@ -58,7 +58,7 @@ internal struct ListDatabasesOperation: Operation {
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListDatabasesResults {
         // spec requires that this command be run against the primary.
         let readPref = ReadPreference.primary
-        var cmd: Document = ["listDatabases": 1]
+        var cmd: BSONDocument = ["listDatabases": 1]
         if let filter = self.filter {
             cmd["filter"] = .document(filter)
         }
@@ -69,7 +69,7 @@ internal struct ListDatabasesOperation: Operation {
             cmd["authorizedDatabases"] = .bool(authorizedDatabases)
         }
 
-        let opts = try encodeOptions(options: nil as Document?, session: session)
+        let opts = try encodeOptions(options: nil as BSONDocument?, session: session)
 
         let reply = try connection.withMongocConnection { connPtr in
             try readPref.withMongocReadPreference { rpPtr in
@@ -79,7 +79,7 @@ internal struct ListDatabasesOperation: Operation {
             }
         }
 
-        guard let databases = reply["databases"]?.arrayValue?.toArrayOf(Document.self) else {
+        guard let databases = reply["databases"]?.arrayValue?.toArrayOf(BSONDocument.self) else {
             throw InternalError(message: "Invalid server response: \(reply)")
         }
 

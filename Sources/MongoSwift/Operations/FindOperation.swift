@@ -46,7 +46,7 @@ public struct FindOptions: Codable {
     public var batchSize: Int?
 
     /// Specifies a collation.
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     /// Attaches a comment to the query.
     public var comment: String?
@@ -87,7 +87,7 @@ public struct FindOptions: Codable {
     public var limit: Int?
 
     /// The exclusive upper bound for a specific index.
-    public var max: Document?
+    public var max: BSONDocument?
 
     /// The maximum amount of time, in milliseconds, for the server to wait on new documents to satisfy a tailable
     /// cursor query. This only applies when used with `MongoCursorType.tailableAwait`. Otherwise, this option is
@@ -98,14 +98,14 @@ public struct FindOptions: Codable {
     public var maxTimeMS: Int?
 
     /// The inclusive lower bound for a specific index.
-    public var min: Document?
+    public var min: BSONDocument?
 
     /// The server normally times out idle cursors after an inactivity period (10 minutes)
     /// to prevent excess memory use. Set this option to prevent that.
     public var noCursorTimeout: Bool?
 
     /// Limits the fields to return for all matching documents.
-    public var projection: Document?
+    public var projection: BSONDocument?
 
     /// A ReadConcern to use for this operation.
     public var readConcern: ReadConcern?
@@ -126,7 +126,7 @@ public struct FindOptions: Codable {
     public var skip: Int?
 
     /// The order in which to return matching documents.
-    public var sort: Document?
+    public var sort: BSONDocument?
 
     /// If a `MongoCursorType` is provided, indicates whether it is `.tailable` or .`tailableAwait`.
     private var tailable: Bool?
@@ -138,23 +138,23 @@ public struct FindOptions: Codable {
         allowDiskUse: Bool? = nil,
         allowPartialResults: Bool? = nil,
         batchSize: Int? = nil,
-        collation: Document? = nil,
+        collation: BSONDocument? = nil,
         comment: String? = nil,
         cursorType: MongoCursorType? = nil,
         hint: IndexHint? = nil,
         limit: Int? = nil,
-        max: Document? = nil,
+        max: BSONDocument? = nil,
         maxAwaitTimeMS: Int? = nil,
         maxTimeMS: Int? = nil,
-        min: Document? = nil,
+        min: BSONDocument? = nil,
         noCursorTimeout: Bool? = nil,
-        projection: Document? = nil,
+        projection: BSONDocument? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
         returnKey: Bool? = nil,
         showRecordID: Bool? = nil,
         skip: Int? = nil,
-        sort: Document? = nil
+        sort: BSONDocument? = nil
     ) {
         self.allowDiskUse = allowDiskUse
         self.allowPartialResults = allowPartialResults
@@ -210,7 +210,7 @@ public struct FindOneOptions: Codable {
     public var allowPartialResults: Bool?
 
     /// Specifies a collation.
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     /// Attaches a comment to the query.
     public var comment: String?
@@ -219,16 +219,16 @@ public struct FindOneOptions: Codable {
     public var hint: IndexHint?
 
     /// The exclusive upper bound for a specific index.
-    public var max: Document?
+    public var max: BSONDocument?
 
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
 
     /// The inclusive lower bound for a specific index.
-    public var min: Document?
+    public var min: BSONDocument?
 
     /// Limits the fields to return for all matching documents.
-    public var projection: Document?
+    public var projection: BSONDocument?
 
     /// A ReadConcern to use for this operation.
     public var readConcern: ReadConcern?
@@ -247,24 +247,24 @@ public struct FindOneOptions: Codable {
     public var skip: Int?
 
     /// The order in which to return matching documents.
-    public var sort: Document?
+    public var sort: BSONDocument?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
         allowPartialResults: Bool? = nil,
-        collation: Document? = nil,
+        collation: BSONDocument? = nil,
         comment: String? = nil,
         hint: IndexHint? = nil,
-        max: Document? = nil,
+        max: BSONDocument? = nil,
         maxTimeMS: Int? = nil,
-        min: Document? = nil,
-        projection: Document? = nil,
+        min: BSONDocument? = nil,
+        projection: BSONDocument? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
         returnKey: Bool? = nil,
         showRecordID: Bool? = nil,
         skip: Int? = nil,
-        sort: Document? = nil
+        sort: BSONDocument? = nil
     ) {
         self.allowPartialResults = allowPartialResults
         self.collation = collation
@@ -292,10 +292,10 @@ public struct FindOneOptions: Codable {
 /// An operation corresponding to a "find" command on a collection.
 internal struct FindOperation<CollectionType: Codable>: Operation {
     private let collection: MongoCollection<CollectionType>
-    private let filter: Document
+    private let filter: BSONDocument
     private let options: FindOptions?
 
-    internal init(collection: MongoCollection<CollectionType>, filter: Document, options: FindOptions?) {
+    internal init(collection: MongoCollection<CollectionType>, filter: BSONDocument, options: FindOptions?) {
         self.collection = collection
         self.filter = filter
         self.options = options

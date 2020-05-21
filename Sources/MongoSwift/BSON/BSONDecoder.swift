@@ -136,8 +136,8 @@ public class BSONDecoder {
      * - Returns: A value of the requested type.
      * - Throws: `DecodingError` if any value throws an error during decoding.
      */
-    public func decode<T: Decodable>(_ type: T.Type, from document: Document) throws -> T {
-        // if the requested type is `Document` we're done
+    public func decode<T: Decodable>(_ type: T.Type, from document: BSONDocument) throws -> T {
+        // if the requested type is `BSONDocument` we're done
         if let doc = document as? T {
             return doc
         }
@@ -154,7 +154,7 @@ public class BSONDecoder {
      * - Throws: `DecodingError` if the BSON data is corrupt or if any value throws an error during decoding.
      */
     public func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
-        try self.decode(type, from: Document(fromBSON: data))
+        try self.decode(type, from: BSONDocument(fromBSON: data))
     }
 
     /**
@@ -177,7 +177,7 @@ public class BSONDecoder {
         // and pay a small performance penalty of decoding a few extra bytes.
         let wrapped = "{\"value\": \(json)}"
 
-        if let doc = try? Document(fromJSON: wrapped) {
+        if let doc = try? BSONDocument(fromJSON: wrapped) {
             let s = try self.decode(DecodableWrapper<T>.self, from: doc)
             return s.value
         }
@@ -240,7 +240,7 @@ internal class _BSONDecoder: Decoder {
         guard let topContainer = self.storage.topContainer.documentValue else {
             throw DecodingError._typeMismatch(
                 at: self.codingPath,
-                expectation: Document.self,
+                expectation: BSONDocument.self,
                 reality: self.storage.topContainer.bsonValue
             )
         }
@@ -489,7 +489,7 @@ extension _BSONDecoder {
     }
 }
 
-/// A keyed decoding container, backed by a `Document`.
+/// A keyed decoding container, backed by a `BSONDocument`.
 private struct _BSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainerProtocol {
     typealias Key = K
 
@@ -497,13 +497,13 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainer
     private let decoder: _BSONDecoder
 
     /// A reference to the container we're reading from.
-    fileprivate let container: Document
+    fileprivate let container: BSONDocument
 
     /// The path of coding keys taken to get to this point in decoding.
     public private(set) var codingPath: [CodingKey]
 
     /// Initializes `self`, referencing the given decoder and container.
-    fileprivate init(referencing decoder: _BSONDecoder, wrapping container: Document) {
+    fileprivate init(referencing decoder: _BSONDecoder, wrapping container: BSONDocument) {
         self.decoder = decoder
         self.container = container
         self.codingPath = decoder.codingPath
@@ -617,7 +617,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainer
             guard let doc = value.documentValue else {
                 throw DecodingError._typeMismatch(
                     at: self.codingPath,
-                    expectation: Document.self,
+                    expectation: BSONDocument.self,
                     reality: value.bsonValue
                 )
             }
@@ -789,7 +789,7 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
         throws -> KeyedDecodingContainer<NestedKey> {
         try self.decoder.with(pushedKey: _BSONKey(index: self.currentIndex)) {
             try self.checkAtEnd()
-            let doc = try self.decodeBSONType(Document.self)
+            let doc = try self.decodeBSONType(BSONDocument.self)
             self.currentIndex += 1
             let container = _BSONKeyedDecodingContainer<NestedKey>(referencing: self.decoder, wrapping: doc)
             return KeyedDecodingContainer(container)

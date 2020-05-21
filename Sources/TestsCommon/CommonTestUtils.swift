@@ -122,8 +122,8 @@ open class MongoSwiftTestCase: XCTestCase {
     }
 }
 
-extension Document {
-    public func sortedEquals(_ other: Document) -> Bool {
+extension BSONDocument {
+    public func sortedEquals(_ other: BSONDocument) -> Bool {
         let keys = self.keys.sorted()
         let otherKeys = other.keys.sorted()
 
@@ -166,7 +166,7 @@ private func clean(json: String?) -> String {
         return ""
     }
     do {
-        let doc = try Document(fromJSON: str.data(using: .utf8)!)
+        let doc = try BSONDocument(fromJSON: str.data(using: .utf8)!)
         return doc.extendedJSON
     } catch {
         print("Failed to clean string: \(str)")
@@ -195,7 +195,7 @@ public func cleanEqual(_ expectedValue: String?) -> Predicate<String> {
 
 // Adds a custom "sortedEqual" predicate that compares two `Document`s and returns true if they
 // have the same key/value pairs in them
-public func sortedEqual(_ expectedValue: Document?) -> Predicate<Document> {
+public func sortedEqual(_ expectedValue: BSONDocument?) -> Predicate<BSONDocument> {
     Predicate.define("sortedEqual <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
 

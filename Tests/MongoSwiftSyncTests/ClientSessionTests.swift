@@ -7,7 +7,7 @@ import TestsCommon
 /// Describes an operation run on a collection that takes in a session.
 struct CollectionSessionOp {
     let name: String
-    let body: (MongoCollection<Document>, MongoSwiftSync.ClientSession?) throws -> Void
+    let body: (MongoCollection<BSONDocument>, MongoSwiftSync.ClientSession?) throws -> Void
 }
 
 /// Describes an operation run on a database that takes in a session.
@@ -84,7 +84,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         DatabaseSessionOp(name: "runCommand") { try $0.runCommand(["isMaster": 0], session: $1) },
         DatabaseSessionOp(name: "createCollection") { _ = try $0.createCollection("asdf", session: $1) },
         DatabaseSessionOp(name: "createCollection1") {
-            _ = try $0.createCollection("asf", withType: Document.self, session: $1)
+            _ = try $0.createCollection("asf", withType: BSONDocument.self, session: $1)
         },
         DatabaseSessionOp(name: "drop") { _ = try $0.drop(session: $1) }
     ]
@@ -100,7 +100,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     func forEachSessionOp(
         client: MongoClient,
         database: MongoDatabase,
-        collection: MongoCollection<Document>,
+        collection: MongoCollection<BSONDocument>,
         _ body: (SessionOp) throws -> Void
     ) rethrows {
         try (self.collectionSessionReadOps + self.collectionSessionWriteOps).forEach { op in
@@ -312,7 +312,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         client.withSession { session in
             let date = Date()
             expect(session.clusterTime).to(beNil())
-            let newTime: Document = [
+            let newTime: BSONDocument = [
                 "clusterTime": .timestamp(BSONTimestamp(timestamp: Int(date.timeIntervalSince1970), inc: 100))
             ]
             session.advanceClusterTime(to: newTime)

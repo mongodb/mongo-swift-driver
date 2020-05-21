@@ -11,7 +11,7 @@ struct TestUser {
     let mechanisms: [MongoSwift.MongoCredential.Mechanism]
 
     /// A command to create this user.
-    var createCmd: Document {
+    var createCmd: BSONDocument {
         [
             "createUser": .string(self.username),
             "pwd": .string(self.password),
@@ -23,7 +23,7 @@ struct TestUser {
     func createCredential(
         authSource: String = "admin",
         mechanism: MongoCredential.Mechanism? = nil,
-        mechanismProperties: Document? = nil
+        mechanismProperties: BSONDocument? = nil
     ) -> MongoCredential {
         MongoCredential(
             username: self.username,

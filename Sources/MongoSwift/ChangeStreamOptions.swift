@@ -34,7 +34,7 @@ public struct ChangeStreamOptions: Codable {
 
     /// Specifies a collation.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     /**
      * Indicates how the `fullDocument` field of a change stream document should be filled out by the server.
@@ -76,7 +76,7 @@ public struct ChangeStreamOptions: Codable {
     /// Initializes a `ChangeStreamOptions`.
     public init(
         batchSize: Int? = nil,
-        collation: Document? = nil,
+        collation: BSONDocument? = nil,
         fullDocument: FullDocument? = nil,
         maxAwaitTimeMS: Int? = nil,
         resumeAfter: ResumeToken? = nil,

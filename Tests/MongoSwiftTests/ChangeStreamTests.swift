@@ -137,7 +137,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         }
 
         var count = 0
-        let increment: (ChangeStreamEvent<Document>) -> Void = { _ in count += 1 }
+        let increment: (ChangeStreamEvent<BSONDocument>) -> Void = { _ in count += 1 }
 
         try self.withTestClient { client in
             let db = client.db(Self.testDatabase)

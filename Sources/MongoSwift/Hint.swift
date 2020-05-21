@@ -4,8 +4,8 @@ import Foundation
 public enum IndexHint: Codable {
     /// Specifies an index to use by its name.
     case indexName(String)
-    /// Specifies an index to use by a specification `Document` containing the index key(s).
-    case indexSpec(Document)
+    /// Specifies an index to use by a specification `BSONDocument` containing the index key(s).
+    case indexSpec(BSONDocument)
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
@@ -22,7 +22,7 @@ public enum IndexHint: Codable {
         if let str = try? container.decode(String.self) {
             self = .indexName(str)
         } else {
-            self = .indexSpec(try container.decode(Document.self))
+            self = .indexSpec(try container.decode(BSONDocument.self))
         }
     }
 }

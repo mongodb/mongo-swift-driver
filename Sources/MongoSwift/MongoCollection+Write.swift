@@ -68,7 +68,7 @@ extension MongoCollection {
      * Replaces a single document matching the provided filter in this collection.
      *
      * - Parameters:
-     *   - filter: A `Document` representing the match criteria
+     *   - filter: A `BSONDocument` representing the match criteria
      *   - replacement: The replacement value, a `CollectionType` value to be encoded and inserted
      *   - options: Optional `ReplaceOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
@@ -86,7 +86,7 @@ extension MongoCollection {
      *    - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     public func replaceOne(
-        filter: Document,
+        filter: BSONDocument,
         replacement: CollectionType,
         options: ReplaceOptions? = nil,
         session: ClientSession? = nil
@@ -102,8 +102,8 @@ extension MongoCollection {
      * Updates a single document matching the provided filter in this collection.
      *
      * - Parameters:
-     *   - filter: A `Document` representing the match criteria
-     *   - update: A `Document` representing the update to be applied to a matching document
+     *   - filter: A `BSONDocument` representing the match criteria
+     *   - update: A `BSONDocument` representing the update to be applied to a matching document
      *   - options: Optional `UpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -120,8 +120,8 @@ extension MongoCollection {
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func updateOne(
-        filter: Document,
-        update: Document,
+        filter: BSONDocument,
+        update: BSONDocument,
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<UpdateResult?> {
@@ -140,8 +140,8 @@ extension MongoCollection {
      * Updates multiple documents matching the provided filter in this collection.
      *
      * - Parameters:
-     *   - filter: A `Document` representing the match criteria
-     *   - update: A `Document` representing the update to be applied to matching documents
+     *   - filter: A `BSONDocument` representing the match criteria
+     *   - update: A `BSONDocument` representing the update to be applied to matching documents
      *   - options: Optional `UpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -158,8 +158,8 @@ extension MongoCollection {
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func updateMany(
-        filter: Document,
-        update: Document,
+        filter: BSONDocument,
+        update: BSONDocument,
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<UpdateResult?> {
@@ -178,7 +178,7 @@ extension MongoCollection {
      * Deletes a single matching document from the collection.
      *
      * - Parameters:
-     *   - filter: A `Document` representing the match criteria
+     *   - filter: A `BSONDocument` representing the match criteria
      *   - options: Optional `DeleteOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -195,7 +195,7 @@ extension MongoCollection {
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func deleteOne(
-        _ filter: Document,
+        _ filter: BSONDocument,
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
@@ -227,7 +227,7 @@ extension MongoCollection {
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func deleteMany(
-        _ filter: Document,
+        _ filter: BSONDocument,
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
@@ -279,13 +279,13 @@ public typealias InsertManyOptions = BulkWriteOptions
 /// Options to use when executing an `update` command on a `MongoCollection`.
 public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
     /// A set of filters specifying to which array elements an update should apply.
-    public var arrayFilters: [Document]?
+    public var arrayFilters: [BSONDocument]?
 
     /// If true, allows the write to opt-out of document level validation.
     public var bypassDocumentValidation: Bool?
 
     /// Specifies a collation.
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     /// When true, creates a new document if no document matches the query.
     public var upsert: Bool?
@@ -295,9 +295,9 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
-        arrayFilters: [Document]? = nil,
+        arrayFilters: [BSONDocument]? = nil,
         bypassDocumentValidation: Bool? = nil,
-        collation: Document? = nil,
+        collation: BSONDocument? = nil,
         upsert: Bool? = nil,
         writeConcern: WriteConcern? = nil
     ) {
@@ -315,7 +315,7 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     public var bypassDocumentValidation: Bool?
 
     /// Specifies a collation.
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     /// When true, creates a new document if no document matches the query.
     public var upsert: Bool?
@@ -326,7 +326,7 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
         bypassDocumentValidation: Bool? = nil,
-        collation: Document? = nil,
+        collation: BSONDocument? = nil,
         upsert: Bool? = nil,
         writeConcern: WriteConcern? = nil
     ) {
@@ -340,13 +340,13 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
 /// Options to use when executing a `delete` command on a `MongoCollection`.
 public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing collation to be omitted or optional
-    public init(collation: Document? = nil, writeConcern: WriteConcern? = nil) {
+    public init(collation: BSONDocument? = nil, writeConcern: WriteConcern? = nil) {
         self.collation = collation
         self.writeConcern = writeConcern
     }

@@ -22,7 +22,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func createIndex(
-        _ keys: Document,
+        _ keys: BSONDocument,
         indexOptions: IndexOptions? = nil,
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
@@ -126,7 +126,7 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
-        _ keys: Document,
+        _ keys: BSONDocument,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
     ) throws {

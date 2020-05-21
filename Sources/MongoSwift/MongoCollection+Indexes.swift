@@ -4,13 +4,13 @@ import NIO
 /// A struct representing an index on a `MongoCollection`.
 public struct IndexModel: Codable {
     /// Contains the required keys for the index.
-    public let keys: Document
+    public let keys: BSONDocument
 
     /// Contains the options for the index.
     public let options: IndexOptions?
 
     /// Convenience initializer providing a default `options` value
-    public init(keys: Document, options: IndexOptions? = nil) {
+    public init(keys: BSONDocument, options: IndexOptions? = nil) {
         self.keys = keys
         self.options = options
     }
@@ -33,7 +33,7 @@ public struct IndexModel: Codable {
 
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        self.keys = try values.decode(Document.self, forKey: .key)
+        self.keys = try values.decode(BSONDocument.self, forKey: .key)
         self.options = try IndexOptions(from: decoder)
     }
 }
@@ -51,7 +51,7 @@ public struct IndexOptions: Codable {
 
     /// Optionally specifies a collation to use for the index in MongoDB 3.4 and higher. If not specified, no collation
     /// is sent and the default collation of the collection server-side is used.
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     /// Optionally specifies the default language for text indexes. Is 'english' if none is provided.
     public var defaultLanguage: String?
@@ -81,7 +81,7 @@ public struct IndexOptions: Codable {
 
     /// Optionally specifies a filter for use in a partial index. Only documents that match the filter expression are
     /// included in the index. New in MongoDB 3.2.
-    public var partialFilterExpression: Document?
+    public var partialFilterExpression: BSONDocument?
 
     /// Optionally tells the index to only reference documents with the specified field in the index.
     public var sparse: Bool?
@@ -92,7 +92,7 @@ public struct IndexOptions: Codable {
 
     /// Optionally used only in MongoDB 3.0.0 and higher. Allows users to configure the storage engine on a per-index
     /// basis when creating an index.
-    public var storageEngine: Document?
+    public var storageEngine: BSONDocument?
 
     /// Optionally provides the text index version number. MongoDB 2.4 can only support version 1. MongoDB 2.6 and
     /// higher may support version 1 or 2.
@@ -105,28 +105,28 @@ public struct IndexOptions: Codable {
     public var version: Int?
 
     /// Optionally specifies fields in the index and their corresponding weight values.
-    public var weights: Document?
+    public var weights: BSONDocument?
 
     /// Convenience initializer allowing any/all parameters to be omitted.
     public init(
         background: Bool? = nil,
         bits: Int? = nil,
         bucketSize: Int? = nil,
-        collation: Document? = nil,
+        collation: BSONDocument? = nil,
         defaultLanguage: String? = nil,
         expireAfterSeconds: Int? = nil,
         languageOverride: String? = nil,
         max: Double? = nil,
         min: Double? = nil,
         name: String? = nil,
-        partialFilterExpression: Document? = nil,
+        partialFilterExpression: BSONDocument? = nil,
         sparse: Bool? = nil,
         sphereIndexVersion: Int? = nil,
-        storageEngine: Document? = nil,
+        storageEngine: BSONDocument? = nil,
         textIndexVersion: Int? = nil,
         unique: Bool? = nil,
         version: Int? = nil,
-        weights: Document? = nil
+        weights: BSONDocument? = nil
     ) {
         self.background = background
         self.bits = bits
@@ -162,7 +162,7 @@ extension MongoCollection {
      * Creates an index over the collection for the provided keys with the provided options.
      *
      * - Parameters:
-     *   - keys: a `Document` specifing the keys for the index
+     *   - keys: a `BSONDocument` specifing the keys for the index
      *   - indexOptions: Optional `IndexOptions` to use for the index
      *   - options: Optional `CreateIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
@@ -179,7 +179,7 @@ extension MongoCollection {
      *    - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     public func createIndex(
-        _ keys: Document,
+        _ keys: BSONDocument,
         indexOptions: IndexOptions? = nil,
         options: CreateIndexOptions? = nil,
         session: ClientSession? = nil
@@ -289,7 +289,7 @@ extension MongoCollection {
      * Attempts to drop a single index from the collection given the keys describing it.
      *
      * - Parameters:
-     *   - keys: a `Document` containing the keys for the index to drop
+     *   - keys: a `BSONDocument` containing the keys for the index to drop
      *   - options: Optional `DropIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -305,7 +305,7 @@ extension MongoCollection {
      *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
-        _ keys: Document,
+        _ keys: BSONDocument,
         options: DropIndexOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<Void> {

@@ -7,7 +7,7 @@ import XCTest
 
 /// A struct containing the portions of a `CommandStartedEvent` the spec tests use for testing.
 internal struct TestCommandStartedEvent: Decodable, Matchable {
-    let command: Document
+    let command: BSONDocument
 
     let commandName: String
 
@@ -21,7 +21,7 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
         case type = "command_started_event"
     }
 
-    internal init(from event: CommandStartedEvent, sessionIds: [Document: String]? = nil) {
+    internal init(from event: CommandStartedEvent, sessionIds: [BSONDocument: String]? = nil) {
         var command = event.command
 
         // If command started event has "lsid": Document(...), change the value to correpond to "session0",
@@ -45,7 +45,7 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: TopLevelCodingKeys.self)
         let eventContainer = try container.nestedContainer(keyedBy: CodingKeys.self, forKey: .type)
-        self.command = try eventContainer.decode(Document.self, forKey: .command)
+        self.command = try eventContainer.decode(BSONDocument.self, forKey: .command)
         if let commandName = try eventContainer.decodeIfPresent(String.self, forKey: .commandName) {
             self.commandName = commandName
         } else if let firstKey = self.command.keys.first {
@@ -100,20 +100,20 @@ internal struct TestRequirement: Decodable {
 /// Enum representing the contents of deployment before a spec test has been run.
 internal enum TestData: Decodable {
     /// Data for multiple collections, with the name of the collection mapping to its contents.
-    case multiple([String: [Document]])
+    case multiple([String: [BSONDocument]])
 
     /// The contents of a single collection.
-    case single([Document])
+    case single([BSONDocument])
 
     public init(from decoder: Decoder) throws {
-        if let array = try? [Document](from: decoder) {
+        if let array = try? [BSONDocument](from: decoder) {
             self = .single(array)
-        } else if let document = try? Document(from: decoder) {
-            var mapping: [String: [Document]] = [:]
+        } else if let document = try? BSONDocument(from: decoder) {
+            var mapping: [String: [BSONDocument]] = [:]
             for (k, v) in document {
                 guard let documentArray = v.arrayValue?.compactMap({ $0.documentValue }) else {
                     throw DecodingError.typeMismatch(
-                        [Document].self,
+                        [BSONDocument].self,
                         DecodingError.Context(
                             codingPath: decoder.codingPath,
                             debugDescription: "Expected array of documents, got \(v) instead"
@@ -139,7 +139,7 @@ internal struct CollectionTestInfo: Decodable {
     let name: String?
 
     /// The documents found in the collection.
-    let data: [Document]
+    let data: [BSONDocument]
 }
 
 /// Struct representing an "outcome" defined in a spec test.
@@ -192,7 +192,7 @@ extension SpecTestFile {
         )
         try? database.drop()
 
-        func populateCollection(name: String, docs: [Document]) throws {
+        func populateCollection(name: String, docs: [BSONDocument]) throws {
             let collection = try database.createCollection(name)
 
             guard !docs.isEmpty else {
@@ -336,7 +336,7 @@ extension SpecTest {
             sessions[session] = client.startSession(options: self.sessionOptions?[session])
         }
 
-        var sessionIds = [Document: String]()
+        var sessionIds = [BSONDocument: String]()
 
         try monitor.captureEvents {
             for operation in self.operations {

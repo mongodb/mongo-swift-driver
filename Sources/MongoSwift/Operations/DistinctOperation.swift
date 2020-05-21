@@ -3,7 +3,7 @@ import CLibMongoC
 /// Options to use when executing a `distinct` command on a `MongoCollection`.
 public struct DistinctOptions: Codable {
     /// Specifies a collation.
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
@@ -18,7 +18,7 @@ public struct DistinctOptions: Codable {
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
-        collation: Document? = nil,
+        collation: BSONDocument? = nil,
         maxTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil
@@ -38,10 +38,10 @@ public struct DistinctOptions: Codable {
 internal struct DistinctOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
     private let fieldName: String
-    private let filter: Document
+    private let filter: BSONDocument
     private let options: DistinctOptions?
 
-    internal init(collection: MongoCollection<T>, fieldName: String, filter: Document, options: DistinctOptions?) {
+    internal init(collection: MongoCollection<T>, fieldName: String, filter: BSONDocument, options: DistinctOptions?) {
         self.collection = collection
         self.fieldName = fieldName
         self.filter = filter
@@ -49,7 +49,7 @@ internal struct DistinctOperation<T: Codable>: Operation {
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> [BSON] {
-        let command: Document = [
+        let command: BSONDocument = [
             "distinct": .string(self.collection.name),
             "key": .string(self.fieldName),
             "query": .document(self.filter)

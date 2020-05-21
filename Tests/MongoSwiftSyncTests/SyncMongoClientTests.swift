@@ -254,7 +254,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         db = nil
         expect(weakClientRef).to(beNil())
 
-        var coll: MongoCollection<Document>?
+        var coll: MongoCollection<BSONDocument>?
         do {
             let client = try MongoClient.makeTestClient()
             weakClientRef = client

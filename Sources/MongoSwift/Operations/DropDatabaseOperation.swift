@@ -11,7 +11,7 @@ internal struct DropDatabaseOperation: Operation {
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws {
-        let command: Document = ["dropDatabase": 1]
+        let command: BSONDocument = ["dropDatabase": 1]
         let opts = try encodeOptions(options: self.options, session: session)
 
         try runMongocCommand(command: command, options: opts) { cmdPtr, optsPtr, replyPtr, error in

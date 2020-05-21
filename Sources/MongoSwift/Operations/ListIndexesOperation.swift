@@ -23,7 +23,7 @@ internal struct ListIndexesOperation<T: Codable>: Operation {
         using connection: Connection,
         session: ClientSession?
     ) throws -> ListIndexesResults {
-        let opts = try encodeOptions(options: nil as Document?, session: session)
+        let opts = try encodeOptions(options: nil as BSONDocument?, session: session)
 
         let indexes: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
             withOptionalBSONPointer(to: opts) { optsPtr in

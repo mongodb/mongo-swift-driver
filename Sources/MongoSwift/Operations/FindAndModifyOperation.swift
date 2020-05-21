@@ -19,14 +19,14 @@ internal class FindAndModifyOptions {
     /// - Throws: `InvalidArgumentError` if any of the options are invalid.
     // swiftlint:disable:next cyclomatic_complexity
     internal init(
-        arrayFilters: [Document]? = nil,
+        arrayFilters: [BSONDocument]? = nil,
         bypassDocumentValidation: Bool? = nil,
-        collation: Document?,
+        collation: BSONDocument?,
         maxTimeMS: Int?,
-        projection: Document?,
+        projection: BSONDocument?,
         remove: Bool? = nil,
         returnDocument: ReturnDocument? = nil,
-        sort: Document?,
+        sort: BSONDocument?,
         upsert: Bool? = nil,
         writeConcern: WriteConcern?
     ) throws {
@@ -72,7 +72,7 @@ internal class FindAndModifyOptions {
         }
 
         // build an "extra" document of fields without their own setters
-        var extra = Document()
+        var extra = BSONDocument()
         if let filters = arrayFilters {
             try extra.setValue(for: "arrayFilters", to: .array(filters.map { .document($0) }))
         }
@@ -107,7 +107,7 @@ internal class FindAndModifyOptions {
 
     /// Sets the `update` value on a `mongoc_find_and_modify_opts_t`. We need to have this separate from the
     /// initializer because its value comes from the API methods rather than their options types.
-    fileprivate func setUpdate(_ update: Document) throws {
+    fileprivate func setUpdate(_ update: BSONDocument) throws {
         try update.withBSONPointer { updatePtr in
             guard mongoc_find_and_modify_opts_set_update(self._options, updatePtr) else {
                 throw InvalidArgumentError(message: "Error setting update to \(update)")
@@ -119,7 +119,7 @@ internal class FindAndModifyOptions {
         guard let session = session else {
             return
         }
-        var doc = Document()
+        var doc = BSONDocument()
         try session.append(to: &doc)
 
         try doc.withBSONPointer { docPtr in
@@ -138,14 +138,14 @@ internal class FindAndModifyOptions {
 /// An operation corresponding to a "findAndModify" command.
 internal struct FindAndModifyOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
-    private let filter: Document
-    private let update: Document?
+    private let filter: BSONDocument
+    private let update: BSONDocument?
     private let options: FindAndModifyOptionsConvertible?
 
     internal init(
         collection: MongoCollection<T>,
-        filter: Document,
-        update: Document?,
+        filter: BSONDocument,
+        update: BSONDocument?,
         options: FindAndModifyOptionsConvertible?
     ) {
         self.collection = collection
@@ -163,7 +163,7 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
 
         var error = bson_error_t()
 
-        let (success, reply) = self.collection.withMongocCollection(from: connection) { collPtr -> (Bool, Document) in
+        let (success, reply) = self.collection.withMongocCollection(from: connection) { collPtr -> (Bool, BSONDocument) in
             self.filter.withBSONPointer { filterPtr in
                 opts.withMongocOptions { optsPtr in
                     withStackAllocatedMutableBSONPointer { replyPtr in
@@ -174,7 +174,7 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
                             replyPtr,
                             &error
                         )
-                        return (success, Document(copying: replyPtr))
+                        return (success, BSONDocument(copying: replyPtr))
                     }
                 }
             }

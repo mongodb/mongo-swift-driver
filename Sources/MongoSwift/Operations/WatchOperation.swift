@@ -20,7 +20,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
 
     internal init(
         target: ChangeStreamTarget<CollectionType>,
-        pipeline: [Document],
+        pipeline: [BSONDocument],
         options: ChangeStreamOptions?
     ) {
         self.target = target
@@ -32,7 +32,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
         using connection: Connection,
         session: ClientSession?
     ) throws -> ChangeStream<ChangeStreamType> {
-        let pipeline: Document = ["pipeline": self.pipeline]
+        let pipeline: BSONDocument = ["pipeline": self.pipeline]
         let opts = try encodeOptions(options: self.options, session: session)
 
         return try pipeline.withBSONPointer { pipelinePtr in

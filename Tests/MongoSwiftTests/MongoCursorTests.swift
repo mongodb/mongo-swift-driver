@@ -5,9 +5,9 @@ import NIO
 import NIOConcurrencyHelpers
 import TestsCommon
 
-private let doc1: Document = ["_id": 1, "x": 1]
-private let doc2: Document = ["_id": 2, "x": 2]
-private let doc3: Document = ["_id": 3, "x": 3]
+private let doc1: BSONDocument = ["_id": 1, "x": 1]
+private let doc2: BSONDocument = ["_id": 2, "x": 2]
+private let doc3: BSONDocument = ["_id": 3, "x": 3]
 
 final class AsyncMongoCursorTests: MongoSwiftTestCase {
     override func setUp() {
@@ -57,14 +57,14 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
         let collOptions = CreateCollectionOptions(capped: true, max: 3, size: 1000)
         try self.withTestNamespace(collectionOptions: collOptions) { _, _, coll in
             let cursorOpts = FindOptions(batchSize: 1, cursorType: .tailableAwait, maxAwaitTimeMS: 10)
-            _ = try coll.insertMany([Document()]).wait()
+            _ = try coll.insertMany([BSONDocument()]).wait()
 
             let cursor = try coll.find(options: cursorOpts).wait()
             let doc = try cursor.next().wait()
             expect(doc).toNot(beNil())
 
             let future = cursor.next()
-            _ = try coll.insertMany([Document()]).wait()
+            _ = try coll.insertMany([BSONDocument()]).wait()
             expect(try future.wait()).toNot(beNil())
 
             expect(try cursor.tryNext().wait()).to(beNil())
@@ -97,7 +97,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
 
             // for each doc we insert, check that it arrives in the cursor next,
             // and that the cursor is still alive afterward
-            let checkNextResult: (Document) throws -> Void = { doc in
+            let checkNextResult: (BSONDocument) throws -> Void = { doc in
                 let results = try cursor.toArray().wait()
                 expect(results).to(haveCount(1))
                 expect(results[0]).to(equal(doc))
@@ -212,7 +212,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
 
     func testForEach() throws {
         let count = NIOAtomic<Int>.makeAtomic(value: 0)
-        let increment: (Document) -> Void = { _ in
+        let increment: (BSONDocument) -> Void = { _ in
             _ = count.add(1)
         }
 

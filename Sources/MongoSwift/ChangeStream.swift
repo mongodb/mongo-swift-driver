@@ -33,9 +33,9 @@ private struct MongocChangeStream: MongocCursorWrapper {
 /// `ChangeStreamOptions` to resume or start a change stream where a previous one left off.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
 public struct ResumeToken: Codable, Equatable {
-    private let resumeToken: Document
+    private let resumeToken: BSONDocument
 
-    internal init(_ resumeToken: Document) {
+    internal init(_ resumeToken: BSONDocument) {
         self.resumeToken = resumeToken
     }
 
@@ -46,7 +46,7 @@ public struct ResumeToken: Codable, Equatable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        self.resumeToken = try container.decode(Document.self)
+        self.resumeToken = try container.decode(BSONDocument.self)
     }
 }
 
@@ -66,7 +66,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
     private let wrappedCursor: Cursor<MongocChangeStream>
 
     /// Process an event before returning it to the user, or does nothing and returns nil if the provided event is nil.
-    private func processEvent(_ event: Document?) throws -> T? {
+    private func processEvent(_ event: BSONDocument?) throws -> T? {
         guard let event = event else {
             return nil
         }
@@ -74,7 +74,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
     }
 
     /// Process an event before returning it to the user.
-    private func processEvent(_ event: Document) throws -> T {
+    private func processEvent(_ event: BSONDocument) throws -> T {
         // Update the resumeToken with the `_id` field from the document.
         guard let resumeToken = event["_id"]?.documentValue else {
             throw InternalError(message: "_id field is missing from the change stream document.")

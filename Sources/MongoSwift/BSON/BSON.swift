@@ -11,7 +11,7 @@ public enum BSON {
     case string(String)
 
     /// A BSON document.
-    case document(Document)
+    case document(BSONDocument)
 
     /// A BSON array.
     indirect case array([BSON])
@@ -40,7 +40,7 @@ public enum BSON {
     case regex(BSONRegularExpression)
 
     /// A BSON dbPointer.
-    case dbPointer(DBPointer)
+    case dbPointer(BSONDBPointer)
 
     /// A BSON symbol.
     case symbol(BSONSymbol)
@@ -63,7 +63,7 @@ public enum BSON {
 
     /// A BSON Decimal128.
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
-    case decimal128(Decimal128)
+    case decimal128(BSONDecimal128)
 
     /// A BSON minKey.
     case minKey
@@ -158,8 +158,8 @@ public enum BSON {
         return s
     }
 
-    /// If this `BSON` is a `.document`, return it as a `Document`. Otherwise, return nil.
-    public var documentValue: Document? {
+    /// If this `BSON` is a `.document`, return it as a `BSONDocument`. Otherwise, return nil.
+    public var documentValue: BSONDocument? {
         guard case let .document(d) = self else {
             return nil
         }
@@ -190,8 +190,8 @@ public enum BSON {
         return d
     }
 
-    /// If this `BSON` is a `.decimal128`, return it as a `Decimal128`. Otherwise, return nil.
-    public var decimal128Value: Decimal128? {
+    /// If this `BSON` is a `.decimal128`, return it as a `BSONDecimal128`. Otherwise, return nil.
+    public var decimal128Value: BSONDecimal128? {
         guard case let .decimal128(d) = self else {
             return nil
         }
@@ -206,8 +206,8 @@ public enum BSON {
         return s
     }
 
-    /// If this `BSON` is a `.dbPointer`, return it as a `DBPointer`. Otherwise, return nil.
-    public var dbPointerValue: DBPointer? {
+    /// If this `BSON` is a `.dbPointer`, return it as a `BSONDBPointer`. Otherwise, return nil.
+    public var dbPointerValue: BSONDBPointer? {
         guard case let .dbPointer(d) = self else {
             return nil
         }
@@ -281,18 +281,18 @@ public enum BSON {
         }
     }
 
-    /// Return this BSON as a `Decimal128` if possible.
-    /// This will coerce numeric cases (e.g. `.double`) into a `Decimal128` if such coercion would be lossless.
-    public func toDecimal128() -> Decimal128? {
+    /// Return this BSON as a `BSONDecimal128` if possible.
+    /// This will coerce numeric cases (e.g. `.double`) into a `BSONDecimal128` if such coercion would be lossless.
+    public func toDecimal128() -> BSONDecimal128? {
         switch self {
         case let .decimal128(d):
             return d
         case let .int64(i):
-            return Decimal128(String(i))
+            return BSONDecimal128(String(i))
         case let .int32(i):
-            return Decimal128(String(i))
+            return BSONDecimal128(String(i))
         case let .double(d):
-            return Decimal128(String(d))
+            return BSONDecimal128(String(d))
         default:
             return nil
         }
@@ -305,25 +305,25 @@ extension BSON {
     internal static var allBSONTypes: [BSONValue.Type] = [
         BSONNull.self,
         BSONUndefined.self,
-        MinKey.self,
+        BSONMinKey.self,
         MaxKey.self,
         BSONSymbol.self,
         Double.self,
         String.self,
-        Document.self,
+        BSONDocument.self,
         BSONBinary.self,
         BSONObjectID.self,
         Bool.self,
         Date.self,
         BSONRegularExpression.self,
-        DBPointer.self,
+        BSONDBPointer.self,
         BSONCode.self,
         BSONCodeWithScope.self,
         Int32.self,
         BSONTimestamp.self,
         Int64.self,
         [BSON].self,
-        Decimal128.self
+        BSONDecimal128.self
     ]
 
     /// Get the associated `BSONValue` to this `BSON` case.
@@ -334,7 +334,7 @@ extension BSON {
         case .undefined:
             return BSONUndefined()
         case .minKey:
-            return MinKey()
+            return BSONMinKey()
         case .maxKey:
             return MaxKey()
         case let .symbol(v):
@@ -403,7 +403,7 @@ extension BSON: ExpressibleByIntegerLiteral {
 
 extension BSON: ExpressibleByDictionaryLiteral {
     public init(dictionaryLiteral elements: (String, BSON)...) {
-        self = .document(Document(keyValuePairs: elements))
+        self = .document(BSONDocument(keyValuePairs: elements))
     }
 }
 

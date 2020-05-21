@@ -29,23 +29,23 @@ extension FailPointConfigured {
 /// - Note: if a fail point results in a connection being closed / interrupted, libmongoc built in debug mode will print
 ///         a warning.
 internal struct FailPoint: Decodable {
-    private var failPoint: Document
+    private var failPoint: BSONDocument
 
     /// The fail point being configured.
     internal var name: String {
         self.failPoint["configureFailPoint"]?.stringValue ?? ""
     }
 
-    private init(_ document: Document) {
+    private init(_ document: BSONDocument) {
         self.failPoint = document
     }
 
     public init(from decoder: Decoder) throws {
-        self.failPoint = try Document(from: decoder)
+        self.failPoint = try BSONDocument(from: decoder)
     }
 
     internal func enable(on serverAddress: ServerAddress? = nil) throws {
-        var commandDoc = ["configureFailPoint": self.failPoint["configureFailPoint"]!] as Document
+        var commandDoc = ["configureFailPoint": self.failPoint["configureFailPoint"]!] as BSONDocument
         for (k, v) in self.failPoint {
             guard k != "configureFailPoint" else {
                 continue
@@ -111,9 +111,9 @@ internal struct FailPoint: Decodable {
         closeConnection: Bool? = nil,
         errorCode: Int? = nil,
         errorLabels: [String]? = nil,
-        writeConcernError: Document? = nil
+        writeConcernError: BSONDocument? = nil
     ) -> FailPoint {
-        var data: Document = [
+        var data: BSONDocument = [
             "failCommands": .array(failCommands.map { .string($0) })
         ]
         if let close = closeConnection {
@@ -129,7 +129,7 @@ internal struct FailPoint: Decodable {
             data["writeConcernError"] = .document(writeConcernError)
         }
 
-        let command: Document = [
+        let command: BSONDocument = [
             "configureFailPoint": "failCommand",
             "mode": mode.toBSON(),
             "data": .document(data)

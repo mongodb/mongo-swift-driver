@@ -5,7 +5,7 @@ import XCTest
 
 final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     static var client: MongoClient?
-    var coll: MongoCollection<Document>!
+    var coll: MongoCollection<BSONDocument>!
 
     /// Set up the entire suite - run once before all tests
     override class func setUp() {
@@ -51,7 +51,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     }
 
     func testInserts() throws {
-        let requests: [WriteModel<Document>] = [
+        let requests: [WriteModel<BSONDocument>] = [
             .insertOne(["_id": 1, "x": 11]),
             .insertOne(["x": 22])
         ]
@@ -79,11 +79,11 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         let id2 = BSON.objectID()
         let id3 = BSON.objectID()
 
-        let doc = ["_id": id] as Document
+        let doc = ["_id": id] as BSONDocument
 
         try self.coll.insertOne(doc)
 
-        let requests: [WriteModel<Document>] = [
+        let requests: [WriteModel<BSONDocument>] = [
             .insertOne(["_id": id2]),
             .insertOne(doc),
             .updateOne(
@@ -120,7 +120,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     func testUpdates() throws {
         try self.createFixtures(4)
 
-        let requests: [WriteModel<Document>] = [
+        let requests: [WriteModel<BSONDocument>] = [
             .updateOne(filter: ["_id": 2], update: ["$inc": ["x": 1]]),
             .updateMany(filter: ["_id": ["$gt": 2]], update: ["$inc": ["x": -1]]),
             .updateOne(
@@ -157,7 +157,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     func testDeletes() throws {
         try self.createFixtures(4)
 
-        let requests: [WriteModel<Document>] = [
+        let requests: [WriteModel<BSONDocument>] = [
             .deleteOne(["_id": 1]),
             .deleteMany(["_id": ["$gt": 2]])
         ]
@@ -174,7 +174,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     func testMixedOrderedOperations() throws {
         try self.createFixtures(3)
 
-        let requests: [WriteModel<Document>] = [
+        let requests: [WriteModel<BSONDocument>] = [
             .updateOne(
                 filter: ["_id": ["$gt": 1]],
                 update: ["$inc": ["x": 1]],
@@ -209,14 +209,14 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     }
 
     func testUnacknowledgedWriteConcern() throws {
-        let requests: [WriteModel<Document>] = [.insertOne(["_id": 1])]
+        let requests: [WriteModel<BSONDocument>] = [.insertOne(["_id": 1])]
         let options = BulkWriteOptions(writeConcern: try WriteConcern(w: .number(0)))
         let result = try self.coll.bulkWrite(requests, options: options)
         expect(result).to(beNil())
     }
 
     private func createFixtures(_ n: Int) throws {
-        var documents: [Document] = []
+        var documents: [BSONDocument] = []
 
         for i in 1...n {
             documents.append(["_id": BSON(i), "x": BSON(Int("\(i)\(i)")!)])

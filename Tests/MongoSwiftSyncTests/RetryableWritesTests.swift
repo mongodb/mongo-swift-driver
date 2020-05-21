@@ -39,7 +39,7 @@ private struct RetryableWritesTestFile: Decodable {
     let runOn: [TestRequirement]?
 
     /// Data that should exist in the collection before running any of the tests.
-    let data: [Document]
+    let data: [BSONDocument]
 
     /// List of tests to run in this file.
     let tests: [RetryableWritesTest]

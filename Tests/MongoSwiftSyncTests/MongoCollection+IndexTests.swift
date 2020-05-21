@@ -7,9 +7,9 @@ private var _client: MongoClient?
 
 final class MongoCollection_IndexTests: MongoSwiftTestCase {
     var collName: String = ""
-    var coll: MongoCollection<Document>!
-    let doc1: Document = ["_id": 1, "cat": "dog"]
-    let doc2: Document = ["_id": 2, "cat": "cat"]
+    var coll: MongoCollection<BSONDocument>!
+    let doc1: BSONDocument = ["_id": 1, "cat": "dog"]
+    let doc2: BSONDocument = ["_id": 2, "cat": "cat"]
 
     /// Set up the entire suite - run once before all tests
     override class func setUp() {

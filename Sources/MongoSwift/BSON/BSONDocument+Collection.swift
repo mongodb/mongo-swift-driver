@@ -1,9 +1,9 @@
 import Foundation
 
-/// An extension of `Document` to make it conform to the `Collection` protocol.
+/// An extension of `BSONDocument` to make it conform to the `Collection` protocol.
 /// This gives guarantees on non-destructive iteration, and offers an indexed
 /// ordering to the key-value pairs in the document.
-extension Document: Collection {
+extension BSONDocument: Collection {
     /// The index type of a document.
     public typealias Index = Int
 
@@ -31,14 +31,14 @@ extension Document: Collection {
         return i + 1
     }
 
-    /// Allows access to a `KeyValuePair` from the `Document`, given the position of the desired `KeyValuePair` held
+    /// Allows access to a `KeyValuePair` from the `BSONDocument`, given the position of the desired `KeyValuePair` held
     /// within. This method does not guarantee constant-time (O(1)) access.
     public subscript(position: Index) -> KeyValuePair {
         // TODO: This method _should_ guarantee constant-time O(1) access, and it is possible to make it do so. This
         // criticism also applies to key-based subscripting via `String`.
         // See SWIFT-250.
         self.failIndexCheck(position)
-        guard let iter = DocumentIterator(over: self) else {
+        guard let iter = BSONDocumentIterator(over: self) else {
             fatalError("Failed to initialize an iterator over document \(self)")
         }
 
@@ -51,10 +51,10 @@ extension Document: Collection {
         return (iter.currentKey, iter.currentValue)
     }
 
-    /// Allows access to a `KeyValuePair` from the `Document`, given a range of indices of the desired `KeyValuePair`'s
+    /// Allows access to a `KeyValuePair` from the `BSONDocument`, given a range of indices of the desired `KeyValuePair`'s
     /// held within. This method does not guarantee constant-time (O(1)) access.
-    public subscript(bounds: Range<Index>) -> Document {
+    public subscript(bounds: Range<Index>) -> BSONDocument {
         // TODO: SWIFT-252 should provide a more efficient implementation for this.
-        DocumentIterator.subsequence(of: self, startIndex: bounds.lowerBound, endIndex: bounds.upperBound)
+        BSONDocumentIterator.subsequence(of: self, startIndex: bounds.lowerBound, endIndex: bounds.upperBound)
     }
 }

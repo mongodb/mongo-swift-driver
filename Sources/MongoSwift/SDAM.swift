@@ -152,7 +152,7 @@ public struct ServerDescription {
 
         // initialize the rest of the values from the isMaster response.
         // we have to copy because libmongoc owns the pointer.
-        let isMasterDoc = Document(copying: mongoc_server_description_ismaster(description))
+        let isMasterDoc = BSONDocument(copying: mongoc_server_description_ismaster(description))
         // TODO: SWIFT-349 log errors encountered here
         let isMaster = try? BSONDecoder().decode(IsMasterResponse.self, from: isMasterDoc)
 

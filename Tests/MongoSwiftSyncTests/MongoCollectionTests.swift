@@ -7,9 +7,9 @@ private var _client: MongoSwiftSync.MongoClient?
 
 final class MongoCollectionTests: MongoSwiftTestCase {
     var collName: String = ""
-    var coll: MongoSwiftSync.MongoCollection<Document>!
-    let doc1: Document = ["_id": 1, "cat": "dog"]
-    let doc2: Document = ["_id": 2, "cat": "cat"]
+    var coll: MongoSwiftSync.MongoCollection<BSONDocument>!
+    let doc1: BSONDocument = ["_id": 1, "cat": "dog"]
+    let doc2: BSONDocument = ["_id": 2, "cat": "cat"]
 
     /// Set up the entire suite - run once before all tests
     override class func setUp() {
@@ -76,7 +76,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.countDocuments()).to(equal(2))
 
         // try inserting a document without an ID
-        let docNoID: Document = ["x": 1]
+        let docNoID: BSONDocument = ["x": 1]
         // verify that an _id is returned in the InsertOneResult
         expect(try self.coll.insertOne(docNoID)?.insertedID).toNot(beNil())
         // verify that the original document was not modified
@@ -101,7 +101,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testAggregate() throws {
         expect(try self.coll.aggregate([["$project": ["_id": 0, "cat": 1]]]).all())
-            .to(equal([["cat": "dog"], ["cat": "cat"]] as [Document]))
+            .to(equal([["cat": "dog"], ["cat": "cat"]] as [BSONDocument]))
     }
 
     func testDrop() throws {
@@ -132,10 +132,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testInsertMany() throws {
         expect(try self.coll.countDocuments()).to(equal(2))
         // try inserting a mix of documents with and without IDs to verify they are generated
-        let docNoId1: Document = ["x": 1]
-        let docNoId2: Document = ["x": 2]
-        let docId1: Document = ["_id": 10, "x": 8]
-        let docId2: Document = ["_id": 11, "x": 9]
+        let docNoId1: BSONDocument = ["x": 1]
+        let docNoId2: BSONDocument = ["x": 2]
+        let docId1: BSONDocument = ["_id": 10, "x": 8]
+        let docId2: BSONDocument = ["_id": 11, "x": 9]
 
         let res = try coll.insertMany([docNoId1, docNoId2, docId1, docId2])
 
@@ -153,10 +153,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(docNoId1).to(equal(["x": 1]))
         expect(docNoId2).to(equal(["x": 2]))
 
-        let newDoc1: Document = ["_id": .objectID()]
-        let newDoc2: Document = ["_id": .objectID()]
-        let newDoc3: Document = ["_id": .objectID()]
-        let newDoc4: Document = ["_id": .objectID()]
+        let newDoc1: BSONDocument = ["_id": .objectID()]
+        let newDoc2: BSONDocument = ["_id": .objectID()]
+        let newDoc3: BSONDocument = ["_id": .objectID()]
+        let newDoc4: BSONDocument = ["_id": .objectID()]
 
         let expectedResultOrdered = BulkWriteResult.new(insertedCount: 1, insertedIDs: [0: newDoc1["_id"]!])
         let expectedErrorsOrdered = [

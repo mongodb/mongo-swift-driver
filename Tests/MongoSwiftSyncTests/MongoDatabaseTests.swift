@@ -19,7 +19,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
         let db = client.db(Self.testDatabase)
 
-        let command: Document = ["create": .string(self.getCollectionName(suffix: "1"))]
+        let command: BSONDocument = ["create": .string(self.getCollectionName(suffix: "1"))]
         let res = try db.runCommand(command)
         expect(res["ok"]?.toDouble()).to(equal(1.0))
         expect(try (Array(db.listCollections())).count).to(equal(1))
@@ -80,7 +80,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
         let db = client.db(Self.testDatabase)
 
-        let indexOpts: Document =
+        let indexOpts: BSONDocument =
             ["storageEngine": ["wiredTiger": ["configString": "access_pattern_hint=random"]]]
 
         // test non-view options
@@ -110,7 +110,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(collectionInfo).to(haveCount(3))
 
         let fooInfo = CollectionSpecificationInfo.new(readOnly: false, uuid: UUID())
-        let fooIndex = IndexModel(keys: ["_id": 1] as Document, options: IndexOptions(name: "_id_"))
+        let fooIndex = IndexModel(keys: ["_id": 1] as BSONDocument, options: IndexOptions(name: "_id_"))
         let expectedFoo = CollectionSpecification.new(
             name: "foo",
             type: .collection,

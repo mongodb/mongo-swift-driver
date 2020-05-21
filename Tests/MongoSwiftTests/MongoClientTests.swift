@@ -84,7 +84,7 @@ final class MongoClientTests: MongoSwiftTestCase {
     // tests that when no connections are available operations won't block the thread pool.
     func testResubmittingToThreadPool() throws {
         try self.withTestNamespace { _, _, coll in
-            let docs: [Document] = (1...10).map { ["x": .int32($0)] }
+            let docs: [BSONDocument] = (1...10).map { ["x": .int32($0)] }
             _ = try coll.insertMany(docs).wait()
 
             let cursors = try (1...100).map { _ in try coll.find().wait() }

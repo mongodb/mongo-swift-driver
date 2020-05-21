@@ -95,10 +95,10 @@ internal enum ListCollectionsResults {
 internal struct ListCollectionsOperation: Operation {
     private let database: MongoDatabase
     private let nameOnly: Bool
-    private let filter: Document?
+    private let filter: BSONDocument?
     private let options: ListCollectionsOptions?
 
-    internal init(database: MongoDatabase, nameOnly: Bool, filter: Document?, options: ListCollectionsOptions?) {
+    internal init(database: MongoDatabase, nameOnly: Bool, filter: BSONDocument?, options: ListCollectionsOptions?) {
         self.database = database
         self.nameOnly = nameOnly
         self.filter = filter
@@ -106,7 +106,7 @@ internal struct ListCollectionsOperation: Operation {
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListCollectionsResults {
-        var opts = try encodeOptions(options: self.options, session: session) ?? Document()
+        var opts = try encodeOptions(options: self.options, session: session) ?? BSONDocument()
         opts["nameOnly"] = .bool(self.nameOnly)
         if let filterDoc = self.filter {
             opts["filter"] = .document(filterDoc)

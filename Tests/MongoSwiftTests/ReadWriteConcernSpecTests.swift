@@ -7,7 +7,7 @@ extension WriteConcern {
     /// Initialize a new `WriteConcern` from a `Document`. We can't
     /// use `decode` because the format is different in spec tests
     /// ("journal" instead of "j", etc.)
-    fileprivate init(_ doc: Document) throws {
+    fileprivate init(_ doc: BSONDocument) throws {
         let j = doc["journal"]?.boolValue
 
         var w: W?
@@ -32,10 +32,10 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
         let testFiles = try retrieveSpecTestFiles(
             specName: "read-write-concern",
             subdirectory: "connection-string",
-            asType: Document.self
+            asType: BSONDocument.self
         )
         for (_, asDocument) in testFiles {
-            let tests: [Document] = asDocument["tests"]!.arrayValue!.compactMap { $0.documentValue }
+            let tests: [BSONDocument] = asDocument["tests"]!.arrayValue!.compactMap { $0.documentValue }
             for test in tests {
                 let description: String = try test.get("description")
                 // skipping because C driver does not comply with these; see CDRIVER-2621
@@ -73,7 +73,7 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
         let testFiles = try retrieveSpecTestFiles(
             specName: "read-write-concern",
             subdirectory: "document",
-            asType: Document.self
+            asType: BSONDocument.self
         )
 
         for (_, asDocument) in testFiles {
@@ -86,7 +86,7 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
                     let isDefault: Bool = try test.get("isServerDefault")
                     expect(rc.isDefault).to(equal(isDefault))
 
-                    let expected: Document = try test.get("readConcernDocument")
+                    let expected: BSONDocument = try test.get("readConcernDocument")
                     if expected == [:] {
                         expect(try encoder.encode(rc)).to(beNil())
                     } else {
@@ -102,7 +102,7 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
                         let isDefault: Bool = try test.get("isServerDefault")
                         expect(wc.isDefault).to(equal(isDefault))
 
-                        var expected: Document = try test.get("writeConcernDocument")
+                        var expected: BSONDocument = try test.get("writeConcernDocument")
                         if expected == [:] {
                             expect(try encoder.encode(wc)).to(beNil())
                         } else {

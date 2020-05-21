@@ -20,24 +20,24 @@ internal enum ChangeStreamTarget: String, Decodable {
         _ client: MongoClient,
         _ database: String?,
         _ collection: String?,
-        _ pipeline: [Document],
+        _ pipeline: [BSONDocument],
         _ options: ChangeStreamOptions
-    ) throws -> ChangeStream<Document> {
+    ) throws -> ChangeStream<BSONDocument> {
         switch self {
         case .client:
-            return try client.watch(pipeline, options: options, withEventType: Document.self)
+            return try client.watch(pipeline, options: options, withEventType: BSONDocument.self)
         case .database:
             guard let database = database else {
                 throw TestError(message: "missing db in watch")
             }
-            return try client.db(database).watch(pipeline, options: options, withEventType: Document.self)
+            return try client.db(database).watch(pipeline, options: options, withEventType: BSONDocument.self)
         case .collection:
             guard let collection = collection, let database = database else {
                 throw TestError(message: "missing db or collection in watch")
             }
             return try client.db(database)
                 .collection(collection)
-                .watch(pipeline, options: options, withEventType: Document.self)
+                .watch(pipeline, options: options, withEventType: BSONDocument.self)
         }
     }
 }
@@ -79,7 +79,7 @@ internal enum ChangeStreamTestResult: Decodable {
     case error(code: Int, labels: [String]?)
 
     /// An array of event documents expected to be received from the change stream without error during the test.
-    case success([Document])
+    case success([BSONDocument])
 
     /// Top-level coding keys. Used for determining whether this result is a success or failure.
     internal enum CodingKeys: CodingKey {
@@ -114,7 +114,7 @@ internal enum ChangeStreamTestResult: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         if container.contains(.success) {
-            self = .success(try container.decode([Document].self, forKey: .success))
+            self = .success(try container.decode([BSONDocument].self, forKey: .success))
         } else {
             let nested = try container.nestedContainer(keyedBy: ErrorCodingKeys.self, forKey: .error)
             let code = try nested.decode(Int.self, forKey: .code)
@@ -143,7 +143,7 @@ internal struct ChangeStreamTest: Decodable, FailPointConfigured {
 
     /// An array of additional aggregation pipeline stages to pass to the `watch` used to create the change stream for
     /// this test.
-    let changeStreamPipeline: [Document]
+    let changeStreamPipeline: [BSONDocument]
 
     /// Additional options to pass to the `watch` used to create the change stream for this test.
     let changeStreamOptions: ChangeStreamOptions
@@ -187,7 +187,7 @@ internal struct ChangeStreamTest: Decodable, FailPointConfigured {
                     _ = try changeStream.nextWithTimeout()
                     fail("\(self.description) failed: expected error but got none while iterating")
                 case let .success(events):
-                    var seenEvents: [Document] = []
+                    var seenEvents: [BSONDocument] = []
                     for _ in 0..<events.count {
                         let event = try changeStream.tryNext()?.get()
                         expect(event).toNot(beNil(), description: self.description)
@@ -409,7 +409,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let resumePipeline = resumeCommand["pipeline"]!.arrayValue!.compactMap { $0.documentValue }
 
         // verify the $changeStream stage is identical except for resume options.
-        let filteredStreamStage = { (pipeline: [Document]) -> Document in
+        let filteredStreamStage = { (pipeline: [BSONDocument]) -> BSONDocument in
             let stage = pipeline[0]
             let streamDoc = stage["$changeStream"]?.documentValue
             expect(streamDoc).toNot(beNil())
@@ -548,7 +548,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
 
         // need to keep the stream alive so its deinit doesn't kill the cursor.
-        var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
+        var changeStream: ChangeStream<ChangeStreamEvent<BSONDocument>>?
         let events = try captureCommandEvents(commandNames: ["killCursors"]) { client in
             try withTestNamespace(client: client) { _, coll in
                 changeStream =
@@ -581,7 +581,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             }
 
             let monitor = client.addCommandMonitor()
-            var changeStream: ChangeStream<ChangeStreamEvent<Document>>?
+            var changeStream: ChangeStream<ChangeStreamEvent<BSONDocument>>?
             let options = ChangeStreamOptions(batchSize: 1)
 
             try monitor.captureEvents {
@@ -710,8 +710,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let coll1 = db1.collection("coll1")
         let coll2 = db1.collection("coll2")
 
-        let doc1: Document = ["_id": 1, "a": 1]
-        let doc2: Document = ["_id": 2, "x": 123]
+        let doc1: BSONDocument = ["_id": 1, "a": 1]
+        let doc2: BSONDocument = ["_id": 2, "x": 123]
         try coll1.insertOne(doc1)
         try coll2.insertOne(doc2)
 
@@ -735,7 +735,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         defer { try? db2.drop() }
         let coll = db2.collection("coll3")
 
-        let doc3: Document = ["_id": 3, "y": 321]
+        let doc3: BSONDocument = ["_id": 3, "y": 321]
         try coll.insertOne(doc3)
 
         let change3 = try changeStream.nextWithTimeout()
@@ -766,7 +766,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         expect(try changeStream.tryNext()?.get()).to(beNil())
 
         let coll = db.collection(self.getCollectionName(suffix: "1"))
-        let doc1: Document = ["_id": 1, "a": 1]
+        let doc1: BSONDocument = ["_id": 1, "a": 1]
         try coll.insertOne(doc1)
 
         // test that the change stream contains a change document for the `insert` operation
@@ -801,7 +801,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let options = ChangeStreamOptions(fullDocument: .updateLookup)
         let changeStream = try coll.watch(options: options)
 
-        let doc: Document = ["_id": 1, "x": 1]
+        let doc: BSONDocument = ["_id": 1, "x": 1]
         try coll.insertOne(doc)
 
         // expect the change stream to contain a change document for the `insert` operation
@@ -846,10 +846,10 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
 
         let options = ChangeStreamOptions(fullDocument: .updateLookup)
-        let pipeline: [Document] = [["$match": ["fullDocument.a": 1]]]
+        let pipeline: [BSONDocument] = [["$match": ["fullDocument.a": 1]]]
         let changeStream = try coll.watch(pipeline, options: options)
 
-        let doc1: Document = ["_id": 1, "a": 1]
+        let doc1: BSONDocument = ["_id": 1, "a": 1]
         try coll.insertOne(doc1)
         let change1 = try changeStream.nextWithTimeout()
 
@@ -903,11 +903,11 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
     }
 
     struct MyEventType: Codable, Equatable {
-        let id: Document
+        let id: BSONDocument
         let operation: String
         let fullDocument: MyFullDocumentType
-        let nameSpace: Document
-        let updateDescription: Document?
+        let nameSpace: BSONDocument
+        let updateDescription: BSONDocument?
 
         enum CodingKeys: String, CodingKey {
             case id = "_id", operation = "operationType", fullDocument, nameSpace = "ns", updateDescription
@@ -928,7 +928,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         // test that the change stream works on a collection when using withEventType
         let collChangeStream = try coll.watch(withEventType: MyEventType.self)
 
-        let doc: Document = ["_id": 1, "x": 1, "y": 2]
+        let doc: BSONDocument = ["_id": 1, "x": 1, "y": 2]
         try coll.insertOne(doc)
 
         let collChange = try collChangeStream.nextWithTimeout()

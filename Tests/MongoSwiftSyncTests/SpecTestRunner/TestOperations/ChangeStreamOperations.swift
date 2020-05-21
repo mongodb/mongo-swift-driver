@@ -12,7 +12,7 @@ struct Watch: TestOperation {
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
         _ = try collection.watch()
