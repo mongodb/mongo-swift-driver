@@ -121,8 +121,8 @@ final class DocumentTests: MongoSwiftTestCase {
             "binary3": .binary(try BSONBinary(data: uuidData, subtype: .uuidDeprecated)),
             "binary4": .binary(try BSONBinary(data: uuidData, subtype: .uuid)),
             "binary5": .binary(try BSONBinary(data: testData, subtype: .md5)),
-            "binary6": .binary(try BSONBinary(data: testData, subtype: .userDefined(0x80))),
-            "binary7": .binary(try BSONBinary(data: testData, subtype: .userDefined(0xFF)))
+            "binary6": .binary(try BSONBinary(data: testData, subtype: try .userDefined(0x80))),
+            "binary7": .binary(try BSONBinary(data: testData, subtype: try .userDefined(0xFF)))
         ]
         try doc.merge(binaryData)
 
@@ -179,8 +179,8 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["binary3"]).to(equal(.binary(try BSONBinary(data: uuidData, subtype: .uuidDeprecated))))
         expect(doc["binary4"]).to(equal(.binary(try BSONBinary(data: uuidData, subtype: .uuid))))
         expect(doc["binary5"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .md5))))
-        expect(doc["binary6"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .other(0x80)))))
-        expect(doc["binary7"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .other(0xFF)))))
+        expect(doc["binary6"]).to(equal(.binary(try BSONBinary(data: testData, subtype: try .userDefined(0x80)))))
+        expect(doc["binary7"]).to(equal(.binary(try BSONBinary(data: testData, subtype: try .userDefined(0xFF)))))
 
         let nestedArray = doc["nestedarray"]?.arrayValue?.compactMap { $0.arrayValue?.compactMap { $0.toInt() } }
         expect(nestedArray?[0]).to(equal([1, 2]))

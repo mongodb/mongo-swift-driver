@@ -222,6 +222,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         /// Encrypted BSON value
         public static let encryptedValue = Subtype(0x06)
 
+        /// Subtype indicator value
         public let rawValue: UInt8
 
         private init(_ value: UInt8) { self.rawValue = value }
@@ -229,7 +230,12 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
         /// Create BSON Binary Subtype
         /// Note: subtype 0x80-0xFF "User defined" subtype
-        public static func other(_ value: Int) -> Subtype { Subtype(UInt8(value)) }
+        public static func userDefined(_ value: Int) throws -> Subtype {
+            guard value >= 0x80 && value <= 0xFF else {
+                throw InvalidArgumentError(message: "User defined Binary Subtypes must be between 0x80 and 0xFF")
+            }
+            return Subtype(UInt8(value))
+        }
     }
 
     /// Initializes a `BSONBinary` instance from a `UUID`.
@@ -836,7 +842,7 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
     public init(_ hex: String) throws {
         guard bson_oid_is_valid(hex, hex.utf8.count) else {
-            throw InternalError(message: "Cannot create ObjectId from \(hex)")
+            throw InvalidArgumentError(message: "Cannot create ObjectId from \(hex)")
         }
         var oid_t = bson_oid_t()
         bson_oid_init_from_string(&oid_t, hex)

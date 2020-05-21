@@ -228,4 +228,10 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         cases.forEach { $0.run() }
     }
+
+    func testBSONDinarySubtype() {
+        // Check the subtype bounds are kept
+        expect(try Binary.Subtype.userDefined(0x100)).to(throwError())
+        expect(try Binary.Subtype.userDefined(0x79)).to(throwError())
+    }
 }
