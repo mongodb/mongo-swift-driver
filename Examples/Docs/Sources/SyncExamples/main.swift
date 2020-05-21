@@ -90,3 +90,78 @@ private func changeStreams() throws {
         // End Changestream Example 4
     }
 }
+
+/// Examples used for the MongoDB documentation on transactions.
+/// - SeeAlso: https://docs.mongodb.com/manual/core/transactions-in-applications/
+private func transactions() throws {
+    // Start Transactions Intro Example 1
+    func updateEmployeeInfo(session: ClientSession) throws {
+        let employees = session.client.db("hr").collection("employees")
+        let events = session.client.db("reporting").collection("events")
+
+        do {
+            try employees.updateOne(filter: ["employee": 3], update: ["$set": ["status": "Inactive"]], session: session)
+            try events.insertOne(["employee": 3, "status": ["new": "Inactive", "old": "Active"]], session: session)
+        } catch {
+            print("Caught error during transaction, aborting")
+            try session.abortTransaction()
+            throw error
+        }
+        try commitWithRetry(session: session)
+    }
+    // End Transactions Intro Example 1
+
+    // Start Transactions Retry Example 1
+    func runTransactionWithRetry(session: ClientSession, txnFunc: @escaping (ClientSession) throws -> Void) throws {
+        while true {
+            do {
+                return try txnFunc(session) // performs transaction
+            } catch {
+                print("Transaction aborted. Caught exception during transaction.")
+                guard
+                    let labeledError = error as? LabeledError,
+                    labeledError.errorLabels?.contains("TransientTransactionError") == true
+                else {
+                    throw error
+                }
+                // If transient error, retry the whole transaction
+                print("TransientTransactionError, retrying transaction ...")
+                continue
+            }
+        }
+    }
+    // End Transactions Retry Example 1
+
+    // Start Transactions Retry Example 2
+    func commitWithRetry(session: ClientSession) throws {
+        while true {
+            do {
+                try session.commitTransaction() // Uses write concern set at transaction start
+                print("Transaction committed.")
+                break
+            } catch {
+                guard
+                    let labeledError = error as? LabeledError,
+                    labeledError.errorLabels?.contains("UnknownTransactionCommitResult") == true
+                else {
+                    print("Error during commit ...")
+                    throw error
+                }
+                print("UnknownTransactionCommitResult, retrying commit operation ...")
+                continue
+            }
+        }
+    }
+    // End Transactions Retry Example 2
+
+    let client = try MongoClient()
+    // Start Transactions Retry Example 3
+    client.withSession { session in
+        do {
+            try runTransactionWithRetry(session: session, txnFunc: updateEmployeeInfo)
+        } catch {
+            // do something with error
+        }
+    }
+    // End Transactions Retry Example 3
+}
