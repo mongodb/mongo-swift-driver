@@ -352,7 +352,7 @@ final class DocumentTests: MongoSwiftTestCase {
         "int64": .int64(Int64.max),
         "bool": false,
         "decimal": .decimal128(Decimal128("1.2E+10")!),
-        "oid": .objectID(BSONObjectID()),
+        "oid": .objectID(),
         "timestamp": .timestamp(BSONTimestamp(timestamp: 1, inc: 2)),
         "datetime": .datetime(Date(msSinceEpoch: 1000))
     ]

@@ -24,7 +24,7 @@ public enum BSON {
 
     /// A BSON ObjectID.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/bson-types/#ObjectID
-    case objectID(BSONObjectID)
+    case objectID(BSONObjectID = BSONObjectID())
 
     /// A BSON boolean.
     case bool(Bool)

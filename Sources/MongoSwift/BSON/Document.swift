@@ -246,7 +246,7 @@ extension Document {
             return self
         }
 
-        var idDoc: Document = ["_id": .objectID(BSONObjectID())]
+        var idDoc: Document = ["_id": .objectID()]
         try idDoc.merge(self)
         return idDoc
     }

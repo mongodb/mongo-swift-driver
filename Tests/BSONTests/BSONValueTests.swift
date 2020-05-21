@@ -63,7 +63,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(BSON.minKey).to(equal(.minKey))
         expect(BSON.maxKey).to(equal(.maxKey))
         // BSONObjectID
-        self.checkTrueAndFalse(val: .objectID(BSONObjectID()), alternate: .objectID(BSONObjectID()))
+        self.checkTrueAndFalse(val: .objectID(), alternate: .objectID())
         // CodeWithScope
         self.checkTrueAndFalse(
             val: .codeWithScope(BSONCodeWithScope(code: "console.log('foo');", scope: [:])),

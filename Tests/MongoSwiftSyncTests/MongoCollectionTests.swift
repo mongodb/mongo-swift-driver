@@ -153,10 +153,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(docNoId1).to(equal(["x": 1]))
         expect(docNoId2).to(equal(["x": 2]))
 
-        let newDoc1: Document = ["_id": .objectID(BSONObjectID())]
-        let newDoc2: Document = ["_id": .objectID(BSONObjectID())]
-        let newDoc3: Document = ["_id": .objectID(BSONObjectID())]
-        let newDoc4: Document = ["_id": .objectID(BSONObjectID())]
+        let newDoc1: Document = ["_id": .objectID()]
+        let newDoc2: Document = ["_id": .objectID()]
+        let newDoc3: Document = ["_id": .objectID()]
+        let newDoc4: Document = ["_id": .objectID()]
 
         let expectedResultOrdered = BulkWriteResult.new(insertedCount: 1, insertedIDs: [0: newDoc1["_id"]!])
         let expectedErrorsOrdered = [
