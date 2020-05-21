@@ -35,7 +35,7 @@ final class WriteConcernTests: MongoSwiftTestCase {
         expect(try WriteConcern(w: .number(3))).toNot(throwError())
         expect(try WriteConcern(journal: true, w: .number(1))).toNot(throwError())
         expect(try WriteConcern(w: .number(0), wtimeoutMS: 1000)).toNot(throwError())
-        expect(try WriteConcern(w: .tag("hi"))).toNot(throwError())
+        expect(try WriteConcern(w: .custom("hi"))).toNot(throwError())
         expect(try WriteConcern(w: .majority)).toNot(throwError())
 
         // verify that this combination is considered invalid
@@ -147,7 +147,7 @@ final class WriteConcernTests: MongoSwiftTestCase {
         let wcs: [WriteConcern] = [
             .serverDefault,
             try WriteConcern(w: .number(2)),
-            try WriteConcern(w: .tag("hi")),
+            try WriteConcern(w: .custom("hi")),
             .majority,
             try WriteConcern(journal: true),
             try WriteConcern(wtimeoutMS: 200)
