@@ -228,8 +228,9 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         private init(_ value: UInt8) { self.rawValue = value }
         internal init(_ value: bson_subtype_t) { self.rawValue = UInt8(value.rawValue) }
 
-        /// Create BSON Binary Subtype
-        /// Note: subtype 0x80-0xFF "User defined" subtype
+        /// Initializes a `Subtype` with a custom value. This value must be in the range 0x80-0xFF.
+        /// - Throws:
+        ///   - `InvalidArgumentError` if value passed is outside of the range 0x80-0xFF
         public static func userDefined(_ value: Int) throws -> Subtype {
             guard value >= 0x80 && value <= 0xFF else {
                 throw InvalidArgumentError(message: "User defined Binary Subtypes must be between 0x80 and 0xFF")
