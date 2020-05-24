@@ -137,7 +137,7 @@ extension Array: BSONValue where Element == BSON {
     }
 
     /// Attempts to map this `[BSON]` to a `[T]`, where `T` is a `BSONValue`.
-    internal func asArrayOf<T: BSONValue>(_: T.Type) -> [T]? {
+    internal func toArrayOf<T: BSONValue>(_: T.Type) -> [T]? {
         var result: [T] = []
         for element in self {
             guard let bsonValue = element.bsonValue as? T else {

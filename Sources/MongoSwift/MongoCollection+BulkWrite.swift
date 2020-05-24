@@ -418,7 +418,7 @@ public struct BulkWriteResult: Decodable {
         var upsertedIDs = [Int: BSON]()
 
         if let upserted = try reply.getValue(for: MongocKeys.upserted.rawValue)?.arrayValue {
-            guard let upserted = upserted.asArrayOf(Document.self) else {
+            guard let upserted = upserted.toArrayOf(Document.self) else {
                 throw InternalError(message: "\"upserted\" array did not contain only documents")
             }
 

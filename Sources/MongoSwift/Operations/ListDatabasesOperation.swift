@@ -79,7 +79,7 @@ internal struct ListDatabasesOperation: Operation {
             }
         }
 
-        guard let databases = reply["databases"]?.arrayValue?.asArrayOf(Document.self) else {
+        guard let databases = reply["databases"]?.arrayValue?.toArrayOf(Document.self) else {
             throw InternalError(message: "Invalid server response: \(reply)")
         }
 

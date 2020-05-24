@@ -169,7 +169,7 @@ public class BSONEncoder {
             )
         }
 
-        return dict.asDocument()
+        return dict.toDocument()
     }
 
     /**
@@ -778,7 +778,7 @@ private class MutableDictionary: BSONValue {
     fileprivate static var bsonType: BSONType { .document }
 
     // This is unused
-    fileprivate var bson: BSON { .document(self.asDocument()) }
+    fileprivate var bson: BSON { .document(self.toDocument()) }
 
     // rather than using a dictionary, do this so we preserve key orders
     fileprivate var keys = [String]()
@@ -806,7 +806,7 @@ private class MutableDictionary: BSONValue {
     }
 
     /// Converts self to a `Document` with equivalent key-value pairs.
-    fileprivate func asDocument() -> Document {
+    fileprivate func toDocument() -> Document {
         var doc = Document()
         for i in 0..<self.keys.count {
             doc[self.keys[i]] = self.values[i].bson
