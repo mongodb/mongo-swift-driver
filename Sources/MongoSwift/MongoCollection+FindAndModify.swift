@@ -138,7 +138,7 @@ internal protocol FindAndModifyOptionsConvertible {
     /// Converts `self` to a `FindAndModifyOptions`
     ///
     /// - Throws: `InvalidArgumentError` if any of the options are invalid.
-    func asFindAndModifyOptions() throws -> FindAndModifyOptions
+    func toFindAndModifyOptions() throws -> FindAndModifyOptions
 }
 
 /// Options to use when executing a `findOneAndDelete` command on a `MongoCollection`.
@@ -158,7 +158,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
 
-    internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
+    internal func toFindAndModifyOptions() throws -> FindAndModifyOptions {
         try FindAndModifyOptions(
             collation: self.collation,
             maxTimeMS: self.maxTimeMS,
@@ -211,7 +211,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
 
-    internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
+    internal func toFindAndModifyOptions() throws -> FindAndModifyOptions {
         try FindAndModifyOptions(
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
@@ -275,7 +275,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
 
-    internal func asFindAndModifyOptions() throws -> FindAndModifyOptions {
+    internal func toFindAndModifyOptions() throws -> FindAndModifyOptions {
         try FindAndModifyOptions(
             arrayFilters: self.arrayFilters,
             bypassDocumentValidation: self.bypassDocumentValidation,

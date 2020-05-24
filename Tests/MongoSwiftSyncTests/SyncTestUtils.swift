@@ -67,7 +67,7 @@ extension MongoClient {
     internal func maxWireVersion() throws -> Int {
         let options = RunCommandOptions(readPreference: .primary)
         let isMaster = try self.db("admin").runCommand(["isMaster": 1], options: options)
-        guard let max = isMaster["maxWireVersion"]?.asInt() else {
+        guard let max = isMaster["maxWireVersion"]?.toInt() else {
             throw TestError(message: "isMaster reply missing maxwireversion \(isMaster)")
         }
         return max

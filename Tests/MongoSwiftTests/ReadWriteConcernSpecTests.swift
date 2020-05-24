@@ -13,11 +13,11 @@ extension WriteConcern {
         var w: W?
         if let wtag = doc["w"]?.stringValue {
             w = wtag == "majority" ? .majority : .tag(wtag)
-        } else if let wInt = doc["w"]?.asInt() {
+        } else if let wInt = doc["w"]?.toInt() {
             w = .number(wInt)
         }
 
-        let wt = doc["wtimeoutMS"]?.asInt()
+        let wt = doc["wtimeoutMS"]?.toInt()
 
         try self.init(journal: j, w: w, wtimeoutMS: wt)
     }
@@ -107,7 +107,7 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
                             expect(try encoder.encode(wc)).to(beNil())
                         } else {
                             if let wtimeoutMS = expected["wtimeout"] {
-                                expected["wtimeout"] = .int64(wtimeoutMS.asInt64()!)
+                                expected["wtimeout"] = .int64(wtimeoutMS.toInt64()!)
                             }
                             expect(try encoder.encode(wc)).to(sortedEqual(expected))
                         }

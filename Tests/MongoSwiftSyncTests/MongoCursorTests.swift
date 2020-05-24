@@ -206,7 +206,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
                 $0.isSuccess
             }.map { result -> Int? in
                 let document = try! result.get() // always succeeds due to filter stage
-                return document["_id"]?.asInt()
+                return document["_id"]?.toInt()
             }
             expect(Array(filteredMapped)).to(equal([1, 2, 3]))
         }
@@ -224,7 +224,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
                 // never execute, since the tailable cursor would be blocked in a `next` call indefinitely.
                 // Because they're lazy, the for loop will execute its body 3 times for each available result then
                 // return manually when count == 3.
-                for id in cursor.filter({ $0.isSuccess }).compactMap({ try! $0.get()["_id"]?.asInt() }) {
+                for id in cursor.filter({ $0.isSuccess }).compactMap({ try! $0.get()["_id"]?.toInt() }) {
                     results.append(id)
                     if results.count == 3 {
                         return results

@@ -85,7 +85,7 @@ extension Document: Matchable {
 /// Extension that adds MATCHES functionality to `BSON`.
 extension BSON: Matchable {
     internal func isPlaceholder() -> Bool {
-        self.asInt()?.isPlaceholder() == true || self.stringValue?.isPlaceholder() == true
+        self.toInt()?.isPlaceholder() == true || self.stringValue?.isPlaceholder() == true
     }
 
     internal func contentMatches(expected: BSON) -> Bool {
@@ -95,7 +95,7 @@ extension BSON: Matchable {
         case let (.array(actual), .array(expected)):
             return actual.matches(expected: expected)
         default:
-            if let selfInt = self.asInt(), let expectedInt = expected.asInt() {
+            if let selfInt = self.toInt(), let expectedInt = expected.toInt() {
                 return selfInt == expectedInt
             }
             return self == expected

@@ -142,7 +142,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         // the inserted IDs should either be the ones we set,
         // or newly created BSONObjectIDs
         for (_, v) in res!.insertedIDs {
-            if let val = v.asInt() {
+            if let val = v.toInt() {
                 expect([10, 11]).to(contain(val))
             } else {
                 expect(v.type).to(equal(.objectID))

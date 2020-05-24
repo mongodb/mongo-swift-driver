@@ -157,7 +157,7 @@ internal struct FindAndModifyOperation<T: Codable>: Operation {
     internal func execute(using connection: Connection, session: ClientSession?) throws -> T? {
         // we always need to send *something*, as findAndModify requires one of "remove"
         // or "update" to be set.
-        let opts = try self.options?.asFindAndModifyOptions() ?? FindAndModifyOptions()
+        let opts = try self.options?.toFindAndModifyOptions() ?? FindAndModifyOptions()
         if let session = session { try opts.setSession(session) }
         if let update = self.update { try opts.setUpdate(update) }
 

@@ -56,7 +56,7 @@ internal struct FailPoint: Decodable {
                 var data = v.documentValue,
                 var wcErr = data["writeConcernError"]?.documentValue,
                 let code = wcErr["code"] {
-                wcErr["code"] = .int32(code.asInt32()!)
+                wcErr["code"] = .int32(code.toInt32()!)
                 data["writeConcernError"] = .document(wcErr)
                 commandDoc["data"] = .document(data)
             } else {

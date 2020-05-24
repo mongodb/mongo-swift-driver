@@ -20,7 +20,7 @@ final class ReadPreferenceOperationTests: MongoSwiftTestCase {
         // expect runCommand to return a success response when passing in a valid read preference
         let opts = RunCommandOptions(readPreference: .secondaryPreferred)
         let res = try db.runCommand(command, options: opts)
-        expect(res["ok"]?.asDouble()).to(equal(1.0))
+        expect(res["ok"]?.toDouble()).to(equal(1.0))
 
         // expect running other commands to not throw errors when passing in a valid read preference
         expect(try coll.find(options: FindOptions(readPreference: .primary))).toNot(throwError())

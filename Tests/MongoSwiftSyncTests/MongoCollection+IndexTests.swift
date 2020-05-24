@@ -238,10 +238,10 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(receivedEvents.count).to(equal(2))
         expect(receivedEvents[0].command["createIndexes"]).toNot(beNil())
         expect(receivedEvents[0].command["maxTimeMS"]).toNot(beNil())
-        expect(receivedEvents[0].command["maxTimeMS"]?.asInt()).to(equal(maxTimeMS))
+        expect(receivedEvents[0].command["maxTimeMS"]?.toInt()).to(equal(maxTimeMS))
         expect(receivedEvents[1].command["dropIndexes"]).toNot(beNil())
         expect(receivedEvents[1].command["maxTimeMS"]).toNot(beNil())
-        expect(receivedEvents[1].command["maxTimeMS"]?.asInt()).to(equal(maxTimeMS))
+        expect(receivedEvents[1].command["maxTimeMS"]?.toInt()).to(equal(maxTimeMS))
     }
 }
 
