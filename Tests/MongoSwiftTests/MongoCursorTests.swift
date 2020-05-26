@@ -2,6 +2,7 @@ import Foundation
 @testable import MongoSwift
 import Nimble
 import NIO
+import NIOConcurrencyHelpers
 import TestsCommon
 
 private let doc1: Document = ["_id": 1, "x": 1]
@@ -210,15 +211,17 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
     }
 
     func testForEach() throws {
-        var count = 0
-        let increment: (Document) -> Void = { _ in count += 1 }
+        let count = NIOAtomic<Int>.makeAtomic(value: 0)
+        let increment: (Document) -> Void = { _ in
+            _ = count.add(1)
+        }
 
         // non-tailable
         try self.withTestNamespace { _, _, coll in
             // empty collection
             var cursor = try coll.find().wait()
             _ = try cursor.forEach(increment).wait()
-            expect(count).to(equal(0))
+            expect(count.load()).to(equal(0))
             expect(try cursor.isAlive().wait()).to(beFalse())
 
             _ = try coll.insertMany([doc1, doc2]).wait()
@@ -226,11 +229,12 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             // non empty
             cursor = try coll.find().wait()
             _ = try cursor.forEach(increment).wait()
-            expect(count).to(equal(2))
+            expect(count.load()).to(equal(2))
             expect(try cursor.isAlive().wait()).to(beFalse())
         }
 
-        count = 0
+        count.store(0)
+
         // tailable
         let collOptions = CreateCollectionOptions(capped: true, max: 3, size: 1000)
         try self.withTestNamespace(collectionOptions: collOptions) { _, _, coll in
@@ -238,7 +242,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
 
             var cursor = try coll.find(options: cursorOpts).wait()
             _ = try cursor.forEach(increment).wait()
-            expect(count).to(equal(0))
+            expect(count.load()).to(equal(0))
             // no documents matched initial query, so cursor is dead
             expect(try cursor.isAlive().wait()).to(beFalse())
 
@@ -247,7 +251,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
 
             // start running forEach; future will not resolve since cursor is tailable
             let future = cursor.forEach(increment)
-            expect(count).toEventually(equal(2))
+            expect(count.load()).toEventually(equal(2))
 
             // killing the cursor should resolve the future and not error
             expect(try cursor.kill().wait()).toNot(throwError())
