@@ -27,18 +27,25 @@ public struct WriteConcern: Codable {
     public static let serverDefault = WriteConcern()
 
     /// An option to request acknowledgement that the write operation has propagated to specified mongod instances.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/write-concern/#w-option
     public enum W: Codable, Equatable {
-        /// Specifies the number of nodes that should acknowledge the write. MUST be greater than or equal to 0.
+        /// Requests acknowledgment that the write operation has propagated to the specified number of mongod
+        ///  instances. MUST be greater than or equal to 0.
         case number(Int)
-        /// Indicates a tag for nodes that should acknowledge the write.
-        case tag(String)
-        /// Specifies that a majority of nodes should acknowledge the write.
+        /// Requests acknowledgment that write operations have propagated to the majority of the data-bearing voting
+        /// members.
         case majority
+        // swiftlint:disable line_length
+        /// Requests acknowledgement that the write operation has propagated to tagged members that satisfy the custom
+        /// write concern with the specified name.
+        /// - SeeAlso: https://docs.mongodb.com/manual/reference/write-concern/#writeconcern.%3Ccustom-write-concern-name%3E
+        case custom(String)
+        // swiftlint:enable line_length
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
             if let string = try? container.decode(String.self) {
-                self = string == "majority" ? .majority : .tag(string)
+                self = string == "majority" ? .majority : .custom(string)
             } else {
                 let wNumber = try container.decode(Int.self)
                 self = .number(wNumber)
@@ -57,8 +64,8 @@ public struct WriteConcern: Codable {
                         message: "Invalid WriteConcern.w \(wNumber): must be between 0 and \(Int32.max)"
                     )
                 }
-            case let .tag(wTag):
-                try container.encode(wTag)
+            case let .custom(name):
+                try container.encode(name)
             case .majority:
                 try container.encode("majority")
             }
@@ -152,8 +159,8 @@ public struct WriteConcern: Codable {
         case MONGOC_WRITE_CONCERN_W_MAJORITY:
             self.w = .majority
         case MONGOC_WRITE_CONCERN_W_TAG:
-            if let wTag = mongoc_write_concern_get_wtag(writeConcern) {
-                self.w = .tag(String(cString: wTag))
+            if let name = mongoc_write_concern_get_wtag(writeConcern) {
+                self.w = .custom(String(cString: name))
             } else {
                 self.w = nil
             }
@@ -187,8 +194,8 @@ public struct WriteConcern: Codable {
             switch w {
             case let .number(wNumber):
                 mongoc_write_concern_set_w(writeConcern, Int32(wNumber))
-            case let .tag(wTag):
-                mongoc_write_concern_set_wtag(writeConcern, wTag)
+            case let .custom(name):
+                mongoc_write_concern_set_wtag(writeConcern, name)
             case .majority:
                 mongoc_write_concern_set_w(writeConcern, MONGOC_WRITE_CONCERN_W_MAJORITY)
             }

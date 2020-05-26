@@ -11,8 +11,8 @@ extension WriteConcern {
         let j = doc["journal"]?.boolValue
 
         var w: W?
-        if let wtag = doc["w"]?.stringValue {
-            w = wtag == "majority" ? .majority : .tag(wtag)
+        if let str = doc["w"]?.stringValue {
+            w = str == "majority" ? .majority : .custom(str)
         } else if let wInt = doc["w"]?.toInt() {
             w = .number(wInt)
         }
