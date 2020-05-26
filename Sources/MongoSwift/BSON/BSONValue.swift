@@ -206,7 +206,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
     public let subtype: Subtype
 
     /// Subtypes for BSON Binary values.
-    public struct Subtype: Equatable, Codable, Hashable {
+    public struct Subtype: Equatable, Codable, Hashable, RawRepresentable {
         /// Generic binary subtype
         public static let generic = Subtype(0x00)
         /// A function
@@ -223,9 +223,10 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         public static let encryptedValue = Subtype(0x06)
 
         /// Subtype indicator value
-        public let rawValue: UInt8
+        public var rawValue: UInt8
 
-        private init(_ value: UInt8) { self.rawValue = value }
+        public init(_ value: UInt8) { self.rawValue = value }
+        public init?(rawValue: UInt8) { self.rawValue = rawValue }
         internal init(_ value: bson_subtype_t) { self.rawValue = UInt8(value.rawValue) }
 
         /// Initializes a `Subtype` with a custom value. This value must be in the range 0x80-0xFF.
@@ -503,9 +504,17 @@ public struct BSONDecimal128: BSONValue, Equatable, Codable, CustomStringConvert
         self.decimal128 = bsonDecimal
     }
 
-    /// Initializes a `BSONDecimal128` value from the provided `String`. Returns `nil` if the input is not a valid
-    /// Decimal128 string.
-    /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
+    /**
+     * Initializes a `Decimal128` value from the provided `String`.
+     *
+     * - Parameters:
+     *   - a Decimal128 number as a string.
+     *
+     * - Throws:
+     *   - A `InvalidArgumentError` if the string does not represent a Decimal128 encodable value.
+     *
+     * - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
+     */
     public init(_ data: String) throws {
         let bsonType = try BSONDecimal128.toLibBSONType(data)
         self.init(bsonDecimal: bsonType)
@@ -838,8 +847,9 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
         self.oid = oid
     }
 
-    /// Initializes an `BSONObjectID` from the provided hex `String`. Returns `nil` if the string is not a valid
-    /// ObjectID.
+    /// Initializes an `ObjectID` from the provided hex `String`.
+    /// - Throws:
+    ///   - `InvalidArgumentError` if string passed is not a valid ObjectID
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
     public init(_ hex: String) throws {
         guard bson_oid_is_valid(hex, hex.utf8.count) else {
@@ -858,7 +868,7 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
         // assumes that the BSONObjectID is stored as a valid hex string.
         let container = try decoder.singleValueContainer()
         let hex = try container.decode(String.self)
-        guard let oid = BSONObjectID(hex) else {
+        guard let oid = try? ObjectID(hex) else {
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
                     codingPath: decoder.codingPath,
