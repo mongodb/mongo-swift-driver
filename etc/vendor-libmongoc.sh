@@ -131,6 +131,14 @@ echo "RENAMING header files"
 echo "PATCHING libmongoc"
 git apply "${ETC_DIR}/inttypes-non-modular-header-workaround.diff"
 
+# These patches are temporary workarounds to give us early access to the directConnection URI option and a bug fix.
+# This should be removed from the script when we update our vendored libmongoc to 1.17 via SWIFT-766.
+git apply "${ETC_DIR}/CDRIVER-3532-directConnection.diff"
+git apply "${ETC_DIR}/CDRIVER-3623-fix-setting-apm-in-pooled-client.diff"
+
+# This is a temporary workaround to bring in support for the directConnection URI option.
+# This and the patch file should be removed as part of SWIFT-766.
+
 # Clang modules are build by a conventional structure with an `include` folder for public
 # includes, and an umbrella header used as the primary entry point. As part of the vendoring
 # process, we copy in our own handwritten umbrella file. Currently, there is no generated
