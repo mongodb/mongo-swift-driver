@@ -1,4 +1,4 @@
-// Generated using Sourcery 0.16.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 0.18.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 
@@ -63,7 +63,7 @@
 @_exported import struct MongoSwift.FindOneAndUpdateOptions
 @_exported import struct MongoSwift.FindOneOptions
 @_exported import struct MongoSwift.FindOptions
-@_exported import enum MongoSwift.FullDocument
+@_exported import struct MongoSwift.FullDocument
 @_exported import enum MongoSwift.IndexHint
 @_exported import struct MongoSwift.IndexModel
 @_exported import struct MongoSwift.IndexOptions
