@@ -94,7 +94,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         let doc1: Document = ["a": 1, "b": .null, "c": 3, "d": 4, "e": .null]
         expect(doc1.mapValues { $0 == .null ? 1 : $0 }).to(equal(["a": 1, "b": 1, "c": 3, "d": 4, "e": 1]))
         let output1 = doc1.mapValues { val in
-            if let int = val.asInt() {
+            if let int = val.toInt() {
                 return BSON(integerLiteral: int + 1)
             }
             return val
@@ -111,7 +111,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
             case let .string(val):
                 return .string(val + " there")
             case .array:
-                return BSON(integerLiteral: val.arrayValue!.compactMap { $0.asInt() }.reduce(0, +))
+                return BSON(integerLiteral: val.arrayValue!.compactMap { $0.toInt() }.reduce(0, +))
             default:
                 return val
             }
@@ -128,10 +128,10 @@ final class Document_SequenceTests: MongoSwiftTestCase {
     let doc: Document = ["a": 1, "b": "hi", "c": [1, 2], "d": false, "e": .null, "f": .minKey, "g": 10]
 
     // shared predicates for subsequence tests
-    func isInt(_ pair: Document.KeyValuePair) -> Bool { pair.value.asInt() != nil }
+    func isInt(_ pair: Document.KeyValuePair) -> Bool { pair.value.toInt() != nil }
     func isNotNil(_ pair: Document.KeyValuePair) -> Bool { pair.value != .null }
     func is10(_ pair: Document.KeyValuePair) -> Bool {
-        if let int = pair.value.asInt() {
+        if let int = pair.value.toInt() {
             return int == 10
         }
         return false

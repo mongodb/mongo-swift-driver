@@ -224,7 +224,7 @@ public enum BSON {
 
     /// Return this BSON as an `Int` if possible.
     /// This will coerce non-integer numeric cases (e.g. `.double`) into an `Int` if such coercion would be lossless.
-    public func asInt() -> Int? {
+    public func toInt() -> Int? {
         switch self {
         case let .int32(value):
             return Int(value)
@@ -239,7 +239,7 @@ public enum BSON {
 
     /// Return this BSON as an `Int32` if possible.
     /// This will coerce numeric cases (e.g. `.double`) into an `Int32` if such coercion would be lossless.
-    public func asInt32() -> Int32? {
+    public func toInt32() -> Int32? {
         switch self {
         case let .int32(value):
             return value
@@ -254,7 +254,7 @@ public enum BSON {
 
     /// Return this BSON as an `Int64` if possible.
     /// This will coerce numeric cases (e.g. `.double`) into an `Int64` if such coercion would be lossless.
-    public func asInt64() -> Int64? {
+    public func toInt64() -> Int64? {
         switch self {
         case let .int32(value):
             return Int64(value)
@@ -269,12 +269,12 @@ public enum BSON {
 
     /// Return this BSON as a `Double` if possible.
     /// This will coerce numeric cases (e.g. `.decimal128`) into a `Double` if such coercion would be lossless.
-    public func asDouble() -> Double? {
+    public func toDouble() -> Double? {
         switch self {
         case let .double(d):
             return d
         default:
-            guard let intValue = self.asInt() else {
+            guard let intValue = self.toInt() else {
                 return nil
             }
             return Double(intValue)
@@ -283,7 +283,7 @@ public enum BSON {
 
     /// Return this BSON as a `Decimal128` if possible.
     /// This will coerce numeric cases (e.g. `.double`) into a `Decimal128` if such coercion would be lossless.
-    public func asDecimal128() -> Decimal128? {
+    public func toDecimal128() -> Decimal128? {
         switch self {
         case let .decimal128(d):
             return d

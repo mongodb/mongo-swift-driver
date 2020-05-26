@@ -21,7 +21,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         let command: Document = ["create": .string(self.getCollectionName(suffix: "1"))]
         let res = try db.runCommand(command)
-        expect(res["ok"]?.asDouble()).to(equal(1.0))
+        expect(res["ok"]?.toDouble()).to(equal(1.0))
         expect(try (Array(db.listCollections())).count).to(equal(1))
 
         // create collection using createCollection

@@ -137,7 +137,7 @@ extension Array: BSONValue where Element == BSON {
     }
 
     /// Attempts to map this `[BSON]` to a `[T]`, where `T` is a `BSONValue`.
-    internal func asArrayOf<T: BSONValue>(_: T.Type) -> [T]? {
+    internal func toArrayOf<T: BSONValue>(_: T.Type) -> [T]? {
         var result: [T] = []
         for element in self {
             guard let bsonValue = element.bsonValue as? T else {
@@ -320,6 +320,27 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
             let dataObj = Data(bytes: data, count: Int(length))
             return try self.init(data: dataObj, subtype: UInt8(subtype.rawValue))
         })
+    }
+
+    /// Converts this `BSONBinary` instance to a `UUID`.
+    /// - Throws:
+    ///   - `InvalidArgumentError` if a non-UUID subtype is set on this `BSONBinary`.
+    public func toUUID() throws -> UUID {
+        guard [Subtype.uuid.rawValue, Subtype.uuidDeprecated.rawValue].contains(self.subtype) else {
+            throw InvalidArgumentError(
+                message: "Expected a UUID binary subtype, got subtype \(self.subtype) instead."
+            )
+        }
+
+        let data = self.data
+        let uuid: uuid_t = (
+            data[0], data[1], data[2], data[3],
+            data[4], data[5], data[6], data[7],
+            data[8], data[9], data[10], data[11],
+            data[12], data[13], data[14], data[15]
+        )
+
+        return UUID(uuid: uuid)
     }
 }
 
@@ -886,34 +907,6 @@ extension BSONObjectID: Hashable {
     }
 }
 
-/// Extension to allow a `UUID` to be initialized from a `BSONBinary`.
-extension UUID {
-    /// Initializes a `UUID` instance from a `BSONBinary`.
-    /// - Throws:
-    ///   - `InvalidArgumentError` if a non-UUID subtype is set on the `BSONBinary`.
-    public init(from binary: BSONBinary) throws {
-        guard [
-            BSONBinary.Subtype.uuid.rawValue,
-            BSONBinary.Subtype.uuidDeprecated.rawValue
-        ].contains(binary.subtype) else {
-            throw InvalidArgumentError(
-                message: "Expected a UUID binary type " +
-                    "(\(BSONBinary.Subtype.uuid)), got \(binary.subtype) instead."
-            )
-        }
-
-        let data = binary.data
-        let uuid: uuid_t = (
-            data[0], data[1], data[2], data[3],
-            data[4], data[5], data[6], data[7],
-            data[8], data[9], data[10], data[11],
-            data[12], data[13], data[14], data[15]
-        )
-
-        self.init(uuid: uuid)
-    }
-}
-
 // A mapping of regex option characters to their equivalent `NSRegularExpression` option.
 // note that there is a BSON regexp option 'l' that `NSRegularExpression`
 // doesn't support. The flag will be dropped if BSON containing it is parsed,
@@ -926,7 +919,7 @@ private let regexOptsMap: [Character: NSRegularExpression.Options] = [
     "x": .allowCommentsAndWhitespace
 ]
 
-/// An extension of `NSRegularExpression` to allow it to be initialized from a `BSONRegularExpression`.
+/// An extension of `NSRegularExpression` to support conversion to and from `BSONRegularExpression`.
 extension NSRegularExpression {
     /// Convert a string of options flags into an equivalent `NSRegularExpression.Options`
     internal static func optionsFromString(_ stringOptions: String) -> NSRegularExpression.Options {
@@ -944,14 +937,6 @@ extension NSRegularExpression {
         var optsString = ""
         for (char, o) in regexOptsMap { if options.contains(o) { optsString += String(char) } }
         return String(optsString.sorted())
-    }
-
-    /// Initializes a new `NSRegularExpression` with the pattern and options of the provided `BSONRegularExpression`.
-    /// Note: `NSRegularExpression` does not support the `l` locale dependence option, so it will
-    /// be omitted if set on the provided `BSONRegularExpression`.
-    public convenience init(from regex: BSONRegularExpression) throws {
-        let opts = NSRegularExpression.optionsFromString(regex.options)
-        try self.init(pattern: regex.pattern, options: opts)
     }
 }
 
@@ -1015,6 +1000,14 @@ public struct BSONRegularExpression: BSONValue, Equatable, Codable, Hashable {
 
             return self.init(pattern: patternString, options: optionsString)
         })
+    }
+
+    /// Converts this `BSONRegularExpression` to an `NSRegularExpression`.
+    /// Note: `NSRegularExpression` does not support the `l` locale dependence option, so it will be omitted if it was
+    /// set on this instance.
+    public func toNSRegularExpression() throws -> NSRegularExpression {
+        let opts = NSRegularExpression.optionsFromString(self.options)
+        return try NSRegularExpression(pattern: self.pattern, options: opts)
     }
 }
 

@@ -1050,7 +1050,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
                 // never execute, since the tailable cursor would be blocked in a `next` call indefinitely.
                 // Because they're lazy, the for loop will execute its body 3 times for each available result then
                 // return manually when count == 3.
-                for id in stream.filter({ $0.isSuccess }).compactMap({ try! $0.get().fullDocument?["_id"]?.asInt() }) {
+                for id in stream.filter({ $0.isSuccess }).compactMap({ try! $0.get().fullDocument?["_id"]?.toInt() }) {
                     results.append(id)
                     if results.count == 3 {
                         return results

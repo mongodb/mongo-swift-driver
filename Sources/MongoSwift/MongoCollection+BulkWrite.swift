@@ -408,22 +408,22 @@ public struct BulkWriteResult: Decodable {
             return nil
         }
 
-        self.deletedCount = try reply.getValue(for: MongocKeys.deletedCount.rawValue)?.asInt() ?? 0
-        self.insertedCount = try reply.getValue(for: MongocKeys.insertedCount.rawValue)?.asInt() ?? 0
+        self.deletedCount = try reply.getValue(for: MongocKeys.deletedCount.rawValue)?.toInt() ?? 0
+        self.insertedCount = try reply.getValue(for: MongocKeys.insertedCount.rawValue)?.toInt() ?? 0
         self.insertedIDs = insertedIDs
-        self.matchedCount = try reply.getValue(for: MongocKeys.matchedCount.rawValue)?.asInt() ?? 0
-        self.modifiedCount = try reply.getValue(for: MongocKeys.modifiedCount.rawValue)?.asInt() ?? 0
-        self.upsertedCount = try reply.getValue(for: MongocKeys.upsertedCount.rawValue)?.asInt() ?? 0
+        self.matchedCount = try reply.getValue(for: MongocKeys.matchedCount.rawValue)?.toInt() ?? 0
+        self.modifiedCount = try reply.getValue(for: MongocKeys.modifiedCount.rawValue)?.toInt() ?? 0
+        self.upsertedCount = try reply.getValue(for: MongocKeys.upsertedCount.rawValue)?.toInt() ?? 0
 
         var upsertedIDs = [Int: BSON]()
 
         if let upserted = try reply.getValue(for: MongocKeys.upserted.rawValue)?.arrayValue {
-            guard let upserted = upserted.asArrayOf(Document.self) else {
+            guard let upserted = upserted.toArrayOf(Document.self) else {
                 throw InternalError(message: "\"upserted\" array did not contain only documents")
             }
 
             for upsert in upserted {
-                guard let index = try upsert.getValue(for: "index")?.asInt() else {
+                guard let index = try upsert.getValue(for: "index")?.toInt() else {
                     throw InternalError(message: "Could not cast upserted index to `Int`")
                 }
                 upsertedIDs[index] = upsert["_id"]

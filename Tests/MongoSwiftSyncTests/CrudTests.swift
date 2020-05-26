@@ -126,11 +126,11 @@ private class CrudTest {
     let collection: Document?
 
     var arrayFilters: [Document]? { self.args["arrayFilters"]?.arrayValue?.compactMap { $0.documentValue } }
-    var batchSize: Int? { self.args["batchSize"]?.asInt() }
+    var batchSize: Int? { self.args["batchSize"]?.toInt() }
     var collation: Document? { self.args["collation"]?.documentValue }
     var sort: Document? { self.args["sort"]?.documentValue }
-    var skip: Int? { self.args["skip"]?.asInt() }
-    var limit: Int? { self.args["limit"]?.asInt() }
+    var skip: Int? { self.args["skip"]?.toInt() }
+    var limit: Int? { self.args["limit"]?.toInt() }
     var projection: Document? { self.args["projection"]?.documentValue }
     var returnDoc: ReturnDocument? {
         if let ret = self.args["returnDocument"]?.stringValue {
@@ -256,22 +256,22 @@ private class BulkWriteTest: CrudTest {
             return
         }
 
-        if let expectedDeletedCount = expected["deletedCount"]?.asInt() {
+        if let expectedDeletedCount = expected["deletedCount"]?.toInt() {
             expect(result.deletedCount).to(equal(expectedDeletedCount))
         }
-        if let expectedInsertedCount = expected["insertedCount"]?.asInt() {
+        if let expectedInsertedCount = expected["insertedCount"]?.toInt() {
             expect(result.insertedCount).to(equal(expectedInsertedCount))
         }
         if let expectedInsertedIds = expected["insertedIDs"]?.documentValue {
             expect(BulkWriteTest.prepareIds(result.insertedIDs)).to(equal(expectedInsertedIds))
         }
-        if let expectedMatchedCount = expected["matchedCount"]?.asInt() {
+        if let expectedMatchedCount = expected["matchedCount"]?.toInt() {
             expect(result.matchedCount).to(equal(expectedMatchedCount))
         }
-        if let expectedModifiedCount = expected["modifiedCount"]?.asInt() {
+        if let expectedModifiedCount = expected["modifiedCount"]?.toInt() {
             expect(result.modifiedCount).to(equal(expectedModifiedCount))
         }
-        if let expectedUpsertedCount = expected["upsertedCount"]?.asInt() {
+        if let expectedUpsertedCount = expected["upsertedCount"]?.toInt() {
             expect(result.upsertedCount).to(equal(expectedUpsertedCount))
         }
         if let expectedUpsertedIds = expected["upsertedIDs"]?.documentValue {
@@ -291,7 +291,7 @@ private class CountDocumentsTest: CrudTest {
         let filter: Document = try self.args.get("filter")
         let options = CountDocumentsOptions(collation: self.collation, limit: self.limit, skip: self.skip)
         let result = try coll.countDocuments(filter, options: options)
-        expect(result).to(equal(self.result?.asInt()))
+        expect(result).to(equal(self.result?.toInt()))
     }
 }
 
@@ -300,7 +300,7 @@ private class EstimatedDocumentCountTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<Document>) throws {
         let options = EstimatedDocumentCountOptions()
         let result = try coll.estimatedDocumentCount(options: options)
-        expect(result).to(equal(self.result?.asInt()))
+        expect(result).to(equal(self.result?.toInt()))
     }
 }
 
@@ -317,7 +317,7 @@ private class DeleteTest: CrudTest {
         }
         let expected = self.result?.documentValue
         // the only value in a DeleteResult is `deletedCount`
-        expect(result?.deletedCount).to(equal(expected?["deletedCount"]?.asInt()))
+        expect(result?.deletedCount).to(equal(expected?["deletedCount"]?.toInt()))
     }
 }
 
@@ -450,7 +450,7 @@ private class InsertManyTest: CrudTest {
             return
         }
 
-        if let expectedInsertedCount = expected["insertedCount"]?.asInt() {
+        if let expectedInsertedCount = expected["insertedCount"]?.toInt() {
             expect(result.insertedCount).to(equal(expectedInsertedCount))
         }
         if let expectedInsertedIds = expected["insertedIDs"]?.documentValue {

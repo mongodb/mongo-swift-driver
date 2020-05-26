@@ -439,7 +439,7 @@ extension _BSONDecoder {
         case .binary:
             let binary = try self.unboxCustom(value) { $0.binaryValue }
             do {
-                return try UUID(from: binary)
+                return try binary.toUUID()
             } catch {
                 throw DecodingError.dataCorrupted(
                     DecodingError.Context(

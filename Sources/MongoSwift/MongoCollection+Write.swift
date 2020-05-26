@@ -29,7 +29,7 @@ extension MongoCollection {
         options: InsertOneOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<InsertOneResult?> {
-        self.bulkWrite([.insertOne(value)], options: options?.asBulkWriteOptions(), session: session)
+        self.bulkWrite([.insertOne(value)], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try InsertOneResult(from: $0) }
             .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
@@ -93,7 +93,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<UpdateResult?> {
         let modelOptions = ReplaceOneModelOptions(collation: options?.collation, upsert: options?.upsert)
         let model = WriteModel.replaceOne(filter: filter, replacement: replacement, options: modelOptions)
-        return self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
+        return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try UpdateResult(from: $0) }
             .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
@@ -131,7 +131,7 @@ extension MongoCollection {
             upsert: options?.upsert
         )
         let model: WriteModel<CollectionType> = .updateOne(filter: filter, update: update, options: modelOptions)
-        return self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
+        return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try UpdateResult(from: $0) }
             .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
@@ -169,7 +169,7 @@ extension MongoCollection {
             upsert: options?.upsert
         )
         let model: WriteModel<CollectionType> = .updateMany(filter: filter, update: update, options: modelOptions)
-        return self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
+        return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try UpdateResult(from: $0) }
             .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
@@ -201,7 +201,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<DeleteResult?> {
         let modelOptions = DeleteModelOptions(collation: options?.collation)
         let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
-        return self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
+        return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }
             .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
@@ -233,7 +233,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<DeleteResult?> {
         let modelOptions = DeleteModelOptions(collation: options?.collation)
         let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
-        return self.bulkWrite([model], options: options?.asBulkWriteOptions(), session: session)
+        return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }
             .flatMapErrorThrowing { throw convertBulkWriteError($0) }
     }
@@ -243,12 +243,12 @@ extension MongoCollection {
 private protocol BulkWriteOptionsConvertible {
     var bypassDocumentValidation: Bool? { get }
     var writeConcern: WriteConcern? { get }
-    func asBulkWriteOptions() -> BulkWriteOptions
+    func toBulkWriteOptions() -> BulkWriteOptions
 }
 
 /// Default implementation of the protocol.
 private extension BulkWriteOptionsConvertible {
-    func asBulkWriteOptions() -> BulkWriteOptions {
+    func toBulkWriteOptions() -> BulkWriteOptions {
         BulkWriteOptions(
             bypassDocumentValidation: self.bypassDocumentValidation,
             writeConcern: self.writeConcern

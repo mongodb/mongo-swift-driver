@@ -134,17 +134,17 @@ private struct CMTest: Decodable {
                 hint = .indexSpec(hintDoc)
             }
             let options = FindOptions(
-                batchSize: self.op.args["batchSize"]?.asInt(),
+                batchSize: self.op.args["batchSize"]?.toInt(),
                 comment: modifiers?["$comment"]?.stringValue,
                 hint: hint,
-                limit: self.op.args["limit"]?.asInt(),
+                limit: self.op.args["limit"]?.toInt(),
                 max: modifiers?["$max"]?.documentValue,
-                maxTimeMS: modifiers?["$maxTimeMS"]?.asInt(),
+                maxTimeMS: modifiers?["$maxTimeMS"]?.toInt(),
                 min: modifiers?["$min"]?.documentValue,
                 readPreference: self.op.readPreference,
                 returnKey: modifiers?["$returnKey"]?.boolValue,
                 showRecordID: modifiers?["$showDiskLoc"]?.boolValue,
-                skip: self.op.args["skip"]?.asInt(),
+                skip: self.op.args["skip"]?.toInt(),
                 sort: self.op.args["sort"]?.documentValue
             )
 
@@ -258,7 +258,7 @@ private func normalizeCommand(_ input: Document) -> Document {
             // parses it as an Int32 which we convert to Int. convert to Int64 here because we
             // (as per the crud spec) use an Int64 for maxTimeMS and send that to
             // the server in our actual commands.
-        } else if k == "maxTimeMS", let iV = v.asInt64() {
+        } else if k == "maxTimeMS", let iV = v.toInt64() {
             output[k] = .int64(iV)
 
             // recursively normalize if it's a document
@@ -336,7 +336,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
         let receivedCursor = event.reply["cursor"]?.documentValue
         if let expectedCursor = self.cursor {
             // if the received cursor has an ID, and the expected ID is not 0, compare cursor IDs
-            if let id = receivedCursor!["id"], expectedCursor["id"]?.asInt() != 0 {
+            if let id = receivedCursor!["id"], expectedCursor["id"]?.toInt() != 0 {
                 let storedId = testContext["cursorId"] as? BSON
                 // if we aren't already storing a cursor ID for this test, add one
                 if storedId == nil {
@@ -359,7 +359,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
         expect(expected.count).to(equal(actual.count))
         for err in actual {
             // check each error code exists and is > 0
-            expect(err["code"]?.asInt()).to(beGreaterThan(0))
+            expect(err["code"]?.toInt()).to(beGreaterThan(0))
             // check each error msg exists and has length > 0
             expect(err["errmsg"]?.stringValue).toNot(beEmpty())
         }
@@ -390,7 +390,7 @@ private func normalizeExpectedReply(_ input: Document) -> Document {
             continue
             // The server sends back doubles, but the JSON test files
             // contain integer statuses (see SPEC-1050.)
-        } else if k == "ok", let dV = v.asDouble() {
+        } else if k == "ok", let dV = v.toDouble() {
             output[k] = .double(dV)
             // just copy the value over as is
         } else {

@@ -157,7 +157,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         let regex = doc["regex"]?.regexValue
         expect(regex).to(equal(BSONRegularExpression(pattern: "^abc", options: "imx")))
-        expect(try NSRegularExpression(from: regex!)).to(equal(try NSRegularExpression(
+        expect(try regex?.toNSRegularExpression()).to(equal(try NSRegularExpression(
             pattern: "^abc",
             options: NSRegularExpression.optionsFromString("imx")
         )))
@@ -182,7 +182,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["binary6"]).to(equal(.binary(try BSONBinary(data: testData, subtype: .userDefined))))
         expect(doc["binary7"]).to(equal(.binary(try BSONBinary(data: testData, subtype: 200))))
 
-        let nestedArray = doc["nestedarray"]?.arrayValue?.compactMap { $0.arrayValue?.compactMap { $0.asInt() } }
+        let nestedArray = doc["nestedarray"]?.arrayValue?.compactMap { $0.arrayValue?.compactMap { $0.toInt() } }
         expect(nestedArray?[0]).to(equal([1, 2]))
         expect(nestedArray?[1]).to(equal([3, 4]))
 
@@ -218,13 +218,13 @@ final class DocumentTests: MongoSwiftTestCase {
 
         let regex = DocumentTests.testDoc.regex?.regexValue
         expect(regex).to(equal(BSONRegularExpression(pattern: "^abc", options: "imx")))
-        expect(try NSRegularExpression(from: regex!)).to(equal(try NSRegularExpression(
+        expect(try regex?.toNSRegularExpression()).to(equal(try NSRegularExpression(
             pattern: "^abc",
             options: NSRegularExpression.optionsFromString("imx")
         )))
 
         let nestedArray = DocumentTests.testDoc.nestedarray?.arrayValue?.compactMap {
-            $0.arrayValue?.compactMap { $0.asInt() }
+            $0.arrayValue?.compactMap { $0.toInt() }
         }
         expect(nestedArray?[0]).to(equal([1, 2]))
         expect(nestedArray?[1]).to(equal([3, 4]))
