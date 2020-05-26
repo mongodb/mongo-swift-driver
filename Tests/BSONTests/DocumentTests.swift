@@ -88,7 +88,7 @@ final class DocumentTests: MongoSwiftTestCase {
         "timestamp": .timestamp(BSONTimestamp(timestamp: 5, inc: 10)),
         "nestedarray": [[1, 2], [.int32(3), .int32(4)]],
         "nesteddoc": ["a": 1, "b": 2, "c": false, "d": [3, 4]],
-        "oid": .objectID(BSONObjectID("507f1f77bcf86cd799439011")!),
+        "oid": .objectID(try! BSONObjectID("507f1f77bcf86cd799439011")),
         "regex": .regex(BSONRegularExpression(pattern: "^abc", options: "imx")),
         "array1": [1, 2],
         "array2": ["string1", "string2"],
@@ -153,7 +153,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["maxkey"]).to(equal(.maxKey))
         expect(doc["date"]).to(equal(.datetime(Date(timeIntervalSince1970: 500.004))))
         expect(doc["timestamp"]).to(equal(.timestamp(BSONTimestamp(timestamp: 5, inc: 10))))
-        expect(doc["oid"]).to(equal(.objectID(BSONObjectID("507f1f77bcf86cd799439011")!)))
+        expect(doc["oid"]).to(equal(.objectID(try BSONObjectID("507f1f77bcf86cd799439011"))))
 
         let regex = doc["regex"]?.regexValue
         expect(regex).to(equal(BSONRegularExpression(pattern: "^abc", options: "imx")))
@@ -203,7 +203,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(DocumentTests.testDoc.maxkey).to(equal(.maxKey))
         expect(DocumentTests.testDoc.date).to(equal(.datetime(Date(timeIntervalSince1970: 500.004))))
         expect(DocumentTests.testDoc.timestamp).to(equal(.timestamp(BSONTimestamp(timestamp: 5, inc: 10))))
-        expect(DocumentTests.testDoc.oid).to(equal(.objectID(BSONObjectID("507f1f77bcf86cd799439011")!)))
+        expect(DocumentTests.testDoc.oid).to(equal(.objectID(try BSONObjectID("507f1f77bcf86cd799439011"))))
 
         let codewscope = DocumentTests.testDoc.codewscope?.codeWithScopeValue
         expect(codewscope?.code).to(equal("console.log(x);"))
@@ -351,7 +351,7 @@ final class DocumentTests: MongoSwiftTestCase {
         "int32": .int32(32),
         "int64": .int64(Int64.max),
         "bool": false,
-        "decimal": .decimal128(try BSONDecimal128("1.2E+10")),
+        "decimal": .decimal128(try! BSONDecimal128("1.2E+10")),
         "oid": .objectID(BSONObjectID()),
         "timestamp": .timestamp(BSONTimestamp(timestamp: 1, inc: 2)),
         "datetime": .datetime(Date(msSinceEpoch: 1000))

@@ -206,7 +206,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
     public let subtype: Subtype
 
     /// Subtypes for BSON Binary values.
-    public struct Subtype: Equatable, Codable, Hashable, RawRepresentable {
+    public struct Subtype: Equatable, Codable, Hashable {
         /// Generic binary subtype
         public static let generic = Subtype(0x00)
         /// A function
@@ -223,11 +223,10 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         public static let encryptedValue = Subtype(0x06)
 
         /// Subtype indicator value
-        public var rawValue: UInt8
+        public var value: UInt8
 
-        public init(_ value: UInt8) { self.rawValue = value }
-        public init?(rawValue: UInt8) { self.rawValue = rawValue }
-        internal init(_ value: bson_subtype_t) { self.rawValue = UInt8(value.rawValue) }
+        private init(_ value: UInt8) { self.value = value }
+        internal init(_ value: bson_subtype_t) { self.value = UInt8(value.rawValue) }
 
         /// Initializes a `Subtype` with a custom value. This value must be in the range 0x80-0xFF.
         /// - Throws:
@@ -267,13 +266,6 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
             )
         }
         self.subtype = subtype
-        self.data = data
-    }
-
-    /// Initializes a `BSONBinary` instance from a `Data` object and a `Subtype`.
-    /// - Throws:
-    ///   - `InvalidArgumentError` if the provided data is incompatible with the specified subtype.
-    public init(data: Data, subtype: Subtype) throws {
         var buffer = BSON_ALLOCATOR.buffer(capacity: data.count)
         buffer.writeBytes(data)
         self.data = buffer
@@ -302,7 +294,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
     }
 
     internal func encode(to document: inout Document, forKey key: String) throws {
-        let subtype = bson_subtype_t(UInt32(self.subtype.rawValue))
+        let subtype = bson_subtype_t(UInt32(self.subtype.value))
         let length = self.data.writerIndex
         guard let byteArray = self.data.getBytes(at: 0, length: length) else {
             throw InternalError(message: "Cannot read \(length) bytes from Binary.data")
@@ -343,13 +335,16 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
     /// - Throws:
     ///   - `InvalidArgumentError` if a non-UUID subtype is set on this `BSONBinary`.
     public func toUUID() throws -> UUID {
-        guard [Subtype.uuid.rawValue, Subtype.uuidDeprecated.rawValue].contains(self.subtype) else {
+        guard [Subtype.uuid, Subtype.uuidDeprecated].contains(self.subtype) else {
             throw InvalidArgumentError(
                 message: "Expected a UUID binary subtype, got subtype \(self.subtype) instead."
             )
         }
 
-        let data = self.data
+        guard let data = self.data.getBytes(at: 0, length: 16) else {
+            throw InternalError(message: "Unable to read 16 bytes from Binary.data")
+        }
+
         let uuid: uuid_t = (
             data[0], data[1], data[2], data[3],
             data[4], data[5], data[6], data[7],
@@ -868,7 +863,7 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
         // assumes that the BSONObjectID is stored as a valid hex string.
         let container = try decoder.singleValueContainer()
         let hex = try container.decode(String.self)
-        guard let oid = try? ObjectID(hex) else {
+        guard let oid = try? BSONObjectID(hex) else {
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
                     codingPath: decoder.codingPath,

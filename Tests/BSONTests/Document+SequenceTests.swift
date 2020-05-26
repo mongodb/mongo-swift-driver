@@ -82,7 +82,7 @@ final class Document_SequenceTests: MongoSwiftTestCase {
         var expectedValues: [BSON] = [
             "test string", true, false, 25, .int32(5), .int64(123), .double(15),
             .decimal128(try BSONDecimal128("1.2E+10")), .minKey, .maxKey, .datetime(Date(timeIntervalSince1970: 5000)),
-            .timestamp(Timestamp(timestamp: 5, inc: 10))
+            .timestamp(BSONTimestamp(timestamp: 5, inc: 10))
         ]
         for (k, v) in doc {
             expect(k).to(equal(expectedKeys.removeFirst()))

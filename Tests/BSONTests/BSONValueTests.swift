@@ -139,7 +139,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // expect that we can pull the correct timestamp if
         // initialized from the original string
-        let objectIdFromString = BSONObjectID(oid)!
+        let objectIdFromString = try BSONObjectID(oid)
         expect(objectIdFromString).to(equal(objectId))
         expect(objectIdFromString.hex).to(equal(oid))
     }
@@ -231,7 +231,7 @@ final class BSONValueTests: MongoSwiftTestCase {
 
     func testBSONBinarySubtype() {
         // Check the subtype bounds are kept
-        expect(try Binary.Subtype.userDefined(0x100)).to(throwError())
-        expect(try Binary.Subtype.userDefined(0x79)).to(throwError())
+        expect(try BSONBinary.Subtype.userDefined(0x100)).to(throwError())
+        expect(try BSONBinary.Subtype.userDefined(0x79)).to(throwError())
     }
 }

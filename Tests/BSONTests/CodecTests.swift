@@ -297,7 +297,7 @@ final class CodecTests: MongoSwiftTestCase {
                 doc: ["x": 1],
                 arr: [.int32(1), .int32(2)],
                 binary: try BSONBinary(base64: "//8=", subtype: .generic),
-                oid: BSONObjectID("507f1f77bcf86cd799439011")!,
+                oid: try BSONObjectID("507f1f77bcf86cd799439011"),
                 bool: true,
                 date: Date(timeIntervalSinceReferenceDate: 5000),
                 code: BSONCode(code: "hi"),
@@ -311,7 +311,7 @@ final class CodecTests: MongoSwiftTestCase {
                 regex: BSONRegularExpression(pattern: "^abc", options: "imx"),
                 symbol: BSONSymbol("i am a symbol"),
                 undefined: BSONUndefined(),
-                dbpointer: BSONDBPointer(ref: "some.namespace", id: BSONObjectID("507f1f77bcf86cd799439011")!),
+                dbpointer: DBPointer(ref: "some.namespace", id: try BSONObjectID("507f1f77bcf86cd799439011")),
                 null: BSONNull()
             )
         }
@@ -398,7 +398,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try decoder.decode(Int32.self, from: "42")).to(equal(Int32(42)))
         expect(try decoder.decode(Int32.self, from: "{\"$numberInt\": \"42\"}")).to(equal(Int32(42)))
 
-        let oid = BSONObjectID("507f1f77bcf86cd799439011")!
+        let oid = try BSONObjectID("507f1f77bcf86cd799439011")
         expect(try decoder.decode(BSONObjectID.self, from: "{\"$oid\": \"507f1f77bcf86cd799439011\"}")).to(equal(oid))
 
         expect(try decoder.decode(String.self, from: "\"somestring\"")).to(equal("somestring"))
