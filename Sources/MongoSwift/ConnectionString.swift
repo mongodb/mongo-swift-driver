@@ -33,6 +33,12 @@ internal class ConnectionString {
             mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYREADS, rr)
         }
 
+        // Per SDAM spec: If the ``directConnection`` option is not specified, newly developed drivers MUST behave as
+        // if it was specified with the false value.
+        if !self.hasOption("directConnection") {
+            mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_DIRECTCONNECTION, false)
+        }
+
         if let credential = options?.credential {
             try self.setMongoCredential(credential)
         }
@@ -193,6 +199,10 @@ internal class ConnectionString {
         }
 
         return hosts
+    }
+
+    private func hasOption(_ option: String) -> Bool {
+        mongoc_uri_has_option(self._uri, option)
     }
 
     /// Executes the provided closure using a pointer to the underlying `mongoc_uri_t`.
