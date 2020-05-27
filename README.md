@@ -34,7 +34,7 @@ Bug reports in JIRA for all driver projects (i.e. NODE, PYTHON, CSHARP, JAVA) an
 Core Server (i.e. SERVER) project are **public**.
 
 ## Installation
-The driver supports use with Swift 5.1+ on MacOS and Linux.
+The driver supports use with Swift 5.1+. It is tested in continuous integration against macOS 10.14, Ubuntu 16.04, and Ubuntu 18.04.
 
 Installation is supported via [Swift Package Manager](https://swift.org/package-manager/).
 
