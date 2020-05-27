@@ -223,7 +223,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         public static let encryptedValue = Subtype(0x06)
 
         /// Subtype indicator value
-        public var value: UInt8
+        public let value: UInt8
 
         private init(_ value: UInt8) { self.value = value }
         internal init(_ value: bson_subtype_t) { self.value = UInt8(value.rawValue) }
