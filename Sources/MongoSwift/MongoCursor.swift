@@ -99,9 +99,17 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      * This method is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
      * even after returning `nil`.
      *
-     * If this cursor is non-tailable, it will always be dead as soon as either `tryNext` returns `nil` or an error.
+     * If this cursor is non-tailable, it will always be dead after either `tryNext` returns `nil` or a
+     * non-`DecodingError` error.
      *
-     * This cursor will be dead as soon as `next` returns `nil` or an error, regardless of the `MongoCursorType`.
+     * This cursor will be dead after `next` returns `nil` or a non-`DecodingError` error, regardless of the
+     * `MongoCursorType`.
+     *
+     * This cursor may still be alive after `next` or `tryNext` returns a `DecodingError`.
+     *
+     * - Warning:
+     *    If this cursor is alive when it goes out of scope, it will leak resources. To ensure it is dead before it
+     *    leaves scope, invoke `MongoCursor.kill(...)` on it.
      */
     public func isAlive() -> EventLoopFuture<Bool> {
         self.client.operationExecutor.execute {
@@ -231,8 +239,13 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     /**
      * Kill this cursor.
      *
-     * This method MUST be called before this cursor goes out of scope to prevent leaking resources.
-     * This method may be called even if there are unresolved futures created from other `MongoCursor` methods.
+     * This method MAY be called even if there are unresolved futures created from other `MongoCursor` methods.
+     *
+     * This method MAY be called if the cursor is already dead. It will have no effect.
+     *
+     * - Warning:
+     *    If this cursor is alive when it goes out of scope, it will leak resources. To ensure it
+     *    is dead before it leaves scope, invoke this method.
      *
      * - Returns:
      *   An `EventLoopFuture` that evaluates when the cursor has completed closing. This future should not fail.
