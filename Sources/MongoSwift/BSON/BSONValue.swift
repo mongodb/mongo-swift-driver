@@ -206,7 +206,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
     public let subtype: Subtype
 
     /// Subtypes for BSON Binary values.
-    public struct Subtype: Equatable, Codable, Hashable {
+    public struct Subtype: Equatable, Codable, Hashable, RawRepresentable {
         /// Generic binary subtype
         public static let generic = Subtype(0x00)
         /// A function
@@ -223,10 +223,20 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         public static let encryptedValue = Subtype(0x06)
 
         /// Subtype indicator value
-        public let value: UInt8
+        public let rawValue: UInt8
 
-        private init(_ value: UInt8) { self.value = value }
-        internal init(_ value: bson_subtype_t) { self.value = UInt8(value.rawValue) }
+        /// Initializes a `Subtype` with a custom value.
+        /// Returns nil if rawValue outside of the range 0x80-0xFF.
+        public init?(rawValue: UInt8) {
+            guard rawValue >= 0x80 && rawValue <= 0xFF else {
+                return nil
+            }
+            self.rawValue = rawValue
+        }
+
+        internal init(_ value: bson_subtype_t) { self.rawValue = UInt8(value.rawValue) }
+
+        private init(_ value: Int) { self.rawValue = UInt8(value) }
 
         /// Initializes a `Subtype` with a custom value. This value must be in the range 0x80-0xFF.
         /// - Throws:
@@ -235,7 +245,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
             guard value >= 0x80 && value <= 0xFF else {
                 throw InvalidArgumentError(message: "User defined Binary Subtypes must be between 0x80 and 0xFF")
             }
-            return Subtype(UInt8(value))
+            return Subtype(value)
         }
     }
 
@@ -294,7 +304,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
     }
 
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
-        let subtype = bson_subtype_t(UInt32(self.subtype.value))
+        let subtype = bson_subtype_t(UInt32(self.subtype.rawValue))
         let length = self.data.writerIndex
         guard let byteArray = self.data.getBytes(at: 0, length: length) else {
             throw InternalError(message: "Cannot read \(length) bytes from Binary.data")

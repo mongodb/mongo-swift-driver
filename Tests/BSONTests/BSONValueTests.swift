@@ -257,5 +257,6 @@ final class BSONValueTests: MongoSwiftTestCase {
         // Check the subtype bounds are kept
         expect(try BSONBinary.Subtype.userDefined(0x100)).to(throwError())
         expect(try BSONBinary.Subtype.userDefined(0x79)).to(throwError())
+        expect(BSONBinary.Subtype(rawValue: 0x79)).to(beNil())
     }
 }
