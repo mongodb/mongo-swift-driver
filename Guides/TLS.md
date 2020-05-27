@@ -27,24 +27,24 @@ macOS 10.13 (High Sierra) and newer support TLS 1.1+.
 
 ## Basic Configuration
 
-To require that connections to MongoDB made by the driver use TLS/SSL, simply specify `tls: true` in the `ClientOptions` passed to a `MongoClient`'s initializer:
+To require that connections to MongoDB made by the driver use TLS/SSL, specify `tls: true` in the `MongoClientOptions` passed to a `MongoClient`'s initializer:
 ```swift
-let client = try MongoClient("mongodb://example.com", using: elg, options: ClientOptions(tls: true))
+let client = try MongoClient("mongodb://example.com", using: elg, options: MongoClientOptions(tls: true))
 ```
 
 Alternatively, `tls=true` can be specified in the [MongoDB Connection String](https://docs.mongodb.com/manual/reference/connection-string/) passed to the initializer:
 ```swift
 let client = try MongoClient("mongodb://example.com/?tls=true", using: elg)
 ```
-**Note:** Specifying any `tls`-prefixed option in the connection string or `ClientOptions` will require all connections made by the driver to use TLS/SSL.
+**Note:** Specifying any `tls`-prefixed option in the connection string or `MongoClientOptions` will require all connections made by the driver to use TLS/SSL.
 
 ## Specifying a CA File
 
 The driver can be configured to use a specific set of CA certificates. This is most often used with "self-signed" server certificates. 
 
-A path to a file with either a single or bundle of certificate authorities to be considered trusted when making a TLS connection can be specified via the `tlsCAFile` option on `ClientOptions`:
+A path to a file with either a single or bundle of certificate authorities to be considered trusted when making a TLS connection can be specified via the `tlsCAFile` option on `MongoClientOptions`:
 ```swift
-let client = try MongoClient("mongodb://example.com", using: elg, options: ClientOptions(tlsCAFile: URL(string: "/path/to/ca.pem")))
+let client = try MongoClient("mongodb://example.com", using: elg, options: MongoClientOptions(tlsCAFile: URL(string: "/path/to/ca.pem")))
 ```
 
 Alternatively, the path can be specified via the `tlsCAFile` option in the [MongoDB Connection String](https://docs.mongodb.com/manual/reference/connection-string/) passed to the client's initializer:
@@ -55,16 +55,16 @@ let client = try MongoClient("mongodb://example.com/?tlsCAFile=\(caFile)", using
 
 ## Specifying a Client Certificate or Private Key File
 
-The driver can be configured to present the client certificate file or the client private key file via the `tlsCertificateKeyFile` option on `ClientOptions`:
+The driver can be configured to present the client certificate file or the client private key file via the `tlsCertificateKeyFile` option on `MongoClientOptions`:
 ```swift
-let client = try MongoClient("mongodb://example.com", using: elg, options: ClientOptions(tlsCertificateKeyFile: URL(string: "/path/to/cert.pem")))
+let client = try MongoClient("mongodb://example.com", using: elg, options: MongoClientOptions(tlsCertificateKeyFile: URL(string: "/path/to/cert.pem")))
 ```
-If the private key is password protected, a password can be supplied via `tlsCertificateKeyFilePassword` on `ClientOptions`:
+If the private key is password protected, a password can be supplied via `tlsCertificateKeyFilePassword` on `MongoClientOptions`:
 ```swift
 let client = try MongoClient(
     "mongodb://example.com",
     using: elg,
-    options: ClientOptions(tlsCertificateKeyFile: URL(string: "/path/to/cert.pem"), tlsCertificateKeyFilePassword: <password>)
+    options: MongoClientOptions(tlsCertificateKeyFile: URL(string: "/path/to/cert.pem"), tlsCertificateKeyFilePassword: <password>)
 )
 ```
 
@@ -73,7 +73,7 @@ Alternatively, these options can be set via the `tlsCertificateKeyFile` and `tls
 let certificatePath = "/path/to/cert.pem".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
 let password = "not a secure password".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
 let client = try MongoClient(
-    "mongodb://example.com/?tlsCertificateKeyFile=\(certificatePath)&tlsCertificateKeyFilePassword=\(password)"
+    "mongodb://example.com/?tlsCertificateKeyFile=\(certificatePath)&tlsCertificateKeyFilePassword=\(password)",
     using: elg
 )
 ```

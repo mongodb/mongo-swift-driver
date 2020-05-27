@@ -119,7 +119,7 @@ Note: we have included the client `connectionString` parameter for clarity, but 
 ### Create and Insert a Document
 **Async**:
 ```swift
-let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
+let doc: BSONDocument = ["_id": 100, "a": 1, "b": 2, "c": 3]
 collection.insertOne(doc).whenSuccess { result in
     print(result?.insertedId ?? "") // prints `.int64(100)`
 }
@@ -127,7 +127,7 @@ collection.insertOne(doc).whenSuccess { result in
 
 **Sync**:
 ```swift
-let doc: Document = ["_id": 100, "a": 1, "b": 2, "c": 3]
+let doc: BSONDocument = ["_id": 100, "a": 1, "b": 2, "c": 3]
 let result = try collection.insertOne(doc)
 print(result?.insertedId ?? "") // prints `.int64(100)`
 ```
@@ -135,7 +135,7 @@ print(result?.insertedId ?? "") // prints `.int64(100)`
 ### Find Documents
 **Async**:
 ```swift
-let query: Document = ["a": 1]
+let query: BSONDocument = ["a": 1]
 let result = collection.find(query).flatMap { cursor in
     cursor.forEach { doc in
         print(doc)
@@ -145,7 +145,7 @@ let result = collection.find(query).flatMap { cursor in
 
 **Sync**:
 ```swift
-let query: Document = ["a": 1]
+let query: BSONDocument = ["a": 1]
 let documents = try collection.find(query)
 for d in documents {
     print(try d.get())
@@ -154,7 +154,7 @@ for d in documents {
 
 ### Work With and Modify Documents
 ```swift
-var doc: Document = ["a": 1, "b": 2, "c": 3]
+var doc: BSONDocument = ["a": 1, "b": 2, "c": 3]
 
 print(doc) // prints `{"a" : 1, "b" : 2, "c" : 3}`
 print(doc["a"] ?? "") // prints `.int64(1)`
@@ -182,7 +182,7 @@ let doubled = doc.map { elem -> Int in
 print(doubled) // prints `[2, 4, 6, 8]`
 ```
 
-Note that `Document` conforms to `Collection`, so useful methods from
+Note that `BSONDocument` conforms to `Collection`, so useful methods from
 [`Sequence`](https://developer.apple.com/documentation/swift/sequence) and
 [`Collection`](https://developer.apple.com/documentation/swift/collection) are
 all available. However, runtime guarantees are not yet met for many of these
