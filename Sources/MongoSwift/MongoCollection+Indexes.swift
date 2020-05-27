@@ -381,6 +381,10 @@ extension MongoCollection {
      * - Parameters:
      *   - session: Optional `ClientSession` to use when executing this command
      *
+     * - Warning:
+     *    If the returned cursor is alive when it goes out of scope, it will leak resources. To ensure the
+     *    cursor is dead before it leaves scope, invoke `MongoCursor.kill(...)` on it.
+     *
      * - Returns:
      *    An `EventLoopFuture<MongoCursor<IndexModel>>`. On success, contains a cursor over the indexes.
      *

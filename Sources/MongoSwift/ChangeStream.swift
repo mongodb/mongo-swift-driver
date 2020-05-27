@@ -108,7 +108,18 @@ public class ChangeStream<T: Codable>: CursorProtocol {
         }
     }
 
-    /// Indicates whether this change stream has the potential to return more data.
+    /**
+     * Indicates whether this change stream has the potential to return more data.
+     *
+     * This change stream will be dead if `next` returns `nil`, but it may still be alive if `tryNext` returns `nil`.
+     *
+     * If either of `next` or `tryNext` return a non-`DecodingError` error, this change stream will be dead. It may
+     * still be alive if either returns a `DecodingError`, however.
+     *
+     * - Warning:
+     *    If this change stream is alive when it goes out of scope, it will leak resources. To ensure it is dead
+     *    before it leaves scope, invoke `ChangeStream.kill(...)` on it.
+     */
     public func isAlive() -> EventLoopFuture<Bool> {
         self.client.operationExecutor.execute {
             self.wrappedCursor.isAlive

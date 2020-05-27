@@ -6,6 +6,10 @@ extension MongoCollection {
     /**
      * Finds the documents in this collection which match the provided filter.
      *
+     * - Warning:
+     *    If the returned cursor is alive when it goes out of scope, it will leak resources. To ensure the cursor
+     *    is dead before it leaves scope, invoke `MongoCursor.kill(...)` on it.
+     *
      * - Parameters:
      *   - filter: A `BSONDocument` that should match the query
      *   - options: Optional `FindOptions` to use when executing the command
@@ -65,6 +69,10 @@ extension MongoCollection {
      *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform
      *   - options: Optional `AggregateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Warning:
+     *    If the returned cursor is alive when it goes out of scope, it will leak resources. To ensure the cursor
+     *    is dead before it leaves scope, invoke `MongoCursor.kill(...)` on it.
      *
      * - Returns:
      *    An `EventLoopFuture<MongoCursor<CollectionType>`. On success, contains a cursor over the resulting documents.

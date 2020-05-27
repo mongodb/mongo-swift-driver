@@ -234,6 +234,10 @@ public struct MongoDatabase {
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
+     * - Warning:
+     *    If the returned cursor is alive when it goes out of scope, it will leak resources. To ensure the cursor
+     *    is dead before it leaves scope, invoke `MongoCursor.kill(...)` on it.
+     *
      * - Returns:
      *    An `EventLoopFuture<MongoCursor<CollectionSpecification>>` containing a cursor over the collections.
      *
@@ -352,6 +356,10 @@ public struct MongoDatabase {
      *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
      *   - session: An optional `ClientSession` to use with this change stream.
      *
+     * - Warning:
+     *    If the returned change stream is alive when it goes out of scope, it will leak resources. To ensure the
+     *    change stream is dead before it leaves scope, invoke `ChangeStream.kill(...)` on it.
+     *
      * - Returns:
      *    An `EventLoopFuture<ChangeStream>`. On success, contains a `ChangeStream` watching all collections in this
      *    database.
@@ -388,6 +396,10 @@ public struct MongoDatabase {
      *   - session: An optional `ClientSession` to use with this change stream.
      *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
      *                           decoded to.
+     *
+     * - Warning:
+     *    If the returned change stream is alive when it goes out of scope, it will leak resources. To ensure the
+     *    change stream is dead before it leaves scope, invoke `ChangeStream.kill(...)` on it.
      *
      * - Returns:
      *    An `EventLoopFuture<ChangeStream>`. On success, contains a `ChangeStream` watching all collections in this
@@ -430,6 +442,10 @@ public struct MongoDatabase {
      *   - session: An optional `ClientSession` to use with this change stream.
      *   - withEventType: The type that the entire change stream response will be decoded to and that will be returned
      *                    when iterating through the change stream.
+     *
+     * - Warning:
+     *    If the returned change stream is alive when it goes out of scope, it will leak resources. To ensure the
+     *    change stream is dead before it leaves scope, invoke `ChangeStream.kill(...)` on it.
      *
      * - Returns:
      *    An `EventLoopFuture<ChangeStream>`. On success, contains a `ChangeStream` watching all collections in this
