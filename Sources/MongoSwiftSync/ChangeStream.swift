@@ -26,10 +26,11 @@ public class ChangeStream<T: Codable>: CursorProtocol {
     /**
      * Indicates whether this change stream has the potential to return more data.
      *
-     * This change stream will be dead if `next` returns `nil`, but it may still be alive if `tryNext` returns `nil`.
+     * This change stream will be dead after `next` returns `nil`, but it may still be alive after `tryNext` returns
+     * `nil`.
      *
-     * If either of `next` or `tryNext` return a non-`DecodingError` error, this change stream will be dead. It may
-     * still be alive if either returns a `DecodingError`, however.
+     * After either of `next` or `tryNext` return a non-`DecodingError` error, this change stream will be dead. It may
+     * still be alive after either returns a `DecodingError`, however.
      */
     public func isAlive() -> Bool {
         do {

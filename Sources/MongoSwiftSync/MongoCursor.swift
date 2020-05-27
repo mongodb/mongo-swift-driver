@@ -19,10 +19,10 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      * This method is mainly useful if this cursor is tailable, since in that case `tryNext` may return more results
      * even after returning `nil`.
      *
-     * If this cursor is non-tailable, it will always be dead as soon as either `tryNext` returns `nil` or a
+     * If this cursor is non-tailable, it will always be dead after either `tryNext` returns `nil` or a
      * non-`DecodingError` error.
      *
-     * This cursor will be dead as soon as `next` returns `nil` or a non-`DecodingError` error, regardless of the
+     * This cursor will be dead after `next` returns `nil` or a non-`DecodingError` error, regardless of the
      * `MongoCursorType`.
      *
      * This cursor may still be alive after `next` or `tryNext` returns a `DecodingError`.
