@@ -54,7 +54,7 @@ let objectId = BSON.objectID()
 ### Unwrapping a `BSON`
 To get a `BSON` value as a specific type, you can use `switch` or `if/guard case let` like any other enum in Swift:
 ```swift
-func foo(x: BSON, y: BSON) throws {
+func foo(x: BSON, y: BSON) {
     switch x {
     case let .int32(int32):
         print("got an Int32: \(int32)")
@@ -64,7 +64,8 @@ func foo(x: BSON, y: BSON) throws {
         print("got something else")
     }
     guard case let .double(d) = y else {
-        throw MongoError.InvalidArgumentError(message: "y must be a double")
+        print("y must be a double")
+        return
     }
     print(d * d)
 }
@@ -86,17 +87,18 @@ print(BSON.double(5).doubleValue) // Double(5.0)
 ### Converting a `BSON`
 In some cases, especially when dealing with numbers, it may make sense to coerce a `BSON`'s wrapped value into a similar one. For those situations, there are several conversion methods defined on `BSON` that will unwrap the underlying value and attempt to convert it to the desired type. If that conversion would be lossless, a non-`nil` value is returned. 
 ```swift
-func foo(x: BSON, y: BSON) throws -> Int {
+func foo(x: BSON, y: BSON) {
     guard let x = x.toInt(), let y = y.toInt() else {
-        throw InvalidArgumentError(message: "provide two integer types")
+        print("provide two integer types")
+        return
     }
-    return x + y
+    print(x + y)
 }
-try foo(x: 5, y: 5.0) // 10
-try foo(x: 5, y: 5) // 10
-try foo(x: 5.0, y: 5.0) // 10
-try foo(x: .int32(5), y: .int64(5)) // 10
-try foo(x: 5.01, y: 5) // error
+foo(x: 5, y: 5.0) // 10
+foo(x: 5, y: 5) // 10
+foo(x: 5.0, y: 5.0) // 10
+foo(x: .int32(5), y: .int64(5)) // 10
+foo(x: 5.01, y: 5) // error
 ```
 There are similar conversion methods for the other types, namely `toInt32()`, `toDouble()`, `toInt64()`, and `toDecimal128()`.
 
