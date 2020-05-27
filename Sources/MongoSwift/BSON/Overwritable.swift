@@ -8,7 +8,7 @@ internal protocol Overwritable: BSONValue {
      *
      * - Throws:
      *   - `InternalError` if the `BSONValue` is an `Int` and cannot be written to BSON.
-     *   - `LogicError` if the `BSONValue` is a `Decimal128` or `BSONObjectID` and is improperly formatted.
+     *   - `LogicError` if the `BSONValue` is a `BSONDecimal128` or `BSONObjectID` and is improperly formatted.
      */
     func writeToCurrentPosition(of iter: BSONDocumentIterator) throws
 }

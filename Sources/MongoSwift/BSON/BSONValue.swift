@@ -271,7 +271,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         self.data = buffer
     }
 
-    /// Initializes a `Binary` instance from a base64 `String` and a `Subtype`.
+    /// Initializes a `BSONBinary` instance from a base64 `String` and a `Subtype`.
     /// - Throws:
     ///   - `InvalidArgumentError` if the base64 `String` is invalid or if the provided data is
     ///     incompatible with the specified subtype.
@@ -293,7 +293,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         let subtype = bson_subtype_t(UInt32(self.subtype.value))
         let length = self.data.writerIndex
         guard let byteArray = self.data.getBytes(at: 0, length: length) else {
@@ -500,13 +500,13 @@ public struct BSONDecimal128: BSONValue, Equatable, Codable, CustomStringConvert
     }
 
     /**
-     * Initializes a `Decimal128` value from the provided `String`.
+     * Initializes a `BSONDecimal128` value from the provided `String`.
      *
      * - Parameters:
-     *   - a Decimal128 number as a string.
+     *   - a BSONDecimal128 number as a string.
      *
      * - Throws:
-     *   - A `InvalidArgumentError` if the string does not represent a Decimal128 encodable value.
+     *   - A `InvalidArgumentError` if the string does not represent a BSONDecimal128 encodable value.
      *
      * - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
      */
@@ -747,7 +747,7 @@ public struct BSONCode: BSONValue, Equatable, Codable, Hashable {
 }
 
 /// A struct to represent the BSON MaxKey type.
-internal struct MaxKey: BSONValue, Equatable, Codable, Hashable {
+internal struct BSONMaxKey: BSONValue, Equatable, Codable, Hashable {
     internal var bson: BSON { .maxKey }
 
     internal static var bsonType: BSONType { .maxKey }
@@ -764,7 +764,7 @@ internal struct MaxKey: BSONValue, Equatable, Codable, Hashable {
     internal init() {}
 
     internal init(from decoder: Decoder) throws {
-        throw getDecodingError(type: MaxKey.self, decoder: decoder)
+        throw getDecodingError(type: BSONMaxKey.self, decoder: decoder)
     }
 
     internal func encode(to: Encoder) throws {
@@ -773,7 +773,7 @@ internal struct MaxKey: BSONValue, Equatable, Codable, Hashable {
 
     internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .maxKey else {
-            throw wrongIterTypeError(iter, expected: MaxKey.self)
+            throw wrongIterTypeError(iter, expected: BSONMaxKey.self)
         }
         return .maxKey
     }
@@ -842,9 +842,9 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
         self.oid = oid
     }
 
-    /// Initializes an `ObjectID` from the provided hex `String`.
+    /// Initializes an `BSONObjectID` from the provided hex `String`.
     /// - Throws:
-    ///   - `InvalidArgumentError` if string passed is not a valid ObjectID
+    ///   - `InvalidArgumentError` if string passed is not a valid BSONObjectID
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
     public init(_ hex: String) throws {
         guard bson_oid_is_valid(hex, hex.utf8.count) else {
@@ -916,34 +916,6 @@ extension BSONObjectID: Hashable {
             bson_oid_hash(oid)
         }
         hasher.combine(hashedOid)
-    }
-}
-
-/// Extension to allow a `UUID` to be initialized from a `Binary` `BSONValue`.
-extension UUID {
-    /// Initializes a `UUID` instance from a `Binary` `BSONValue`.
-    /// - Throws:
-    ///   - `InvalidArgumentError` if a non-UUID subtype is set on the `Binary`.
-    public init(from binary: BSONBinary) throws {
-        guard [BSONBinary.Subtype.uuid, BSONBinary.Subtype.uuidDeprecated].contains(binary.subtype) else {
-            throw InvalidArgumentError(
-                message: "Expected a UUID binary type " +
-                    "(\(BSONBinary.Subtype.uuid)), got \(binary.subtype) instead."
-            )
-        }
-
-        guard let data = binary.data.getBytes(at: 0, length: 16) else {
-            throw InternalError(message: "Unable to read 16 bytes from Binary.data")
-        }
-
-        let uuid: uuid_t = (
-            data[0], data[1], data[2], data[3],
-            data[4], data[5], data[6], data[7],
-            data[8], data[9], data[10], data[11],
-            data[12], data[13], data[14], data[15]
-        )
-
-        self.init(uuid: uuid)
     }
 }
 

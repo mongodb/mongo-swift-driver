@@ -306,7 +306,7 @@ extension BSON {
         BSONNull.self,
         BSONUndefined.self,
         BSONMinKey.self,
-        MaxKey.self,
+        BSONMaxKey.self,
         BSONSymbol.self,
         Double.self,
         String.self,
@@ -336,7 +336,7 @@ extension BSON {
         case .minKey:
             return BSONMinKey()
         case .maxKey:
-            return MaxKey()
+            return BSONMaxKey()
         case let .symbol(v):
             return v
         case let .double(v):

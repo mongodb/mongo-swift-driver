@@ -137,7 +137,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
 
                     // for cB input:
                     // native_to_bson( bson_to_native(cB) ) = cB
-                    let docFromCB = try Document(fromBSON: cBData)
+                    let docFromCB = try BSONDocument(fromBSON: cBData)
                     expect(docFromCB.toData()).to(equal(cBData))
 
                     // test round tripping through documents
@@ -147,7 +147,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
                     // -> bson_t. At the end, the new bson_t should be identical to the original one. If not, our bson_t
                     // translation layer is lossy and/or buggy.
                     let nativeFromDoc = docFromCB.toArray()
-                    let docFromNative = Document(fromArray: nativeFromDoc)
+                    let docFromNative = BSONDocument(fromArray: nativeFromDoc)
                     expect(docFromNative.toData()).to(equal(cBData))
 
                     // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
@@ -165,7 +165,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
 
                     // native_to_bson( json_to_native(cEJ) ) = cB (unless lossy)
                     if !lossy {
-                        expect(try Document(fromJSON: cEJData).toData()).to(equal(cBData))
+                        expect(try BSONDocument(fromJSON: cEJData).toData()).to(equal(cBData))
                     }
 
                     // for dB input (if it exists):
@@ -193,7 +193,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
 
                         // native_to_bson( json_to_native(dEJ) ) = cB (unless lossy)
                         if !lossy {
-                            expect(try Document(fromJSON: dEJ).toData()).to(equal(cBData))
+                            expect(try BSONDocument(fromJSON: dEJ).toData()).to(equal(cBData))
                         }
                     }
 

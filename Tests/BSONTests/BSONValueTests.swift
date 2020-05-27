@@ -38,7 +38,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         self.checkTrueAndFalse(val: .int64(64), alternate: .int64(65))
         // Double
         self.checkTrueAndFalse(val: 1.618, alternate: 2.718)
-        // Decimal128
+        // BSONDecimal128
         self.checkTrueAndFalse(
             val: .decimal128(try BSONDecimal128("1.618")),
             alternate: .decimal128(try BSONDecimal128("2.718"))
@@ -186,7 +186,7 @@ final class BSONValueTests: MongoSwiftTestCase {
             ]
 
             candidates.compactMap { $0 }.forEach { l in
-                // Skip the Decimal128 conversions until they're implemented
+                // Skip the BSONDecimal128 conversions until they're implemented
                 // TODO: don't skip these (SWIFT-367)
                 guard l.decimal128Value == nil else {
                     return
@@ -197,7 +197,7 @@ final class BSONValueTests: MongoSwiftTestCase {
                 BSONNumberTestCase.compare(computed: l.toInt64(), expected: self.int64)
                 BSONNumberTestCase.compare(computed: l.toDouble(), expected: self.double)
 
-                // Skip double for this conversion since it generates a Decimal128(5.0) =/= Decimal128(5)
+                // Skip double for this conversion since it generates a BSONDecimal128(5.0) =/= BSONDecimal128(5)
                 if l.doubleValue == nil {
                     BSONNumberTestCase.compare(computed: l.toDecimal128(), expected: self.decimal)
                 }
@@ -213,7 +213,13 @@ final class BSONValueTests: MongoSwiftTestCase {
         expect(double.toDecimal128()).to(equal(decimal128))
 
         let cases = [
-            BSONNumberTestCase(int: 5, double: 5.0, int32: Int32(5), int64: Int64(5), decimal: try BSONDecimal128("5")),
+            BSONNumberTestCase(
+                int: 5,
+                double: 5.0,
+                int32: Int32(5),
+                int64: Int64(5),
+                decimal: try BSONDecimal128("5")
+            ),
             BSONNumberTestCase(
                 int: -5,
                 double: -5.0,
@@ -221,9 +227,27 @@ final class BSONValueTests: MongoSwiftTestCase {
                 int64: Int64(-5),
                 decimal: try BSONDecimal128("-5")
             ),
-            BSONNumberTestCase(int: 0, double: 0.0, int32: Int32(0), int64: Int64(0), decimal: try BSONDecimal128("0")),
-            BSONNumberTestCase(int: nil, double: 1.234, int32: nil, int64: nil, decimal: try BSONDecimal128("1.234")),
-            BSONNumberTestCase(int: nil, double: -31.234, int32: nil, int64: nil, decimal: try BSONDecimal128("-31.234"))
+            BSONNumberTestCase(
+                int: 0,
+                double: 0.0,
+                int32: Int32(0),
+                int64: Int64(0),
+                decimal: try BSONDecimal128("0")
+            ),
+            BSONNumberTestCase(
+                int: nil,
+                double: 1.234,
+                int32: nil,
+                int64: nil,
+                decimal: try BSONDecimal128("1.234")
+            ),
+            BSONNumberTestCase(
+                int: nil,
+                double: -31.234,
+                int32: nil,
+                int64: nil,
+                decimal: try BSONDecimal128("-31.234")
+            )
         ]
 
         cases.forEach { $0.run() }

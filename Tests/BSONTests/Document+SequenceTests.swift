@@ -5,7 +5,7 @@ import TestsCommon
 import XCTest
 
 final class Document_SequenceTests: MongoSwiftTestCase {
-    func testIterator() {
+    func testIterator() throws {
         let doc: BSONDocument = [
             "string": "test string",
             "true": true,

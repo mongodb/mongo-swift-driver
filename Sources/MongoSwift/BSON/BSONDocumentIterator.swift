@@ -219,7 +219,7 @@ public class BSONDocumentIterator: IteratorProtocol {
         .int64: Int64.self,
         .decimal128: BSONDecimal128.self,
         .minKey: BSONMinKey.self,
-        .maxKey: MaxKey.self,
+        .maxKey: BSONMaxKey.self,
         .null: BSONNull.self,
         .undefined: BSONUndefined.self
     ]

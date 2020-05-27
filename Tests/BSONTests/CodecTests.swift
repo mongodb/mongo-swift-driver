@@ -283,7 +283,7 @@ final class CodecTests: MongoSwiftTestCase {
         let int64: Int64
         let dec: BSONDecimal128
         let minkey: BSONMinKey
-        let maxkey: MaxKey
+        let maxkey: BSONMaxKey
         let regex: BSONRegularExpression
         let symbol: BSONSymbol
         let undefined: BSONUndefined
@@ -306,12 +306,12 @@ final class CodecTests: MongoSwiftTestCase {
                 int32: 5,
                 int64: 6,
                 dec: try BSONDecimal128("1.2E+10"),
-                minkey: MinKey(),
-                maxkey: MaxKey(),
+                minkey: BSONMinKey(),
+                maxkey: BSONMaxKey(),
                 regex: BSONRegularExpression(pattern: "^abc", options: "imx"),
                 symbol: BSONSymbol("i am a symbol"),
                 undefined: BSONUndefined(),
-                dbpointer: DBPointer(ref: "some.namespace", id: try BSONObjectID("507f1f77bcf86cd799439011")),
+                dbpointer: BSONDBPointer(ref: "some.namespace", id: try BSONObjectID("507f1f77bcf86cd799439011")),
                 null: BSONNull()
             )
         }
@@ -459,7 +459,7 @@ final class CodecTests: MongoSwiftTestCase {
         ).to(equal(regex))
 
         expect(try decoder.decode(BSONMinKey.self, from: "{\"$minKey\": 1}")).to(equal(BSONMinKey()))
-        expect(try decoder.decode(MaxKey.self, from: "{\"$maxKey\": 1}")).to(equal(MaxKey()))
+        expect(try decoder.decode(BSONMaxKey.self, from: "{\"$maxKey\": 1}")).to(equal(BSONMaxKey()))
 
         expect(try decoder.decode(Bool.self, from: "false")).to(beFalse())
         expect(try decoder.decode(Bool.self, from: "true")).to(beTrue())
