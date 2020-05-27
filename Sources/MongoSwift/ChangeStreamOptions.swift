@@ -1,29 +1,19 @@
 /// Describes the modes for configuring the fullDocument field of a change stream document.
-public enum FullDocument: RawRepresentable, Codable {
+public struct FullDocument: RawRepresentable, Codable {
     /// Specifies that the `fullDocument` field of an update event will contain a copy of the entire document that
     /// was changed from some time after the change occurred. If the document was deleted since the updated happened,
     /// it will be nil.
-    case updateLookup
+    public static let updateLookup = FullDocument("updateLookup")
     /// For an unknown value. For forwards compatibility, no error will be thrown when an unknown value is provided.
-    case other(String)
-
-    public var rawValue: String {
-        switch self {
-        case .updateLookup:
-            return "updateLookup"
-        case let .other(v):
-            return v
-        }
+    public static func other(_ value: String) -> FullDocument {
+        FullDocument(value)
     }
 
-    public init?(rawValue: String) {
-        switch rawValue {
-        case "updateLookup":
-            self = .updateLookup
-        default:
-            self = .other(rawValue)
-        }
-    }
+    public var rawValue: String
+
+    /// Creates a `FullDocument`. Never returns nil.
+    public init?(rawValue: String) { self.rawValue = rawValue }
+    internal init(_ value: String) { self.rawValue = value }
 }
 
 /// Options to use when creating a `ChangeStream`.
