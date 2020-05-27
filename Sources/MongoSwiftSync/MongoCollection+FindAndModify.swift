@@ -21,7 +21,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func findOneAndDelete(
-        _ filter: Document,
+        _ filter: BSONDocument,
         options: FindOneAndDeleteOptions? = nil,
         session: ClientSession? = nil
     ) throws -> CollectionType? {
@@ -50,7 +50,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func findOneAndReplace(
-        filter: Document,
+        filter: BSONDocument,
         replacement: CollectionType,
         options: FindOneAndReplaceOptions? = nil,
         session: ClientSession? = nil
@@ -85,8 +85,8 @@ extension MongoCollection {
      */
     @discardableResult
     public func findOneAndUpdate(
-        filter: Document,
-        update: Document,
+        filter: BSONDocument,
+        update: BSONDocument,
         options: FindOneAndUpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> CollectionType? {

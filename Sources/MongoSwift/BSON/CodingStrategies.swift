@@ -3,15 +3,15 @@ import Foundation
 /// Protocol indicating a set of options can be used to configure `BSONEncoder` and `BSONDecoder`.
 public protocol CodingStrategyProvider {
     /// Specifies the strategy to use when converting `Date`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
+    /// representations in (non `BSONDocument`) `Codable` types.
     var dateCodingStrategy: DateCodingStrategy? { get }
 
     /// Specifies the strategy to use when converting `UUID`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
+    /// representations in (non `BSONDocument`) `Codable` types.
     var uuidCodingStrategy: UUIDCodingStrategy? { get }
 
     /// Specifies the strategy to use when converting `Data`s between their BSON representations and their
-    /// representations in (non `Document`) `Codable` types.
+    /// representations in (non `BSONDocument`) `Codable` types.
     var dataCodingStrategy: DataCodingStrategy? { get }
 }
 
@@ -38,7 +38,8 @@ public struct BSONCoderOptions: CodingStrategyProvider {
 /**
  * Enum representing the various encoding/decoding strategy pairs for `Date`s.
  * Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
- * converting `Date`s between their BSON representations and their representations in (non `Document`) `Codable` types.
+ * converting `Date`s between their BSON representations and their representations in (non `BSONDocument`) `Codable`
+ * types.
  *
  * As per the BSON specification, the default strategy is to encode `Date`s as BSON datetime objects.
  *
@@ -123,7 +124,8 @@ public enum DateCodingStrategy: RawRepresentable {
 /**
  * Enum representing the various encoding/decoding strategy pairs for `Date`s.
  * Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
- * converting `UUID`s between their BSON representations and their representations in (non `Document`) `Codable` types.
+ * converting `UUID`s between their BSON representations and their representations in (non `BSONDocument`) `Codable`
+ * types.
  *
  * As per the BSON specification, the default strategy is to encode `UUID`s as BSON binary types with the UUID
  * subtype.
@@ -163,7 +165,8 @@ public enum UUIDCodingStrategy: RawRepresentable {
 /**
  * Enum representing the various encoding/decoding strategy pairs for `Date`s.
  * Set these on a `MongoClient`, `MongoDatabase`, or `MongoCollection` so that the strategies will be applied when
- * converting `Data`s between their BSON representations and their representations in (non `Document`) `Codable` types.
+ * converting `Data`s between their BSON representations and their representations in (non `BSONDocument`) `Codable`
+ * types.
  *
  * As per the BSON specification, the default strategy is to encode `Data`s as BSON binary types with the generic
  * binary subtype.

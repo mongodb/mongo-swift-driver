@@ -37,7 +37,7 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
             indexData.append(.document(indexDoc))
         }
 
-        let command: Document = ["createIndexes": .string(self.collection.name), "indexes": .array(indexData)]
+        let command: BSONDocument = ["createIndexes": .string(self.collection.name), "indexes": .array(indexData)]
 
         let opts = try encodeOptions(options: options, session: session)
 

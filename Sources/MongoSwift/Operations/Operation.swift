@@ -111,13 +111,13 @@ internal class OperationExecutor {
     }
 }
 
-/// Internal function for generating an options `Document` for passing to libmongoc.
-internal func encodeOptions<T: Encodable>(options: T?, session: ClientSession?) throws -> Document? {
+/// Internal function for generating an options `BSONDocument` for passing to libmongoc.
+internal func encodeOptions<T: Encodable>(options: T?, session: ClientSession?) throws -> BSONDocument? {
     guard options != nil || session != nil else {
         return nil
     }
 
-    var doc = try BSONEncoder().encode(options) ?? Document()
+    var doc = try BSONEncoder().encode(options) ?? BSONDocument()
     try session?.append(to: &doc)
     return doc
 }

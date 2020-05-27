@@ -6,12 +6,12 @@ import XCTest
 
 final class Document_CollectionTests: MongoSwiftTestCase {
     func testIndexLogic() {
-        let emptyDoc: Document = [:]
+        let emptyDoc: BSONDocument = [:]
 
         expect(emptyDoc.startIndex).to(equal(0))
         expect(emptyDoc.endIndex).to(equal(emptyDoc.startIndex))
 
-        let doc: Document = ["a": 3, "b": 4]
+        let doc: BSONDocument = ["a": 3, "b": 4]
 
         // doc.startIndex, doc.endIndex, doc.index(after:), etc.
         expect(doc.startIndex).to(equal(0))
@@ -50,7 +50,7 @@ final class Document_CollectionTests: MongoSwiftTestCase {
     }
 
     func testMutators() throws {
-        var doc: Document = ["a": 3, "b": 2, "c": 5, "d": 4]
+        var doc: BSONDocument = ["a": 3, "b": 2, "c": 5, "d": 4]
 
         // doc.removeFirst
         let firstElem = doc.removeFirst()
@@ -69,12 +69,12 @@ final class Document_CollectionTests: MongoSwiftTestCase {
         expect(doc).to(equal([:]))
 
         // doc.merge
-        let newDoc: Document = ["e": 4, "f": 2]
+        let newDoc: BSONDocument = ["e": 4, "f": 2]
         try doc.merge(newDoc)
     }
 
     func testPrefixSuffix() {
-        let doc: Document = ["a": 3, "b": 2, "c": 5, "d": 4, "e": 3]
+        let doc: BSONDocument = ["a": 3, "b": 2, "c": 5, "d": 4, "e": 3]
 
         let upToPrefixDoc = doc.prefix(upTo: 2)
         let throughPrefixDoc = doc.prefix(through: 1)
@@ -91,7 +91,7 @@ final class Document_CollectionTests: MongoSwiftTestCase {
     }
 
     func testIndexSubscript() {
-        let doc: Document = ["hello": "world", "swift": 4.2, "null": .null]
+        let doc: BSONDocument = ["hello": "world", "swift": 4.2, "null": .null]
 
         // subscript with index position
         expect(doc[0].value).to(equal("world"))

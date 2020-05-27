@@ -41,7 +41,7 @@ struct ListCollectionNames: TestOperation {
 
 struct RunCommand: TestOperation {
     let session: String?
-    let command: Document
+    let command: BSONDocument
     let readPreference: ReadPreference?
 
     func execute(on database: MongoDatabase, sessions: [String: ClientSession]) throws -> TestOperationResult? {

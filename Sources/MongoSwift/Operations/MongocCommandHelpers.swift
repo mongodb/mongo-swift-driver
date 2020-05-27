@@ -23,18 +23,18 @@ internal typealias MongocCommandFunc =
 /// reply document from the server. If you do not need to use the reply document, `runMongocCommand` is preferable as
 /// it does not perform a copy of the reply.
 internal func runMongocCommandWithReply(
-    command: Document,
-    options: Document?,
+    command: BSONDocument,
+    options: BSONDocument?,
     body: MongocCommandFunc
-) throws -> Document {
+) throws -> BSONDocument {
     try withStackAllocatedMutableBSONPointer { replyPtr in
         try _runMongocCommand(command: command, options: options, replyPtr: replyPtr, body: body)
-        return Document(copying: replyPtr)
+        return BSONDocument(copying: replyPtr)
     }
 }
 
 /// Calls the provided mongoc command method using pointers to the specified command and options.
-internal func runMongocCommand(command: Document, options: Document?, body: MongocCommandFunc) throws {
+internal func runMongocCommand(command: BSONDocument, options: BSONDocument?, body: MongocCommandFunc) throws {
     try withStackAllocatedMutableBSONPointer { replyPtr in
         try _runMongocCommand(command: command, options: options, replyPtr: replyPtr, body: body)
     }
@@ -42,8 +42,8 @@ internal func runMongocCommand(command: Document, options: Document?, body: Mong
 
 /// Private helper to run the provided `MongocCommandFunc` using the specified location for a reply.
 private func _runMongocCommand(
-    command: Document,
-    options: Document?,
+    command: BSONDocument,
+    options: BSONDocument?,
     replyPtr: MutableBSONPointer,
     body: MongocCommandFunc
 ) throws {
@@ -52,7 +52,7 @@ private func _runMongocCommand(
         try withOptionalBSONPointer(to: options) { optsPtr in
             let success = body(cmdPtr, optsPtr, replyPtr, &error)
             guard success else {
-                throw extractMongoError(error: error, reply: Document(copying: replyPtr))
+                throw extractMongoError(error: error, reply: BSONDocument(copying: replyPtr))
             }
         }
     }

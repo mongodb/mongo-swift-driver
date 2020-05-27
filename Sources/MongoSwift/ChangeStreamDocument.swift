@@ -3,7 +3,7 @@
 public struct UpdateDescription: Codable {
     /// A document containing key:value pairs of names of the fields that were changed, and the new
     /// value for those fields.
-    public let updatedFields: Document
+    public let updatedFields: BSONDocument
 
     /// An array of field names that were removed from the document.
     public let removedFields: [String]
@@ -55,7 +55,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
      * will contain all the components of the shard key in order, followed by the _id if the _id isn’t part of the
      * shard key.
      */
-    public let documentKey: Document?
+    public let documentKey: BSONDocument?
 
     /// An `UpdateDescription` containing updated and removed fields in this operation. Only present for operations of
     /// type`update`.

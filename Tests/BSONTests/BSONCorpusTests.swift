@@ -137,7 +137,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
 
                     // for cB input:
                     // native_to_bson( bson_to_native(cB) ) = cB
-                    let docFromCB = try Document(fromBSON: cBData)
+                    let docFromCB = try BSONDocument(fromBSON: cBData)
                     expect(docFromCB.rawBSON).to(equal(cBData))
 
                     // test round tripping through documents
@@ -147,7 +147,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
                     // -> bson_t. At the end, the new bson_t should be identical to the original one. If not, our bson_t
                     // translation layer is lossy and/or buggy.
                     let nativeFromDoc = docFromCB.toArray()
-                    let docFromNative = Document(fromArray: nativeFromDoc)
+                    let docFromNative = BSONDocument(fromArray: nativeFromDoc)
                     expect(docFromNative.rawBSON).to(equal(cBData))
 
                     // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
@@ -155,16 +155,17 @@ final class BSONCorpusTests: MongoSwiftTestCase {
 
                     // native_to_relaxed_extended_json( bson_to_native(cB) ) = rEJ (if rEJ exists)
                     if let rEJ = test.relaxedExtJSON {
-                        expect(try Document(fromBSON: cBData).extendedJSON).to(cleanEqual(rEJ))
+                        expect(try BSONDocument(fromBSON: cBData).extendedJSON).to(cleanEqual(rEJ))
                     }
 
                     // for cEJ input:
                     // native_to_canonical_extended_json( json_to_native(cEJ) ) = cEJ
-                    expect(try Document(fromJSON: cEJData).canonicalExtendedJSON).to(cleanEqual(test.canonicalExtJSON))
+                    expect(try BSONDocument(fromJSON: cEJData).canonicalExtendedJSON)
+                        .to(cleanEqual(test.canonicalExtJSON))
 
                     // native_to_bson( json_to_native(cEJ) ) = cB (unless lossy)
                     if !lossy {
-                        expect(try Document(fromJSON: cEJData).rawBSON).to(equal(cBData))
+                        expect(try BSONDocument(fromJSON: cEJData).rawBSON).to(equal(cBData))
                     }
 
                     // for dB input (if it exists):
@@ -175,30 +176,31 @@ final class BSONCorpusTests: MongoSwiftTestCase {
                         }
 
                         // bson_to_canonical_extended_json(dB) = cEJ
-                        expect(try Document(fromBSON: dBData).canonicalExtendedJSON)
+                        expect(try BSONDocument(fromBSON: dBData).canonicalExtendedJSON)
                             .to(cleanEqual(test.canonicalExtJSON))
 
                         // bson_to_relaxed_extended_json(dB) = rEJ (if rEJ exists)
                         if let rEJ = test.relaxedExtJSON {
-                            expect(try Document(fromBSON: dBData).extendedJSON).to(cleanEqual(rEJ))
+                            expect(try BSONDocument(fromBSON: dBData).extendedJSON).to(cleanEqual(rEJ))
                         }
                     }
 
                     // for dEJ input (if it exists):
                     if let dEJ = test.degenerateExtJSON {
                         // native_to_canonical_extended_json( json_to_native(dEJ) ) = cEJ
-                        expect(try Document(fromJSON: dEJ).canonicalExtendedJSON).to(cleanEqual(test.canonicalExtJSON))
+                        expect(try BSONDocument(fromJSON: dEJ).canonicalExtendedJSON)
+                            .to(cleanEqual(test.canonicalExtJSON))
 
                         // native_to_bson( json_to_native(dEJ) ) = cB (unless lossy)
                         if !lossy {
-                            expect(try Document(fromJSON: dEJ).rawBSON).to(equal(cBData))
+                            expect(try BSONDocument(fromJSON: dEJ).rawBSON).to(equal(cBData))
                         }
                     }
 
                     // for rEJ input (if it exists):
                     if let rEJ = test.relaxedExtJSON {
                         // native_to_relaxed_extended_json( json_to_native(rEJ) ) = rEJ
-                        expect(try Document(fromJSON: rEJ).extendedJSON).to(cleanEqual(rEJ))
+                        expect(try BSONDocument(fromJSON: rEJ).extendedJSON).to(cleanEqual(rEJ))
                     }
                 }
             }
@@ -212,10 +214,10 @@ final class BSONCorpusTests: MongoSwiftTestCase {
 
                     switch BSONType(rawValue: UInt32(testFile.bsonType.dropFirst(2), radix: 16)!)! {
                     case .invalid: // "top level document" uses 0x00 for the bson type
-                        expect(try Document(fromJSON: test.string))
+                        expect(try BSONDocument(fromJSON: test.string))
                             .to(throwError(), description: description)
                     case .decimal128:
-                        expect(Decimal128(test.string))
+                        expect(BSONDecimal128(test.string))
                             .to(beNil(), description: description)
                     default:
                         throw TestError(
@@ -242,7 +244,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
                         XCTFail("\(description): Unable to interpret bson as Data")
                         return
                     }
-                    expect(try Document(fromBSON: data)).to(throwError(), description: description)
+                    expect(try BSONDocument(fromBSON: data)).to(throwError(), description: description)
                 }
             }
         }

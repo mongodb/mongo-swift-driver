@@ -40,14 +40,14 @@ enum SwiftBSON {
 }
 
 /// Extension of Document to allow conversion to and from arrays
-extension Document {
+extension BSONDocument {
     internal init(fromArray array: [DocElem]) {
         self.init()
 
         for elem in array {
             switch elem.value {
             case let .document(els):
-                self[elem.key] = .document(Document(fromArray: els))
+                self[elem.key] = .document(BSONDocument(fromArray: els))
             case let .other(b):
                 self[elem.key] = b
             }
@@ -73,7 +73,7 @@ extension Document {
 
 final class DocumentTests: MongoSwiftTestCase {
     // Set up test document values
-    static let testDoc: Document = [
+    static let testDoc: BSONDocument = [
         "string": "test string",
         "true": true,
         "false": false,
@@ -81,7 +81,7 @@ final class DocumentTests: MongoSwiftTestCase {
         "int32": .int32(5),
         "int64": .int64(10),
         "double": .double(15),
-        "decimal128": .decimal128(Decimal128("1.2E+10")!),
+        "decimal128": .decimal128(BSONDecimal128("1.2E+10")!),
         "minkey": .minKey,
         "maxkey": .maxKey,
         "date": .datetime(Date(timeIntervalSince1970: 500.004)),
@@ -114,7 +114,7 @@ final class DocumentTests: MongoSwiftTestCase {
         // splitting this out is necessary because the swift 4.0 compiler
         // can't handle all the keys being declared together
 
-        let binaryData: Document = [
+        let binaryData: BSONDocument = [
             "binary0": .binary(try BSONBinary(data: testData, subtype: .generic)),
             "binary1": .binary(try BSONBinary(data: testData, subtype: .function)),
             "binary2": .binary(try BSONBinary(data: testData, subtype: .binaryDeprecated)),
@@ -148,7 +148,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(doc["int32"]).to(equal(.int32(5)))
         expect(doc["int64"]).to(equal(.int64(10)))
         expect(doc["double"]).to(equal(15.0))
-        expect(doc["decimal128"]).to(equal(.decimal128(Decimal128("1.2E+10")!)))
+        expect(doc["decimal128"]).to(equal(.decimal128(BSONDecimal128("1.2E+10")!)))
         expect(doc["minkey"]).to(equal(.minKey))
         expect(doc["maxkey"]).to(equal(.maxKey))
         expect(doc["date"]).to(equal(.datetime(Date(timeIntervalSince1970: 500.004))))
@@ -198,7 +198,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(DocumentTests.testDoc.int32).to(equal(.int32(5)))
         expect(DocumentTests.testDoc.int64).to(equal(.int64(10)))
         expect(DocumentTests.testDoc.double).to(equal(15.0))
-        expect(DocumentTests.testDoc.decimal128).to(equal(.decimal128(Decimal128("1.2E+10")!)))
+        expect(DocumentTests.testDoc.decimal128).to(equal(.decimal128(BSONDecimal128("1.2E+10")!)))
         expect(DocumentTests.testDoc.minkey).to(equal(.minKey))
         expect(DocumentTests.testDoc.maxkey).to(equal(.maxKey))
         expect(DocumentTests.testDoc.date).to(equal(.datetime(Date(timeIntervalSince1970: 500.004))))
@@ -233,8 +233,8 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(DocumentTests.testDoc.nesteddoc?.documentValue?.a).to(equal(1))
 
         // Test assignment
-        var doc = Document()
-        let subdoc: Document = ["d": 2.5]
+        var doc = BSONDocument()
+        let subdoc: BSONDocument = ["d": 2.5]
 
         doc.a = 1
         doc.b = "b"
@@ -252,18 +252,18 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testEquatable() {
-        expect(["hi": true, "hello": "hi", "cat": 2] as Document)
-            .to(equal(["hi": true, "hello": "hi", "cat": 2] as Document))
+        expect(["hi": true, "hello": "hi", "cat": 2] as BSONDocument)
+            .to(equal(["hi": true, "hello": "hi", "cat": 2] as BSONDocument))
     }
 
     func testRawBSON() throws {
-        let doc = try Document(fromJSON: "{\"a\" : [{\"$numberInt\": \"10\"}]}")
-        let fromRawBSON = try Document(fromBSON: doc.rawBSON)
+        let doc = try BSONDocument(fromJSON: "{\"a\" : [{\"$numberInt\": \"10\"}]}")
+        let fromRawBSON = try BSONDocument(fromBSON: doc.rawBSON)
         expect(doc).to(equal(fromRawBSON))
     }
 
     func testCopyOnWriteBehavior() {
-        var doc1: Document? = ["a": 1]
+        var doc1: BSONDocument? = ["a": 1]
         let originalAddress = doc1?.pointerAddress
         var doc2 = doc1!
         // no mutation has happened, so addresses should be the same
@@ -305,7 +305,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let int32min_sub1 = Int64(Int32.min) - Int64(1)
         let int32max_add1 = Int64(Int32.max) + Int64(1)
 
-        let doc: Document = [
+        let doc: BSONDocument = [
             "int32min": BSON(Int(Int32.min)),
             "int32max": BSON(Int(Int32.max)),
             "int32min-1": BSON(Int(int32min_sub1)),
@@ -324,7 +324,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     func testMerge() throws {
         // test documents are merged correctly
-        var doc1: Document = ["a": 1]
+        var doc1: BSONDocument = ["a": 1]
         try doc1.merge(["b": 2])
         expect(doc1).to(equal(["a": 1, "b": 2]))
 
@@ -346,18 +346,18 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     // exclude Int64 value on 32-bit platforms
-    static let overwritables: Document = [
+    static let overwritables: BSONDocument = [
         "double": 2.5,
         "int32": .int32(32),
         "int64": .int64(Int64.max),
         "bool": false,
-        "decimal": .decimal128(Decimal128("1.2E+10")!),
+        "decimal": .decimal128(BSONDecimal128("1.2E+10")!),
         "oid": .objectID(),
         "timestamp": .timestamp(BSONTimestamp(timestamp: 1, inc: 2)),
         "datetime": .datetime(Date(msSinceEpoch: 1000))
     ]
 
-    static let nonOverwritables: Document = [
+    static let nonOverwritables: BSONDocument = [
         "string": "hello",
         "nil": .null,
         "doc": ["x": 1],
@@ -368,7 +368,7 @@ final class DocumentTests: MongoSwiftTestCase {
     func testOverwritable() throws {
         // make a deep copy so we start off with uniquely referenced storage
         var doc = DocumentTests.overwritables.withBSONPointer { ptr in
-            Document(copying: ptr)
+            BSONDocument(copying: ptr)
         }
 
         // save a reference to original bson_t so we can verify it doesn't change
@@ -387,7 +387,7 @@ final class DocumentTests: MongoSwiftTestCase {
         doc["double"] = 3.0
         expect(doc.pointerAddress).to(equal(pointer))
 
-        doc["decimal"] = .decimal128(Decimal128("100")!)
+        doc["decimal"] = .decimal128(BSONDecimal128("100")!)
         expect(doc.pointerAddress).to(equal(pointer))
 
         // overwrite int64 with int64
@@ -409,7 +409,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "int32": .int32(15),
             "int64": .int64(Int64.min),
             "bool": true,
-            "decimal": .decimal128(Decimal128("100")!),
+            "decimal": .decimal128(BSONDecimal128("100")!),
             "oid": .objectID(newOid),
             "timestamp": .timestamp(BSONTimestamp(timestamp: 5, inc: 10)),
             "datetime": .datetime(Date(msSinceEpoch: 2000))
@@ -430,7 +430,7 @@ final class DocumentTests: MongoSwiftTestCase {
             "int32": .int32(15),
             "int64": BSON(integerLiteral: bigInt),
             "bool": true,
-            "decimal": .decimal128(Decimal128("100")!),
+            "decimal": .decimal128(BSONDecimal128("100")!),
             "oid": .objectID(newOid),
             "timestamp": .timestamp(BSONTimestamp(timestamp: 5, inc: 10)),
             "datetime": .datetime(Date(msSinceEpoch: 2000))
@@ -446,14 +446,14 @@ final class DocumentTests: MongoSwiftTestCase {
     func testNonOverwritable() throws {
         // make a deep copy so we start off with uniquely referenced storage
         var doc = DocumentTests.nonOverwritables.withBSONPointer { ptr in
-            Document(copying: ptr)
+            BSONDocument(copying: ptr)
         }
 
         // save a reference to original bson_t so we can verify it changes
         var pointer = doc.pointerAddress
 
         // save these to compare to at the end
-        let newDoc: Document = ["y": 1]
+        let newDoc: BSONDocument = ["y": 1]
 
         let newPairs: [(String, BSON)] = [("string", "hi"), ("doc", .document(newDoc)), ("arr", [3, 4])]
 
@@ -471,7 +471,7 @@ final class DocumentTests: MongoSwiftTestCase {
     func testReplaceValueWithNewType() throws {
         // make a deep copy so we start off with uniquely referenced storage
         var overwritableDoc = DocumentTests.overwritables.withBSONPointer { ptr in
-            Document(copying: ptr)
+            BSONDocument(copying: ptr)
         }
 
         // save a reference to original bson_t so we can verify it changes
@@ -481,7 +481,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let overwritablePairs: [(String, BSON)] = [
             ("double", BSON(10)),
             ("int32", "hi"),
-            ("int64", .decimal128(Decimal128("1.0")!)),
+            ("int64", .decimal128(BSONDecimal128("1.0")!)),
             ("bool", [1, 2, 3]),
             ("decimal", 100),
             ("oid", 25.5),
@@ -498,7 +498,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(overwritableDoc).to(equal([
             "double": BSON(10),
             "int32": "hi",
-            "int64": .decimal128(Decimal128("1.0")!),
+            "int64": .decimal128(BSONDecimal128("1.0")!),
             "bool": [1, 2, 3],
             "decimal": 100,
             "oid": 25.5,
@@ -508,7 +508,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         // make a deep copy so we start off with uniquely referenced storage
         var nonOverwritableDoc = DocumentTests.nonOverwritables.withBSONPointer { ptr in
-            Document(copying: ptr)
+            BSONDocument(copying: ptr)
         }
 
         // save a reference to original bson_t so we can verify it changes
@@ -528,7 +528,7 @@ final class DocumentTests: MongoSwiftTestCase {
     // test setting both overwritable and nonoverwritable values to nil
     func testReplaceValueWithNil() throws {
         var overwritableDoc = DocumentTests.overwritables.withBSONPointer { ptr in
-            Document(copying: ptr)
+            BSONDocument(copying: ptr)
         }
         var overwritablePointer = overwritableDoc.pointerAddress
 
@@ -540,7 +540,7 @@ final class DocumentTests: MongoSwiftTestCase {
         }
 
         var nonOverwritableDoc = DocumentTests.nonOverwritables.withBSONPointer { ptr in
-            Document(copying: ptr)
+            BSONDocument(copying: ptr)
         }
         var nonOverwritablePointer = nonOverwritableDoc.pointerAddress
 
@@ -557,7 +557,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
     // Test types where replacing them with an instance of their own type is a no-op
     func testReplaceValueNoop() throws {
-        var noops: Document = ["null": .null, "maxkey": .maxKey, "minkey": .minKey]
+        var noops: BSONDocument = ["null": .null, "maxkey": .maxKey, "minkey": .minKey]
 
         var pointer = noops.pointerAddress
 
@@ -587,7 +587,7 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testDocumentDictionarySimilarity() throws {
-        var doc: Document = ["hello": "world", "swift": 4.2, "null": .null, "remove_me": "please"]
+        var doc: BSONDocument = ["hello": "world", "swift": 4.2, "null": .null, "remove_me": "please"]
         let dict: [String: BSON] = ["hello": "world", "swift": 4.2, "null": .null, "remove_me": "please"]
 
         expect(doc["hello"]).to(equal(dict["hello"]))
@@ -602,7 +602,7 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testDefaultSubscript() throws {
-        let doc: Document = ["hello": "world"]
+        let doc: BSONDocument = ["hello": "world"]
         let floatVal = 18.2
         let stringVal = "this is a string"
         expect(doc["DNE", default: .double(floatVal)]).to(equal(.double(floatVal)))
@@ -617,10 +617,10 @@ final class DocumentTests: MongoSwiftTestCase {
     func testMultibyteCharacterStrings() throws {
         let str = String(repeating: "🇧🇷", count: 10)
 
-        var doc: Document = ["first": .string(str)]
+        var doc: BSONDocument = ["first": .string(str)]
         expect(doc["first"]).to(equal(.string(str)))
 
-        let doc1: Document = [str: "second"]
+        let doc1: BSONDocument = [str: "second"]
         expect(doc1[str]).to(equal("second"))
 
         let abt = try CodecTests.AllBSONTypes.factory()
@@ -662,8 +662,8 @@ final class DocumentTests: MongoSwiftTestCase {
 
         // UUID default decoder expects a string
         decoder.uuidDecodingStrategy = .deferredToUUID
-        let stringDoc: Document = ["uuid": .string(uuid.description)]
-        let badString: Document = ["uuid": "hello"]
+        let stringDoc: BSONDocument = ["uuid": .string(uuid.description)]
+        let badString: BSONDocument = ["uuid": "hello"]
         let deferredStruct = try decoder.decode(UUIDWrapper.self, from: stringDoc)
         expect(deferredStruct.uuid).to(equal(uuid))
         expect(try decoder.decode(UUIDWrapper.self, from: badString)).to(throwError(CodecTests.dataCorruptedErr))
@@ -676,11 +676,11 @@ final class DocumentTests: MongoSwiftTestCase {
             uuidt.8, uuidt.9, uuidt.10, uuidt.11,
             uuidt.12, uuidt.13, uuidt.14, uuidt.15
         ])
-        let binaryDoc: Document = ["uuid": .binary(try BSONBinary(data: bytes, subtype: .uuid))]
+        let binaryDoc: BSONDocument = ["uuid": .binary(try BSONBinary(data: bytes, subtype: .uuid))]
         let binaryStruct = try decoder.decode(UUIDWrapper.self, from: binaryDoc)
         expect(binaryStruct.uuid).to(equal(uuid))
 
-        let badBinary: Document = ["uuid": .binary(try BSONBinary(data: bytes, subtype: .generic))]
+        let badBinary: BSONDocument = ["uuid": .binary(try BSONBinary(data: bytes, subtype: .generic))]
         expect(try decoder.decode(UUIDWrapper.self, from: badBinary)).to(throwError(CodecTests.dataCorruptedErr))
 
         expect(try decoder.decode(UUIDWrapper.self, from: stringDoc)).to(throwError(CodecTests.typeMismatchErr))
@@ -779,7 +779,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let date = Date(timeIntervalSince1970: 125.0)
 
         // Default is .bsonDateTime
-        let bsonDate: Document = ["date": .datetime(date)]
+        let bsonDate: BSONDocument = ["date": .datetime(date)]
         let defaultStruct = try decoder.decode(DateWrapper.self, from: bsonDate)
         expect(defaultStruct.date).to(equal(date))
 
@@ -788,21 +788,21 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(bsonDateStruct.date).to(equal(date))
 
         decoder.dateDecodingStrategy = .millisecondsSince1970
-        let msInt64: Document = ["date": .int64(date.msSinceEpoch)]
+        let msInt64: BSONDocument = ["date": .int64(date.msSinceEpoch)]
         let msInt64Struct = try decoder.decode(DateWrapper.self, from: msInt64)
         expect(msInt64Struct.date).to(equal(date))
         expect(try BSONDecoder().decode(DateWrapper.self, from: msInt64)).to(throwError(CodecTests.typeMismatchErr))
 
-        let msDouble: Document = ["date": .double(Double(date.msSinceEpoch))]
+        let msDouble: BSONDocument = ["date": .double(Double(date.msSinceEpoch))]
         let msDoubleStruct = try decoder.decode(DateWrapper.self, from: msDouble)
         expect(msDoubleStruct.date).to(equal(date))
 
         decoder.dateDecodingStrategy = .secondsSince1970
-        let sDouble: Document = ["date": .double(date.timeIntervalSince1970)]
+        let sDouble: BSONDocument = ["date": .double(date.timeIntervalSince1970)]
         let sDoubleStruct = try decoder.decode(DateWrapper.self, from: sDouble)
         expect(sDoubleStruct.date).to(equal(date))
 
-        let sInt64: Document = ["date": .double(date.timeIntervalSince1970)]
+        let sInt64: BSONDocument = ["date": .double(date.timeIntervalSince1970)]
         let sInt64Struct = try decoder.decode(DateWrapper.self, from: sInt64)
         expect(sInt64Struct.date).to(equal(date))
 
@@ -812,8 +812,8 @@ final class DocumentTests: MongoSwiftTestCase {
         formatter.locale = Locale(identifier: "en_US")
 
         decoder.dateDecodingStrategy = .formatted(formatter)
-        let formatted: Document = ["date": .string(formatter.string(from: date))]
-        let badlyFormatted: Document = ["date": "this is not a date"]
+        let formatted: BSONDocument = ["date": .string(formatter.string(from: date))]
+        let badlyFormatted: BSONDocument = ["date": "this is not a date"]
         let formattedStruct = try decoder.decode(DateWrapper.self, from: formatted)
         expect(formattedStruct.date).to(equal(date))
         expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError(CodecTests.dataCorruptedErr))
@@ -821,7 +821,7 @@ final class DocumentTests: MongoSwiftTestCase {
 
         if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
             decoder.dateDecodingStrategy = .iso8601
-            let isoDoc: Document = ["date": .string(BSONDecoder.iso8601Formatter.string(from: date))]
+            let isoDoc: BSONDocument = ["date": .string(BSONDecoder.iso8601Formatter.string(from: date))]
             let isoStruct = try decoder.decode(DateWrapper.self, from: isoDoc)
             expect(isoStruct.date).to(equal(date))
             expect(try decoder.decode(DateWrapper.self, from: formatted)).to(throwError(CodecTests.dataCorruptedErr))
@@ -830,7 +830,7 @@ final class DocumentTests: MongoSwiftTestCase {
         }
 
         decoder.dateDecodingStrategy = .custom({ decode in try Date(from: decode) })
-        let customDoc: Document = ["date": .double(date.timeIntervalSinceReferenceDate)]
+        let customDoc: BSONDocument = ["date": .double(date.timeIntervalSinceReferenceDate)]
         let customStruct = try decoder.decode(DateWrapper.self, from: customDoc)
         expect(customStruct.date).to(equal(date))
         expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError(CodecTests.typeMismatchErr))
@@ -883,7 +883,7 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(try decoder.decode(DataWrapper.self, from: ["data": "this is not base64 encoded~"]))
             .to(throwError(CodecTests.dataCorruptedErr))
 
-        let customEncodedDoc: Document = [
+        let customEncodedDoc: BSONDocument = [
             "d": .string(data.base64EncodedString()),
             "hash": .int64(Int64(data.hashValue))
         ]
@@ -892,7 +892,7 @@ final class DocumentTests: MongoSwiftTestCase {
             try container.encode(customEncodedDoc)
         })
         decoder.dataDecodingStrategy = .custom({ decoder in
-            let doc = try Document(from: decoder)
+            let doc = try BSONDocument(from: decoder)
             guard let d = Data(base64Encoded: doc["d"]!.stringValue!) else {
                 throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [], debugDescription: "bad base64"))
             }
@@ -909,7 +909,7 @@ final class DocumentTests: MongoSwiftTestCase {
     }
 
     func testIntegerLiteral() {
-        let doc: Document = ["int": 12]
+        let doc: BSONDocument = ["int": 12]
 
         if MongoSwiftTestCase.is32Bit {
             expect(doc["int"]).to(equal(.int32(12)))
@@ -932,7 +932,7 @@ final class DocumentTests: MongoSwiftTestCase {
         ]
 
         for data in invalidData {
-            expect(try Document(fromBSON: data)).to(throwError(errorType: InvalidArgumentError.self))
+            expect(try BSONDocument(fromBSON: data)).to(throwError(errorType: InvalidArgumentError.self))
         }
     }
 }

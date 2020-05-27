@@ -12,7 +12,7 @@ extension MongoSwiftTestCase {
         ns: MongoNamespace? = nil,
         MongoClientOptions: MongoClientOptions? = nil,
         collectionOptions: CreateCollectionOptions? = nil,
-        f: (MongoClient, MongoDatabase, MongoCollection<Document>)
+        f: (MongoClient, MongoDatabase, MongoCollection<BSONDocument>)
             throws -> T
     ) throws -> T {
         let client = try MongoClient.makeTestClient(options: MongoClientOptions)
@@ -30,7 +30,7 @@ extension MongoSwiftTestCase {
         client: MongoClient,
         ns: MongoNamespace? = nil,
         options: CreateCollectionOptions? = nil,
-        _ f: (MongoDatabase, MongoCollection<Document>) throws -> T
+        _ f: (MongoDatabase, MongoCollection<BSONDocument>) throws -> T
     ) throws -> T {
         let ns = ns ?? self.getNamespace()
 
@@ -39,7 +39,7 @@ extension MongoSwiftTestCase {
         }
 
         let database = client.db(ns.db)
-        let collection: MongoCollection<Document>
+        let collection: MongoCollection<BSONDocument>
         do {
             collection = try database.createCollection(collName, options: options)
         } catch let error as CommandError where error.code == 48 {
@@ -195,7 +195,7 @@ extension ChangeStream {
 extension MongoSwiftSync.ClientSession {
     internal var active: Bool { self.asyncSession.active }
 
-    internal var id: Document? { self.asyncSession.id }
+    internal var id: BSONDocument? { self.asyncSession.id }
 
     internal var pinnedServerAddress: ServerAddress? { self.asyncSession.pinnedServerAddress }
 

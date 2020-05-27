@@ -17,7 +17,7 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func find(
-        _ filter: Document = [:],
+        _ filter: BSONDocument = [:],
         options: FindOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCursor<CollectionType> {
@@ -41,7 +41,7 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func findOne(
-        _ filter: Document = [:],
+        _ filter: BSONDocument = [:],
         options: FindOneOptions? = nil,
         session: ClientSession? = nil
     ) throws -> T? {
@@ -64,10 +64,10 @@ extension MongoCollection {
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func aggregate(
-        _ pipeline: [Document],
+        _ pipeline: [BSONDocument],
         options: AggregateOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> MongoCursor<Document> {
+    ) throws -> MongoCursor<BSONDocument> {
         let asyncCursor = try self.asyncColl.aggregate(pipeline, options: options, session: session?.asyncSession)
             .wait()
         return MongoCursor(wrapping: asyncCursor, client: self.client)
@@ -86,7 +86,7 @@ extension MongoCollection {
      * - Returns: The count of the documents that matched the filter
      */
     public func countDocuments(
-        _ filter: Document = [:],
+        _ filter: BSONDocument = [:],
         options: CountDocumentsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> Int {
@@ -125,7 +125,7 @@ extension MongoCollection {
      */
     public func distinct(
         fieldName: String,
-        filter: Document = [:],
+        filter: BSONDocument = [:],
         options: DistinctOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [BSON] {

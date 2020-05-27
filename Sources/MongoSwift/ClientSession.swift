@@ -44,7 +44,7 @@ public final class ClientSession {
         /// Indicates that this session has not been used yet and a corresponding `mongoc_client_session_t` has not
         /// yet been created. If the user sets operation time or cluster time prior to using the session, those values
         /// are stored here so they can be set upon starting the session.
-        case notStarted(opTime: BSONTimestamp?, clusterTime: Document?)
+        case notStarted(opTime: BSONTimestamp?, clusterTime: BSONDocument?)
         /// Indicates that the session has been started and a corresponding `mongoc_client_session_t` exists. Stores a
         /// pointer to the underlying `mongoc_client_session_t` and the source `Connection` for this session.
         case started(session: OpaquePointer, connection: Connection)
@@ -68,7 +68,7 @@ public final class ClientSession {
 
     /// The session ID of this session. This is internal for now because we only have a value available after we've
     /// started the libmongoc session.
-    internal var id: Document?
+    internal var id: BSONDocument?
 
     /// The server ID of the mongos this session is pinned to.
     private var serverID: UInt32? {
@@ -163,7 +163,7 @@ public final class ClientSession {
     /// The most recent cluster time seen by this session. This value will be nil if either of the following are true:
     /// - No operations have been executed using this session and `advanceClusterTime` has not been called.
     /// - This session has been ended.
-    public var clusterTime: Document? {
+    public var clusterTime: BSONDocument? {
         switch self.state {
         case let .notStarted(_, clusterTime):
             return clusterTime
@@ -171,7 +171,7 @@ public final class ClientSession {
             guard let time = mongoc_client_session_get_cluster_time(session) else {
                 return nil
             }
-            return Document(copying: time)
+            return BSONDocument(copying: time)
         case .ended:
             return nil
         }
@@ -227,7 +227,7 @@ public final class ClientSession {
                     }
 
                     // swiftlint:disable:next force_unwrapping
-                    self.id = Document(copying: mongoc_client_session_get_lsid(sessionPtr)!) // always returns a value
+                    self.id = BSONDocument(copying: mongoc_client_session_get_lsid(sessionPtr)!) // never returns nil
                 }
         case .started:
             return self.client.operationExecutor.makeSucceededFuture(Void())
@@ -289,9 +289,9 @@ public final class ClientSession {
      * no effect.
      *
      * - Parameters:
-     *   - clusterTime: The session's new cluster time, as a `Document` like `["cluster time": Timestamp(...)]`
+     *   - clusterTime: The session's new cluster time, as a `BSONDocument` like `["cluster time": Timestamp(...)]`
      */
-    public func advanceClusterTime(to clusterTime: Document) {
+    public func advanceClusterTime(to clusterTime: BSONDocument) {
         switch self.state {
         case let .notStarted(opTime, _):
             self.state = .notStarted(opTime: opTime, clusterTime: clusterTime)
@@ -326,7 +326,7 @@ public final class ClientSession {
     /// Appends this provided session to an options document for libmongoc interoperability.
     /// - Throws:
     ///   - `LogicError` if this session is inactive
-    internal func append(to doc: inout Document) throws {
+    internal func append(to doc: inout BSONDocument) throws {
         guard case let .started(session, _) = self.state else {
             throw ClientSession.SessionInactiveError
         }

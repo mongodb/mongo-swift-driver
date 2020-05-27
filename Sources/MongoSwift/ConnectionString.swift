@@ -118,7 +118,7 @@ internal class ConnectionString {
     }
 
     /// Returns a document containing the auth mechanism properties if any were provided, otherwise nil.
-    internal var authMechanismProperties: Document? {
+    internal var authMechanismProperties: BSONDocument? {
         var props = bson_t()
         return withUnsafeMutablePointer(to: &props) { propsPtr in
             guard mongoc_uri_get_mechanism_properties(self._uri, propsPtr) else {
@@ -127,7 +127,7 @@ internal class ConnectionString {
             /// This copy should not be returned directly as its only guaranteed valid for as long as the
             /// `mongoc_uri_t`, as `props` was statically initialized from data stored in the URI and may contain
             /// pointers that will be invalidated once the URI is.
-            let copy = Document(copying: propsPtr)
+            let copy = BSONDocument(copying: propsPtr)
 
             return copy.mapValues { value in
                 // mongoc returns boolean options e.g. CANONICALIZE_HOSTNAME as strings, but they are boolean values.
@@ -162,11 +162,11 @@ internal class ConnectionString {
     }
 
     /// Returns a document containing all of the options provided after the ? of the URI.
-    internal var options: Document? {
+    internal var options: BSONDocument? {
         guard let optsDoc = mongoc_uri_get_options(self._uri) else {
             return nil
         }
-        return Document(copying: optsDoc)
+        return BSONDocument(copying: optsDoc)
     }
 
     /// Returns the host/port pairs specified in the connection string, or nil if this connection string's scheme is

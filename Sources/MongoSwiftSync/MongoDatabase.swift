@@ -59,8 +59,8 @@ public struct MongoDatabase {
      *
      * - Returns: the requested `MongoCollection<Document>`
      */
-    public func collection(_ name: String, options: MongoCollectionOptions? = nil) -> MongoCollection<Document> {
-        self.collection(name, withType: Document.self, options: options)
+    public func collection(_ name: String, options: MongoCollectionOptions? = nil) -> MongoCollection<BSONDocument> {
+        self.collection(name, withType: BSONDocument.self, options: options)
     }
 
     /**
@@ -106,8 +106,8 @@ public struct MongoDatabase {
         _ name: String,
         options: CreateCollectionOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> MongoCollection<Document> {
-        try self.createCollection(name, withType: Document.self, options: options, session: session)
+    ) throws -> MongoCollection<BSONDocument> {
+        try self.createCollection(name, withType: BSONDocument.self, options: options, session: session)
     }
 
     /**
@@ -160,7 +160,7 @@ public struct MongoDatabase {
      *   - `LogicError` if the provided session is inactive.
      */
     public func listCollections(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCursor<CollectionSpecification> {
@@ -184,10 +184,10 @@ public struct MongoDatabase {
      *   - `LogicError` if the provided session is inactive.
      */
     public func listMongoCollections(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> [MongoCollection<Document>] {
+    ) throws -> [MongoCollection<BSONDocument>] {
         try self.listCollectionNames(filter, options: options, session: session).map { name in
             self.collection(name)
         }
@@ -208,7 +208,7 @@ public struct MongoDatabase {
      *   - `LogicError` if the provided session is inactive.
      */
     public func listCollectionNames(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [String] {
@@ -234,10 +234,10 @@ public struct MongoDatabase {
      */
     @discardableResult
     public func runCommand(
-        _ command: Document,
+        _ command: BSONDocument,
         options: RunCommandOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> Document {
+    ) throws -> BSONDocument {
         try self.asyncDB.runCommand(command, options: options, session: session?.asyncSession).wait()
     }
 
@@ -265,15 +265,15 @@ public struct MongoDatabase {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
+    ) throws -> ChangeStream<ChangeStreamEvent<BSONDocument>> {
         try self.watch(
             pipeline,
             options: options,
             session: session,
-            withEventType: ChangeStreamEvent<Document>.self
+            withEventType: ChangeStreamEvent<BSONDocument>.self
         )
     }
 
@@ -305,7 +305,7 @@ public struct MongoDatabase {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<FullDocType: Codable>(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
@@ -345,7 +345,7 @@ public struct MongoDatabase {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<EventType: Codable>(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withEventType _: EventType.Type

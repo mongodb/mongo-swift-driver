@@ -15,7 +15,7 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName())
 
-        let command: Document = ["count": .string(coll.name)]
+        let command: BSONDocument = ["count": .string(coll.name)]
 
         // run command with a valid readConcern
         let options1 = RunCommandOptions(readConcern: .local)
@@ -102,7 +102,7 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
         defer { try? db.drop() }
 
         var counter = 0
-        func nextDoc() -> Document {
+        func nextDoc() -> BSONDocument {
             defer { counter += 1 }
             return ["x": BSON(integerLiteral: counter)]
         }
@@ -112,7 +112,7 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
         let wc2 = WriteConcern.serverDefault
         let wc3 = try WriteConcern(journal: true)
 
-        let command: Document = ["insert": .string(coll.name), "documents": [.document(nextDoc())]]
+        let command: BSONDocument = ["insert": .string(coll.name), "documents": [.document(nextDoc())]]
 
         // run command with a valid writeConcern
         let options1 = RunCommandOptions(writeConcern: wc1)
@@ -161,7 +161,7 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
         let coll2 = try db.createCollection(self.getCollectionName(suffix: "2"))
         defer { try? coll2.drop() }
 
-        let pipeline: [Document] = [["$out": .string("\(db.name).\(coll2.name)")]]
+        let pipeline: [BSONDocument] = [["$out": .string("\(db.name).\(coll2.name)")]]
         expect(try coll.aggregate(pipeline, options: AggregateOptions(writeConcern: wc1))).toNot(throwError())
 
         expect(try coll.replaceOne(

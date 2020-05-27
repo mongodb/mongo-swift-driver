@@ -15,7 +15,7 @@ final class ReadPreferenceOperationTests: MongoSwiftTestCase {
         defer { try? db.drop() }
         let coll = try db.createCollection(self.getCollectionName(suffix: "1"))
 
-        let command: Document = ["count": .string(coll.name)]
+        let command: BSONDocument = ["count": .string(coll.name)]
 
         // expect runCommand to return a success response when passing in a valid read preference
         let opts = RunCommandOptions(readPreference: .secondaryPreferred)

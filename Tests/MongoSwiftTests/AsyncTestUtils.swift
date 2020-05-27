@@ -81,7 +81,7 @@ extension MongoSwiftTestCase {
         client: MongoClient,
         ns: MongoNamespace? = nil,
         options: CreateCollectionOptions? = nil,
-        _ f: (MongoDatabase, MongoCollection<Document>) throws -> T
+        _ f: (MongoDatabase, MongoCollection<BSONDocument>) throws -> T
     ) throws -> T {
         let ns = ns ?? self.getNamespace()
 
@@ -90,7 +90,7 @@ extension MongoSwiftTestCase {
         }
 
         let database = client.db(ns.db)
-        let collection: MongoCollection<Document>
+        let collection: MongoCollection<BSONDocument>
         do {
             collection = try database.createCollection(collName, options: options).wait()
         } catch let error as CommandError where error.code == 48 {
@@ -108,7 +108,7 @@ extension MongoSwiftTestCase {
     internal func withTestNamespace<T>(
         ns: MongoNamespace? = nil,
         collectionOptions: CreateCollectionOptions? = nil,
-        _ f: (MongoClient, MongoDatabase, MongoCollection<Document>) throws -> T
+        _ f: (MongoClient, MongoDatabase, MongoCollection<BSONDocument>) throws -> T
     ) throws -> T {
         try self.withTestClient { client in
             try self.withTestNamespace(client: client, ns: ns, options: collectionOptions) { db, coll in

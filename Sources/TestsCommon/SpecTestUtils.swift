@@ -19,7 +19,7 @@ extension MongoSwiftTestCase {
     }
 }
 
-extension Document {
+extension BSONDocument {
     public init(fromJSONFile file: URL) throws {
         let jsonString = try String(contentsOf: file, encoding: .utf8)
         try self.init(fromJSON: jsonString)
@@ -42,7 +42,7 @@ public func retrieveSpecTestFiles<T: Decodable>(
         .filter { $0.hasSuffix(".json") }
         .map { filename in
             let url = URL(fileURLWithPath: "\(path)/\(filename)")
-            var doc = try Document(fromJSONFile: url)
+            var doc = try BSONDocument(fromJSONFile: url)
             doc["name"] = .string(filename)
             return try (filename, BSONDecoder().decode(T.self, from: doc))
         }
@@ -51,8 +51,8 @@ public func retrieveSpecTestFiles<T: Decodable>(
 /// Given two documents, returns a copy of the input document with all keys that *don't*
 /// exist in `standard` removed, and with all matching keys put in the same order they
 /// appear in `standard`.
-public func rearrangeDoc(_ input: Document, toLookLike standard: Document) -> Document {
-    var output = Document()
+public func rearrangeDoc(_ input: BSONDocument, toLookLike standard: BSONDocument) -> BSONDocument {
+    var output = BSONDocument()
     for (k, v) in standard {
         switch (v, input[k]) {
         case let (.document(sDoc), .document(iDoc)?):

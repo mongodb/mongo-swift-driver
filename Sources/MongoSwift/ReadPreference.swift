@@ -61,7 +61,7 @@ public struct ReadPreference: Equatable {
     /// Optionally specified ordered array of tag sets. If provided, a server will only be considered suitable if its
     /// tags are a superset of at least one of the tag sets.
     /// - SeeAlso: https://docs.mongodb.com/manual/core/read-preference-tags/#replica-set-read-preference-tag-sets
-    public var tagSets: [Document]?
+    public var tagSets: [BSONDocument]?
 
     // swiftlint:disable line_length
     /// An optionally specified value indicating a maximum replication lag, or "staleness", for reads from secondaries.
@@ -104,7 +104,7 @@ public struct ReadPreference: Equatable {
      *   - https://docs.mongodb.com/manual/core/read-preference-staleness/#replica-set-read-preference-max-staleness
      */
     public static func primaryPreferred(
-        tagSets: [Document]? = nil,
+        tagSets: [BSONDocument]? = nil,
         maxStalenessSeconds: Int? = nil
     ) throws -> ReadPreference {
         try ReadPreference(.primaryPreferred, tagSets: tagSets, maxStalenessSeconds: maxStalenessSeconds)
@@ -129,7 +129,7 @@ public struct ReadPreference: Equatable {
      *   - https://docs.mongodb.com/manual/core/read-preference-staleness/#replica-set-read-preference-max-staleness
      */
     public static func secondary(
-        tagSets: [Document]? = nil,
+        tagSets: [BSONDocument]? = nil,
         maxStalenessSeconds: Int? = nil
     ) throws -> ReadPreference {
         try ReadPreference(.secondary, tagSets: tagSets, maxStalenessSeconds: maxStalenessSeconds)
@@ -155,7 +155,7 @@ public struct ReadPreference: Equatable {
      *   - https://docs.mongodb.com/manual/core/read-preference-staleness/#replica-set-read-preference-max-staleness
      */
     public static func secondaryPreferred(
-        tagSets: [Document]? = nil,
+        tagSets: [BSONDocument]? = nil,
         maxStalenessSeconds: Int? = nil
     ) throws -> ReadPreference {
         try ReadPreference(.secondaryPreferred, tagSets: tagSets, maxStalenessSeconds: maxStalenessSeconds)
@@ -180,7 +180,7 @@ public struct ReadPreference: Equatable {
      *   - https://docs.mongodb.com/manual/core/read-preference-staleness/#replica-set-read-preference-max-staleness
      */
     public static func nearest(
-        tagSets: [Document]? = nil,
+        tagSets: [BSONDocument]? = nil,
         maxStalenessSeconds: Int? = nil
     ) throws -> ReadPreference {
         try ReadPreference(.nearest, tagSets: tagSets, maxStalenessSeconds: maxStalenessSeconds)
@@ -193,7 +193,7 @@ public struct ReadPreference: Equatable {
         self.maxStalenessSeconds = nil
     }
 
-    private init(_ mode: Mode, tagSets: [Document]?, maxStalenessSeconds: Int?) throws {
+    private init(_ mode: Mode, tagSets: [BSONDocument]?, maxStalenessSeconds: Int?) throws {
         if let maxStaleness = maxStalenessSeconds {
             guard maxStaleness >= MONGOC_SMALLEST_MAX_STALENESS_SECONDS else {
                 throw InvalidArgumentError(
@@ -215,7 +215,7 @@ public struct ReadPreference: Equatable {
             fatalError("Failed to retrieve read preference tags")
         }
         // we have to copy because libmongoc owns the pointer.
-        let wrappedTags = Document(copying: tagsPointer)
+        let wrappedTags = BSONDocument(copying: tagsPointer)
         if !wrappedTags.isEmpty {
             // swiftlint:disable:next force_unwrapping
             self.tagSets = wrappedTags.values.map { $0.documentValue! } // libmongoc will always return array of docs
@@ -236,7 +236,7 @@ public struct ReadPreference: Equatable {
         defer { mongoc_read_prefs_destroy(rp) }
 
         if let tagSets = self.tagSets, !tagSets.isEmpty {
-            let tags = Document(tagSets.map { .document($0) })
+            let tags = BSONDocument(tagSets.map { .document($0) })
             tags.withBSONPointer { tagsPtr in
                 mongoc_read_prefs_set_tags(rp, tagsPtr)
             }

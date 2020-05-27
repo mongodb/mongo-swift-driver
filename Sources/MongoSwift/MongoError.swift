@@ -191,7 +191,7 @@ public struct WriteConcernFailure: Codable {
     public let codeName: String
 
     /// A document identifying the write concern setting related to the error.
-    public let details: Document?
+    public let details: BSONDocument?
 
     /// A description of the error.
     public let message: String
@@ -213,13 +213,13 @@ public struct WriteConcernFailure: Codable {
         self.code = try container.decode(ServerErrorCode.self, forKey: .code)
         self.message = try container.decode(String.self, forKey: .message)
         self.codeName = try container.decodeIfPresent(String.self, forKey: .codeName) ?? ""
-        self.details = try container.decodeIfPresent(Document.self, forKey: .details)
+        self.details = try container.decodeIfPresent(BSONDocument.self, forKey: .details)
         self.errorLabels = try container.decodeIfPresent([String].self, forKey: .errorLabels)
     }
 
     // TODO: can remove this once SERVER-36755 is resolved
     internal init(
-        code: ServerErrorCode, codeName: String, details: Document?, message: String, errorLabels: [String]? = nil
+        code: ServerErrorCode, codeName: String, details: BSONDocument?, message: String, errorLabels: [String]? = nil
     ) {
         self.code = code
         self.codeName = codeName
@@ -272,7 +272,7 @@ public struct BulkWriteFailure: Codable {
 
 /// Gets an appropriate error from a libmongoc error. Additional details may be provided in the form of a server reply
 /// document.
-private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoError {
+private func parseMongocError(_ error: bson_error_t, reply: BSONDocument?) -> MongoError {
     let domain = mongoc_error_domain_t(rawValue: error.domain)
     let code = mongoc_error_code_t(rawValue: error.code)
     let message = toErrorString(error)
@@ -323,10 +323,10 @@ private func parseMongocError(_ error: bson_error_t, reply: Document?) -> MongoE
 // swiftlint:enable cyclomatic_complexity
 
 /// Internal function used to get an appropriate error from a libmongoc error and/or a server reply to a command.
-internal func extractMongoError(error bsonError: bson_error_t, reply: Document? = nil) -> MongoError {
+internal func extractMongoError(error bsonError: bson_error_t, reply: BSONDocument? = nil) -> MongoError {
     // if the reply is nil or writeErrors or writeConcernErrors aren't present, use the mongoc error to determine
     // what to throw.
-    guard let serverReply: Document = reply,
+    guard let serverReply: BSONDocument = reply,
         !(serverReply["writeErrors"]?.arrayValue ?? []).isEmpty ||
         !(serverReply["writeConcernError"]?.documentValue?.keys ?? []).isEmpty ||
         !(serverReply["writeConcernErrors"]?.arrayValue ?? []).isEmpty else {
@@ -365,7 +365,7 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: Document? 
 internal func extractBulkWriteError<T: Codable>(
     for op: BulkWriteOperation<T>,
     error: bson_error_t,
-    reply: Document,
+    reply: BSONDocument,
     partialResult: BulkWriteResult?
 ) -> Error {
     // If the result is nil, that meains either the write was unacknowledged (so the error is likely coming
@@ -447,7 +447,7 @@ internal func extractBulkWriteError<T: Codable>(
 }
 
 /// Extracts a `WriteConcernError` from a server reply.
-private func extractWriteConcernError(from reply: Document) throws -> WriteConcernFailure? {
+private func extractWriteConcernError(from reply: BSONDocument) throws -> WriteConcernFailure? {
     if let writeConcernErrors = reply["writeConcernErrors"]?.arrayValue?.compactMap({ $0.documentValue }),
         !writeConcernErrors.isEmpty {
         return try BSONDecoder().decode(WriteConcernFailure.self, from: writeConcernErrors[0])
@@ -506,7 +506,7 @@ internal func bsonTooLargeError(value: BSONValue, forKey: String) -> MongoError 
     )
 }
 
-internal func wrongIterTypeError(_ iter: DocumentIterator, expected type: BSONValue.Type) -> MongoError {
+internal func wrongIterTypeError(_ iter: BSONDocumentIterator, expected type: BSONValue.Type) -> MongoError {
     LogicError(
         message: "Tried to retreive a \(type) from an iterator whose next type " +
             "is \(iter.currentType) for key \(iter.currentKey)"

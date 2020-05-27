@@ -3,9 +3,9 @@ import MongoSwift
 import Nimble
 import TestsCommon
 
-private let doc1: Document = ["_id": 1, "x": 1]
-private let doc2: Document = ["_id": 2, "x": 2]
-private let doc3: Document = ["_id": 3, "x": 3]
+private let doc1: BSONDocument = ["_id": 1, "x": 1]
+private let doc2: BSONDocument = ["_id": 2, "x": 2]
+private let doc3: BSONDocument = ["_id": 3, "x": 3]
 
 final class MongoCursorTests: MongoSwiftTestCase {
     func testNonTailableCursor() throws {
@@ -74,7 +74,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
 
             // for each doc we insert, check that it arrives in the cursor next,
             // and that the cursor is still alive afterward
-            let checkNextResult: (Document) throws -> Void = { doc in
+            let checkNextResult: (BSONDocument) throws -> Void = { doc in
                 let result = cursor.tryNext()
                 expect(result).toNot(beNil())
                 expect(try result?.get()).to(equal(doc))
@@ -152,7 +152,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
     func testKillTailable() throws {
         let options = CreateCollectionOptions(capped: true, max: 3, size: 1000)
         try self.withTestNamespace(ns: self.getNamespace(suffix: "tail"), collectionOptions: options) { _, _, coll in
-            let docs: [Document] = [["_id": 1], ["_id": 2], ["_id": 3]]
+            let docs: [BSONDocument] = [["_id": 1], ["_id": 2], ["_id": 3]]
             _ = try coll.insertMany(docs)
             let cursor = try coll.find(options: FindOptions(cursorType: .tailable))
             expect(cursor.isAlive()).to(beTrue())
@@ -160,7 +160,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             let queue = DispatchQueue(label: "tailable close")
             let allDocsLock = DispatchSemaphore(value: 0)
 
-            var allDocs: [Document] = []
+            var allDocs: [BSONDocument] = []
             var allError: Error?
             queue.async {
                 defer { allDocsLock.signal() }

@@ -13,10 +13,10 @@ struct DNSSeedlistTestCase: Decodable {
     /// The discovered topology's list of hosts once SDAM completes a scan.
     let hosts: [ServerAddress]
     /// The parsed connection string options as discovered from URI and TXT records.
-    let options: Document?
+    let options: BSONDocument?
     /// Additional options present in the connection string URI such as Userinfo (as user and password), and Auth
     /// database (as auth_database).
-    let parsedOptions: Document?
+    let parsedOptions: BSONDocument?
     /// Indicates that the parsing of the URI, or the resolving or contents of the SRV or TXT records included errors.
     let error: Bool?
     /// A comment to indicate why a test would fail.

@@ -78,7 +78,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func replaceOne(
-        filter: Document,
+        filter: BSONDocument,
         replacement: CollectionType,
         options: ReplaceOptions? = nil,
         session: ClientSession? = nil
@@ -113,8 +113,8 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateOne(
-        filter: Document,
-        update: Document,
+        filter: BSONDocument,
+        update: BSONDocument,
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
@@ -148,8 +148,8 @@ extension MongoCollection {
      */
     @discardableResult
     public func updateMany(
-        filter: Document,
-        update: Document,
+        filter: BSONDocument,
+        update: BSONDocument,
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
@@ -182,7 +182,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteOne(
-        _ filter: Document,
+        _ filter: BSONDocument,
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) throws -> DeleteResult? {
@@ -209,7 +209,7 @@ extension MongoCollection {
      */
     @discardableResult
     public func deleteMany(
-        _ filter: Document,
+        _ filter: BSONDocument,
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) throws -> DeleteResult? {

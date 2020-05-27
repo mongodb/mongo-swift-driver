@@ -363,8 +363,8 @@ public class MongoClient {
      * Retrieves a list of databases in this client's MongoDB deployment.
      *
      * - Parameters:
-     *   - filter: Optional `Document` specifying a filter that the listed databases must pass. This filter can be based
-     *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
+     *   - filter: Optional `BSONDocument` specifying a filter that the listed databases must pass. This filter can be
+     *      based on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
@@ -381,7 +381,7 @@ public class MongoClient {
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
     public func listDatabases(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[DatabaseSpecification]> {
@@ -398,7 +398,7 @@ public class MongoClient {
      * Get a list of `MongoDatabase`s corresponding to the databases in this client's MongoDB deployment.
      *
      * - Parameters:
-     *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *   - filter: Optional `BSONDocument` specifying a filter on the names of the returned databases.
      *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -412,7 +412,7 @@ public class MongoClient {
      *    - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
      */
     public func listMongoDatabases(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[MongoDatabase]> {
@@ -423,7 +423,7 @@ public class MongoClient {
      * Get the names of databases in this client's MongoDB deployment.
      *
      * - Parameters:
-     *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *   - filter: Optional `BSONDocument` specifying a filter on the names of the returned databases.
      *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -437,7 +437,7 @@ public class MongoClient {
      *    - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
      */
     public func listDatabaseNames(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[String]> {
@@ -492,11 +492,11 @@ public class MongoClient {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
-    ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<Document>>> {
-        self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
+    ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<BSONDocument>>> {
+        self.watch(pipeline, options: options, session: session, withFullDocumentType: BSONDocument.self)
     }
 
     /**
@@ -529,7 +529,7 @@ public class MongoClient {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<FullDocType: Codable>(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
@@ -571,12 +571,12 @@ public class MongoClient {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<EventType: Codable>(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withEventType _: EventType.Type
     ) -> EventLoopFuture<ChangeStream<EventType>> {
-        let operation = WatchOperation<Document, EventType>(
+        let operation = WatchOperation<BSONDocument, EventType>(
             target: .client(self),
             pipeline: pipeline,
             options: options

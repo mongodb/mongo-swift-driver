@@ -136,12 +136,12 @@ public class BSONEncoder {
      * Encodes the given top-level value and returns its BSON representation.
      *
      * - Parameter value: The value to encode.
-     * - Returns: A new `Document` containing the encoded BSON data.
+     * - Returns: A new `BSONDocument` containing the encoded BSON data.
      * - Throws: `EncodingError` if any value throws an error during encoding.
      */
-    public func encode<T: Encodable>(_ value: T) throws -> Document {
-        // if the value being encoded is already a `Document` we're done
-        if let doc = value as? Document {
+    public func encode<T: Encodable>(_ value: T) throws -> BSONDocument {
+        // if the value being encoded is already a `BSONDocument` we're done
+        if let doc = value as? BSONDocument {
             return doc
         } else if let bson = value as? BSON, let doc = bson.documentValue {
             return doc
@@ -177,10 +177,10 @@ public class BSONEncoder {
      * value is nil or if it contains no data.
      *
      * - Parameter value: The value to encode.
-     * - Returns: A new `Document` containing the encoded BSON data, or nil if there is no data to encode.
+     * - Returns: A new `BSONDocument` containing the encoded BSON data, or nil if there is no data to encode.
      * - Throws: `EncodingError` if any value throws an error during encoding.
      */
-    public func encode<T: Encodable>(_ value: T?) throws -> Document? {
+    public func encode<T: Encodable>(_ value: T?) throws -> BSONDocument? {
         guard let value = value else {
             return nil
         }
@@ -195,7 +195,7 @@ public class BSONEncoder {
      * - Returns: A new `[Document]` containing the encoded BSON data.
      * - Throws: `EncodingError` if any value throws an error during encoding.
      */
-    public func encode<T: Encodable>(_ values: [T]) throws -> [Document] {
+    public func encode<T: Encodable>(_ values: [T]) throws -> [BSONDocument] {
         try values.map { try self.encode($0) }
     }
 
@@ -208,7 +208,7 @@ public class BSONEncoder {
      *            contains no data will be mapped to nil.
      * - Throws: `EncodingError` if any value throws an error during encoding.
      */
-    public func encode<T: Encodable>(_ values: [T?]) throws -> [Document?] {
+    public func encode<T: Encodable>(_ values: [T?]) throws -> [BSONDocument?] {
         try values.map { try self.encode($0) }
     }
 }
@@ -369,7 +369,7 @@ private class _BSONReferencingEncoder: _BSONEncoder {
     deinit {
         let value: BSONValue
         switch self.storage.count {
-        case 0: value = Document()
+        case 0: value = BSONDocument()
         case 1: value = self.storage.popContainer()
         default: fatalError("Referencing encoder deallocated with multiple containers on stack.")
         }
@@ -395,9 +395,9 @@ extension _BSONEncoder {
         return number
     }
 
-    /// Returns the value as a `BSONValue` if possible. Otherwise, returns an empty `Document`.
+    /// Returns the value as a `BSONValue` if possible. Otherwise, returns an empty `BSONDocument`.
     fileprivate func box<T: Encodable>(_ value: T) throws -> BSONValue {
-        try self.box_(value) ?? Document()
+        try self.box_(value) ?? BSONDocument()
     }
 
     fileprivate func handleCustomStrategy<T: Encodable>(
@@ -754,11 +754,11 @@ private class MutableArray: BSONValue {
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableArray
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
-    fileprivate func encode(to _: inout Document, forKey _: String) throws {
-        fatalError("`MutableArray` is not meant to be encoded to a `Document`")
+    fileprivate func encode(to _: inout BSONDocument, forKey _: String) throws {
+        fatalError("`MutableArray` is not meant to be encoded to a `BSONDocument`")
     }
 
-    internal static func from(iterator _: DocumentIterator) -> BSON {
+    internal static func from(iterator _: BSONDocumentIterator) -> BSON {
         fatalError("`MutableArray` is not meant to be initialized from a `DocumentIterator`")
     }
 
@@ -805,9 +805,9 @@ private class MutableDictionary: BSONValue {
         }
     }
 
-    /// Converts self to a `Document` with equivalent key-value pairs.
-    fileprivate func toDocument() -> Document {
-        var doc = Document()
+    /// Converts self to a `BSONDocument` with equivalent key-value pairs.
+    fileprivate func toDocument() -> BSONDocument {
+        var doc = BSONDocument()
         for i in 0..<self.keys.count {
             doc[self.keys[i]] = self.values[i].bson
         }
@@ -818,11 +818,11 @@ private class MutableDictionary: BSONValue {
 
     /// methods required by the BSONValue protocol that we don't actually need/use. MutableDictionary
     /// is just a BSONValue to simplify usage alongside true BSONValues within the encoder.
-    fileprivate func encode(to _: inout Document, forKey _: String) throws {
-        fatalError("`MutableDictionary` is not meant to be encoded to a `Document`")
+    fileprivate func encode(to _: inout BSONDocument, forKey _: String) throws {
+        fatalError("`MutableDictionary` is not meant to be encoded to a `BSONDocument`")
     }
 
-    internal static func from(iterator _: DocumentIterator) -> BSON {
+    internal static func from(iterator _: BSONDocumentIterator) -> BSON {
         fatalError("`MutableDictionary` is not meant to be initialized from a `DocumentIterator`")
     }
 

@@ -1,13 +1,13 @@
 import Foundation
 
-/// An extension of `Document` to implement the `Codable` protocol.
-extension Document: Codable {
+/// An extension of `BSONDocument` to implement the `Codable` protocol.
+extension BSONDocument: Codable {
     public func encode(to encoder: Encoder) throws {
         guard let bsonEncoder = encoder as? _BSONEncoder else {
             throw bsonEncodingUnsupportedError(value: self, at: encoder.codingPath)
         }
 
-        // directly add the `Document` to the encoder's storage.
+        // directly add the `BSONDocument` to the encoder's storage.
         bsonEncoder.storage.containers.append(self)
     }
 
@@ -18,13 +18,13 @@ extension Document: Codable {
     public init(from decoder: Decoder) throws {
         // currently we only support decoding to a document using a BSONDecoder.
         guard let bsonDecoder = decoder as? _BSONDecoder else {
-            throw getDecodingError(type: Document.self, decoder: decoder)
+            throw getDecodingError(type: BSONDocument.self, decoder: decoder)
         }
 
-        // we can just return the top container `Document`.
+        // we can just return the top container `BSONDocument`.
         let topContainer = bsonDecoder.storage.topContainer
         guard let doc = topContainer.documentValue else {
-            throw DecodingError._typeMismatch(at: [], expectation: Document.self, reality: topContainer.bsonValue)
+            throw DecodingError._typeMismatch(at: [], expectation: BSONDocument.self, reality: topContainer.bsonValue)
         }
         self = doc
     }

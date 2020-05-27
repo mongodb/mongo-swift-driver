@@ -9,7 +9,7 @@ protocol TestOperation: Decodable {
     func execute(on database: MongoDatabase, sessions: [String: ClientSession]) throws -> TestOperationResult?
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult?
 
@@ -28,7 +28,7 @@ extension TestOperation {
     }
 
     func execute(
-        on _: MongoCollection<Document>,
+        on _: MongoCollection<BSONDocument>,
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
         throw TestError(message: "\(type(of: self)) cannot execute on a collection")
@@ -125,7 +125,7 @@ struct TestOperationDescription: Decodable {
         sessions: [String: ClientSession]
     ) throws {
         let database = client.db(dbName, options: self.databaseOptions)
-        var collection: MongoCollection<Document>?
+        var collection: MongoCollection<BSONDocument>?
 
         if let collName = collName {
             collection = database.collection(collName, options: self.collectionOptions)

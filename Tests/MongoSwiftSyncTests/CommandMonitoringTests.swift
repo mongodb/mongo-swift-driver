@@ -67,7 +67,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
 
 /// A struct to hold the data for a single file, containing one or more tests.
 private struct CMTestFile: Decodable {
-    let data: [Document]
+    let data: [BSONDocument]
     let collectionName: String
     let databaseName: String
     let tests: [CMTest]
@@ -83,7 +83,7 @@ private struct CMTestFile: Decodable {
 private struct CMTest: Decodable {
     struct Operation: Decodable {
         let name: String
-        let args: Document
+        let args: BSONDocument
         let readPreference: ReadPreference?
 
         enum CodingKeys: String, CodingKey {
@@ -93,7 +93,7 @@ private struct CMTest: Decodable {
 
     let op: Operation
     let description: String
-    let expectationDocs: [Document]
+    let expectationDocs: [BSONDocument]
     let minServerVersion: String?
     let maxServerVersion: String?
 
@@ -115,8 +115,8 @@ private struct CMTest: Decodable {
     // If something fails/succeeds incorrectly, we'll know because the generated
     // events won't match up.
     // swiftlint:disable cyclomatic_complexity
-    func doOperation(withCollection collection: MongoCollection<Document>) throws {
-        let filter: Document = self.op.args["filter"]?.documentValue ?? [:]
+    func doOperation(withCollection collection: MongoCollection<BSONDocument>) throws {
+        let filter: BSONDocument = self.op.args["filter"]?.documentValue ?? [:]
 
         switch self.op.name {
         case "count":
@@ -159,15 +159,15 @@ private struct CMTest: Decodable {
             _ = try? collection.insertMany(documents, options: options)
 
         case "insertOne":
-            let document: Document = try self.op.args.get("document")
+            let document: BSONDocument = try self.op.args.get("document")
             _ = try? collection.insertOne(document)
 
         case "updateMany":
-            let update: Document = try self.op.args.get("update")
+            let update: BSONDocument = try self.op.args.get("update")
             _ = try? collection.updateMany(filter: filter, update: update)
 
         case "updateOne":
-            let update: Document = try self.op.args.get("update")
+            let update: BSONDocument = try self.op.args.get("update")
             let options = UpdateOptions(upsert: self.op.args["upsert"]?.boolValue)
             _ = try? collection.updateOne(filter: filter, update: update, options: options)
 
@@ -188,7 +188,7 @@ private protocol ExpectationType {
 
 /// Based on the name of the expectation, generate a corresponding
 /// `ExpectationType` to be compared to incoming events
-private func makeExpectation(_ document: Document) throws -> ExpectationType {
+private func makeExpectation(_ document: BSONDocument) throws -> ExpectationType {
     let decoder = BSONDecoder()
 
     if let doc = document["command_started_event"]?.documentValue {
@@ -208,7 +208,7 @@ private func makeExpectation(_ document: Document) throws -> ExpectationType {
 
 /// An expectation for a `CommandStartedEvent`
 private struct CommandStartedExpectation: ExpectationType, Decodable {
-    var command: Document
+    var command: BSONDocument
     let commandName: String
     let databaseName: String
 
@@ -244,8 +244,8 @@ private struct CommandStartedExpectation: ExpectationType, Decodable {
     }
 }
 
-private func normalizeCommand(_ input: Document) -> Document {
-    var output = Document()
+private func normalizeCommand(_ input: BSONDocument) -> BSONDocument {
+    var output = BSONDocument()
     for (k, v) in input {
         // temporary fix pending resolution of SPEC-1049. removes the field
         // from the expected command unless if it is set to true, because none of the
@@ -302,12 +302,12 @@ private struct CommandFailedExpectation: ExpectationType, Decodable {
 }
 
 private struct CommandSucceededExpectation: ExpectationType, Decodable {
-    let originalReply: Document
+    let originalReply: BSONDocument
     let commandName: String
 
-    var reply: Document { normalizeExpectedReply(originalReply) }
-    var writeErrors: [Document]? { originalReply["writeErrors"]?.arrayValue?.compactMap { $0.documentValue } }
-    var cursor: Document? { originalReply["cursor"]?.documentValue }
+    var reply: BSONDocument { normalizeExpectedReply(originalReply) }
+    var writeErrors: [BSONDocument]? { originalReply["writeErrors"]?.arrayValue?.compactMap { $0.documentValue } }
+    var cursor: BSONDocument? { originalReply["cursor"]?.documentValue }
 
     enum CodingKeys: String, CodingKey {
         case commandName = "command_name", originalReply = "reply"
@@ -353,7 +353,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
     }
 
     /// Compare expected vs actual write errors.
-    func checkWriteErrors(expected: [Document], actual: [Document]) {
+    func checkWriteErrors(expected: [BSONDocument], actual: [BSONDocument]) {
         // The expected writeErrors has placeholder values,
         // so just make sure the count is the same
         expect(expected.count).to(equal(actual.count))
@@ -367,7 +367,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
 
     /// Compare expected vs actual cursor data, excluding the cursor ID
     /// (handled in `compare` because we need the test context).
-    func compareCursors(expected: Document, actual: Document) {
+    func compareCursors(expected: BSONDocument, actual: BSONDocument) {
         let ordered = rearrangeDoc(actual, toLookLike: expected)
         expect(ordered["ns"]).to(equal(expected["ns"]))
         if let firstBatch = expected["firstBatch"] {
@@ -379,8 +379,8 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
 }
 
 /// Clean up expected replies for easier comparison to received replies
-private func normalizeExpectedReply(_ input: Document) -> Document {
-    var output = Document()
+private func normalizeExpectedReply(_ input: BSONDocument) -> BSONDocument {
+    var output = BSONDocument()
     for (k, v) in input {
         // These fields both have placeholder values in them,
         // so we can't directly compare. Remove them from the expected

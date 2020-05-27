@@ -48,7 +48,7 @@ final class CodecTests: MongoSwiftTestCase {
         let encoder = BSONEncoder()
         let decoder = BSONDecoder()
 
-        let expected: Document = [
+        let expected: BSONDocument = [
             "val1": "a",
             "val2": 0,
             "val3": [[1, 2], [3, 4]],
@@ -60,28 +60,28 @@ final class CodecTests: MongoSwiftTestCase {
 
         // a basic struct
         let basic1 = BasicStruct(int: 1, string: "hello")
-        let basic1Doc: Document = ["int": 1, "string": "hello"]
+        let basic1Doc: BSONDocument = ["int": 1, "string": "hello"]
         expect(try encoder.encode(basic1)).to(equal(basic1Doc))
         expect(try decoder.decode(BasicStruct.self, from: basic1Doc)).to(equal(basic1))
 
         // a struct storing two nested structs as properties
         let basic2 = BasicStruct(int: 2, string: "hi")
-        let basic2Doc: Document = ["int": 2, "string": "hi"]
+        let basic2Doc: BSONDocument = ["int": 2, "string": "hi"]
 
         let nestedStruct = NestedStruct(s1: basic1, s2: basic2)
-        let nestedStructDoc: Document = ["s1": .document(basic1Doc), "s2": .document(basic2Doc)]
+        let nestedStructDoc: BSONDocument = ["s1": .document(basic1Doc), "s2": .document(basic2Doc)]
         expect(try encoder.encode(nestedStruct)).to(equal(nestedStructDoc))
         expect(try decoder.decode(NestedStruct.self, from: nestedStructDoc)).to(equal(nestedStruct))
 
         // a struct storing two nested structs in an array
         let nestedArray = NestedArray(array: [basic1, basic2])
-        let nestedArrayDoc: Document = ["array": [.document(basic1Doc), .document(basic2Doc)]]
+        let nestedArrayDoc: BSONDocument = ["array": [.document(basic1Doc), .document(basic2Doc)]]
         expect(try encoder.encode(nestedArray)).to(equal(nestedArrayDoc))
         expect(try decoder.decode(NestedArray.self, from: nestedArrayDoc)).to(equal(nestedArray))
 
         // one more level of nesting
         let nestedNested = NestedNestedStruct(s: nestedStruct)
-        let nestedNestedDoc: Document = ["s": .document(nestedStructDoc)]
+        let nestedNestedDoc: BSONDocument = ["s": .document(nestedStructDoc)]
         expect(try encoder.encode(nestedNested)).to(equal(nestedNestedDoc))
         expect(try decoder.decode(NestedNestedStruct.self, from: nestedNestedDoc)).to(equal(nestedNested))
     }
@@ -98,17 +98,17 @@ final class CodecTests: MongoSwiftTestCase {
         let decoder = BSONDecoder()
 
         let s1 = OptionalsStruct(int: 1, bool: true, string: "hi")
-        let s1Doc: Document = ["int": 1, "bool": true, "string": "hi"]
+        let s1Doc: BSONDocument = ["int": 1, "bool": true, "string": "hi"]
         expect(try encoder.encode(s1)).to(equal(s1Doc))
         expect(try decoder.decode(OptionalsStruct.self, from: s1Doc)).to(equal(s1))
 
         let s2 = OptionalsStruct(int: nil, bool: true, string: "hi")
-        let s2Doc1: Document = ["bool": true, "string": "hi"]
+        let s2Doc1: BSONDocument = ["bool": true, "string": "hi"]
         expect(try encoder.encode(s2)).to(equal(s2Doc1))
         expect(try decoder.decode(OptionalsStruct.self, from: s2Doc1)).to(equal(s2))
 
         // test with key in doc explicitly set to BSONNull
-        let s2Doc2: Document = ["int": .null, "bool": true, "string": "hi"]
+        let s2Doc2: BSONDocument = ["int": .null, "bool": true, "string": "hi"]
         expect(try decoder.decode(OptionalsStruct.self, from: s2Doc2)).to(equal(s2))
     }
 
@@ -154,7 +154,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         let int32 = Int32(42)
         // all should be stored as Int32s, except the float should be stored as a double
-        let doc1: Document = [
+        let doc1: BSONDocument = [
             "int8": .int32(int32), "int16": .int32(int32), "uint8": .int32(int32), "uint16": .int32(int32),
             "uint32": .int32(int32), "uint64": .int32(int32), "uint": .int32(int32), "float": 42.0
         ]
@@ -195,7 +195,7 @@ final class CodecTests: MongoSwiftTestCase {
         let s = Numbers(int8: 42, int16: 42, uint8: 42, uint16: 42, uint32: 42, uint64: 42, uint: 42, float: 42)
 
         // store all values as Int32s and decode them to their requested types
-        var doc1 = Document()
+        var doc1 = BSONDocument()
         for k in Numbers.keys {
             doc1[k] = 42
         }
@@ -203,7 +203,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(res1).to(equal(s))
 
         // store all values as Int64s and decode them to their requested types.
-        var doc2 = Document()
+        var doc2 = BSONDocument()
         for k in Numbers.keys {
             doc2[k] = .int64(42)
         }
@@ -212,7 +212,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(res2).to(equal(s))
 
         // store all values as Doubles and decode them to their requested types
-        var doc3 = Document()
+        var doc3 = BSONDocument()
         for k in Numbers.keys {
             doc3[k] = .double(42)
         }
@@ -255,22 +255,22 @@ final class CodecTests: MongoSwiftTestCase {
         ]))
 
         // store all values as Int32s and decode them to their requested types
-        let doc1: Document = ["int": .int32(42), "int32": .int32(42), "int64": .int32(42), "double": .int32(42)]
+        let doc1: BSONDocument = ["int": .int32(42), "int32": .int32(42), "int64": .int32(42), "double": .int32(42)]
         expect(try decoder.decode(BSONNumbers.self, from: doc1)).to(equal(s))
 
         // store all values as Int64s and decode them to their requested types
-        let doc2: Document = ["int": .int64(42), "int32": .int64(42), "int64": .int64(42), "double": .int64(42)]
+        let doc2: BSONDocument = ["int": .int64(42), "int32": .int64(42), "int64": .int64(42), "double": .int64(42)]
         expect(try decoder.decode(BSONNumbers.self, from: doc2)).to(equal(s))
 
         // store all values as Doubles and decode them to their requested types
-        let doc3: Document = ["int": 42.0, "int32": 42.0, "int64": 42.0, "double": 42.0]
+        let doc3: BSONDocument = ["int": 42.0, "int32": 42.0, "int64": 42.0, "double": 42.0]
         expect(try decoder.decode(BSONNumbers.self, from: doc3)).to(equal(s))
     }
 
     struct AllBSONTypes: Codable, Equatable {
         let double: Double
         let string: String
-        let doc: Document
+        let doc: BSONDocument
         let arr: [BSON]
         let binary: BSONBinary
         let oid: BSONObjectID
@@ -281,13 +281,13 @@ final class CodecTests: MongoSwiftTestCase {
         let ts: BSONTimestamp
         let int32: Int32
         let int64: Int64
-        let dec: Decimal128
-        let minkey: MinKey
+        let dec: BSONDecimal128
+        let minkey: BSONMinKey
         let maxkey: MaxKey
         let regex: BSONRegularExpression
         let symbol: BSONSymbol
         let undefined: BSONUndefined
-        let dbpointer: DBPointer
+        let dbpointer: BSONDBPointer
         let null: BSONNull
 
         public static func factory() throws -> AllBSONTypes {
@@ -305,19 +305,19 @@ final class CodecTests: MongoSwiftTestCase {
                 ts: BSONTimestamp(timestamp: 1, inc: 2),
                 int32: 5,
                 int64: 6,
-                dec: Decimal128("1.2E+10")!,
-                minkey: MinKey(),
+                dec: BSONDecimal128("1.2E+10")!,
+                minkey: BSONMinKey(),
                 maxkey: MaxKey(),
                 regex: BSONRegularExpression(pattern: "^abc", options: "imx"),
                 symbol: BSONSymbol("i am a symbol"),
                 undefined: BSONUndefined(),
-                dbpointer: DBPointer(ref: "some.namespace", id: BSONObjectID("507f1f77bcf86cd799439011")!),
+                dbpointer: BSONDBPointer(ref: "some.namespace", id: BSONObjectID("507f1f77bcf86cd799439011")!),
                 null: BSONNull()
             )
         }
 
         // Manually construct a document from this instance for comparision with encoder output.
-        public func toDocument() -> Document {
+        public func toDocument() -> BSONDocument {
             [
                 "double": .double(self.double),
                 "string": .string(self.string),
@@ -410,9 +410,9 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try decoder.decode(Double.self, from: "{\"$numberDouble\": \"42.42\"}")).to(equal(42.42))
 
         expect(try decoder.decode(
-            Decimal128.self,
+            BSONDecimal128.self,
             from: "{\"$numberDecimal\": \"1.2E+10\"}"
-        )).to(equal(Decimal128("1.2E+10")!))
+        )).to(equal(BSONDecimal128("1.2E+10")!))
 
         let binary = try BSONBinary(base64: "//8=", subtype: .generic)
         expect(
@@ -444,7 +444,7 @@ final class CodecTests: MongoSwiftTestCase {
             from: "{\"$code\": \"hi\", \"$scope\": {\"x\" : { \"$numberLong\": \"1\" }} }"
         )
         ).to(equal(cws))
-        expect(try decoder.decode(Document.self, from: "{\"x\": 1}")).to(equal(["x": .int32(1)]))
+        expect(try decoder.decode(BSONDocument.self, from: "{\"x\": 1}")).to(equal(["x": .int32(1)]))
 
         let ts = BSONTimestamp(timestamp: 1, inc: 2)
         expect(try decoder.decode(BSONTimestamp.self, from: "{ \"$timestamp\" : { \"t\" : 1, \"i\" : 2 } }"))
@@ -458,7 +458,7 @@ final class CodecTests: MongoSwiftTestCase {
             )
         ).to(equal(regex))
 
-        expect(try decoder.decode(MinKey.self, from: "{\"$minKey\": 1}")).to(equal(MinKey()))
+        expect(try decoder.decode(BSONMinKey.self, from: "{\"$minKey\": 1}")).to(equal(BSONMinKey()))
         expect(try decoder.decode(MaxKey.self, from: "{\"$maxKey\": 1}")).to(equal(MaxKey()))
 
         expect(try decoder.decode(Bool.self, from: "false")).to(beFalse())
@@ -529,14 +529,14 @@ final class CodecTests: MongoSwiftTestCase {
         let decoder = BSONDecoder()
 
         // standalone document
-        let doc: Document = ["y": 1]
+        let doc: BSONDocument = ["y": 1]
         let bsonDoc = BSON.document(doc)
         expect(try encoder.encode(bsonDoc)).to(equal(doc))
         expect(try decoder.decode(BSON.self, from: doc)).to(equal(bsonDoc))
         expect(try decoder.decode(BSON.self, from: doc.canonicalExtendedJSON)).to(equal(bsonDoc))
         // doc wrapped in a struct
 
-        let wrappedDoc: Document = ["x": bsonDoc]
+        let wrappedDoc: BSONDocument = ["x": bsonDoc]
         expect(try encoder.encode(AnyBSONStruct(bsonDoc))).to(equal(wrappedDoc))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDoc).x).to(equal(bsonDoc))
         expect(try decoder.decode(
@@ -548,7 +548,7 @@ final class CodecTests: MongoSwiftTestCase {
         let double: BSON = 42.0
         expect(try decoder.decode(BSON.self, from: "{\"$numberDouble\": \"42\"}")).to(equal(double))
 
-        let wrappedDouble: Document = ["x": double]
+        let wrappedDouble: BSONDocument = ["x": double]
         expect(try encoder.encode(AnyBSONStruct(double))).to(equal(wrappedDouble))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDouble).x).to(equal(double))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDouble.canonicalExtendedJSON).x).to(equal(double))
@@ -557,7 +557,7 @@ final class CodecTests: MongoSwiftTestCase {
         let string: BSON = "hi"
         expect(try decoder.decode(BSON.self, from: "\"hi\"")).to(equal(string))
 
-        let wrappedString: Document = ["x": string]
+        let wrappedString: BSONDocument = ["x": string]
         expect(try encoder.encode(AnyBSONStruct(string))).to(equal(wrappedString))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedString).x).to(equal(string))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedString.canonicalExtendedJSON).x).to(equal(string))
@@ -574,7 +574,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(decodedArray?[1]).to(equal(2))
         expect(decodedArray?[2]).to(equal("hello"))
 
-        let wrappedArray: Document = ["x": array]
+        let wrappedArray: BSONDocument = ["x": array]
         expect(try encoder.encode(AnyBSONStruct(array))).to(equal(wrappedArray))
         let decodedWrapped = try decoder.decode(AnyBSONStruct.self, from: wrappedArray).x.arrayValue
         expect(decodedWrapped?[0]).to(equal(1))
@@ -591,7 +591,7 @@ final class CodecTests: MongoSwiftTestCase {
             )
         ).to(equal(binary))
 
-        let wrappedBinary: Document = ["x": binary]
+        let wrappedBinary: BSONDocument = ["x": binary]
         expect(try encoder.encode(AnyBSONStruct(binary))).to(equal(wrappedBinary))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedBinary).x).to(equal(binary))
         expect(try decoder.decode(
@@ -605,7 +605,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         expect(try decoder.decode(BSON.self, from: "{\"$oid\": \"\(oid.hex)\"}")).to(equal(bsonOid))
 
-        let wrappedOid: Document = ["x": bsonOid]
+        let wrappedOid: BSONDocument = ["x": bsonOid]
         expect(try encoder.encode(AnyBSONStruct(bsonOid))).to(equal(wrappedOid))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedOid).x).to(equal(bsonOid))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedOid.canonicalExtendedJSON).x).to(equal(bsonOid))
@@ -615,7 +615,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         expect(try decoder.decode(BSON.self, from: "true")).to(equal(bool))
 
-        let wrappedBool: Document = ["x": bool]
+        let wrappedBool: BSONDocument = ["x": bool]
         expect(try encoder.encode(AnyBSONStruct(bool))).to(equal(wrappedBool))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedBool).x).to(equal(bool))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedBool.canonicalExtendedJSON).x).to(equal(bool))
@@ -625,7 +625,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         expect(try decoder.decode(BSON.self, from: "{ \"$date\" : { \"$numberLong\" : \"5000000\" } }")).to(equal(date))
 
-        let wrappedDate: Document = ["x": date]
+        let wrappedDate: BSONDocument = ["x": date]
         expect(try encoder.encode(AnyBSONStruct(date))).to(equal(wrappedDate))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDate).x).to(equal(date))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDate.canonicalExtendedJSON).x).to(equal(date))
@@ -647,7 +647,7 @@ final class CodecTests: MongoSwiftTestCase {
         )
         ).to(equal(regex))
 
-        let wrappedRegex: Document = ["x": regex]
+        let wrappedRegex: BSONDocument = ["x": regex]
         expect(try encoder.encode(AnyBSONStruct(regex))).to(equal(wrappedRegex))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedRegex).x).to(equal(regex))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedRegex.canonicalExtendedJSON).x).to(equal(regex))
@@ -663,7 +663,7 @@ final class CodecTests: MongoSwiftTestCase {
             )
         ).to(equal(code))
 
-        let wrappedCode: Document = ["x": code]
+        let wrappedCode: BSONDocument = ["x": code]
         expect(try encoder.encode(AnyBSONStruct(code))).to(equal(wrappedCode))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedCode).x).to(equal(code))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedCode.canonicalExtendedJSON).x).to(equal(code))
@@ -673,7 +673,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         expect(try decoder.decode(BSON.self, from: "{ \"$numberInt\" : \"5\" }")).to(equal(int32))
 
-        let wrappedInt32: Document = ["x": int32]
+        let wrappedInt32: BSONDocument = ["x": int32]
         expect(try encoder.encode(AnyBSONStruct(int32))).to(equal(wrappedInt32))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt32).x).to(equal(int32))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt32.canonicalExtendedJSON).x).to(equal(int32)
@@ -684,7 +684,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         expect(try decoder.decode(BSON.self, from: "{ \"$numberLong\" : \"5\" }")).to(equal(int))
 
-        let wrappedInt: Document = ["x": int]
+        let wrappedInt: BSONDocument = ["x": int]
         expect(try encoder.encode(AnyBSONStruct(int))).to(equal(wrappedInt))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt).x).to(equal(int))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt.canonicalExtendedJSON).x).to(equal(int))
@@ -694,17 +694,17 @@ final class CodecTests: MongoSwiftTestCase {
 
         expect(try decoder.decode(BSON.self, from: "{\"$numberLong\":\"5\"}")).to(equal(int64))
 
-        let wrappedInt64: Document = ["x": int64]
+        let wrappedInt64: BSONDocument = ["x": int64]
         expect(try encoder.encode(AnyBSONStruct(int64))).to(equal(wrappedInt64))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt64).x).to(equal(int64))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt64.canonicalExtendedJSON).x).to(equal(int64))
 
         // decimal128
-        let decimal = BSON.decimal128(Decimal128("1.2E+10")!)
+        let decimal = BSON.decimal128(BSONDecimal128("1.2E+10")!)
 
         expect(try decoder.decode(BSON.self, from: "{ \"$numberDecimal\" : \"1.2E+10\" }")).to(equal(decimal))
 
-        let wrappedDecimal: Document = ["x": decimal]
+        let wrappedDecimal: BSONDocument = ["x": decimal]
         expect(try encoder.encode(AnyBSONStruct(decimal))).to(equal(wrappedDecimal))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDecimal).x).to(equal(decimal))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedDecimal.canonicalExtendedJSON).x).to(equal(decimal))
@@ -714,7 +714,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         expect(try decoder.decode(BSON.self, from: "{ \"$maxKey\" : 1 }")).to(equal(maxKey))
 
-        let wrappedMaxKey: Document = ["x": maxKey]
+        let wrappedMaxKey: BSONDocument = ["x": maxKey]
         expect(try encoder.encode(AnyBSONStruct(maxKey))).to(equal(wrappedMaxKey))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedMaxKey).x).to(equal(maxKey))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedMaxKey.canonicalExtendedJSON).x).to(equal(maxKey))
@@ -724,7 +724,7 @@ final class CodecTests: MongoSwiftTestCase {
 
         expect(try decoder.decode(BSON.self, from: "{ \"$minKey\" : 1 }")).to(equal(minKey))
 
-        let wrappedMinKey: Document = ["x": minKey]
+        let wrappedMinKey: BSONDocument = ["x": minKey]
         expect(try encoder.encode(AnyBSONStruct(minKey))).to(equal(wrappedMinKey))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedMinKey).x).to(equal(minKey))
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedMinKey.canonicalExtendedJSON).x).to(equal(minKey))
@@ -784,7 +784,7 @@ final class CodecTests: MongoSwiftTestCase {
             allowDiskUse: true,
             batchSize: 5,
             bypassDocumentValidation: false,
-            collation: Document(),
+            collation: BSONDocument(),
             comment: "hello",
             hint: .indexName("hint"),
             maxTimeMS: 12,
@@ -806,7 +806,7 @@ final class CodecTests: MongoSwiftTestCase {
         ]))
 
         let count = CountDocumentsOptions(
-            collation: Document(),
+            collation: BSONDocument(),
             hint: .indexName("hint"),
             limit: 123,
             maxTimeMS: 12,
@@ -824,7 +824,7 @@ final class CodecTests: MongoSwiftTestCase {
         ]))
 
         let distinct = DistinctOptions(
-            collation: Document(),
+            collation: BSONDocument(),
             maxTimeMS: 123,
             readConcern: rc,
             readPreference: rp
@@ -838,23 +838,23 @@ final class CodecTests: MongoSwiftTestCase {
         let find = FindOptions(
             allowPartialResults: false,
             batchSize: 123,
-            collation: Document(),
+            collation: BSONDocument(),
             comment: "asdf",
             cursorType: .tailable,
             hint: .indexName("sdf"),
             limit: 123,
-            max: Document(),
+            max: BSONDocument(),
             maxAwaitTimeMS: 123,
             maxTimeMS: 123,
-            min: Document(),
+            min: BSONDocument(),
             noCursorTimeout: true,
-            projection: Document(),
+            projection: BSONDocument(),
             readConcern: rc,
             readPreference: rp,
             returnKey: true,
             showRecordID: false,
             skip: 45,
-            sort: Document()
+            sort: BSONDocument()
         )
         expect(try encoder.encode(find).keys.sorted()).to(equal([
             "allowPartialResults",
@@ -882,21 +882,21 @@ final class CodecTests: MongoSwiftTestCase {
             background: false,
             bits: 32,
             bucketSize: 333,
-            collation: Document(),
+            collation: BSONDocument(),
             defaultLanguage: "english",
             expireAfterSeconds: 123,
             languageOverride: "asdf",
             max: 5.5,
             min: 4.4,
             name: "sadf",
-            partialFilterExpression: Document(),
+            partialFilterExpression: BSONDocument(),
             sparse: false,
             sphereIndexVersion: 959,
             storageEngine: ["a": 1],
             textIndexVersion: 123,
             unique: true,
             version: 123,
-            weights: Document()
+            weights: BSONDocument()
         )
         expect(try encoder.encode(index).keys.sorted()).to(equal([
             "background",

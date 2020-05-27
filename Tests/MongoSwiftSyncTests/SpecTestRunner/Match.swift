@@ -66,8 +66,8 @@ extension Array: Matchable where Element: Matchable {
 }
 
 /// Extension that adds MATCHES functionality to `Document`.
-extension Document: Matchable {
-    internal func contentMatches(expected: Document) -> Bool {
+extension BSONDocument: Matchable {
+    internal func contentMatches(expected: BSONDocument) -> Bool {
         for (eK, eV) in expected {
             // If the expected document has "key": null then the actual document must either have "key": null
             // or no reference to "key".

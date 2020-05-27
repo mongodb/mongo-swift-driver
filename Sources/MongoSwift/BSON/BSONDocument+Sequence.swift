@@ -1,7 +1,7 @@
 import CLibMongoC
 import Foundation
 
-/// An extension of `Document` to make it conform to the `Sequence` protocol.
+/// An extension of `BSONDocument` to make it conform to the `Sequence` protocol.
 /// This allows you to iterate through the (key, value) pairs, for example:
 /// ```
 /// let doc: Document = ["a": 1, "b": 2]
@@ -9,21 +9,21 @@ import Foundation
 ///     ...
 /// }
 /// ```
-extension Document: Sequence {
+extension BSONDocument: Sequence {
     /// The element type of a document: a tuple containing an individual key-value pair.
     public typealias KeyValuePair = (key: String, value: BSON)
 
-    // Since a `Document` is a recursive structure, we want to enforce the use of it as a subsequence of itself.
+    // Since a `BSONDocument` is a recursive structure, we want to enforce the use of it as a subsequence of itself.
     // instead of something like `Slice<Document>`.
     /// The type that is returned from methods such as `dropFirst()` and `split()`.
-    public typealias SubSequence = Document
+    public typealias SubSequence = BSONDocument
 
     /// Returns a `Bool` indicating whether the document is empty.
     public var isEmpty: Bool { !self.makeIterator().advance() }
 
-    /// Returns a `DocumentIterator` over the values in this `Document`.
-    public func makeIterator() -> DocumentIterator {
-        guard let iter = DocumentIterator(over: self) else {
+    /// Returns a `BSONDocumentIterator` over the values in this `BSONDocument`.
+    public func makeIterator() -> BSONDocumentIterator {
+        guard let iter = BSONDocumentIterator(over: self) else {
             fatalError("Failed to initialize an iterator over document \(self)")
         }
         return iter
@@ -40,8 +40,8 @@ extension Document: Sequence {
      *
      * - Throws: An error if `transform` throws an error.
      */
-    public func mapValues(_ transform: (BSON) throws -> BSON) rethrows -> Document {
-        var output = Document()
+    public func mapValues(_ transform: (BSON) throws -> BSON) rethrows -> BSONDocument {
+        var output = BSONDocument()
         for (k, v) in self {
             output[k] = try transform(v)
         }
@@ -56,7 +56,7 @@ extension Document: Sequence {
      *
      * - Returns: A document starting after the specified number of key-value pairs.
      */
-    public func dropFirst(_ n: Int) -> Document {
+    public func dropFirst(_ n: Int) -> BSONDocument {
         switch n {
         case ..<0:
             fatalError("Can't drop a negative number of elements from a document")
@@ -66,7 +66,7 @@ extension Document: Sequence {
             // get all the key-value pairs from nth index on. subsequence will handle the case where n >= length of doc
             // by creating an iter and calling advance until the end is reached. this is exactly what calling self.count
             // would do in that situation via bson_count_keys, so no point in special casing self.count <= n here.
-            return DocumentIterator.subsequence(of: self, startIndex: n)
+            return BSONDocumentIterator.subsequence(of: self, startIndex: n)
         }
     }
 
@@ -78,17 +78,17 @@ extension Document: Sequence {
      *
      * - Returns: A document leaving off the specified number of final key-value pairs.
      */
-    public func dropLast(_ n: Int) -> Document {
+    public func dropLast(_ n: Int) -> BSONDocument {
         switch n {
         case ..<0:
-            fatalError("Can't drop a negative number of elements from a `Document`")
+            fatalError("Can't drop a negative number of elements from a `BSONDocument`")
         case 0:
             return self
         default:
             // the subsequence we want is [0, length - n)
             let end = self.count - n
             // if we are dropping >= the length, just short circuit and return empty doc
-            return end <= 0 ? [:] : DocumentIterator.subsequence(of: self, endIndex: end)
+            return end <= 0 ? [:] : BSONDocumentIterator.subsequence(of: self, endIndex: end)
         }
     }
 
@@ -103,7 +103,7 @@ extension Document: Sequence {
      *
      * - Throws: An error if `predicate` throws an error.
      */
-    public func drop(while predicate: (KeyValuePair) throws -> Bool) rethrows -> Document {
+    public func drop(while predicate: (KeyValuePair) throws -> Bool) rethrows -> BSONDocument {
         // tracks whether we are still in a "dropping" state. once we encounter
         // an element that doesn't satisfy the predicate, we stop dropping.
         var drop = true
@@ -130,15 +130,15 @@ extension Document: Sequence {
      *
      * - Returns: A document starting at the beginning of this document with at most `maxLength` key-value pairs.
      */
-    public func prefix(_ maxLength: Int) -> Document {
+    public func prefix(_ maxLength: Int) -> BSONDocument {
         switch maxLength {
         case ..<0:
-            fatalError("Can't retrieve a negative length prefix of a `Document`")
+            fatalError("Can't retrieve a negative length prefix of a `BSONDocument`")
         case 0:
             return [:]
         default:
             // short circuit if there are fewer elements in the doc than requested
-            return self.count <= maxLength ? self : DocumentIterator.subsequence(of: self, endIndex: maxLength)
+            return self.count <= maxLength ? self : BSONDocumentIterator.subsequence(of: self, endIndex: maxLength)
         }
     }
 
@@ -153,8 +153,8 @@ extension Document: Sequence {
      *
      * - Throws: An error if `predicate` throws an error.
      */
-    public func prefix(while predicate: (KeyValuePair) throws -> Bool) rethrows -> Document {
-        var output = Document()
+    public func prefix(while predicate: (KeyValuePair) throws -> Bool) rethrows -> BSONDocument {
+        var output = BSONDocument()
         for elt in self {
             if try !predicate(elt) { break }
             output[elt.key] = elt.value
@@ -170,16 +170,16 @@ extension Document: Sequence {
      *
      * - Returns: A document ending at the end of this document with at most `maxLength` key-value pairs.
      */
-    public func suffix(_ maxLength: Int) -> Document {
+    public func suffix(_ maxLength: Int) -> BSONDocument {
         switch maxLength {
         case ..<0:
-            fatalError("Can't retrieve a negative length suffix of a `Document`")
+            fatalError("Can't retrieve a negative length suffix of a `BSONDocument`")
         case 0:
             return [:]
         default:
             let start = self.count - maxLength
             // short circuit if there are fewer elements in the doc than requested
-            return start <= 0 ? self : DocumentIterator.subsequence(of: self, startIndex: start)
+            return start <= 0 ? self : BSONDocumentIterator.subsequence(of: self, startIndex: start)
         }
     }
 
@@ -207,7 +207,7 @@ extension Document: Sequence {
         maxSplits: Int = Int.max,
         omittingEmptySubsequences: Bool = true,
         whereSeparator isSeparator: (KeyValuePair) throws -> Bool
-    ) rethrows -> [Document] {
+    ) rethrows -> [BSONDocument] {
         // rather than implementing the complex logic necessary for split, convert to an array and call split on that
         let asArr = Array(self)
         // convert to a [[KeyValuePair]]
@@ -218,9 +218,9 @@ extension Document: Sequence {
         )
 
         // convert each nested [KeyValuePair] back to a Document
-        var output = [Document]()
+        var output = [BSONDocument]()
         splitArrs.forEach { array in
-            var doc = Document()
+            var doc = BSONDocument()
             array.forEach { doc[$0.key] = $0.value }
             output.append(doc)
         }
@@ -229,7 +229,7 @@ extension Document: Sequence {
     }
 }
 
-extension Document {
+extension BSONDocument {
     // this is an alternative to the built-in `Document.filter` that returns an `[KeyValuePair]`.
     // this variant is called by default, but the other is still accessible by explicitly stating
     // return type: `let newDocPairs: [Document.KeyValuePair] = newDoc.filter { ... }`
@@ -244,8 +244,8 @@ extension Document {
      *
      * - Throws: An error if `isIncluded` throws an error.
      */
-    public func filter(_ isIncluded: (KeyValuePair) throws -> Bool) rethrows -> Document {
-        var output = Document()
+    public func filter(_ isIncluded: (KeyValuePair) throws -> Bool) rethrows -> BSONDocument {
+        var output = BSONDocument()
         for elt in self where try isIncluded(elt) {
             output[elt.key] = elt.value
         }

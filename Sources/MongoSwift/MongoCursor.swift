@@ -81,7 +81,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     }
 
     /// Decodes a result to the generic type or `nil` if no result were returned.
-    private func decode(result: Document?) throws -> T? {
+    private func decode(result: BSONDocument?) throws -> T? {
         guard let doc = result else {
             return nil
         }
@@ -89,7 +89,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     }
 
     /// Decodes the given document to the generic type.
-    private func decode(doc: Document) throws -> T {
+    private func decode(doc: BSONDocument) throws -> T {
         try self.decoder.decode(T.self, from: doc)
     }
 

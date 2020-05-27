@@ -105,7 +105,7 @@ public class MongoClient {
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
     public func listDatabases(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [DatabaseSpecification] {
@@ -127,7 +127,7 @@ public class MongoClient {
      *   - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
      */
     public func listMongoDatabases(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [MongoDatabase] {
@@ -149,7 +149,7 @@ public class MongoClient {
      *   - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
      */
     public func listDatabaseNames(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListDatabasesOptions? = nil,
         session: ClientSession? = nil
     ) throws -> [String] {
@@ -197,15 +197,15 @@ public class MongoClient {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
-    ) throws -> ChangeStream<ChangeStreamEvent<Document>> {
+    ) throws -> ChangeStream<ChangeStreamEvent<BSONDocument>> {
         try self.watch(
             pipeline,
             options: options,
             session: session,
-            withEventType: ChangeStreamEvent<Document>.self
+            withEventType: ChangeStreamEvent<BSONDocument>.self
         )
     }
 
@@ -238,7 +238,7 @@ public class MongoClient {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<FullDocType: Codable>(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
@@ -279,7 +279,7 @@ public class MongoClient {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<EventType: Codable>(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withEventType _: EventType.Type

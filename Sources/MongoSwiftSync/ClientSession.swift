@@ -37,7 +37,7 @@ public final class ClientSession {
     /// The most recent cluster time seen by this session. This value will be nil if either of the following are true:
     /// - No operations have been executed using this session and `advanceClusterTime` has not been called.
     /// - This session has been ended.
-    public var clusterTime: Document? { self.asyncSession.clusterTime }
+    public var clusterTime: BSONDocument? { self.asyncSession.clusterTime }
 
     /// The operation time of the most recent operation performed using this session. This value will be nil if either
     /// of the following are true:
@@ -81,7 +81,7 @@ public final class ClientSession {
      * - Parameters:
      *   - clusterTime: The session's new cluster time, as a `Document` like `["cluster time": Timestamp(...)]`
      */
-    public func advanceClusterTime(to clusterTime: Document) {
+    public func advanceClusterTime(to clusterTime: BSONDocument) {
         self.asyncSession.advanceClusterTime(to: clusterTime)
     }
 

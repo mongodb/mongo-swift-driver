@@ -4,16 +4,16 @@ import Foundation
 internal typealias BSONIterPointer = UnsafePointer<bson_iter_t>
 internal typealias MutableBSONIterPointer = UnsafeMutablePointer<bson_iter_t>
 
-/// An iterator over the values in a `Document`.
-public class DocumentIterator: IteratorProtocol {
+/// An iterator over the values in a `BSONDocument`.
+public class BSONDocumentIterator: IteratorProtocol {
     /// the libbson iterator. it must be a `var` because we use it as an inout argument.
     private var _iter: bson_iter_t
     /// a reference to the document we're iterating over
-    private let document: Document
+    private let document: BSONDocument
 
     /// Initializes a new iterator over the contents of `doc`. Returns `nil` if the key is not
     /// found, or if an iterator cannot be created over `doc` due to an error from e.g. corrupt data.
-    internal init?(over document: Document) {
+    internal init?(over document: BSONDocument) {
         self._iter = bson_iter_t()
         self.document = document
 
@@ -30,7 +30,7 @@ public class DocumentIterator: IteratorProtocol {
 
     /// Initializes a new iterator over the contents of `doc`. Returns `nil` if an iterator cannot
     /// be created over `doc` due to an error from e.g. corrupt data, or if the key is not found.
-    internal init?(over document: Document, advancedTo key: String) {
+    internal init?(over document: BSONDocument, advancedTo key: String) {
         self._iter = bson_iter_t()
         self.document = document
 
@@ -102,9 +102,9 @@ public class DocumentIterator: IteratorProtocol {
     /// Returns the current value (equivalent to the `currentValue` property) or throws on error.
     ///
     /// - Throws:
-    ///   - `InternalError` if the current value of this `DocumentIterator` cannot be decoded to BSON.
+    ///   - `InternalError` if the current value of this `BSONDocumentIterator` cannot be decoded to BSON.
     internal func safeCurrentValue() throws -> BSON {
-        guard let bsonType = DocumentIterator.bsonTypeMap[currentType] else {
+        guard let bsonType = BSONDocumentIterator.bsonTypeMap[currentType] else {
             throw InternalError(
                 message: "Unknown BSONType for iterator's current value with type: \(self.currentType)"
             )
@@ -116,12 +116,16 @@ public class DocumentIterator: IteratorProtocol {
     // uses an iterator to copy (key, value) pairs of the provided document from range [startIndex, endIndex) into a new
     // document. starts at the startIndex-th pair and ends at the end of the document or the (endIndex-1)th index,
     // whichever comes first.
-    internal static func subsequence(of doc: Document, startIndex: Int = 0, endIndex: Int = Int.max) -> Document {
+    internal static func subsequence(
+        of doc: BSONDocument,
+        startIndex: Int = 0,
+        endIndex: Int = Int.max
+    ) -> BSONDocument {
         guard endIndex >= startIndex else {
             fatalError("endIndex must be >= startIndex")
         }
 
-        guard let iter = DocumentIterator(over: doc) else {
+        guard let iter = BSONDocumentIterator(over: doc) else {
             return [:]
         }
 
@@ -153,7 +157,7 @@ public class DocumentIterator: IteratorProtocol {
             return doc
         }
 
-        var newDoc = Document()
+        var newDoc = BSONDocument()
 
         do {
             try doc.copyElements(to: &newDoc, excluding: excludedKeys)
@@ -165,16 +169,16 @@ public class DocumentIterator: IteratorProtocol {
     }
 
     /// Returns the next value in the sequence, or `nil` if the iterator is exhausted.
-    public func next() -> Document.KeyValuePair? {
+    public func next() -> BSONDocument.KeyValuePair? {
         self.advance() ? (self.currentKey, self.currentValue) : nil
     }
 
     /**
-     * Overwrites the current value of this `DocumentIterator` with the supplied value.
+     * Overwrites the current value of this `BSONDocumentIterator` with the supplied value.
      *
      * - Throws:
      *   - `InternalError` if the new value is an `Int` and cannot be written to BSON.
-     *   - `LogicError` if the new value is a `Decimal128` or `BSONObjectID` and is improperly formatted.
+     *   - `LogicError` if the new value is a `BSONDecimal128` or `BSONObjectID` and is improperly formatted.
      */
     internal func overwriteCurrentValue(with newValue: Overwritable) throws {
         let newValueType = type(of: newValue).bsonType
@@ -199,22 +203,22 @@ public class DocumentIterator: IteratorProtocol {
     private static let bsonTypeMap: [BSONType: BSONValue.Type] = [
         .double: Double.self,
         .string: String.self,
-        .document: Document.self,
+        .document: BSONDocument.self,
         .array: [BSON].self,
         .binary: BSONBinary.self,
         .objectID: BSONObjectID.self,
         .bool: Bool.self,
         .datetime: Date.self,
         .regex: BSONRegularExpression.self,
-        .dbPointer: DBPointer.self,
+        .dbPointer: BSONDBPointer.self,
         .code: BSONCode.self,
         .symbol: BSONSymbol.self,
         .codeWithScope: BSONCodeWithScope.self,
         .int32: Int32.self,
         .timestamp: BSONTimestamp.self,
         .int64: Int64.self,
-        .decimal128: Decimal128.self,
-        .minKey: MinKey.self,
+        .decimal128: BSONDecimal128.self,
+        .minKey: BSONMinKey.self,
         .maxKey: MaxKey.self,
         .null: BSONNull.self,
         .undefined: BSONUndefined.self

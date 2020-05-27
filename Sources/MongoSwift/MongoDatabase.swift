@@ -143,8 +143,8 @@ public struct MongoDatabase {
      *
      * - Returns: the requested `MongoCollection<Document>`
      */
-    public func collection(_ name: String, options: MongoCollectionOptions? = nil) -> MongoCollection<Document> {
-        self.collection(name, withType: Document.self, options: options)
+    public func collection(_ name: String, options: MongoCollectionOptions? = nil) -> MongoCollection<BSONDocument> {
+        self.collection(name, withType: BSONDocument.self, options: options)
     }
 
     /**
@@ -191,8 +191,8 @@ public struct MongoDatabase {
         _ name: String,
         options: CreateCollectionOptions? = nil,
         session: ClientSession? = nil
-    ) -> EventLoopFuture<MongoCollection<Document>> {
-        self.createCollection(name, withType: Document.self, options: options, session: session)
+    ) -> EventLoopFuture<MongoCollection<BSONDocument>> {
+        self.createCollection(name, withType: BSONDocument.self, options: options, session: session)
     }
 
     /**
@@ -230,7 +230,7 @@ public struct MongoDatabase {
      * Lists all the collections in this database.
      *
      * - Parameters:
-     *   - filter: a `Document`, optional criteria to filter results by
+     *   - filter: a `BSONDocument`, optional criteria to filter results by
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -243,7 +243,7 @@ public struct MongoDatabase {
      *    - `LogicError` if this databases's parent client has already been closed.
      */
     public func listCollections(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<MongoCursor<CollectionSpecification>> {
@@ -262,7 +262,7 @@ public struct MongoDatabase {
      * Gets a list of `MongoCollection`s corresponding to collections in this database.
      *
      * - Parameters:
-     *   - filter: a `Document`, optional criteria to filter results by
+     *   - filter: a `BSONDocument`, optional criteria to filter results by
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -276,10 +276,10 @@ public struct MongoDatabase {
      *    - `LogicError` if this databases's parent client has already been closed.
      */
     public func listMongoCollections(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
-    ) -> EventLoopFuture<[MongoCollection<Document>]> {
+    ) -> EventLoopFuture<[MongoCollection<BSONDocument>]> {
         self.listCollectionNames(filter, options: options, session: session).map { collNames in
             collNames.map { self.collection($0) }
         }
@@ -289,7 +289,7 @@ public struct MongoDatabase {
      * Gets a list of names of collections in this database.
      *
      * - Parameters:
-     *   - filter: a `Document`, optional criteria to filter results by
+     *   - filter: a `BSONDocument`, optional criteria to filter results by
      *   - options: Optional `ListCollectionsOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -302,7 +302,7 @@ public struct MongoDatabase {
      *    - `LogicError` if this databases's parent client has already been closed.
      */
     public func listCollectionNames(
-        _ filter: Document? = nil,
+        _ filter: BSONDocument? = nil,
         options: ListCollectionsOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[String]> {
@@ -320,7 +320,7 @@ public struct MongoDatabase {
      * Issues a MongoDB command against this database.
      *
      * - Parameters:
-     *   - command: a `Document` containing the command to issue against the database
+     *   - command: a `BSONDocument` containing the command to issue against the database
      *   - options: Optional `RunCommandOptions` to use when executing this command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -336,10 +336,10 @@ public struct MongoDatabase {
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func runCommand(
-        _ command: Document,
+        _ command: BSONDocument,
         options: RunCommandOptions? = nil,
         session: ClientSession? = nil
-    ) -> EventLoopFuture<Document> {
+    ) -> EventLoopFuture<BSONDocument> {
         let operation = RunCommandOperation(database: self, command: command, options: options)
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
@@ -370,11 +370,11 @@ public struct MongoDatabase {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
-    ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<Document>>> {
-        self.watch(pipeline, options: options, session: session, withFullDocumentType: Document.self)
+    ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<BSONDocument>>> {
+        self.watch(pipeline, options: options, session: session, withFullDocumentType: BSONDocument.self)
     }
 
     /**
@@ -407,7 +407,7 @@ public struct MongoDatabase {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<FullDocType: Codable>(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
@@ -449,12 +449,12 @@ public struct MongoDatabase {
      * - Note: Supported in MongoDB version 4.0+ only.
      */
     public func watch<EventType: Codable>(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withEventType _: EventType.Type
     ) -> EventLoopFuture<ChangeStream<EventType>> {
-        let operation = WatchOperation<Document, EventType>(
+        let operation = WatchOperation<BSONDocument, EventType>(
             target: .database(self),
             pipeline: pipeline,
             options: options

@@ -27,7 +27,7 @@ extension MongoCollection {
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      */
     public func watch(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<CollectionType>>> {
@@ -61,7 +61,7 @@ extension MongoCollection {
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      */
     public func watch<FullDocType: Codable>(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withFullDocumentType _: FullDocType.Type
@@ -100,7 +100,7 @@ extension MongoCollection {
      *   - https://docs.mongodb.com/manual/reference/system-collections/
      */
     public func watch<EventType: Codable>(
-        _ pipeline: [Document] = [],
+        _ pipeline: [BSONDocument] = [],
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil,
         withEventType _: EventType.Type

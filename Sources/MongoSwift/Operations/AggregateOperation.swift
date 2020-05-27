@@ -7,7 +7,7 @@ public struct AggregateOptions: Codable {
     /// can write data to the _tmp subdirectory in the dbPath directory.
     public var allowDiskUse: Bool?
 
-    /// The number of `Document`s to return per batch.
+    /// The number of `BSONDocument`s to return per batch.
     public var batchSize: Int?
 
     /// If true, allows the write to opt-out of document level validation. This only applies
@@ -15,7 +15,7 @@ public struct AggregateOptions: Codable {
     public var bypassDocumentValidation: Bool?
 
     /// Specifies a collation.
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     /// Enables users to specify an arbitrary string to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
@@ -43,7 +43,7 @@ public struct AggregateOptions: Codable {
         allowDiskUse: Bool? = nil,
         batchSize: Int? = nil,
         bypassDocumentValidation: Bool? = nil,
-        collation: Document? = nil,
+        collation: BSONDocument? = nil,
         comment: String? = nil,
         hint: IndexHint? = nil,
         maxTimeMS: Int? = nil,
@@ -72,18 +72,18 @@ public struct AggregateOptions: Codable {
 /// An operation corresponding to an "aggregate" command on a collection.
 internal struct AggregateOperation<CollectionType: Codable>: Operation {
     private let collection: MongoCollection<CollectionType>
-    private let pipeline: [Document]
+    private let pipeline: [BSONDocument]
     private let options: AggregateOptions?
 
-    internal init(collection: MongoCollection<CollectionType>, pipeline: [Document], options: AggregateOptions?) {
+    internal init(collection: MongoCollection<CollectionType>, pipeline: [BSONDocument], options: AggregateOptions?) {
         self.collection = collection
         self.pipeline = pipeline
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> MongoCursor<Document> {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> MongoCursor<BSONDocument> {
         let opts = try encodeOptions(options: self.options, session: session)
-        let pipeline: Document = ["pipeline": .array(self.pipeline.map { .document($0) })]
+        let pipeline: BSONDocument = ["pipeline": .array(self.pipeline.map { .document($0) })]
 
         let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
             pipeline.withBSONPointer { pipelinePtr in

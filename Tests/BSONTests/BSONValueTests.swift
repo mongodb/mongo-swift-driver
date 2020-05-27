@@ -7,9 +7,9 @@ import XCTest
 
 final class BSONValueTests: MongoSwiftTestCase {
     func testInvalidDecimal128() throws {
-        expect(Decimal128("hi")).to(beNil())
-        expect(Decimal128("123.4.5")).to(beNil())
-        expect(Decimal128("10")).toNot(beNil())
+        expect(BSONDecimal128("hi")).to(beNil())
+        expect(BSONDecimal128("123.4.5")).to(beNil())
+        expect(BSONDecimal128("10")).toNot(beNil())
     }
 
     func testUUIDBytes() throws {
@@ -39,7 +39,10 @@ final class BSONValueTests: MongoSwiftTestCase {
         // Double
         self.checkTrueAndFalse(val: 1.618, alternate: 2.718)
         // Decimal128
-        self.checkTrueAndFalse(val: .decimal128(Decimal128("1.618")!), alternate: .decimal128(Decimal128("2.718")!))
+        self.checkTrueAndFalse(
+            val: .decimal128(BSONDecimal128("1.618")!),
+            alternate: .decimal128(BSONDecimal128("2.718")!)
+        )
         // Bool
         self.checkTrueAndFalse(val: true, alternate: false)
         // String
@@ -169,7 +172,7 @@ final class BSONValueTests: MongoSwiftTestCase {
         let double: Double?
         let int32: Int32?
         let int64: Int64?
-        let decimal: Decimal128?
+        let decimal: BSONDecimal128?
 
         static func compare<T: Equatable>(computed: T?, expected: T?) {
             guard computed != nil else {
@@ -209,18 +212,24 @@ final class BSONValueTests: MongoSwiftTestCase {
     }
 
     func testBSONNumber() throws {
-        let decimal128 = Decimal128("5.5")!
+        let decimal128 = BSONDecimal128("5.5")!
         let double: BSON = 5.5
 
         expect(double.toDouble()).to(equal(5.5))
         expect(double.toDecimal128()).to(equal(decimal128))
 
         let cases = [
-            BSONNumberTestCase(int: 5, double: 5.0, int32: Int32(5), int64: Int64(5), decimal: Decimal128("5")!),
-            BSONNumberTestCase(int: -5, double: -5.0, int32: Int32(-5), int64: Int64(-5), decimal: Decimal128("-5")!),
-            BSONNumberTestCase(int: 0, double: 0.0, int32: Int32(0), int64: Int64(0), decimal: Decimal128("0")!),
-            BSONNumberTestCase(int: nil, double: 1.234, int32: nil, int64: nil, decimal: Decimal128("1.234")!),
-            BSONNumberTestCase(int: nil, double: -31.234, int32: nil, int64: nil, decimal: Decimal128("-31.234")!)
+            BSONNumberTestCase(int: 5, double: 5.0, int32: Int32(5), int64: Int64(5), decimal: BSONDecimal128("5")!),
+            BSONNumberTestCase(
+                int: -5,
+                double: -5.0,
+                int32: Int32(-5),
+                int64: Int64(-5),
+                decimal: BSONDecimal128("-5")!
+            ),
+            BSONNumberTestCase(int: 0, double: 0.0, int32: Int32(0), int64: Int64(0), decimal: BSONDecimal128("0")!),
+            BSONNumberTestCase(int: nil, double: 1.234, int32: nil, int64: nil, decimal: BSONDecimal128("1.234")!),
+            BSONNumberTestCase(int: nil, double: -31.234, int32: nil, int64: nil, decimal: BSONDecimal128("-31.234")!)
         ]
 
         cases.forEach { $0.run() }

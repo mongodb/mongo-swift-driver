@@ -12,7 +12,7 @@ enum TestOperationResult: Decodable, Equatable, Matchable {
     case array([BSON])
 
     /// Result of CRUD operations that return a single `Document` (e.g. `findOneAndDelete`).
-    case document(Document)
+    case document(BSONDocument)
 
     /// Result of CRUD operations whose result can be represented by a `BulkWriteResult` (e.g. `InsertOne`).
     case bulkWrite(BulkWriteResult)
@@ -20,7 +20,7 @@ enum TestOperationResult: Decodable, Equatable, Matchable {
     /// Result of test operations that are expected to return an error (e.g. `CommandError`, `WriteError`).
     case error(ErrorResult)
 
-    public init?(from doc: Document?) {
+    public init?(from doc: BSONDocument?) {
         guard let doc = doc else {
             return nil
         }
@@ -56,7 +56,7 @@ enum TestOperationResult: Decodable, Equatable, Matchable {
             self = .array(array)
         } else if let error = try? ErrorResult(from: decoder) {
             self = .error(error)
-        } else if let doc = try? Document(from: decoder) {
+        } else if let doc = try? BSONDocument(from: decoder) {
             self = .document(doc)
         } else {
             throw DecodingError.valueNotFound(

@@ -107,7 +107,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// Used to store a cached next value to return, if one exists.
     private enum CachedDocument {
         /// Indicates that the associated value is the next value to return. This value may be nil.
-        case cached(Document?)
+        case cached(BSONDocument?)
         /// Indicates that there is no value cached.
         case none
 
@@ -156,7 +156,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
         // but we will still parse the mongoc error to cover all cases.
         if let docPtr = replyPtr.pointee {
             // we have to copy because libmongoc owns the pointer.
-            let reply = Document(copying: docPtr)
+            let reply = BSONDocument(copying: docPtr)
             return extractMongoError(error: error, reply: reply)
         }
 
@@ -169,7 +169,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// Will close the cursor if the end of the cursor is reached or if an error occurs.
     ///
     /// This method should only be called while the lock is held.
-    private func getNextDocument() throws -> Document? {
+    private func getNextDocument() throws -> BSONDocument? {
         guard case let .open(mongocCursor, _, session) = self.state else {
             throw ClosedCursorError
         }
@@ -203,7 +203,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
         }
 
         // We have to copy because libmongoc owns the pointer.
-        return Document(copying: pointee)
+        return BSONDocument(copying: pointee)
     }
 
     /// Close this cursor
@@ -272,7 +272,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
 
     /// Block until a result document is received, an error occurs, or the cursor dies.
     /// This method is blocking and should only be run via the executor.
-    internal func next() throws -> Document? {
+    internal func next() throws -> BSONDocument? {
         try self.lock.withLock {
             guard self._isAlive else {
                 throw ClosedCursorError
@@ -298,7 +298,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
 
     /// Attempt to retrieve a single document from the server, returning nil if there are no results.
     /// This method is blocking and should only be run via the executor.
-    internal func tryNext() throws -> Document? {
+    internal func tryNext() throws -> BSONDocument? {
         try self.lock.withLock {
             if case let .cached(result) = self.cached.clear() {
                 return result
@@ -310,13 +310,13 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// Retrieve all the currently available documents in the result set.
     /// This will not exhaust the cursor.
     /// This method is blocking and should only be run via the executor.
-    internal func toArray() throws -> [Document] {
+    internal func toArray() throws -> [BSONDocument] {
         try self.lock.withLock {
             guard self._isAlive else {
                 throw ClosedCursorError
             }
 
-            var results: [Document] = []
+            var results: [BSONDocument] = []
             if case let .cached(result) = self.cached.clear(), let unwrappedResult = result {
                 results.append(unwrappedResult)
             }

@@ -6,7 +6,7 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     public var capped: Bool?
 
     /// Specifies the default collation for the collection.
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     // swiftlint:disable redundant_optional_initialization
     // to get synthesized decodable conformance for the struct, these strategies need default values.
@@ -22,20 +22,20 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     public var dateCodingStrategy: DateCodingStrategy? = nil
 
     /// Specify a default configuration for indexes created on this collection.
-    public var indexOptionDefaults: Document?
+    public var indexOptionDefaults: BSONDocument?
 
     /// Maximum number of documents allowed in the collection (if capped).
     public var max: Int?
 
     /// An array consisting of aggregation pipeline stages. When used with `viewOn`, will create the view by applying
     /// this pipeline to the source collection or view.
-    public var pipeline: [Document]?
+    public var pipeline: [BSONDocument]?
 
     /// Maximum size, in bytes, of this collection (if capped).
     public var size: Int?
 
     /// Specifies storage engine configuration for this collection.
-    public var storageEngine: Document?
+    public var storageEngine: BSONDocument?
 
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
@@ -52,7 +52,7 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     public var validationLevel: String?
 
     /// What validator should be used for the collection.
-    public var validator: Document?
+    public var validator: BSONDocument?
 
     /// The name of the source collection or view from which to create the view.
     public var viewOn: String?
@@ -69,18 +69,18 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
         capped: Bool? = nil,
-        collation: Document? = nil,
+        collation: BSONDocument? = nil,
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
-        indexOptionDefaults: Document? = nil,
+        indexOptionDefaults: BSONDocument? = nil,
         max: Int? = nil,
-        pipeline: [Document]? = nil,
+        pipeline: [BSONDocument]? = nil,
         size: Int? = nil,
-        storageEngine: Document? = nil,
+        storageEngine: BSONDocument? = nil,
         uuidCodingStrategy: UUIDCodingStrategy? = nil,
         validationAction: String? = nil,
         validationLevel: String? = nil,
-        validator: Document? = nil,
+        validator: BSONDocument? = nil,
         viewOn: String? = nil,
         writeConcern: WriteConcern? = nil
     ) {

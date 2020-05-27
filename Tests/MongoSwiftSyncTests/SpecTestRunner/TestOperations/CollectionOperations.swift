@@ -6,7 +6,7 @@ import TestsCommon
 
 struct Aggregate: TestOperation {
     let session: String?
-    let pipeline: [Document]
+    let pipeline: [BSONDocument]
     let options: AggregateOptions
 
     private enum CodingKeys: String, CodingKey { case session, pipeline }
@@ -15,11 +15,11 @@ struct Aggregate: TestOperation {
         self.options = try AggregateOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.pipeline = try container.decode([Document].self, forKey: .pipeline)
+        self.pipeline = try container.decode([BSONDocument].self, forKey: .pipeline)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let cursor =
@@ -30,7 +30,7 @@ struct Aggregate: TestOperation {
 
 struct CountDocuments: TestOperation {
     let session: String?
-    let filter: Document
+    let filter: BSONDocument
     let options: CountDocumentsOptions
 
     private enum CodingKeys: String, CodingKey { case session, filter }
@@ -39,11 +39,11 @@ struct CountDocuments: TestOperation {
         self.options = try CountDocumentsOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = try container.decode(Document.self, forKey: .filter)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         .int(try collection.countDocuments(self.filter, options: self.options, session: sessions[self.session ?? ""]))
@@ -53,7 +53,7 @@ struct CountDocuments: TestOperation {
 struct Distinct: TestOperation {
     let session: String?
     let fieldName: String
-    let filter: Document?
+    let filter: BSONDocument?
     let options: DistinctOptions
 
     private enum CodingKeys: String, CodingKey { case session, fieldName, filter }
@@ -63,11 +63,11 @@ struct Distinct: TestOperation {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.fieldName = try container.decode(String.self, forKey: .fieldName)
-        self.filter = try container.decodeIfPresent(Document.self, forKey: .filter)
+        self.filter = try container.decodeIfPresent(BSONDocument.self, forKey: .filter)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let result = try collection.distinct(
@@ -82,7 +82,7 @@ struct Distinct: TestOperation {
 
 struct Find: TestOperation {
     let session: String?
-    let filter: Document
+    let filter: BSONDocument
     let options: FindOptions
 
     private enum CodingKeys: String, CodingKey { case session, filter }
@@ -91,11 +91,11 @@ struct Find: TestOperation {
         self.options = try FindOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = (try container.decodeIfPresent(Document.self, forKey: .filter)) ?? Document()
+        self.filter = (try container.decodeIfPresent(BSONDocument.self, forKey: .filter)) ?? BSONDocument()
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         try TestOperationResult(
@@ -106,7 +106,7 @@ struct Find: TestOperation {
 
 struct FindOne: TestOperation {
     let session: String?
-    let filter: Document
+    let filter: BSONDocument
     let options: FindOneOptions
 
     private enum CodingKeys: String, CodingKey { case session, filter }
@@ -115,11 +115,11 @@ struct FindOne: TestOperation {
         self.options = try FindOneOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = try container.decode(Document.self, forKey: .filter)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let doc = try collection.findOne(self.filter, options: self.options, session: sessions[self.session ?? ""])
@@ -129,8 +129,8 @@ struct FindOne: TestOperation {
 
 struct UpdateOne: TestOperation {
     let session: String?
-    let filter: Document
-    let update: Document
+    let filter: BSONDocument
+    let update: BSONDocument
     let options: UpdateOptions
 
     private enum CodingKeys: String, CodingKey { case session, filter, update }
@@ -139,12 +139,12 @@ struct UpdateOne: TestOperation {
         self.options = try UpdateOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = try container.decode(Document.self, forKey: .filter)
-        self.update = try container.decode(Document.self, forKey: .update)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.update = try container.decode(BSONDocument.self, forKey: .update)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let result = try collection.updateOne(
@@ -159,8 +159,8 @@ struct UpdateOne: TestOperation {
 
 struct UpdateMany: TestOperation {
     let session: String?
-    let filter: Document
-    let update: Document
+    let filter: BSONDocument
+    let update: BSONDocument
     let options: UpdateOptions
 
     private enum CodingKeys: String, CodingKey { case session, filter, update }
@@ -169,12 +169,12 @@ struct UpdateMany: TestOperation {
         self.options = try UpdateOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = try container.decode(Document.self, forKey: .filter)
-        self.update = try container.decode(Document.self, forKey: .update)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.update = try container.decode(BSONDocument.self, forKey: .update)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let result = try collection.updateMany(
@@ -189,7 +189,7 @@ struct UpdateMany: TestOperation {
 
 struct DeleteMany: TestOperation {
     let session: String?
-    let filter: Document
+    let filter: BSONDocument
     let options: DeleteOptions
 
     private enum CodingKeys: String, CodingKey { case session, filter }
@@ -198,11 +198,11 @@ struct DeleteMany: TestOperation {
         self.options = try DeleteOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = try container.decode(Document.self, forKey: .filter)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let result =
@@ -213,7 +213,7 @@ struct DeleteMany: TestOperation {
 
 struct DeleteOne: TestOperation {
     let session: String?
-    let filter: Document
+    let filter: BSONDocument
     let options: DeleteOptions
 
     private enum CodingKeys: String, CodingKey { case session, filter }
@@ -222,11 +222,11 @@ struct DeleteOne: TestOperation {
         self.options = try DeleteOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = try container.decode(Document.self, forKey: .filter)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let result = try collection.deleteOne(self.filter, options: self.options, session: sessions[self.session ?? ""])
@@ -236,10 +236,10 @@ struct DeleteOne: TestOperation {
 
 struct InsertOne: TestOperation {
     let session: String?
-    let document: Document
+    let document: BSONDocument
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let result = try collection.insertOne(self.document, session: sessions[self.session ?? ""])
@@ -249,11 +249,11 @@ struct InsertOne: TestOperation {
 
 struct InsertMany: TestOperation {
     let session: String?
-    let documents: [Document]
+    let documents: [BSONDocument]
     let options: InsertManyOptions?
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let result = try collection.insertMany(
@@ -299,19 +299,19 @@ extension WriteModel: Decodable {
         case "deleteOne", "deleteMany":
             let options = try container.decode(DeleteModelOptions.self, forKey: .arguments)
             let args = try container.nestedContainer(keyedBy: DeleteKeys.self, forKey: .arguments)
-            let filter = try args.decode(Document.self, forKey: .filter)
+            let filter = try args.decode(BSONDocument.self, forKey: .filter)
             self = name == "deleteOne" ? .deleteOne(filter, options: options) : .deleteMany(filter, options: options)
         case "replaceOne":
             let options = try container.decode(ReplaceOneModelOptions.self, forKey: .arguments)
             let args = try container.nestedContainer(keyedBy: ReplaceOneKeys.self, forKey: .arguments)
-            let filter = try args.decode(Document.self, forKey: .filter)
+            let filter = try args.decode(BSONDocument.self, forKey: .filter)
             let replacement = try args.decode(CollectionType.self, forKey: .replacement)
             self = .replaceOne(filter: filter, replacement: replacement, options: options)
         case "updateOne", "updateMany":
             let options = try container.decode(UpdateModelOptions.self, forKey: .arguments)
             let args = try container.nestedContainer(keyedBy: UpdateKeys.self, forKey: .arguments)
-            let filter = try args.decode(Document.self, forKey: .filter)
-            let update = try args.decode(Document.self, forKey: .update)
+            let filter = try args.decode(BSONDocument.self, forKey: .filter)
+            let update = try args.decode(BSONDocument.self, forKey: .update)
             self = name == "updateOne" ?
                 .updateOne(filter: filter, update: update, options: options) :
                 .updateMany(filter: filter, update: update, options: options)
@@ -329,11 +329,11 @@ extension WriteModel: Decodable {
 
 struct BulkWrite: TestOperation {
     let session: String?
-    let requests: [WriteModel<Document>]
+    let requests: [WriteModel<BSONDocument>]
     let options: BulkWriteOptions?
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let result =
@@ -344,8 +344,8 @@ struct BulkWrite: TestOperation {
 
 struct FindOneAndUpdate: TestOperation {
     let session: String?
-    let filter: Document
-    let update: Document
+    let filter: BSONDocument
+    let update: BSONDocument
     let options: FindOneAndUpdateOptions
 
     private enum CodingKeys: String, CodingKey { case session, filter, update }
@@ -354,12 +354,12 @@ struct FindOneAndUpdate: TestOperation {
         self.options = try FindOneAndUpdateOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = try container.decode(Document.self, forKey: .filter)
-        self.update = try container.decode(Document.self, forKey: .update)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.update = try container.decode(BSONDocument.self, forKey: .update)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let doc = try collection.findOneAndUpdate(
@@ -374,7 +374,7 @@ struct FindOneAndUpdate: TestOperation {
 
 struct FindOneAndDelete: TestOperation {
     let session: String?
-    let filter: Document
+    let filter: BSONDocument
     let options: FindOneAndDeleteOptions
 
     private enum CodingKeys: String, CodingKey { case session, filter }
@@ -383,11 +383,11 @@ struct FindOneAndDelete: TestOperation {
         self.options = try FindOneAndDeleteOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = try container.decode(Document.self, forKey: .filter)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let result = try collection.findOneAndDelete(
@@ -401,8 +401,8 @@ struct FindOneAndDelete: TestOperation {
 
 struct FindOneAndReplace: TestOperation {
     let session: String?
-    let filter: Document
-    let replacement: Document
+    let filter: BSONDocument
+    let replacement: BSONDocument
     let options: FindOneAndReplaceOptions
 
     private enum CodingKeys: String, CodingKey { case session, filter, replacement }
@@ -411,12 +411,12 @@ struct FindOneAndReplace: TestOperation {
         self.options = try FindOneAndReplaceOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = try container.decode(Document.self, forKey: .filter)
-        self.replacement = try container.decode(Document.self, forKey: .replacement)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.replacement = try container.decode(BSONDocument.self, forKey: .replacement)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let result = try collection.findOneAndReplace(
@@ -431,8 +431,8 @@ struct FindOneAndReplace: TestOperation {
 
 struct ReplaceOne: TestOperation {
     let session: String?
-    let filter: Document
-    let replacement: Document
+    let filter: BSONDocument
+    let replacement: BSONDocument
     let options: ReplaceOptions
 
     private enum CodingKeys: String, CodingKey { case session, filter, replacement }
@@ -441,12 +441,12 @@ struct ReplaceOne: TestOperation {
         self.options = try ReplaceOptions(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = try container.decode(Document.self, forKey: .filter)
-        self.replacement = try container.decode(Document.self, forKey: .replacement)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.replacement = try container.decode(BSONDocument.self, forKey: .replacement)
     }
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let result = try collection.replaceOne(
@@ -464,11 +464,11 @@ struct RenameCollection: TestOperation {
     let to: String
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let databaseName = collection.namespace.db
-        let cmd: Document = [
+        let cmd: BSONDocument = [
             "renameCollection": .string(databaseName + "." + collection.name),
             "to": .string(databaseName + "." + self.to)
         ]
@@ -479,7 +479,7 @@ struct RenameCollection: TestOperation {
 
 struct Drop: TestOperation {
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
         try collection.drop()
@@ -489,7 +489,7 @@ struct Drop: TestOperation {
 
 struct ListIndexes: TestOperation {
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
         try TestOperationResult(from: collection.listIndexes())
@@ -498,7 +498,7 @@ struct ListIndexes: TestOperation {
 
 struct ListIndexNames: TestOperation {
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
         try .array(collection.listIndexNames().map(BSON.string))
@@ -507,7 +507,7 @@ struct ListIndexNames: TestOperation {
 
 struct EstimatedDocumentCount: TestOperation {
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
         try .int(collection.estimatedDocumentCount())
@@ -517,10 +517,10 @@ struct EstimatedDocumentCount: TestOperation {
 struct CreateIndex: TestOperation {
     let session: String?
     let name: String
-    let keys: Document
+    let keys: BSONDocument
 
     func execute(
-        on collection: MongoCollection<Document>,
+        on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let indexOptions = IndexOptions(name: self.name)

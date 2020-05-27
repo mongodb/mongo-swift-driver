@@ -59,7 +59,7 @@ internal protocol BSONValue: Codable {
     var bson: BSON { get }
 
     /**
-     * Given the `DocumentStorage` backing a `Document`, appends this `BSONValue` to the end.
+     * Given the `DocumentStorage` backing a `BSONDocument`, appends this `BSONValue` to the end.
      *
      * - Parameters:
      *   - storage: A `DocumentStorage` to write to.
@@ -70,16 +70,16 @@ internal protocol BSONValue: Codable {
      *     key-value pair.
      *   - `LogicError` if the value is an `Array` and it contains a non-`BSONValue` element.
      */
-    func encode(to document: inout Document, forKey key: String) throws
+    func encode(to document: inout BSONDocument, forKey key: String) throws
 
     /**
-     * Given a `DocumentIterator` known to have a next value of this type,
+     * Given a `BSONDocumentIterator` known to have a next value of this type,
      * initializes the value.
      *
-     * - Throws: `LogicError` if the current type of the `DocumentIterator` does not correspond to the
+     * - Throws: `LogicError` if the current type of the `BSONDocumentIterator` does not correspond to the
      *           associated type of this `BSONValue`.
      */
-    static func from(iterator iter: DocumentIterator) throws -> BSON
+    static func from(iterator iter: BSONDocumentIterator) throws -> BSON
 }
 
 extension BSONValue {
@@ -96,7 +96,7 @@ extension Array: BSONValue where Element == BSON {
         .array(self)
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .array else {
             throw wrongIterTypeError(iter, expected: Array.self)
         }
@@ -116,13 +116,13 @@ extension Array: BSONValue where Element == BSON {
                 throw InternalError(message: "Failed to create an Array from iterator")
             }
 
-            let arrDoc = Document(stealing: arrayData)
+            let arrDoc = BSONDocument(stealing: arrayData)
             return arrDoc.values
         })
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
-        var arr = Document()
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
+        var arr = BSONDocument()
         for (i, v) in self.enumerated() {
             try arr.setValue(for: String(i), to: v)
         }
@@ -155,7 +155,7 @@ internal struct BSONNull: BSONValue, Codable, Equatable {
 
     internal var bson: BSON { .null }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .null else {
             throw wrongIterTypeError(iter, expected: BSONNull.self)
         }
@@ -163,17 +163,17 @@ internal struct BSONNull: BSONValue, Codable, Equatable {
     }
 
     /// Initializes a new `BSONNull` instance.
-    public init() {}
+    internal init() {}
 
-    public init(from decoder: Decoder) throws {
+    internal init(from decoder: Decoder) throws {
         throw getDecodingError(type: BSONNull.self, decoder: decoder)
     }
 
-    public func encode(to: Encoder) throws {
+    internal func encode(to: Encoder) throws {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_null(docPtr, key, Int32(key.utf8.count)) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -286,7 +286,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         let subtype = bson_subtype_t(UInt32(self.subtype))
         let length = self.data.count
         let byteArray = [UInt8](self.data)
@@ -297,7 +297,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .binary else {
             throw wrongIterTypeError(iter, expected: BSONBinary.self)
         }
@@ -350,7 +350,7 @@ extension Bool: BSONValue {
 
     internal var bson: BSON { .bool(self) }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_bool(docPtr, key, Int32(key.utf8.count), self) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -358,7 +358,7 @@ extension Bool: BSONValue {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .bool else {
             throw wrongIterTypeError(iter, expected: Bool.self)
         }
@@ -384,7 +384,7 @@ extension Date: BSONValue {
     /// The number of milliseconds after the Unix epoch that this `Date` occurs.
     internal var msSinceEpoch: Int64 { Int64((self.timeIntervalSince1970 * 1000.0).rounded()) }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_date_time(docPtr, key, Int32(key.utf8.count), self.msSinceEpoch) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -392,7 +392,7 @@ extension Date: BSONValue {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .datetime else {
             throw wrongIterTypeError(iter, expected: Date.self)
         }
@@ -405,7 +405,7 @@ extension Date: BSONValue {
 
 /// A struct to represent the deprecated DBPointer type.
 /// DBPointers cannot be instantiated, but they can be read from existing documents that contain them.
-public struct DBPointer: BSONValue, Codable, Equatable, Hashable {
+public struct BSONDBPointer: BSONValue, Codable, Equatable, Hashable {
     internal static var bsonType: BSONType { .dbPointer }
 
     internal var bson: BSON { .dbPointer(self) }
@@ -422,14 +422,14 @@ public struct DBPointer: BSONValue, Codable, Equatable, Hashable {
     }
 
     public init(from decoder: Decoder) throws {
-        throw getDecodingError(type: DBPointer.self, decoder: decoder)
+        throw getDecodingError(type: BSONDBPointer.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             try withUnsafePointer(to: self.id.oid) { oidPtr in
                 guard bson_append_dbpointer(docPtr, key, Int32(key.utf8.count), self.ref, oidPtr) else {
@@ -439,7 +439,7 @@ public struct DBPointer: BSONValue, Codable, Equatable, Hashable {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             let collectionPP = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
@@ -457,16 +457,16 @@ public struct DBPointer: BSONValue, Codable, Equatable, Hashable {
             bson_iter_dbpointer(iterPtr, &length, collectionPP, oidPP)
 
             guard let oidP = oidPP.pointee, let collectionP = collectionPP.pointee else {
-                throw wrongIterTypeError(iter, expected: DBPointer.self)
+                throw wrongIterTypeError(iter, expected: BSONDBPointer.self)
             }
 
-            return .dbPointer(DBPointer(ref: String(cString: collectionP), id: BSONObjectID(bsonOid: oidP.pointee)))
+            return .dbPointer(BSONDBPointer(ref: String(cString: collectionP), id: BSONObjectID(bsonOid: oidP.pointee)))
         }
     }
 }
 
 /// A struct to represent the BSON Decimal128 type.
-public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible {
+public struct BSONDecimal128: BSONValue, Equatable, Codable, CustomStringConvertible {
     internal static var bsonType: BSONType { .decimal128 }
 
     internal var bson: BSON { .decimal128(self) }
@@ -487,12 +487,12 @@ public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible
         self.decimal128 = bsonDecimal
     }
 
-    /// Initializes a `Decimal128` value from the provided `String`. Returns `nil` if the input is not a valid
+    /// Initializes a `BSONDecimal128` value from the provided `String`. Returns `nil` if the input is not a valid
     /// Decimal128 string.
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
     public init?(_ data: String) {
         do {
-            let bsonType = try Decimal128.toLibBSONType(data)
+            let bsonType = try BSONDecimal128.toLibBSONType(data)
             self.init(bsonDecimal: bsonType)
         } catch {
             return nil
@@ -500,14 +500,14 @@ public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible
     }
 
     public init(from decoder: Decoder) throws {
-        throw getDecodingError(type: Decimal128.self, decoder: decoder)
+        throw getDecodingError(type: BSONDecimal128.self, decoder: decoder)
     }
 
     public func encode(to: Encoder) throws {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             try withUnsafePointer(to: self.decimal128) { ptr in
                 guard bson_append_decimal128(docPtr, key, Int32(key.utf8.count), ptr) else {
@@ -520,7 +520,7 @@ public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible
     /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
     /// invalid string.
     /// - Throws:
-    ///   - `InvalidArgumentError` if the parameter string does not correspond to a valid `Decimal128`.
+    ///   - `InvalidArgumentError` if the parameter string does not correspond to a valid `BSONDecimal128`.
     internal static func toLibBSONType(_ str: String) throws -> bson_decimal128_t {
         var value = bson_decimal128_t()
         guard bson_decimal128_from_string(str, &value) else {
@@ -529,24 +529,24 @@ public struct Decimal128: BSONValue, Equatable, Codable, CustomStringConvertible
         return value
     }
 
-    public static func == (lhs: Decimal128, rhs: Decimal128) -> Bool {
+    public static func == (lhs: BSONDecimal128, rhs: BSONDecimal128) -> Bool {
         lhs.decimal128.low == rhs.decimal128.low && lhs.decimal128.high == rhs.decimal128.high
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         .decimal128(try iter.withBSONIterPointer { iterPtr in
             var value = bson_decimal128_t()
             guard bson_iter_decimal128(iterPtr, &value) else {
-                throw wrongIterTypeError(iter, expected: Decimal128.self)
+                throw wrongIterTypeError(iter, expected: BSONDecimal128.self)
             }
 
-            return Decimal128(bsonDecimal: value)
+            return BSONDecimal128(bsonDecimal: value)
         })
     }
 }
 
-// An extension of `Decimal128` to add capability to be hashed
-extension Decimal128: Hashable {
+// An extension of `BSONDecimal128` to add capability to be hashed
+extension BSONDecimal128: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.description)
     }
@@ -558,7 +558,7 @@ extension Double: BSONValue {
 
     internal var bson: BSON { .double(self) }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_double(docPtr, key, Int32(key.utf8.count), self) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -566,7 +566,7 @@ extension Double: BSONValue {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .double else {
             throw wrongIterTypeError(iter, expected: Double.self)
         }
@@ -583,7 +583,7 @@ extension Int32: BSONValue {
 
     internal var bson: BSON { .int32(self) }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_int32(docPtr, key, Int32(key.utf8.count), self) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -591,7 +591,7 @@ extension Int32: BSONValue {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .int32 else {
             throw wrongIterTypeError(iter, expected: Int32.self)
         }
@@ -608,7 +608,7 @@ extension Int64: BSONValue {
 
     internal var bson: BSON { .int64(self) }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_int64(docPtr, key, Int32(key.utf8.count), self) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -616,7 +616,7 @@ extension Int64: BSONValue {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .int64 else {
             throw wrongIterTypeError(iter, expected: Int64.self)
         }
@@ -636,12 +636,12 @@ public struct BSONCodeWithScope: BSONValue, Equatable, Codable, Hashable {
     /// A string containing Javascript code.
     public let code: String
 
-    /// An optional scope `Document` containing a mapping of identifiers to values,
+    /// An optional scope `BSONDocument` containing a mapping of identifiers to values,
     /// representing the context in which `code` should be evaluated.
-    public let scope: Document
+    public let scope: BSONDocument
 
     /// Initializes a `BSONCodeWithScope` with an optional scope value.
-    public init(code: String, scope: Document) {
+    public init(code: String, scope: BSONDocument) {
         self.code = code
         self.scope = scope
     }
@@ -654,7 +654,7 @@ public struct BSONCodeWithScope: BSONValue, Equatable, Codable, Hashable {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             try self.scope.withBSONPointer { scopePtr in
                 guard bson_append_code_with_scope(docPtr, key, Int32(key.utf8.count), self.code, scopePtr) else {
@@ -664,7 +664,7 @@ public struct BSONCodeWithScope: BSONValue, Equatable, Codable, Hashable {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         .codeWithScope(try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             guard iter.currentType == .codeWithScope else {
@@ -682,7 +682,7 @@ public struct BSONCodeWithScope: BSONValue, Equatable, Codable, Hashable {
             guard let scopeData = bson_new_from_data(scopePointer.pointee, Int(scopeLength)) else {
                 throw InternalError(message: "Failed to create a bson_t from scope data")
             }
-            let scopeDoc = Document(stealing: scopeData)
+            let scopeDoc = BSONDocument(stealing: scopeData)
 
             return self.init(code: code, scope: scopeDoc)
         })
@@ -711,7 +711,7 @@ public struct BSONCode: BSONValue, Equatable, Codable, Hashable {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_code(docPtr, key, Int32(key.utf8.count), self.code) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -719,7 +719,7 @@ public struct BSONCode: BSONValue, Equatable, Codable, Hashable {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         .code(try iter.withBSONIterPointer { iterPtr in
             guard iter.currentType == .code else {
                 throw wrongIterTypeError(iter, expected: BSONCode.self)
@@ -736,7 +736,7 @@ internal struct MaxKey: BSONValue, Equatable, Codable, Hashable {
 
     internal static var bsonType: BSONType { .maxKey }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_maxkey(docPtr, key, Int32(key.utf8.count)) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -744,18 +744,18 @@ internal struct MaxKey: BSONValue, Equatable, Codable, Hashable {
         }
     }
 
-    /// Initializes a new `MaxKey` instance.
-    public init() {}
+    /// Initializes a new `BSONMaxKey` instance.
+    internal init() {}
 
-    public init(from decoder: Decoder) throws {
+    internal init(from decoder: Decoder) throws {
         throw getDecodingError(type: MaxKey.self, decoder: decoder)
     }
 
-    public func encode(to: Encoder) throws {
+    internal func encode(to: Encoder) throws {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .maxKey else {
             throw wrongIterTypeError(iter, expected: MaxKey.self)
         }
@@ -764,12 +764,12 @@ internal struct MaxKey: BSONValue, Equatable, Codable, Hashable {
 }
 
 /// A struct to represent the BSON MinKey type.
-internal struct MinKey: BSONValue, Equatable, Codable, Hashable {
+internal struct BSONMinKey: BSONValue, Equatable, Codable, Hashable {
     internal var bson: BSON { .minKey }
 
     internal static var bsonType: BSONType { .minKey }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_minkey(docPtr, key, Int32(key.utf8.count)) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -777,20 +777,20 @@ internal struct MinKey: BSONValue, Equatable, Codable, Hashable {
         }
     }
 
-    /// Initializes a new `MinKey` instance.
-    public init() {}
+    /// Initializes a new `BSONMinKey` instance.
+    internal init() {}
 
-    public init(from decoder: Decoder) throws {
-        throw getDecodingError(type: MinKey.self, decoder: decoder)
+    internal init(from decoder: Decoder) throws {
+        throw getDecodingError(type: BSONMinKey.self, decoder: decoder)
     }
 
-    public func encode(to: Encoder) throws {
+    internal func encode(to: Encoder) throws {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .minKey else {
-            throw wrongIterTypeError(iter, expected: MinKey.self)
+            throw wrongIterTypeError(iter, expected: BSONMinKey.self)
         }
         return .minKey
     }
@@ -869,7 +869,7 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
         try container.encode(self.hex)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             try withUnsafePointer(to: self.oid) { oidPtr in
                 guard bson_append_oid(docPtr, key, Int32(key.utf8.count), oidPtr) else {
@@ -879,7 +879,7 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         .objectID(try iter.withBSONIterPointer { iterPtr in
             guard let oid = bson_iter_oid(iterPtr) else {
                 throw wrongIterTypeError(iter, expected: BSONObjectID.self)
@@ -972,7 +972,7 @@ public struct BSONRegularExpression: BSONValue, Equatable, Codable, Hashable {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_regex(docPtr, key, Int32(key.utf8.count), self.pattern, self.options) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -980,7 +980,7 @@ public struct BSONRegularExpression: BSONValue, Equatable, Codable, Hashable {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         .regex(try iter.withBSONIterPointer { iterPtr in
             let options = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: 1)
             defer {
@@ -1017,7 +1017,7 @@ extension String: BSONValue {
 
     internal var bson: BSON { .string(self) }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_utf8(docPtr, key, Int32(key.utf8.count), self, Int32(self.utf8.count)) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -1031,7 +1031,7 @@ extension String: BSONValue {
         self.init(data: buffer, encoding: .utf8)
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         .string(try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             guard iter.currentType == .string, let strValue = bson_iter_utf8(iterPtr, &length) else {
@@ -1079,7 +1079,7 @@ public struct BSONSymbol: BSONValue, CustomStringConvertible, Codable, Equatable
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_symbol(
                 docPtr,
@@ -1093,7 +1093,7 @@ public struct BSONSymbol: BSONValue, CustomStringConvertible, Codable, Equatable
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         .symbol(try iter.withBSONIterPointer { iterPtr in
             var length: UInt32 = 0
             guard iter.currentType == .symbol, let cStr = bson_iter_symbol(iterPtr, &length) else {
@@ -1141,7 +1141,7 @@ public struct BSONTimestamp: BSONValue, Equatable, Codable, Hashable {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_timestamp(docPtr, key, Int32(key.utf8.count), self.timestamp, self.increment) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -1149,7 +1149,7 @@ public struct BSONTimestamp: BSONValue, Equatable, Codable, Hashable {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .timestamp else {
             throw wrongIterTypeError(iter, expected: BSONTimestamp.self)
         }
@@ -1173,15 +1173,15 @@ internal struct BSONUndefined: BSONValue, Equatable, Codable {
 
     internal init() {}
 
-    public init(from decoder: Decoder) throws {
+    internal init(from decoder: Decoder) throws {
         throw getDecodingError(type: BSONUndefined.self, decoder: decoder)
     }
 
-    public func encode(to: Encoder) throws {
+    internal func encode(to: Encoder) throws {
         throw bsonEncodingUnsupportedError(value: self, at: to.codingPath)
     }
 
-    internal func encode(to document: inout Document, forKey key: String) throws {
+    internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_undefined(docPtr, key, Int32(key.utf8.count)) else {
                 throw bsonTooLargeError(value: self, forKey: key)
@@ -1189,7 +1189,7 @@ internal struct BSONUndefined: BSONValue, Equatable, Codable {
         }
     }
 
-    internal static func from(iterator iter: DocumentIterator) throws -> BSON {
+    internal static func from(iterator iter: BSONDocumentIterator) throws -> BSON {
         guard iter.currentType == .undefined else {
             throw wrongIterTypeError(iter, expected: BSONUndefined.self)
         }
@@ -1246,7 +1246,8 @@ private func bsonDecodingDirectlyError<T: BSONValue>(type _: T.Type, at codingPa
  *
  * Some example cases:
  *   - Decoding directly from the BSONDecoder top-level (e.g. BSONDecoder().decode(BSONObjectID.self, from: ...))
- *   - Encountering the wrong type of BSONValue (e.g. expected "_id" to be an `BSONObjectID`, got a `Document` instead)
+ *   - Encountering the wrong type of BSONValue (e.g. expected "_id" to be an `BSONObjectID`, got a `BSONDocument`
+ *     instead)
  *   - Attempting to decode a driver-introduced BSONValue with a non-BSONDecoder
  */
 internal func getDecodingError<T: BSONValue>(type _: T.Type, decoder: Decoder) -> DecodingError {

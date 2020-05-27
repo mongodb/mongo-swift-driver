@@ -31,7 +31,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
             // test session is closed when withSession is completed
             var escapedSession: ClientSession?
-            let res2: EventLoopFuture<Document> = client.withSession { session in
+            let res2: EventLoopFuture<BSONDocument> = client.withSession { session in
                 escapedSession = session
                 return db.runCommand(["isMaster": 1], session: session)
             }

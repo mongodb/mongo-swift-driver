@@ -33,16 +33,16 @@ public struct RunCommandOptions: Encodable {
 /// An operation corresponding to a `runCommand` call.
 internal struct RunCommandOperation: Operation {
     private let database: MongoDatabase
-    private let command: Document
+    private let command: BSONDocument
     private let options: RunCommandOptions?
 
-    internal init(database: MongoDatabase, command: Document, options: RunCommandOptions?) {
+    internal init(database: MongoDatabase, command: BSONDocument, options: RunCommandOptions?) {
         self.database = database
         self.command = command
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> Document {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> BSONDocument {
         let opts = try encodeOptions(options: self.options, session: session)
         return try self.database.withMongocDatabase(from: connection) { dbPtr in
             try ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in

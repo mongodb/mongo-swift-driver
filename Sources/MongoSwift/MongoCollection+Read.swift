@@ -7,7 +7,7 @@ extension MongoCollection {
      * Finds the documents in this collection which match the provided filter.
      *
      * - Parameters:
-     *   - filter: A `Document` that should match the query
+     *   - filter: A `BSONDocument` that should match the query
      *   - options: Optional `FindOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -21,7 +21,7 @@ extension MongoCollection {
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func find(
-        _ filter: Document = [:],
+        _ filter: BSONDocument = [:],
         options: FindOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<MongoCursor<CollectionType>> {
@@ -33,7 +33,7 @@ extension MongoCollection {
      * Finds a single document in this collection that matches the provided filter.
      *
      * - Parameters:
-     *   - filter: A `Document` that should match the query
+     *   - filter: A `BSONDocument` that should match the query
      *   - options: Optional `FindOneOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -48,7 +48,7 @@ extension MongoCollection {
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func findOne(
-        _ filter: Document = [:],
+        _ filter: BSONDocument = [:],
         options: FindOneOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<T?> {
@@ -76,10 +76,10 @@ extension MongoCollection {
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func aggregate(
-        _ pipeline: [Document],
+        _ pipeline: [BSONDocument],
         options: AggregateOptions? = nil,
         session: ClientSession? = nil
-    ) -> EventLoopFuture<MongoCursor<Document>> {
+    ) -> EventLoopFuture<MongoCursor<BSONDocument>> {
         let operation = AggregateOperation(collection: self, pipeline: pipeline, options: options)
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
@@ -90,7 +90,7 @@ extension MongoCollection {
      * `estimatedDocumentCount`.
      *
      * - Parameters:
-     *   - filter: a `Document`, the filter that documents must match in order to be counted
+     *   - filter: a `BSONDocument`, the filter that documents must match in order to be counted
      *   - options: Optional `CountDocumentsOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -105,7 +105,7 @@ extension MongoCollection {
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func countDocuments(
-        _ filter: Document = [:],
+        _ filter: BSONDocument = [:],
         options: CountDocumentsOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<Int> {
@@ -139,7 +139,8 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - fieldName: The field for which the distinct values will be found
-     *   - filter: a `Document` representing the filter documents must match in order to be considered for the operation
+     *   - filter: a `BSONDocument` representing the filter documents must match in order to be considered for the
+     *             operation
      *   - options: Optional `DistinctOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -155,7 +156,7 @@ extension MongoCollection {
      */
     public func distinct(
         fieldName: String,
-        filter: Document = [:],
+        filter: BSONDocument = [:],
         options: DistinctOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[BSON]> {

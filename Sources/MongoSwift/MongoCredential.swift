@@ -15,7 +15,7 @@ public struct MongoCredential: Decodable, Equatable {
     public var mechanism: Mechanism?
 
     /// A document containing mechanism-specific properties.
-    public var mechanismProperties: Document?
+    public var mechanismProperties: BSONDocument?
 
     private enum CodingKeys: String, CodingKey {
         case username, password, source, mechanism, mechanismProperties = "mechanism_properties"
@@ -26,7 +26,7 @@ public struct MongoCredential: Decodable, Equatable {
         password: String? = nil,
         source: String? = nil,
         mechanism: Mechanism? = nil,
-        mechanismProperties: Document? = nil
+        mechanismProperties: BSONDocument? = nil
     ) {
         self.username = username
         self.password = password

@@ -41,36 +41,36 @@ extension MongoCollection {
 public enum WriteModel<CollectionType: Codable> {
     /// A `deleteOne`.
     /// Parameters:
-    /// - A `Document` representing the match criteria.
+    /// - A `BSONDocument` representing the match criteria.
     /// - `options`: Optional `DeleteModelOptions`.
-    case deleteOne(Document, options: DeleteModelOptions? = nil)
+    case deleteOne(BSONDocument, options: DeleteModelOptions? = nil)
     /// A `deleteMany`.
     /// Parameters:
-    /// - A `Document` representing the match criteria.
+    /// - A `BSONDocument` representing the match criteria.
     /// - `options`: Optional `DeleteModelOptions`.
-    case deleteMany(Document, options: DeleteModelOptions? = nil)
+    case deleteMany(BSONDocument, options: DeleteModelOptions? = nil)
     /// An `insertOne`.
     /// Parameters:
     /// - A `T` to insert.
     case insertOne(CollectionType)
     /// A `replaceOne`.
     /// Parameters:
-    /// - `filter`: A `Document` representing the match criteria.
+    /// - `filter`: A `BSONDocument` representing the match criteria.
     /// - `replacement`: A `T` to use as the replacement value.
     /// - `options`: Optional `ReplaceOneModelOptions`.
-    case replaceOne(filter: Document, replacement: CollectionType, options: ReplaceOneModelOptions? = nil)
+    case replaceOne(filter: BSONDocument, replacement: CollectionType, options: ReplaceOneModelOptions? = nil)
     /// An `updateOne`.
     /// Parameters:
-    /// - `filter`: A `Document` representing the match criteria.
-    /// - `update`: A `Document` containing update operators.
+    /// - `filter`: A `BSONDocument` representing the match criteria.
+    /// - `update`: A `BSONDocument` containing update operators.
     /// - `options`: Optional `UpdateModelOptions`.
-    case updateOne(filter: Document, update: Document, options: UpdateModelOptions? = nil)
+    case updateOne(filter: BSONDocument, update: BSONDocument, options: UpdateModelOptions? = nil)
     /// An `updateMany`.
     /// Parameters:
-    /// - `filter`: A `Document` representing the match criteria.
-    /// - `update`: A `Document` containing update operators.
+    /// - `filter`: A `BSONDocument` representing the match criteria.
+    /// - `update`: A `BSONDocument` containing update operators.
     /// - `options`: Optional `UpdateModelOptions`.
-    case updateMany(filter: Document, update: Document, options: UpdateModelOptions? = nil)
+    case updateMany(filter: BSONDocument, update: BSONDocument, options: UpdateModelOptions? = nil)
 
     /// Adds this model to the provided `mongoc_bulk_t`, using the provided encoder for encoding options and
     /// `CollectionType` values if needed. If this is an `insertOne`, returns the `_id` field of the inserted
@@ -151,10 +151,10 @@ public enum WriteModel<CollectionType: Codable> {
 /// Options to use with a `WriteModel.deleteOne` or `WriteModel.deleteMany`.
 public struct DeleteModelOptions: Codable {
     /// The collation to use.
-    public var collation: Document?
+    public var collation: BSONDocument?
 
     /// Initializer allowing any/all options to be omitted or optional.
-    public init(collation: Document? = nil) {
+    public init(collation: BSONDocument? = nil) {
         self.collation = collation
     }
 }
@@ -162,12 +162,12 @@ public struct DeleteModelOptions: Codable {
 /// Options to use with a `WriteModel.replaceOne`.
 public struct ReplaceOneModelOptions: Codable {
     /// The collation to use.
-    public var collation: Document?
+    public var collation: BSONDocument?
     /// When `true`, creates a new document if no document matches the query.
     public var upsert: Bool?
 
     /// Initializer allowing any/all options to be omitted or optional.
-    public init(collation: Document? = nil, upsert: Bool? = nil) {
+    public init(collation: BSONDocument? = nil, upsert: Bool? = nil) {
         self.collation = collation
         self.upsert = upsert
     }
@@ -176,14 +176,14 @@ public struct ReplaceOneModelOptions: Codable {
 /// Options to use with a `WriteModel.updateOne` or `WriteModel.updateMany`.
 public struct UpdateModelOptions: Codable {
     /// A set of filters specifying to which array elements an update should apply.
-    public var arrayFilters: [Document]?
+    public var arrayFilters: [BSONDocument]?
     /// The collation to use.
-    public var collation: Document?
+    public var collation: BSONDocument?
     /// When `true`, creates a new document if no document matches the query.
     public var upsert: Bool?
 
     /// Initializer allowing any/all options to be omitted or optional.
-    public init(arrayFilters: [Document]? = nil, collation: Document? = nil, upsert: Bool? = nil) {
+    public init(arrayFilters: [BSONDocument]? = nil, collation: BSONDocument? = nil, upsert: Bool? = nil) {
         self.arrayFilters = arrayFilters
         self.collation = collation
         self.upsert = upsert
@@ -240,9 +240,9 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
             }
 
             var error = bson_error_t()
-            let (serverID, reply) = withStackAllocatedMutableBSONPointer { replyPtr -> (UInt32, Document) in
+            let (serverID, reply) = withStackAllocatedMutableBSONPointer { replyPtr -> (UInt32, BSONDocument) in
                 let serverID = mongoc_bulk_operation_execute(bulk, replyPtr, &error)
-                let reply = Document(copying: replyPtr)
+                let reply = BSONDocument(copying: replyPtr)
                 return (serverID, reply)
             }
 
@@ -397,13 +397,13 @@ public struct BulkWriteResult: Decodable {
      * we should expect fields to be missing and handle that gracefully.
      *
      * - Parameters:
-     *   - reply: A `Document` result from `mongoc_bulk_operation_execute()`
+     *   - reply: A `BSONDocument` result from `mongoc_bulk_operation_execute()`
      *   - insertedIDs: Map of inserted IDs
      *
      * - Throws:
      *   - `InternalError` if an unexpected error occurs reading the reply from the server.
      */
-    fileprivate init?(reply: Document, insertedIDs: [Int: BSON]) throws {
+    fileprivate init?(reply: BSONDocument, insertedIDs: [Int: BSON]) throws {
         guard reply.keys.contains(where: { MongocKeys(rawValue: $0) != nil }) else {
             return nil
         }
@@ -418,7 +418,7 @@ public struct BulkWriteResult: Decodable {
         var upsertedIDs = [Int: BSON]()
 
         if let upserted = try reply.getValue(for: MongocKeys.upserted.rawValue)?.arrayValue {
-            guard let upserted = upserted.toArrayOf(Document.self) else {
+            guard let upserted = upserted.toArrayOf(BSONDocument.self) else {
                 throw InternalError(message: "\"upserted\" array did not contain only documents")
             }
 
