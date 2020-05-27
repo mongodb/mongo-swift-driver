@@ -86,7 +86,7 @@ private func changeStreams() throws {
         let inventory = db.collection("inventory")
 
         // Option 1: use next() to iterate
-        let next = inventory.watch(options: ChangeStreamOptions(fullDocument: .other("blah")))
+        let next = inventory.watch(options: ChangeStreamOptions(fullDocument: .updateLookup))
             .flatMap { changeStream in
                 changeStream.next()
             }

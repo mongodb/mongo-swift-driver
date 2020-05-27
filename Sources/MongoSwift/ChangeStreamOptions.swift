@@ -11,6 +11,7 @@ public struct FullDocument: RawRepresentable, Codable {
 
     public var rawValue: String
 
+    /// Creates a `FullDocument`. Never returns nil.
     public init?(rawValue: String) { self.rawValue = rawValue }
     internal init(_ value: String) { self.rawValue = value }
 }
