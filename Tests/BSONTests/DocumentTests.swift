@@ -711,11 +711,9 @@ final class DocumentTests: MongoSwiftTestCase {
         let millisecondsSince1970 = try encoder.encode(dateStruct)
         expect(millisecondsSince1970["date"]).to(equal(.int64(date.msSinceEpoch)))
 
-        if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
-            encoder.dateEncodingStrategy = .iso8601
-            let iso = try encoder.encode(dateStruct)
-            expect(iso["date"]).to(equal(.string(BSONDecoder.iso8601Formatter.string(from: date))))
-        }
+        encoder.dateEncodingStrategy = .iso8601
+        let iso = try encoder.encode(dateStruct)
+        expect(iso["date"]).to(equal(.string(BSONDecoder.iso8601Formatter.string(from: date))))
 
         let formatter = DateFormatter()
         formatter.timeStyle = .full
@@ -819,15 +817,13 @@ final class DocumentTests: MongoSwiftTestCase {
         expect(try decoder.decode(DateWrapper.self, from: badlyFormatted)).to(throwError(CodecTests.dataCorruptedErr))
         expect(try decoder.decode(DateWrapper.self, from: sDouble)).to(throwError(CodecTests.typeMismatchErr))
 
-        if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
-            decoder.dateDecodingStrategy = .iso8601
-            let isoDoc: BSONDocument = ["date": .string(BSONDecoder.iso8601Formatter.string(from: date))]
-            let isoStruct = try decoder.decode(DateWrapper.self, from: isoDoc)
-            expect(isoStruct.date).to(equal(date))
-            expect(try decoder.decode(DateWrapper.self, from: formatted)).to(throwError(CodecTests.dataCorruptedErr))
-            expect(try decoder.decode(DateWrapper.self, from: badlyFormatted))
-                .to(throwError(CodecTests.dataCorruptedErr))
-        }
+        decoder.dateDecodingStrategy = .iso8601
+        let isoDoc: BSONDocument = ["date": .string(BSONDecoder.iso8601Formatter.string(from: date))]
+        let isoStruct = try decoder.decode(DateWrapper.self, from: isoDoc)
+        expect(isoStruct.date).to(equal(date))
+        expect(try decoder.decode(DateWrapper.self, from: formatted)).to(throwError(CodecTests.dataCorruptedErr))
+        expect(try decoder.decode(DateWrapper.self, from: badlyFormatted))
+            .to(throwError(CodecTests.dataCorruptedErr))
 
         decoder.dateDecodingStrategy = .custom({ decode in try Date(from: decode) })
         let customDoc: BSONDocument = ["date": .double(date.timeIntervalSinceReferenceDate)]

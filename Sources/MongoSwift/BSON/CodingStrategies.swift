@@ -82,9 +82,6 @@ public enum DateCodingStrategy: RawRepresentable {
         case (.secondsSince1970, .secondsSince1970):
             self = .secondsSince1970
         case (.iso8601, .iso8601):
-            guard #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) else {
-                fatalError("ISO8601DateFormatter is unavailable on this platform.")
-            }
             self = .iso8601
         case let (.formatted(encodingFormatter), .formatted(decodingFormatter)):
             guard encodingFormatter == decodingFormatter else {
@@ -109,9 +106,6 @@ public enum DateCodingStrategy: RawRepresentable {
         case .secondsSince1970:
             return (.secondsSince1970, .secondsSince1970)
         case .iso8601:
-            guard #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) else {
-                fatalError("ISO8601DateFormatter is unavailable on this platform.")
-            }
             return (.iso8601, .iso8601)
         case let .formatted(formatter):
             return (.formatted(formatter), .formatted(formatter))
