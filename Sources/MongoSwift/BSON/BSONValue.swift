@@ -207,28 +207,30 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
     /// Subtypes for BSON Binary values.
     public struct Subtype: Equatable, Codable, Hashable, RawRepresentable {
+        // swiftlint:disable force_unwrapping
         /// Generic binary subtype
-        public static let generic = Subtype(0x00)
+        public static let generic = Subtype(rawValue: 0x00)!
         /// A function
-        public static let function = Subtype(0x01)
+        public static let function = Subtype(rawValue: 0x01)!
         /// Binary (old)
-        public static let binaryDeprecated = Subtype(0x02)
+        public static let binaryDeprecated = Subtype(rawValue: 0x02)!
         /// UUID (old)
-        public static let uuidDeprecated = Subtype(0x03)
+        public static let uuidDeprecated = Subtype(rawValue: 0x03)!
         /// UUID (RFC 4122)
-        public static let uuid = Subtype(0x04)
+        public static let uuid = Subtype(rawValue: 0x04)!
         /// MD5
-        public static let md5 = Subtype(0x05)
+        public static let md5 = Subtype(rawValue: 0x05)!
         /// Encrypted BSON value
-        public static let encryptedValue = Subtype(0x06)
+        public static let encryptedValue = Subtype(rawValue: 0x06)!
+        // swiftlint:enable force_unwrapping
 
         /// Subtype indicator value
         public let rawValue: UInt8
 
         /// Initializes a `Subtype` with a custom value.
-        /// Returns nil if rawValue outside of the range 0x80-0xFF.
+        /// Returns nil if rawValue within reserved range [0x07, 0x80).
         public init?(rawValue: UInt8) {
-            guard rawValue >= 0x80 && rawValue <= 0xFF else {
+            if rawValue > 0x06 && rawValue < 0x80 {
                 return nil
             }
             self.rawValue = rawValue
@@ -236,16 +238,20 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
         internal init(_ value: bson_subtype_t) { self.rawValue = UInt8(value.rawValue) }
 
-        private init(_ value: Int) { self.rawValue = UInt8(value) }
-
         /// Initializes a `Subtype` with a custom value. This value must be in the range 0x80-0xFF.
         /// - Throws:
         ///   - `InvalidArgumentError` if value passed is outside of the range 0x80-0xFF
         public static func userDefined(_ value: Int) throws -> Subtype {
-            guard value >= 0x80 && value <= 0xFF else {
-                throw InvalidArgumentError(message: "User defined Binary Subtypes must be between 0x80 and 0xFF")
+            guard let byteValue = UInt8(exactly: value) else {
+                throw InvalidArgumentError(message: "Cannot represent \(value) as UInt8")
             }
-            return Subtype(value)
+            guard byteValue >= 0x80 else {
+                throw InvalidArgumentError(message: "userDefined value must be greater than 0x80 got \(byteValue)")
+            }
+            guard let subtype = Subtype(rawValue: byteValue) else {
+                throw InvalidArgumentError(message: "Cannot represent \(byteValue) as Subtype")
+            }
+            return subtype
         }
     }
 
