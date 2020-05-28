@@ -39,6 +39,7 @@ extension BSONValueTests {
         ("testObjectIDRoundTrip", testObjectIDRoundTrip),
         ("testObjectIDJSONCodable", testObjectIDJSONCodable),
         ("testBSONNumber", testBSONNumber),
+        ("testBSONBinarySubtype", testBSONBinarySubtype),
     ]
 }
 

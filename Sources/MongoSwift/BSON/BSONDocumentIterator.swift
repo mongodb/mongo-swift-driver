@@ -79,7 +79,7 @@ public class BSONDocumentIterator: IteratorProtocol {
     /// Returns the current value's type. Assumes the iterator is in a valid position.
     internal var currentType: BSONType {
         self.withBSONIterPointer { iterPtr in
-            BSONType(rawValue: bson_iter_type(iterPtr).rawValue) ?? .invalid
+            BSONType(rawValue: UInt8(bson_iter_type(iterPtr).rawValue)) ?? .invalid
         }
     }
 
@@ -219,7 +219,7 @@ public class BSONDocumentIterator: IteratorProtocol {
         .int64: Int64.self,
         .decimal128: BSONDecimal128.self,
         .minKey: BSONMinKey.self,
-        .maxKey: MaxKey.self,
+        .maxKey: BSONMaxKey.self,
         .null: BSONNull.self,
         .undefined: BSONUndefined.self
     ]

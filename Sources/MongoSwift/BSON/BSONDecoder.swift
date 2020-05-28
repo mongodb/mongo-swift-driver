@@ -359,7 +359,10 @@ extension _BSONDecoder {
             return try Data(from: self)
         case .binary:
             let binary = try self.unboxCustom(value) { $0.binaryValue }
-            return binary.data
+            guard let data = binary.data.getBytes(at: 0, length: binary.data.writerIndex) else {
+                throw InternalError(message: "Cannot read \(binary.data.writerIndex) bytes from Binary.data")
+            }
+            return Data(data)
         case .base64:
             let base64Str = try self.unboxCustom(value) { $0.stringValue }
 

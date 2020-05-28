@@ -7,9 +7,9 @@ import XCTest
 
 final class BSONValueTests: MongoSwiftTestCase {
     func testInvalidDecimal128() throws {
-        expect(BSONDecimal128("hi")).to(beNil())
-        expect(BSONDecimal128("123.4.5")).to(beNil())
-        expect(BSONDecimal128("10")).toNot(beNil())
+        expect(try BSONDecimal128("hi")).to(throwError())
+        expect(try BSONDecimal128("123.4.5")).to(throwError())
+        expect(try BSONDecimal128("10")).toNot(throwError())
     }
 
     func testUUIDBytes() throws {
@@ -38,10 +38,10 @@ final class BSONValueTests: MongoSwiftTestCase {
         self.checkTrueAndFalse(val: .int64(64), alternate: .int64(65))
         // Double
         self.checkTrueAndFalse(val: 1.618, alternate: 2.718)
-        // Decimal128
+        // BSONDecimal128
         self.checkTrueAndFalse(
-            val: .decimal128(BSONDecimal128("1.618")!),
-            alternate: .decimal128(BSONDecimal128("2.718")!)
+            val: .decimal128(try BSONDecimal128("1.618")),
+            alternate: .decimal128(try BSONDecimal128("2.718"))
         )
         // Bool
         self.checkTrueAndFalse(val: true, alternate: false)
@@ -119,14 +119,10 @@ final class BSONValueTests: MongoSwiftTestCase {
         bson_oid_to_string(&oid_t, &oid_c)
         let oid = String(cString: &oid_c)
 
-        // read the timestamp used to create the oid
-        let timestamp = UInt32(bson_oid_get_time_t(&oid_t))
-
         // initialize a new oid with the oid_t ptr
         // expect the values to be equal
         let objectId = BSONObjectID(bsonOid: oid_t)
         expect(objectId.hex).to(equal(oid))
-        expect(objectId.timestamp).to(equal(timestamp))
 
         // round trip the objectId.
         // expect the encoded oid to equal the original
@@ -140,14 +136,12 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         expect(_id).to(equal(objectId))
         expect(_id.hex).to(equal(objectId.hex))
-        expect(_id.timestamp).to(equal(objectId.timestamp))
 
         // expect that we can pull the correct timestamp if
         // initialized from the original string
-        let objectIdFromString = BSONObjectID(oid)!
+        let objectIdFromString = try BSONObjectID(oid)
         expect(objectIdFromString).to(equal(objectId))
         expect(objectIdFromString.hex).to(equal(oid))
-        expect(objectIdFromString.timestamp).to(equal(timestamp))
     }
 
     func testObjectIDJSONCodable() throws {
@@ -192,7 +186,7 @@ final class BSONValueTests: MongoSwiftTestCase {
             ]
 
             candidates.compactMap { $0 }.forEach { l in
-                // Skip the Decimal128 conversions until they're implemented
+                // Skip the BSONDecimal128 conversions until they're implemented
                 // TODO: don't skip these (SWIFT-367)
                 guard l.decimal128Value == nil else {
                     return
@@ -203,7 +197,7 @@ final class BSONValueTests: MongoSwiftTestCase {
                 BSONNumberTestCase.compare(computed: l.toInt64(), expected: self.int64)
                 BSONNumberTestCase.compare(computed: l.toDouble(), expected: self.double)
 
-                // Skip double for this conversion since it generates a Decimal128(5.0) =/= Decimal128(5)
+                // Skip double for this conversion since it generates a BSONDecimal128(5.0) =/= BSONDecimal128(5)
                 if l.doubleValue == nil {
                     BSONNumberTestCase.compare(computed: l.toDecimal128(), expected: self.decimal)
                 }
@@ -212,26 +206,57 @@ final class BSONValueTests: MongoSwiftTestCase {
     }
 
     func testBSONNumber() throws {
-        let decimal128 = BSONDecimal128("5.5")!
+        let decimal128 = try BSONDecimal128("5.5")
         let double: BSON = 5.5
 
         expect(double.toDouble()).to(equal(5.5))
         expect(double.toDecimal128()).to(equal(decimal128))
 
         let cases = [
-            BSONNumberTestCase(int: 5, double: 5.0, int32: Int32(5), int64: Int64(5), decimal: BSONDecimal128("5")!),
+            BSONNumberTestCase(
+                int: 5,
+                double: 5.0,
+                int32: Int32(5),
+                int64: Int64(5),
+                decimal: try BSONDecimal128("5")
+            ),
             BSONNumberTestCase(
                 int: -5,
                 double: -5.0,
                 int32: Int32(-5),
                 int64: Int64(-5),
-                decimal: BSONDecimal128("-5")!
+                decimal: try BSONDecimal128("-5")
             ),
-            BSONNumberTestCase(int: 0, double: 0.0, int32: Int32(0), int64: Int64(0), decimal: BSONDecimal128("0")!),
-            BSONNumberTestCase(int: nil, double: 1.234, int32: nil, int64: nil, decimal: BSONDecimal128("1.234")!),
-            BSONNumberTestCase(int: nil, double: -31.234, int32: nil, int64: nil, decimal: BSONDecimal128("-31.234")!)
+            BSONNumberTestCase(
+                int: 0,
+                double: 0.0,
+                int32: Int32(0),
+                int64: Int64(0),
+                decimal: try BSONDecimal128("0")
+            ),
+            BSONNumberTestCase(
+                int: nil,
+                double: 1.234,
+                int32: nil,
+                int64: nil,
+                decimal: try BSONDecimal128("1.234")
+            ),
+            BSONNumberTestCase(
+                int: nil,
+                double: -31.234,
+                int32: nil,
+                int64: nil,
+                decimal: try BSONDecimal128("-31.234")
+            )
         ]
 
         cases.forEach { $0.run() }
+    }
+
+    func testBSONBinarySubtype() {
+        // Check the subtype bounds are kept
+        expect(try BSONBinary.Subtype.userDefined(0x100)).to(throwError())
+        expect(try BSONBinary.Subtype.userDefined(0x79)).to(throwError())
+        expect(BSONBinary.Subtype(rawValue: 0x79)).to(beNil())
     }
 }

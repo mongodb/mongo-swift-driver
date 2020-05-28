@@ -138,7 +138,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
                     // for cB input:
                     // native_to_bson( bson_to_native(cB) ) = cB
                     let docFromCB = try BSONDocument(fromBSON: cBData)
-                    expect(docFromCB.rawBSON).to(equal(cBData))
+                    expect(docFromCB.toData()).to(equal(cBData))
 
                     // test round tripping through documents
                     // We create an array by reading every element out of the document (and therefore out of the
@@ -148,7 +148,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
                     // translation layer is lossy and/or buggy.
                     let nativeFromDoc = docFromCB.toArray()
                     let docFromNative = BSONDocument(fromArray: nativeFromDoc)
-                    expect(docFromNative.rawBSON).to(equal(cBData))
+                    expect(docFromNative.toData()).to(equal(cBData))
 
                     // native_to_canonical_extended_json( bson_to_native(cB) ) = cEJ
                     expect(docFromCB.canonicalExtendedJSON).to(cleanEqual(test.canonicalExtJSON))
@@ -165,7 +165,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
 
                     // native_to_bson( json_to_native(cEJ) ) = cB (unless lossy)
                     if !lossy {
-                        expect(try BSONDocument(fromJSON: cEJData).rawBSON).to(equal(cBData))
+                        expect(try BSONDocument(fromJSON: cEJData).toData()).to(equal(cBData))
                     }
 
                     // for dB input (if it exists):
@@ -193,7 +193,7 @@ final class BSONCorpusTests: MongoSwiftTestCase {
 
                         // native_to_bson( json_to_native(dEJ) ) = cB (unless lossy)
                         if !lossy {
-                            expect(try BSONDocument(fromJSON: dEJ).rawBSON).to(equal(cBData))
+                            expect(try BSONDocument(fromJSON: dEJ).toData()).to(equal(cBData))
                         }
                     }
 
@@ -212,13 +212,13 @@ final class BSONCorpusTests: MongoSwiftTestCase {
                     }
                     let description = "\(testFile.description)-\(test.description)"
 
-                    switch BSONType(rawValue: UInt32(testFile.bsonType.dropFirst(2), radix: 16)!)! {
+                    switch BSONType(rawValue: UInt8(testFile.bsonType.dropFirst(2), radix: 16)!)! {
                     case .invalid: // "top level document" uses 0x00 for the bson type
                         expect(try BSONDocument(fromJSON: test.string))
                             .to(throwError(), description: description)
                     case .decimal128:
-                        expect(BSONDecimal128(test.string))
-                            .to(beNil(), description: description)
+                        expect(try BSONDecimal128(test.string))
+                            .to(throwError(), description: description)
                     default:
                         throw TestError(
                             message: "\(description): parse error tests not implemented"

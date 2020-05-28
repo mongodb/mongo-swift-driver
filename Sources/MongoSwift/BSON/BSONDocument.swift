@@ -329,8 +329,8 @@ extension BSONDocument {
         return String(cString: json)
     }
 
-    /// Returns a copy of the raw BSON data for this `BSONDocument`, represented as `Data`.
-    public var rawBSON: Data {
+    /// Returns a copy of the raw BSON data for this `Document`, represented as `Data`.
+    public func toData() -> Data {
         let data = self.withBSONPointer { ptr in
             // swiftlint:disable:next force_unwrapping
             bson_get_data(ptr)! // documented as always returning a value.
@@ -448,7 +448,7 @@ extension BSONDocument {
                     self = newSelf
                 }
             } catch {
-                fatalError("Failed to set the value for key \(key) to \(newValue ?? "nil"): \(error)")
+                fatalError("Failed to set the value for key \"\(key)\" to \(newValue ?? "nil"): \(error)")
             }
         }
     }

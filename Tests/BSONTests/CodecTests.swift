@@ -283,7 +283,7 @@ final class CodecTests: MongoSwiftTestCase {
         let int64: Int64
         let dec: BSONDecimal128
         let minkey: BSONMinKey
-        let maxkey: MaxKey
+        let maxkey: BSONMaxKey
         let regex: BSONRegularExpression
         let symbol: BSONSymbol
         let undefined: BSONUndefined
@@ -297,7 +297,7 @@ final class CodecTests: MongoSwiftTestCase {
                 doc: ["x": 1],
                 arr: [.int32(1), .int32(2)],
                 binary: try BSONBinary(base64: "//8=", subtype: .generic),
-                oid: BSONObjectID("507f1f77bcf86cd799439011")!,
+                oid: try BSONObjectID("507f1f77bcf86cd799439011"),
                 bool: true,
                 date: Date(timeIntervalSinceReferenceDate: 5000),
                 code: BSONCode(code: "hi"),
@@ -305,13 +305,13 @@ final class CodecTests: MongoSwiftTestCase {
                 ts: BSONTimestamp(timestamp: 1, inc: 2),
                 int32: 5,
                 int64: 6,
-                dec: BSONDecimal128("1.2E+10")!,
+                dec: try BSONDecimal128("1.2E+10"),
                 minkey: BSONMinKey(),
-                maxkey: MaxKey(),
+                maxkey: BSONMaxKey(),
                 regex: BSONRegularExpression(pattern: "^abc", options: "imx"),
                 symbol: BSONSymbol("i am a symbol"),
                 undefined: BSONUndefined(),
-                dbpointer: BSONDBPointer(ref: "some.namespace", id: BSONObjectID("507f1f77bcf86cd799439011")!),
+                dbpointer: BSONDBPointer(ref: "some.namespace", id: try BSONObjectID("507f1f77bcf86cd799439011")),
                 null: BSONNull()
             )
         }
@@ -398,7 +398,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try decoder.decode(Int32.self, from: "42")).to(equal(Int32(42)))
         expect(try decoder.decode(Int32.self, from: "{\"$numberInt\": \"42\"}")).to(equal(Int32(42)))
 
-        let oid = BSONObjectID("507f1f77bcf86cd799439011")!
+        let oid = try BSONObjectID("507f1f77bcf86cd799439011")
         expect(try decoder.decode(BSONObjectID.self, from: "{\"$oid\": \"507f1f77bcf86cd799439011\"}")).to(equal(oid))
 
         expect(try decoder.decode(String.self, from: "\"somestring\"")).to(equal("somestring"))
@@ -412,7 +412,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try decoder.decode(
             BSONDecimal128.self,
             from: "{\"$numberDecimal\": \"1.2E+10\"}"
-        )).to(equal(BSONDecimal128("1.2E+10")!))
+        )).to(equal(try BSONDecimal128("1.2E+10")))
 
         let binary = try BSONBinary(base64: "//8=", subtype: .generic)
         expect(
@@ -459,7 +459,7 @@ final class CodecTests: MongoSwiftTestCase {
         ).to(equal(regex))
 
         expect(try decoder.decode(BSONMinKey.self, from: "{\"$minKey\": 1}")).to(equal(BSONMinKey()))
-        expect(try decoder.decode(MaxKey.self, from: "{\"$maxKey\": 1}")).to(equal(MaxKey()))
+        expect(try decoder.decode(BSONMaxKey.self, from: "{\"$maxKey\": 1}")).to(equal(BSONMaxKey()))
 
         expect(try decoder.decode(Bool.self, from: "false")).to(beFalse())
         expect(try decoder.decode(Bool.self, from: "true")).to(beTrue())
@@ -700,7 +700,7 @@ final class CodecTests: MongoSwiftTestCase {
         expect(try decoder.decode(AnyBSONStruct.self, from: wrappedInt64.canonicalExtendedJSON).x).to(equal(int64))
 
         // decimal128
-        let decimal = BSON.decimal128(BSONDecimal128("1.2E+10")!)
+        let decimal = BSON.decimal128(try BSONDecimal128("1.2E+10"))
 
         expect(try decoder.decode(BSON.self, from: "{ \"$numberDecimal\" : \"1.2E+10\" }")).to(equal(decimal))
 
