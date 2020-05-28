@@ -246,7 +246,9 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
                 throw InvalidArgumentError(message: "Cannot represent \(value) as UInt8")
             }
             guard byteValue >= 0x80 else {
-                throw InvalidArgumentError(message: "userDefined value must be greater than or equal to 0x80 got \(byteValue)")
+                throw InvalidArgumentError(
+                    message: "userDefined value must be greater than or equal to 0x80 got \(byteValue)"
+                )
             }
             guard let subtype = Subtype(rawValue: byteValue) else {
                 throw InvalidArgumentError(message: "Cannot represent \(byteValue) as Subtype")
