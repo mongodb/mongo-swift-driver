@@ -16,10 +16,6 @@ final class SDAMTests: MongoSwiftTestCase {
         expect(desc.passives).to(haveCount(0))
     }
 
-    func checkUnknownServerType(_ desc: ServerDescription) {
-        expect(desc.type).to(equal(ServerDescription.ServerType.unknown))
-    }
-
     // Basic test based on the "standalone" spec test for SDAM monitoring:
     // swiftlint:disable line_length
     // https://github.com/mongodb/specifications/blob/master/source/server-discovery-and-monitoring/tests/monitoring/standalone.json
@@ -51,52 +47,48 @@ final class SDAMTests: MongoSwiftTestCase {
         }
         let hostAddress = try ServerAddress(host)
 
-        // check event count and that events are of the expected types
-        expect(receivedEvents.count).to(beGreaterThanOrEqualTo(5))
+        expect(receivedEvents.count).to(equal(4))
         expect(receivedEvents[0].topologyOpeningValue).toNot(beNil())
-        expect(receivedEvents[1].topologyDescriptionChangedValue).toNot(beNil())
-        expect(receivedEvents[2].serverOpeningValue).toNot(beNil())
-        expect(receivedEvents[3].serverDescriptionChangedValue).toNot(beNil())
-        expect(receivedEvents[4].topologyDescriptionChangedValue).toNot(beNil())
+        expect(receivedEvents[1].serverOpeningValue).toNot(beNil())
+        expect(receivedEvents[2].serverDescriptionChangedValue).toNot(beNil())
+        expect(receivedEvents[3].topologyDescriptionChangedValue).toNot(beNil())
 
-        // verify that data in ServerDescription and TopologyDescription looks reasonable
         let event0 = receivedEvents[0].topologyOpeningValue!
-        expect(event0.topologyID).toNot(beNil())
 
-        let event1 = receivedEvents[1].topologyDescriptionChangedValue!
+        let event1 = receivedEvents[1].serverOpeningValue!
         expect(event1.topologyID).to(equal(event0.topologyID))
-        expect(event1.previousDescription.type).to(equal(TopologyDescription.TopologyType.unknown))
-        expect(event1.newDescription.type).to(equal(TopologyDescription.TopologyType.single))
-        // This is a bit of a deviation from the SDAM spec tests linked above. However, this is how mongoc responds so
-        // there is no other way to get around this.
-        expect(event1.newDescription.servers).to(beEmpty())
+        expect(event1.serverAddress).to(equal(hostAddress))
 
-        let event2 = receivedEvents[2].serverOpeningValue!
+        let event2 = receivedEvents[2].serverDescriptionChangedValue!
         expect(event2.topologyID).to(equal(event1.topologyID))
-        expect(event2.serverAddress).to(equal(hostAddress))
 
-        let event3 = receivedEvents[3].serverDescriptionChangedValue!
-        expect(event3.topologyID).to(equal(event2.topologyID))
-        let prevServer = event3.previousDescription
+        let prevServer = event2.previousDescription
+        let newServer = event2.newDescription
+
         expect(prevServer.address).to(equal(hostAddress))
-        self.checkEmptyLists(prevServer)
-        self.checkUnknownServerType(prevServer)
-
-        let newServer = event3.newDescription
         expect(newServer.address).to(equal(hostAddress))
+
+        self.checkEmptyLists(prevServer)
         self.checkEmptyLists(newServer)
-        expect(newServer.type).to(equal(ServerDescription.ServerType.standalone))
 
-        let event4 = receivedEvents[4].topologyDescriptionChangedValue!
-        expect(event4.topologyID).to(equal(event3.topologyID))
-        let prevTopology = event4.previousDescription
-        expect(prevTopology.type).to(equal(TopologyDescription.TopologyType.single))
+        expect(prevServer.type).to(equal(.unknown))
+        expect(newServer.type).to(equal(.standalone))
+
+        let event3 = receivedEvents[3].topologyDescriptionChangedValue!
+        expect(event3.topologyID).to(equal(event2.topologyID))
+
+        let prevTopology = event3.previousDescription
+        let newTopology = event3.newDescription
+
+        expect(prevTopology.type).to(equal(.unknown))
+        expect(newTopology.type).to(equal(.single))
+
         expect(prevTopology.servers).to(beEmpty())
+        expect(newTopology.servers).to(haveCount(1))
 
-        let newTopology = event4.newDescription
-        expect(newTopology.type).to(equal(TopologyDescription.TopologyType.single))
         expect(newTopology.servers[0].address).to(equal(hostAddress))
-        expect(newTopology.servers[0].type).to(equal(ServerDescription.ServerType.standalone))
+        expect(newTopology.servers[0].type).to(equal(.standalone))
+
         self.checkEmptyLists(newTopology.servers[0])
     }
 }
