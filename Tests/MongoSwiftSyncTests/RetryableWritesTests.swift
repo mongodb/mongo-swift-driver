@@ -100,7 +100,7 @@ final class RetryableWritesTests: MongoSwiftTestCase {
                         sessions: [:]
                     )
                 } catch {
-                    if let bulkError = error as? BulkWriteError {
+                    if let bulkError = error as? MongoError.BulkWriteError {
                         result = bulkError.result.map(TestOperationResult.bulkWrite)
                     }
                     seenError = error

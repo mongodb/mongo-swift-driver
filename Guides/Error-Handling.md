@@ -15,7 +15,7 @@
 * [See Also](#see-also)
 
 ## Error Types
-The driver uses errors to communicate that an operation failed, an assumption wasn't met, or that the user did something incorrectly. Applications that use the driver can in turn catch these errors and respond appropriately without crashing or resulting in an otherwise inconsistent state. To correctly model the different sources of errors, the driver defines three separate caregories of errors (`ServerError`, `UserError`, `RuntimeError`), each of which are protocols that inherit from the `MongoError` protocol. These protocols are defined in `MongoError.swift`, and the structs that conform to them are outlined here. The documentation for every public function that throws lists some of the errors that could possibly be thrown and the reasons they might be. The errors listed there are not comprehensive but will generally cover the most common cases.
+The driver uses errors to communicate that an operation failed, an assumption wasn't met, or that the user did something incorrectly. Applications that use the driver can in turn catch these errors and respond appropriately without crashing or resulting in an otherwise inconsistent state. To correctly model the different sources of errors, the driver defines three separate caregories of errors (`MongoServerError`, `MongoUserError`, `MongoRuntimeError`), each of which are protocols that inherit from the `MongoErrorProtocol` protocol. These protocols are defined in `MongoError.swift`, and the structs that conform to them are outlined here. The documentation for every public function that throws lists some of the errors that could possibly be thrown and the reasons they might be. The errors listed there are not comprehensive but will generally cover the most common cases.
 
 
 ### Server Errors
@@ -23,13 +23,13 @@ Server errors correspond to failures that occur in the database itself and are r
 
 For an enumeration of the possible server error codes, [see this list](https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml).
 
-The possible errors that conform to `ServerError` are as follows:
-- `CommandError`:
+The possible errors that conform to `MongoServerError` are as follows:
+- `MongoError.CommandError`:
     - Thrown when commands experience errors server side that prevent execution.
     - Example command failures include failure to parse, operation aborted by the user, and unexpected errors during execution.
-- `WriteError`
+- `MongoError.WriteError`
     - Thrown when a single write command fails on the server (e.g. insertOne, updateOne, updateMany).
-- `BulkWriteError`
+- `MongoError.BulkWriteError`
     - Thrown when the server returns errors as part of an executed bulk write.
     - If WriteConcernFailure is populated, writeErrors may not be.
     - **Note:** `InsertMany` throws a `BulkWriteError`, _not_ a `WriteError`.
@@ -38,32 +38,32 @@ The possible errors that conform to `ServerError` are as follows:
 ### User Errors
 User applications can sometimes cause errors by using the driver incorrectly (e.g. by passing invalid argument combinations). This category of error covers those cases.
 
-The possible errors that conform to `UserError` are as follows:
-- `LogicError`
+The possible errors that conform to `MongoUserError` are as follows:
+- `MongoError.LogicError`
     - Thrown when the user uses the driver incorrectly (e.g. advancing a dead cursor).
-- `InvalidArgumentError`
+- `MongoError.InvalidArgumentError`
     - Thrown when user passes invalid arguments to some driver function.
 
 
 ### Runtime Errors
 The driver may experience errors that happen at runtime unexpectedly. These errors don't fit neatly into the categories of occurring only server-side or only as part of the user's fault, so they are represented by their own set of cases.
 
-The `RuntimeError` cases are as follows:
-- `InternalError`
+The `MongoRuntimeError` cases are as follows:
+- `MongoError.InternalError`
     - Thrown when something is null when it shouldn't be, the driver has an internal failure, or MongoSwift cannot understand a server response.
     - This is generally indicative of a bug somewhere in the driver stack or a system related failure (e.g. a memory allocation failure). If you experience an error that you think is the result of a bug, please file a bug report on GitHub or our Jira project.
-- `ConnectionError`
+- `MongoError.ConnectionError`
     - Thrown during any connection establishment / socket related errors.
     - This error also conforms to `LabeledError`.
-- `AuthenticationError`
+- `MongoError.AuthenticationError`
     - Thrown when the driver is not authorized to perform a requested command (e.g. due to invalid credentials)
-- `ServerSelectionError`
+- `MongoError.ServerSelectionError`
     - Thrown when the driver was unable to select a server for an operation (e.g. due to a timeout or unsatisfiable read preference)
     - See [the official MongoDB documentation](https://docs.mongodb.com/manual/core/read-preference-mechanics/) for more information.
 
 
 ### Error Labels
-Some types of errors may contain more specific information describing the context in which they occured. Such errors conform to the `LabeledError` protocol, and the extra information is conveyed through the `errorLabels` property. Specifically, any server error or connection related error may contain labels.
+Some types of errors may contain more specific information describing the context in which they occured. Such errors conform to the `MongoLabeledError` protocol, and the extra information is conveyed through the `errorLabels` property. Specifically, any server error or connection related error may contain labels.
 
 The following error labels are currently defined. Future versions of MongoDB may introduce new labels:
 - `TransientTransactionError`:
@@ -73,7 +73,7 @@ The following error labels are currently defined. Future versions of MongoDB may
 
 
 ### Encoding/Decoding Errors
-As part of the driver, `BSONEncoder` and `BSONDecoder` are implemented according to the `Encoder` and `Decoder` protocols [defined in Apple's Foundation](https://developer.apple.com/documentation/foundation/archives_and_serialization/encoding_and_decoding_custom_types). User applications can use them to seamlessly convert between their Swift data structures and the BSON documents stored in the database. While this functionality is part of the public API, the driver itself also makes heavy use of it internally. During any encoding or decoding operations, errors can occur that prevent the data from being written to or read from BSON. In these cases, the driver throws an `EncodingError` or `DecodingError` as appropriate. These error types are not unique to MongoSwift and are commonly used by other encoder implementations, such as Foundation's `JSONEncoder`, so they do not conform to the `MongoError` protocol or any of the other error protocols defined in the driver.
+As part of the driver, `BSONEncoder` and `BSONDecoder` are implemented according to the `Encoder` and `Decoder` protocols [defined in Apple's Foundation](https://developer.apple.com/documentation/foundation/archives_and_serialization/encoding_and_decoding_custom_types). User applications can use them to seamlessly convert between their Swift data structures and the BSON documents stored in the database. While this functionality is part of the public API, the driver itself also makes heavy use of it internally. During any encoding or decoding operations, errors can occur that prevent the data from being written to or read from BSON. In these cases, the driver throws an `EncodingError` or `DecodingError` as appropriate. These error types are not unique to MongoSwift and are commonly used by other encoder implementations, such as Foundation's `JSONEncoder`, so they do not conform to the `MongoErrorProtocol` protocol or any of the other error protocols defined in the driver.
 
 See the official documentation for both [`EncodingErrors`](https://developer.apple.com/documentation/swift/encodingerror) and [`DecodingErrors`](https://developer.apple.com/documentation/swift/decodingerror) for more information.
 
@@ -83,14 +83,14 @@ See the official documentation for both [`EncodingErrors`](https://developer.app
 ```swift
 do {
     // something involving the driver
-} catch let error as MongoError {
+} catch let error as MongoErrorProtocol {
     print("Driver error!")
     switch error.self {
-    case let runtimeError as RuntimeError:
+    case let runtimeError as MongoRuntimeError:
         // handle RuntimeError
-    case let serverError as ServerError:
+    case let serverError as MongoServerError:
         // handle ServerError
-    case let userError as UserError:
+    case let userError as MongoUserError:
         // handle UserError
     default:
         // should never get here
@@ -106,7 +106,7 @@ do {
 ```swift
 do {
     try db.runCommand(["asdfasdf": "sadfsadfasdf"])
-} catch let commandError as CommandError {
+} catch let commandError as MongoError.CommandError {
     print("Command failed: code: \(commandError.code) message: \(commandError.message)")
 } catch { ... }
 ```
@@ -121,7 +121,7 @@ Command failed: code: 59 message: no such command: 'asdfasdf'
 do {
     try coll.insertOne(["_id": 1])
     try coll.insertOne(["_id": 1])
-} catch let writeError as WriteError where writeError.writeFailure?.code == 11000 {
+} catch let writeError as MongoError.WriteError where writeError.writeFailure?.code == 11000 {
     print("duplicate key error: \(1) \(writeError.writeFailure?.message ?? "")")
 }
 ```
@@ -136,7 +136,7 @@ let docs: [Document] = [["_id": 2], ["_id": 1]]
 do {
     try coll.insertOne(["_id": 1])
     try coll.insertMany(docs)
-} catch let bwe as BulkWriteError {
+} catch let bwe as MongoError.BulkWriteError {
     if let writeErrors = bwe.writeFailures {
         writeErrors.forEach { err in print("Write Error inserting \(docs[err.index]), code: \(err.code), message: \(err.message)") }
     }

@@ -62,7 +62,8 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
                         }
                     }
                 } else {
-                    expect(try MongoClient(uri, using: testElg)).to(throwError(errorType: InvalidArgumentError.self))
+                    expect(try MongoClient(uri, using: testElg))
+                        .to(throwError(errorType: MongoError.InvalidArgumentError.self))
                 }
             }
         }
@@ -112,7 +113,8 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
                             expect(try encoder.encode(wc)).to(sortedEqual(expected))
                         }
                     } else {
-                        expect(try WriteConcern(wcToUse)).to(throwError(errorType: InvalidArgumentError.self))
+                        expect(try WriteConcern(wcToUse))
+                            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
                     }
                 }
             }

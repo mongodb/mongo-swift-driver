@@ -97,7 +97,7 @@ internal enum ChangeStreamTestResult: Decodable {
             fail("\(description) failed: got error but result success")
             return
         }
-        guard let seenError = error as? CommandError else {
+        guard let seenError = error as? MongoError.CommandError else {
             fail("\(description) failed: didn't get command error")
             return
         }
@@ -349,7 +349,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             }
 
             if try client.maxWireVersion() >= 8 {
-                let expectedError = CommandError.new(
+                let expectedError = MongoError.CommandError.new(
                     code: 280,
                     codeName: "ChangeStreamFatalError",
                     message: "",
@@ -357,7 +357,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
                 )
                 expect(try changeStream.nextWithTimeout()).to(throwError(expectedError))
             } else {
-                expect(try changeStream.next()?.get()).to(throwError(errorType: LogicError.self))
+                expect(try changeStream.next()?.get()).to(throwError(errorType: MongoError.LogicError.self))
             }
         }
     }

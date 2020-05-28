@@ -204,31 +204,31 @@ internal class ConnectionString {
     internal func setMongoCredential(_ credential: MongoCredential) throws {
         if let username = credential.username {
             guard mongoc_uri_set_username(self._uri, username) else {
-                throw InvalidArgumentError(message: "Cannot set username to \(username).")
+                throw MongoError.InvalidArgumentError(message: "Cannot set username to \(username).")
             }
         }
 
         if let password = credential.password {
             guard mongoc_uri_set_password(self._uri, password) else {
-                throw InvalidArgumentError(message: "Cannot set password.")
+                throw MongoError.InvalidArgumentError(message: "Cannot set password.")
             }
         }
 
         if let authSource = credential.source {
             guard mongoc_uri_set_auth_source(self._uri, authSource) else {
-                throw InvalidArgumentError(message: "Cannot set authSource to \(authSource).")
+                throw MongoError.InvalidArgumentError(message: "Cannot set authSource to \(authSource).")
             }
         }
 
         if let mechanism = credential.mechanism {
             guard mongoc_uri_set_auth_mechanism(self._uri, mechanism.name) else {
-                throw InvalidArgumentError(message: "Cannot set mechanism to \(mechanism)).")
+                throw MongoError.InvalidArgumentError(message: "Cannot set mechanism to \(mechanism)).")
             }
         }
 
         try credential.mechanismProperties?.withBSONPointer { mechanismPropertiesPtr in
             guard mongoc_uri_set_mechanism_properties(self._uri, mechanismPropertiesPtr) else {
-                throw InvalidArgumentError(
+                throw MongoError.InvalidArgumentError(
                     message: "Cannot set mechanismProperties to \(String(describing: credential.mechanismProperties))."
                 )
             }

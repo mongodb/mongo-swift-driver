@@ -33,9 +33,9 @@ import NIO
  */
 public final class ClientSession {
     /// Error thrown when an inactive session is used.
-    internal static let SessionInactiveError = LogicError(message: "Tried to use an inactive session")
+    internal static let SessionInactiveError = MongoError.LogicError(message: "Tried to use an inactive session")
     /// Error thrown when a user attempts to use a session with a client it was not created from.
-    internal static let ClientMismatchError = InvalidArgumentError(
+    internal static let ClientMismatchError = MongoError.InvalidArgumentError(
         message: "Sessions may only be used with the client used to create them"
     )
 
@@ -251,7 +251,7 @@ public final class ClientSession {
     internal func withMongocSession<T>(body: (OpaquePointer) throws -> T) throws -> T {
         switch self.state {
         case .notStarted:
-            throw InternalError(message: "mongoc session was unexpectedly not started")
+            throw MongoError.InternalError(message: "mongoc session was unexpectedly not started")
         case let .started(session, _):
             return try body(session)
         case .ended:

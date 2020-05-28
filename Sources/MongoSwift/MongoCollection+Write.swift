@@ -373,7 +373,7 @@ public struct InsertOneResult: Decodable {
             return nil
         }
         guard let id = result.insertedIDs[0] else {
-            throw InternalError(message: "BulkWriteResult missing _id for inserted document")
+            throw MongoError.InternalError(message: "BulkWriteResult missing _id for inserted document")
         }
         self.insertedID = id
     }
@@ -433,7 +433,7 @@ public struct UpdateResult: Decodable {
         self.upsertedCount = result.upsertedCount
         if result.upsertedCount == 1 {
             guard let id = result.upsertedIDs[0] else {
-                throw InternalError(message: "BulkWriteResult missing _id for upserted document")
+                throw MongoError.InternalError(message: "BulkWriteResult missing _id for upserted document")
             }
             self.upsertedID = id
         } else {

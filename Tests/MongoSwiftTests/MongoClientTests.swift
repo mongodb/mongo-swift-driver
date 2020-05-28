@@ -33,7 +33,8 @@ final class MongoClientTests: MongoSwiftTestCase {
 
         for value in invalidSizes {
             let opts = MongoClientOptions(maxPoolSize: value)
-            expect(try MongoClient(using: elg, options: opts)).to(throwError(errorType: InvalidArgumentError.self))
+            expect(try MongoClient(using: elg, options: opts))
+                .to(throwError(errorType: MongoError.InvalidArgumentError.self))
         }
 
         // verify size 100 is used by default
@@ -126,7 +127,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(client.connectionPool.checkedOutConnections).to(equal(2))
 
         // calling a method that will request a new connection errors
-        expect(try client.listDatabases().wait()).to(throwError(errorType: LogicError.self))
+        expect(try client.listDatabases().wait()).to(throwError(errorType: MongoError.LogicError.self))
 
         // cursor can still be used and successfully killed while closing occurs
         expect(try cursor.next().wait()).toNot(throwError())

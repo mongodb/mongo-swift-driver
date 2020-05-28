@@ -77,7 +77,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
     private func processEvent(_ event: BSONDocument) throws -> T {
         // Update the resumeToken with the `_id` field from the document.
         guard let resumeToken = event["_id"]?.documentValue else {
-            throw InternalError(message: "_id field is missing from the change stream document.")
+            throw MongoError.InternalError(message: "_id field is missing from the change stream document.")
         }
         self.resumeToken = ResumeToken(resumeToken)
         return try self.decoder.decode(T.self, from: event)

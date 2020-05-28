@@ -73,7 +73,7 @@ internal struct StartTransactionOperation: Operation {
 
     internal func execute(using _: Connection, session: ClientSession?) throws {
         guard let session = session else {
-            throw InternalError(message: "No session provided to StartTransactionOperation")
+            throw MongoError.InternalError(message: "No session provided to StartTransactionOperation")
         }
 
         var error = bson_error_t()

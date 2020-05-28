@@ -256,7 +256,7 @@ public struct MongoDatabase {
             operation, client: self._client, session: session
         ).flatMapThrowing { result in
             guard case let .specs(result) = result else {
-                throw InternalError(message: "invalid result")
+                throw MongoError.InternalError(message: "invalid result")
             }
             return result
         }
@@ -314,7 +314,7 @@ public struct MongoDatabase {
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
             .flatMapThrowing { result in
                 guard case let .names(names) = result else {
-                    throw InternalError(message: "Invalid result")
+                    throw MongoError.InternalError(message: "Invalid result")
                 }
                 return names
             }

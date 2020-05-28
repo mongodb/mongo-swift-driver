@@ -9,7 +9,7 @@ internal typealias MutableBSONPointer = UnsafeMutablePointer<bson_t>
 public struct BSONDocument {
     /// Error thrown when BSON buffer is too small.
     internal static let BSONBufferTooSmallError =
-        InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
+        MongoError.InternalError(message: "BSON buffer is unexpectedly too small (< 5 bytes)")
 
     /// The storage backing a `BSONDocument`.
     private class Storage {
@@ -232,7 +232,7 @@ extension BSONDocument {
             }
         }
         guard success else {
-            throw InternalError(
+            throw MongoError.InternalError(
                 message: "Failed to merge \(doc) with \(self). This is likely due to " +
                     "the merged document being too large."
             )
@@ -255,7 +255,7 @@ extension BSONDocument {
     /// excluding a non-zero number of keys
     internal func copyElements(to otherDoc: inout BSONDocument, excluding keys: [String]) throws {
         guard !keys.isEmpty else {
-            throw InternalError(message: "No keys to exclude, use 'bson_copy' instead")
+            throw MongoError.InternalError(message: "No keys to exclude, use 'bson_copy' instead")
         }
 
         let cStrings: [ContiguousArray<CChar>] = keys.map { $0.utf8CString }
@@ -263,7 +263,7 @@ extension BSONDocument {
         var cPtrs: [UnsafePointer<CChar>] = try cStrings.map { cString in
             let bufferPtr: UnsafeBufferPointer<CChar> = cString.withUnsafeBufferPointer { $0 }
             guard let cPtr = bufferPtr.baseAddress else {
-                throw InternalError(message: "Failed to copy strings")
+                throw MongoError.InternalError(message: "Failed to copy strings")
             }
             return cPtr
         }
@@ -380,9 +380,9 @@ extension BSONDocument {
             var error = bson_error_t()
             guard let bson = bson_new_from_json(bytes, fromJSON.count, &error) else {
                 if error.domain == BSON_ERROR_JSON {
-                    throw InvalidArgumentError(message: "Invalid JSON: \(toErrorString(error))")
+                    throw MongoError.InvalidArgumentError(message: "Invalid JSON: \(toErrorString(error))")
                 }
-                throw InternalError(message: toErrorString(error))
+                throw MongoError.InternalError(message: toErrorString(error))
             }
 
             return bson
@@ -409,7 +409,7 @@ extension BSONDocument {
     public init(fromBSON bson: Data) throws {
         self._storage = Storage(stealing: try bson.withUnsafeBytePointer { bytes in
             guard let data = bson_new_from_data(bytes, bson.count) else {
-                throw InvalidArgumentError(message: "Invalid BSON data")
+                throw MongoError.InvalidArgumentError(message: "Invalid BSON data")
             }
             return data
         })
@@ -520,7 +520,7 @@ extension BSONDocument: BSONValue {
             bson_iter_document(iterPtr, &length, document)
 
             guard let docData = bson_new_from_data(document.pointee, Int(length)) else {
-                throw InternalError(message: "Failed to create a Document from iterator")
+                throw MongoError.InternalError(message: "Failed to create a Document from iterator")
             }
 
             return self.init(stealing: docData)

@@ -4,7 +4,7 @@ import CLibMongoC
 internal struct AbortTransactionOperation: Operation {
     internal func execute(using _: Connection, session: ClientSession?) throws {
         guard let session = session else {
-            throw InternalError(message: "No session provided to AbortTransactionOperation")
+            throw MongoError.InternalError(message: "No session provided to AbortTransactionOperation")
         }
 
         var error = bson_error_t()

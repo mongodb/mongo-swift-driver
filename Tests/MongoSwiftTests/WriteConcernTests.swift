@@ -40,13 +40,13 @@ final class WriteConcernTests: MongoSwiftTestCase {
 
         // verify that this combination is considered invalid
         expect(try WriteConcern(journal: true, w: .number(0)))
-            .to(throwError(errorType: InvalidArgumentError.self))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         // verify that a negative value for w or for wtimeoutMS is considered invalid
         expect(try WriteConcern(w: .number(-1)))
-            .to(throwError(errorType: InvalidArgumentError.self))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
         expect(try WriteConcern(wtimeoutMS: -1))
-            .to(throwError(errorType: InvalidArgumentError.self))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
     func testClientWriteConcern() throws {

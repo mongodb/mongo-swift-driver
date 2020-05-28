@@ -4,7 +4,7 @@ import CLibMongoC
 internal struct CommitTransactionOperation: Operation {
     internal func execute(using _: Connection, session: ClientSession?) throws {
         guard let session = session else {
-            throw InternalError(message: "No session provided to CommitTransactionOperation")
+            throw MongoError.InternalError(message: "No session provided to CommitTransactionOperation")
         }
 
         try session.withMongocSession { sessionPtr in

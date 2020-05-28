@@ -27,7 +27,7 @@ public struct ServerAddress: Equatable {
         let parts = hostAndPort.split(separator: ":")
         self.host = String(parts[0])
         guard let port = UInt16(parts[1]) else {
-            throw InternalError(message: "couldn't parse address from \(hostAndPort)")
+            throw MongoError.InternalError(message: "couldn't parse address from \(hostAndPort)")
         }
         self.port = port
     }

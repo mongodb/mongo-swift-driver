@@ -117,7 +117,7 @@ extension Array: BSONValue where Element == BSON {
             // since an array is a nested object with keys '0', '1', etc.,
             // create a new Document using the array data so we can recursively parse
             guard let arrayData = bson_new_from_data(array.pointee, Int(length)) else {
-                throw InternalError(message: "Failed to create an Array from iterator")
+                throw MongoError.InternalError(message: "Failed to create an Array from iterator")
             }
 
             let arrDoc = BSONDocument(stealing: arrayData)
@@ -278,7 +278,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
     ///   - `InvalidArgumentError` if the provided data is incompatible with the specified subtype.
     public init(data: Data, subtype: Subtype) throws {
         if [Subtype.uuid, Subtype.uuidDeprecated].contains(subtype) && data.count != 16 {
-            throw InvalidArgumentError(
+            throw MongoError.InvalidArgumentError(
                 message:
                 "Binary data with UUID subtype must be 16 bytes, but data has \(data.count) bytes"
             )
@@ -295,7 +295,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
     ///     incompatible with the specified subtype.
     public init(base64: String, subtype: Subtype) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
-            throw InvalidArgumentError(
+            throw MongoError.InvalidArgumentError(
                 message:
                 "failed to create Data object from invalid base64 string \(base64)"
             )
@@ -341,7 +341,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
             bson_iter_binary(iterPtr, &subtype, &length, dataPointer)
 
             guard let data = dataPointer.pointee else {
-                throw InternalError(message: "failed to retrieve data stored for binary BSON value")
+                throw MongoError.InternalError(message: "failed to retrieve data stored for binary BSON value")
             }
 
             let dataObj = Data(bytes: data, count: Int(length))
@@ -354,7 +354,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
     ///   - `InvalidArgumentError` if a non-UUID subtype is set on this `BSONBinary`.
     public func toUUID() throws -> UUID {
         guard [Subtype.uuid, Subtype.uuidDeprecated].contains(self.subtype) else {
-            throw InvalidArgumentError(
+            throw MongoError.InvalidArgumentError(
                 message: "Expected a UUID binary subtype, got subtype \(self.subtype) instead."
             )
         }
@@ -558,7 +558,7 @@ public struct BSONDecimal128: BSONValue, Equatable, Codable, CustomStringConvert
     internal static func toLibBSONType(_ str: String) throws -> bson_decimal128_t {
         var value = bson_decimal128_t()
         guard bson_decimal128_from_string(str, &value) else {
-            throw InvalidArgumentError(message: "Invalid Decimal128 string \(str)")
+            throw MongoError.InvalidArgumentError(message: "Invalid Decimal128 string \(str)")
         }
         return value
     }
@@ -714,7 +714,7 @@ public struct BSONCodeWithScope: BSONValue, Equatable, Codable, Hashable {
 
             let code = String(cString: bson_iter_codewscope(iterPtr, &length, &scopeLength, scopePointer))
             guard let scopeData = bson_new_from_data(scopePointer.pointee, Int(scopeLength)) else {
-                throw InternalError(message: "Failed to create a bson_t from scope data")
+                throw MongoError.InternalError(message: "Failed to create a bson_t from scope data")
             }
             let scopeDoc = BSONDocument(stealing: scopeData)
 
@@ -1024,7 +1024,7 @@ public struct BSONRegularExpression: BSONValue, Equatable, Codable, Hashable {
             let patternString = String(cString: pattern)
 
             guard let stringOptions = options.pointee else {
-                throw InternalError(message: "Failed to retrieve regular expression options")
+                throw MongoError.InternalError(message: "Failed to retrieve regular expression options")
             }
             let optionsString = String(cString: stringOptions)
 
@@ -1069,11 +1069,11 @@ extension String: BSONValue {
             }
 
             guard bson_utf8_validate(strValue, Int(length), true) else {
-                throw InternalError(message: "String \(strValue) not valid UTF-8")
+                throw MongoError.InternalError(message: "String \(strValue) not valid UTF-8")
             }
 
             guard let out = self.init(rawStringData: strValue, length: Int(length)) else {
-                throw InternalError(
+                throw MongoError.InternalError(
                     message: "Underlying string data could not be parsed to a Swift String"
                 )
             }
@@ -1131,7 +1131,7 @@ public struct BSONSymbol: BSONValue, CustomStringConvertible, Codable, Equatable
             }
 
             guard let strValue = String(rawStringData: cStr, length: Int(length)) else {
-                throw InternalError(message: "Cannot parse String from underlying data")
+                throw MongoError.InternalError(message: "Cannot parse String from underlying data")
             }
 
             return BSONSymbol(strValue)

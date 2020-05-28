@@ -30,7 +30,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<BulkWriteResult?> {
         guard !requests.isEmpty else {
             return self._client.operationExecutor
-                .makeFailedFuture(InvalidArgumentError(message: "requests cannot be empty"))
+                .makeFailedFuture(MongoError.InvalidArgumentError(message: "requests cannot be empty"))
         }
         let operation = BulkWriteOperation(collection: self, models: requests, options: options)
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
@@ -218,7 +218,7 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
         var insertedIDs: [Int: BSON] = [:]
 
         if session?.inTransaction == true && self.options?.writeConcern != nil {
-            throw InvalidArgumentError(
+            throw MongoError.InvalidArgumentError(
                 message: "Cannot specify a write concern on an individual helper in a " +
                     "transaction. Instead specify it when starting the transaction."
             )
@@ -419,12 +419,12 @@ public struct BulkWriteResult: Decodable {
 
         if let upserted = try reply.getValue(for: MongocKeys.upserted.rawValue)?.arrayValue {
             guard let upserted = upserted.toArrayOf(BSONDocument.self) else {
-                throw InternalError(message: "\"upserted\" array did not contain only documents")
+                throw MongoError.InternalError(message: "\"upserted\" array did not contain only documents")
             }
 
             for upsert in upserted {
                 guard let index = try upsert.getValue(for: "index")?.toInt() else {
-                    throw InternalError(message: "Could not cast upserted index to `Int`")
+                    throw MongoError.InternalError(message: "Could not cast upserted index to `Int`")
                 }
                 upsertedIDs[index] = upsert["_id"]
             }

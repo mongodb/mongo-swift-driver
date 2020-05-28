@@ -23,7 +23,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             // cursor should immediately be closed as its empty
             expect(try cursor.isAlive().wait()).to(beFalse())
             // iterating dead cursor should error
-            expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next().wait()).to(throwError(errorType: MongoError.LogicError.self))
 
             // insert and read out one document
             _ = try coll.insertOne(doc1).wait()
@@ -41,7 +41,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
 
             // run killCursors so next iteration fails on the server
             _ = try db.runCommand(["killCursors": .string(coll.name), "cursors": [.int64(cursor.id!)]]).wait()
-            let expectedError = CommandError.new(
+            let expectedError = MongoError.CommandError.new(
                 code: 43,
                 codeName: "CursorNotFound",
                 message: "",
@@ -76,7 +76,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
 
             expect(try cursor.kill().wait()).toNot(throwError())
             expect(try interruptedFuture.wait()).to(beNil())
-            expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next().wait()).to(throwError(errorType: MongoError.LogicError.self))
         }
     }
 
@@ -89,7 +89,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(try cursor.next().wait()).to(beNil())
             // no documents matched initial query, so cursor is dead
             expect(try cursor.isAlive().wait()).to(beFalse())
-            expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next().wait()).to(throwError(errorType: MongoError.LogicError.self))
 
             // insert a doc so something matches initial query
             _ = try coll.insertOne(doc1).wait()
@@ -120,7 +120,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
                 _ = try coll.insertOne(["_id": BSON(i), "x": BSON(i)]).wait()
             }
 
-            let expectedError = CommandError.new(
+            let expectedError = MongoError.CommandError.new(
                 code: 136,
                 codeName: "CappedPositionLost",
                 message: "",
@@ -131,7 +131,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(try cursor.isAlive().wait()).to(beFalse())
 
             // iterating dead cursor should error
-            expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next().wait()).to(throwError(errorType: MongoError.LogicError.self))
         }
     }
 
@@ -153,7 +153,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(try cursor.next().wait()).to(beNil())
             expect(try cursor.isAlive().wait()).to(beFalse())
 
-            expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next().wait()).to(throwError(errorType: MongoError.LogicError.self))
         }
     }
 
@@ -165,7 +165,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(try cursor.toArray().wait()).to(equal([]))
             expect(try cursor.isAlive().wait()).to(beFalse())
             // iterating dead cursor should error
-            expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next().wait()).to(throwError(errorType: MongoError.LogicError.self))
 
             // iterating after calling toArray should error.
             _ = try coll.insertMany([doc1, doc2, doc3]).wait()
@@ -175,7 +175,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             // cursor should be closed now that its exhausted
             expect(try cursor.isAlive().wait()).to(beFalse())
             // iterating dead cursor should error
-            expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next().wait()).to(throwError(errorType: MongoError.LogicError.self))
 
             // calling toArray on a closed cursor should error.
             cursor = try coll.find().wait()
@@ -195,7 +195,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(try cursor.toArray().wait()).to(beEmpty())
             // no documents matched initial query, so cursor is dead
             expect(try cursor.isAlive().wait()).to(beFalse())
-            expect(try cursor.next().wait()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.next().wait()).to(throwError(errorType: MongoError.LogicError.self))
 
             // insert a doc so something matches initial query
             _ = try coll.insertOne(doc1).wait()
@@ -258,7 +258,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(try future.wait()).toNot(throwError())
 
             // calling forEach on a dead cursor should error
-            expect(try cursor.forEach(increment).wait()).to(throwError(errorType: LogicError.self))
+            expect(try cursor.forEach(increment).wait()).to(throwError(errorType: MongoError.LogicError.self))
         }
     }
 

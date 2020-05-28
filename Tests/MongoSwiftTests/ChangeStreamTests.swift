@@ -160,7 +160,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             expect(try future.wait()).toNot(throwError())
 
             // calling forEach on dead stream should error
-            expect(try stream.forEach(increment).wait()).to(throwError(errorType: LogicError.self))
+            expect(try stream.forEach(increment).wait()).to(throwError(errorType: MongoError.LogicError.self))
         }
     }
 }

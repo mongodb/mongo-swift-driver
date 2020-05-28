@@ -18,8 +18,9 @@ final class BSONValueTests: MongoSwiftTestCase {
 
         // UUIDs must have 16 bytes
         expect(try BSONBinary(data: twoBytes, subtype: .uuidDeprecated))
-            .to(throwError(errorType: InvalidArgumentError.self))
-        expect(try BSONBinary(data: twoBytes, subtype: .uuid)).to(throwError(errorType: InvalidArgumentError.self))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try BSONBinary(data: twoBytes, subtype: .uuid))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
         expect(try BSONBinary(data: sixteenBytes, subtype: .uuidDeprecated)).toNot(throwError())
         expect(try BSONBinary(data: sixteenBytes, subtype: .uuid)).toNot(throwError())
     }

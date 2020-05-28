@@ -64,7 +64,7 @@ func foo(x: BSON, y: BSON) throws {
         print("got something else")
     }
     guard case let .double(d) = y else {
-        throw InvalidArgumentError(message: "y must be a double")
+        throw MongoError.InvalidArgumentError(message: "y must be a double")
     }
     print(d * d)
 }

@@ -222,8 +222,8 @@ public struct CommandFailedEvent: MongoSwiftEvent, CommandEventProtocol {
     /// The command name.
     public let commandName: String
 
-    /// The failure, represented as a MongoError.
-    public let failure: MongoError
+    /// The failure, represented as a MongoErrorProtocol.
+    public let failure: MongoErrorProtocol
 
     /// The client generated request id.
     public let requestID: Int64
@@ -588,7 +588,7 @@ public struct ServerHeartbeatFailedEvent: MongoSwiftEvent {
     public let duration: Int
 
     /// The failure.
-    public let failure: MongoError
+    public let failure: MongoErrorProtocol
 
     /// The address of the server.
     public let serverAddress: ServerAddress

@@ -27,7 +27,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         do {
             let client = try MongoClient.makeTestClient()
             try client.db(Self.testDatabase).drop()
-        } catch let commandError as CommandError where commandError.code == 26 {
+        } catch let commandError as MongoError.CommandError where commandError.code == 26 {
             // skip database not found errors
         } catch {
             fail("encountered error when tearing down: \(error)")
@@ -214,7 +214,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         let session = client2.startSession()
         try self.forEachSessionOp(client: client1, database: database, collection: collection) { op in
             expect(try op.body(session))
-                .to(throwError(errorType: InvalidArgumentError.self), description: op.name)
+                .to(throwError(errorType: MongoError.InvalidArgumentError.self), description: op.name)
         }
     }
 

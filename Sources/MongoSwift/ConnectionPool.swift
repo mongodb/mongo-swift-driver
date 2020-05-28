@@ -72,7 +72,7 @@ internal class ConnectionPool {
         }
     }
 
-    internal static let PoolClosedError = LogicError(message: "ConnectionPool was already closed")
+    internal static let PoolClosedError = MongoError.LogicError(message: "ConnectionPool was already closed")
 
     /// Initializes the pool using the provided `ConnectionString` and options.
     internal init(from connString: ConnectionString, options: MongoClientOptions?) throws {
@@ -81,7 +81,7 @@ internal class ConnectionPool {
         // want to do as it would block the event loop.
         if let maxPoolSize = options?.maxPoolSize {
             guard maxPoolSize > 0 && maxPoolSize <= UInt32.max else {
-                throw InvalidArgumentError(
+                throw MongoError.InvalidArgumentError(
                     message: "Invalid maxPoolSize \(maxPoolSize): must be between 1 and \(UInt32.max)"
                 )
             }
@@ -89,7 +89,7 @@ internal class ConnectionPool {
 
         let pool: OpaquePointer = try connString.withMongocURI { uriPtr in
             guard let pool = mongoc_client_pool_new(uriPtr) else {
-                throw InternalError(message: "Failed to initialize libmongoc client pool")
+                throw MongoError.InternalError(message: "Failed to initialize libmongoc client pool")
             }
             return pool
         }
@@ -134,7 +134,9 @@ internal class ConnectionPool {
 
             switch self.state {
             case .open, .closed:
-                throw InternalError(message: "ConnectionPool in unexpected state \(self.state) during close()")
+                throw MongoError.InternalError(
+                    message: "ConnectionPool in unexpected state \(self.state) during close()"
+                )
             case let .closing(pool):
                 mongoc_client_pool_destroy(pool)
                 self.state = .closed
@@ -281,7 +283,7 @@ internal class ConnectionPool {
         try self.withConnection { connection in
             try connection.withMongocConnection { connPtr in
                 guard let uri = mongoc_client_get_uri(connPtr) else {
-                    throw InternalError(message: "Couldn't retrieve client's connection string")
+                    throw MongoError.InternalError(message: "Couldn't retrieve client's connection string")
                 }
                 return ConnectionString(copying: uri)
             }

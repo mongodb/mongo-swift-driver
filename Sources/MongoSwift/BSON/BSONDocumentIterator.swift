@@ -105,7 +105,7 @@ public class BSONDocumentIterator: IteratorProtocol {
     ///   - `InternalError` if the current value of this `BSONDocumentIterator` cannot be decoded to BSON.
     internal func safeCurrentValue() throws -> BSON {
         guard let bsonType = BSONDocumentIterator.bsonTypeMap[currentType] else {
-            throw InternalError(
+            throw MongoError.InternalError(
                 message: "Unknown BSONType for iterator's current value with type: \(self.currentType)"
             )
         }

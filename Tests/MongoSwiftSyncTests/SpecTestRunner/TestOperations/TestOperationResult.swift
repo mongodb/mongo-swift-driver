@@ -198,16 +198,16 @@ struct ErrorResult: Equatable, Decodable {
     internal func checkCodeName(_ error: Error) throws {
         // TODO: can remove `equal("")` references once SERVER-36755 is resolved
         if let errorCodeName = self.errorCodeName {
-            if let commandError = error as? CommandError {
+            if let commandError = error as? MongoError.CommandError {
                 expect(commandError.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
-            } else if let writeError = error as? WriteError {
+            } else if let writeError = error as? MongoError.WriteError {
                 if let writeFailure = writeError.writeFailure {
                     expect(writeFailure.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
                 }
                 if let writeConcernFailure = writeError.writeConcernFailure {
                     expect(writeConcernFailure.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
                 }
-            } else if let bulkWriteError = error as? BulkWriteError {
+            } else if let bulkWriteError = error as? MongoError.BulkWriteError {
                 if let writeFailures = bulkWriteError.writeFailures {
                     for writeFailure in writeFailures {
                         expect(writeFailure.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
@@ -224,7 +224,7 @@ struct ErrorResult: Equatable, Decodable {
 
     internal func checkErrorLabels(_ error: Error) throws {
         if let errorLabelsContain = self.errorLabelsContain {
-            guard let labeledError = error as? LabeledError else {
+            guard let labeledError = error as? MongoLabeledError else {
                 XCTFail("\(error) does not contain errorLabels")
                 return
             }
@@ -234,7 +234,7 @@ struct ErrorResult: Equatable, Decodable {
         }
 
         if let errorLabelsOmit = self.errorLabelsOmit {
-            guard let labeledError = error as? LabeledError else {
+            guard let labeledError = error as? MongoLabeledError else {
                 XCTFail("\(error) does not contain errorLabels")
                 return
             }

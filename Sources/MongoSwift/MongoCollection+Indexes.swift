@@ -214,7 +214,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<String> {
         self.createIndexes([model], options: options, session: session).flatMapThrowing { result in
             guard result.count == 1 else {
-                throw InternalError(message: "expected 1 result, got \(result.count)")
+                throw MongoError.InternalError(message: "expected 1 result, got \(result.count)")
             }
             return result[0]
         }
@@ -247,7 +247,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<[String]> {
         guard !models.isEmpty else {
             return self._client.operationExecutor
-                .makeFailedFuture(InvalidArgumentError(message: "models cannot be empty"))
+                .makeFailedFuture(MongoError.InvalidArgumentError(message: "models cannot be empty"))
         }
         let operation = CreateIndexesOperation(collection: self, models: models, options: options)
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
@@ -278,7 +278,7 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) -> EventLoopFuture<Void> {
         guard name != "*" else {
-            return self._client.operationExecutor.makeFailedFuture(InvalidArgumentError(
+            return self._client.operationExecutor.makeFailedFuture(MongoError.InvalidArgumentError(
                 message: "Invalid index name '*'; use dropIndexes() to drop all indexes"
             ))
         }
@@ -397,7 +397,7 @@ extension MongoCollection {
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
             .flatMapThrowing { result in
                 guard case let .models(result) = result else {
-                    throw InternalError(message: "Invalid result")
+                    throw MongoError.InternalError(message: "Invalid result")
                 }
                 return result
             }
@@ -421,7 +421,7 @@ extension MongoCollection {
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
             .flatMapThrowing { result in
                 guard case let .names(names) = result else {
-                    throw InternalError(message: "Invalid result")
+                    throw MongoError.InternalError(message: "Invalid result")
                 }
                 return names
             }

@@ -37,7 +37,7 @@ internal struct DropIndexesOperation<T: Codable>: Operation {
                     mongoc_collection_write_command_with_opts(collPtr, cmdPtr, optsPtr, replyPtr, &error)
                 }
             }
-        } catch let error as MongoError {
+        } catch let error as MongoErrorProtocol {
             guard !error.isNsNotFound else {
                 return
             }
