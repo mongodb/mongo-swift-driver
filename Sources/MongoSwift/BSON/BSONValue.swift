@@ -230,7 +230,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         /// Initializes a `Subtype` with a custom value.
         /// Returns nil if rawValue within reserved range [0x07, 0x80).
         public init?(rawValue: UInt8) {
-            if rawValue > 0x06 && rawValue < 0x80 {
+            guard !(rawValue > 0x06 && rawValue < 0x80) else {
                 return nil
             }
             self.rawValue = rawValue
@@ -246,7 +246,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
                 throw InvalidArgumentError(message: "Cannot represent \(value) as UInt8")
             }
             guard byteValue >= 0x80 else {
-                throw InvalidArgumentError(message: "userDefined value must be greater than 0x80 got \(byteValue)")
+                throw InvalidArgumentError(message: "userDefined value must be greater than or equal to 0x80 got \(byteValue)")
             }
             guard let subtype = Subtype(rawValue: byteValue) else {
                 throw InvalidArgumentError(message: "Cannot represent \(byteValue) as Subtype")
