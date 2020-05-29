@@ -374,8 +374,6 @@ final class DocumentTests: MongoSwiftTestCase {
         // save a reference to original bson_t so we can verify it doesn't change
         let pointer = doc.pointerAddress
 
-        print("pointer is: \(pointer)")
-
         // overwrite int32 with int32
         doc["int32"] = .int32(15)
         expect(doc["int32"]).to(equal(.int32(15)))

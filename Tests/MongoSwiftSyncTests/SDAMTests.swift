@@ -16,10 +16,6 @@ final class SDAMTests: MongoSwiftTestCase {
         expect(desc.passives).to(haveCount(0))
     }
 
-    func checkUnknownServerType(_ desc: ServerDescription) {
-        expect(desc.type).to(equal(ServerDescription.ServerType.unknown))
-    }
-
     // Basic test based on the "standalone" spec test for SDAM monitoring:
     // swiftlint:disable line_length
     // https://github.com/mongodb/specifications/blob/master/source/server-discovery-and-monitoring/tests/monitoring/standalone.json
@@ -51,53 +47,99 @@ final class SDAMTests: MongoSwiftTestCase {
         }
         let hostAddress = try ServerAddress(host)
 
-        // check event count and that events are of the expected types
-        expect(receivedEvents.count).to(beGreaterThanOrEqualTo(5))
+        expect(receivedEvents.count).to(equal(4))
         expect(receivedEvents[0].topologyOpeningValue).toNot(beNil())
-        expect(receivedEvents[1].topologyDescriptionChangedValue).toNot(beNil())
-        expect(receivedEvents[2].serverOpeningValue).toNot(beNil())
-        expect(receivedEvents[3].serverDescriptionChangedValue).toNot(beNil())
-        expect(receivedEvents[4].topologyDescriptionChangedValue).toNot(beNil())
+        expect(receivedEvents[1].serverOpeningValue).toNot(beNil())
+        expect(receivedEvents[2].serverDescriptionChangedValue).toNot(beNil())
+        expect(receivedEvents[3].topologyDescriptionChangedValue).toNot(beNil())
 
-        // verify that data in ServerDescription and TopologyDescription looks reasonable
         let event0 = receivedEvents[0].topologyOpeningValue!
-        expect(event0.topologyID).toNot(beNil())
 
-        let event1 = receivedEvents[1].topologyDescriptionChangedValue!
+        let event1 = receivedEvents[1].serverOpeningValue!
         expect(event1.topologyID).to(equal(event0.topologyID))
-        expect(event1.previousDescription.type).to(equal(TopologyDescription.TopologyType.unknown))
-        expect(event1.newDescription.type).to(equal(TopologyDescription.TopologyType.single))
-        // This is a bit of a deviation from the SDAM spec tests linked above. However, this is how mongoc responds so
-        // there is no other way to get around this.
-        expect(event1.newDescription.servers).to(beEmpty())
+        expect(event1.serverAddress).to(equal(hostAddress))
 
-        let event2 = receivedEvents[2].serverOpeningValue!
+        let event2 = receivedEvents[2].serverDescriptionChangedValue!
         expect(event2.topologyID).to(equal(event1.topologyID))
-        expect(event2.serverAddress).to(equal(hostAddress))
 
-        let event3 = receivedEvents[3].serverDescriptionChangedValue!
-        expect(event3.topologyID).to(equal(event2.topologyID))
-        let prevServer = event3.previousDescription
+        let prevServer = event2.previousDescription
+        let newServer = event2.newDescription
+
         expect(prevServer.address).to(equal(hostAddress))
-        self.checkEmptyLists(prevServer)
-        self.checkUnknownServerType(prevServer)
-
-        let newServer = event3.newDescription
         expect(newServer.address).to(equal(hostAddress))
+
+        self.checkEmptyLists(prevServer)
         self.checkEmptyLists(newServer)
-        expect(newServer.type).to(equal(ServerDescription.ServerType.standalone))
 
-        let event4 = receivedEvents[4].topologyDescriptionChangedValue!
-        expect(event4.topologyID).to(equal(event3.topologyID))
-        let prevTopology = event4.previousDescription
-        expect(prevTopology.type).to(equal(TopologyDescription.TopologyType.single))
+        expect(prevServer.type).to(equal(.unknown))
+        expect(newServer.type).to(equal(.standalone))
+
+        let event3 = receivedEvents[3].topologyDescriptionChangedValue!
+        expect(event3.topologyID).to(equal(event2.topologyID))
+
+        let prevTopology = event3.previousDescription
+        let newTopology = event3.newDescription
+
+        expect(prevTopology.type).to(equal(.unknown))
+        expect(newTopology.type).to(equal(.single))
+
         expect(prevTopology.servers).to(beEmpty())
+        expect(newTopology.servers).to(haveCount(1))
 
-        let newTopology = event4.newDescription
-        expect(newTopology.type).to(equal(TopologyDescription.TopologyType.single))
         expect(newTopology.servers[0].address).to(equal(hostAddress))
-        expect(newTopology.servers[0].type).to(equal(ServerDescription.ServerType.standalone))
+        expect(newTopology.servers[0].type).to(equal(.standalone))
+
         self.checkEmptyLists(newTopology.servers[0])
+    }
+
+    func testInitialReplicaSetDiscovery() throws {
+        guard MongoSwiftTestCase.topologyType == .replicaSetWithPrimary else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        let hostURIs = Self.getConnectionStringPerHost()
+
+        let optsFalse = MongoClientOptions(directConnection: false)
+        let optsTrue = MongoClientOptions(directConnection: true)
+
+        // We should succeed in discovering the primary in all of these cases:
+        let testClientsShouldSucceed = try
+            hostURIs.map { try MongoClient.makeTestClient($0) } + // option unspecified
+            hostURIs.map { try MongoClient.makeTestClient("\($0)&directConnection=false") } + // false in URI
+            hostURIs.map { try MongoClient.makeTestClient($0, options: optsFalse) } // false in options struct
+
+        // separately connect to each host and verify we are able to perform a write, meaning
+        // that the primary is successfully discovered no matter which host we start with
+        for client in testClientsShouldSucceed {
+            try withTestNamespace(client: client) { _, collection in
+                expect(try collection.insertOne(["x": 1])).toNot(throwError())
+            }
+        }
+
+        let testClientsShouldMostlyFail = try
+            hostURIs.map { try MongoClient.makeTestClient("\($0)&directConnection=true") } + // true in URI
+            hostURIs.map { try MongoClient.makeTestClient($0, options: optsTrue) } // true in options struct
+
+        // 4 of 6 attempts to perform writes should fail assuming these are 3-node replica sets, since in 2 cases we
+        // will directly connect to the primary, and in the other 4 we will directly connect to a secondary.
+
+        var failures = 0
+        for client in testClientsShouldMostlyFail {
+            do {
+                _ = try withTestNamespace(client: client) { _, collection in
+                    try collection.insertOne(["x": 1])
+                }
+            } catch {
+                expect(error).to(beAnInstanceOf(MongoError.CommandError.self))
+                failures += 1
+            }
+        }
+
+        expect(failures).to(
+            equal(4),
+            description: "Writes should fail when connecting to secondaries with directConnection=true"
+        )
     }
 }
 
