@@ -10,7 +10,7 @@ let package = Package(
         // 💧 A server-side Swift web framework.
         .package(url: "https://github.com/vapor/vapor", .upToNextMajor(from: "4.7.0")),
         // 🍃 MongoDB driver.
-        .package(url: "https://github.com/mongodb/mongo-swift-driver", .upToNextMajor(from: "1.0.0-rc1"))
+        .package(url: "https://github.com/mongodb/mongo-swift-driver", .branch("master"))
     ],
     targets: [
         .target(
@@ -26,10 +26,13 @@ let package = Package(
                 .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
             ]
         ),
-        .target(name: "Run", dependencies: [.target(name: "App")]),
+        .target(name: "Run", dependencies: [
+            .target(name: "App"),
+            .product(name: "MongoSwift", package: "mongo-swift-driver")
+        ]),
         .testTarget(name: "AppTests", dependencies: [
             .target(name: "App"),
-            .product(name: "XCTVapor", package: "vapor"),
+            .product(name: "XCTVapor", package: "vapor")
         ])
     ]
 )
