@@ -145,9 +145,6 @@ extension BSONDocument {
      * presence first.
      *
      * - Throws:
-     *   - `BSONError.InternalError` if the new value is an `Int` and cannot be written to BSON.
-     *   - `BSONError.LogicError` if the new value is a `BSONDecimal128` or `BSONObjectID` and is improperly formatted.
-     *   - `BSONError.LogicError` if the new value is an `Array` and it contains a non-`BSONValue` element.
      *   - `BSONError.InternalError` if the underlying `bson_t` would exceed the maximum size by encoding this
      *     key-value pair.
      */
