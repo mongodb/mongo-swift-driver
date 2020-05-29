@@ -174,7 +174,7 @@ public class BSONDocumentIterator: IteratorProtocol {
     }
 
     /// Overwrites the current value of this `BSONDocumentIterator` with the supplied value.
-    internal func overwriteCurrentValue(with newValue: Overwritable) throws {
+    internal func overwriteCurrentValue(with newValue: Overwritable) {
         let newValueType = type(of: newValue).bsonType
         guard newValueType == self.currentType else {
             fatalError("Expected \(newValue) to have BSON type \(self.currentType), but has type \(newValueType)")

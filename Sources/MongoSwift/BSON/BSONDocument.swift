@@ -166,7 +166,7 @@ extension BSONDocument {
                 self.copyStorageIfRequired()
                 // key is guaranteed present so initialization will succeed.
                 // swiftlint:disable:next force_unwrapping
-                try BSONDocumentIterator(over: self, advancedTo: key)!.overwriteCurrentValue(with: ov)
+                BSONDocumentIterator(over: self, advancedTo: key)!.overwriteCurrentValue(with: ov)
 
                 // otherwise, we just create a new document and replace this key
             } else {
