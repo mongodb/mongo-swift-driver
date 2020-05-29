@@ -99,21 +99,33 @@ final class SDAMTests: MongoSwiftTestCase {
         }
 
         let hostURIs = Self.getConnectionStringPerHost()
-        // separately connect to each host and verify we are able to perform a write,
-        // meaning that the primary was successfully discovered
-        for uri in hostURIs {
-            let client = try MongoClient.makeTestClient(uri)
+
+        let optsFalse = MongoClientOptions(directConnection: false)
+        let optsTrue = MongoClientOptions(directConnection: true)
+
+        // We should succeed in discovering the primary in all of these cases:
+        let testClientsShouldSucceed = try
+            hostURIs.map { try MongoClient.makeTestClient($0) } + // option unspecified
+            hostURIs.map { try MongoClient.makeTestClient("\($0)&directConnection=false") } + // false in URI
+            hostURIs.map { try MongoClient.makeTestClient($0, options: optsFalse) } // false in options struct
+
+        // separately connect to each host and verify we are able to perform a write, meaning
+        // that the primary is successfully discovered no matter which host we start with
+        for client in testClientsShouldSucceed {
             try withTestNamespace(client: client) { _, collection in
                 expect(try collection.insertOne(["x": 1])).toNot(throwError())
             }
         }
 
-        // separately connect to each host with directConnection=true and verify 2/3 write
-        // attempts fail as the primary will not be discovered
+        let testClientsShouldMostlyFail = try
+            hostURIs.map { try MongoClient.makeTestClient("\($0)&directConnection=true") } + // true in URI
+            hostURIs.map { try MongoClient.makeTestClient($0, options: optsTrue) } // true in options struct
+
+        // 4 of 6 attempts to perform writes should fail assuming these are 3-node replica sets, since in 2 cases we
+        // will directly connect to the primary, and in the other 4 we will directly connect to a secondary.
+
         var failures = 0
-        for var uri in hostURIs {
-            uri += "&directConnection=true"
-            let client = try MongoClient.makeTestClient(uri)
+        for client in testClientsShouldMostlyFail {
             do {
                 _ = try withTestNamespace(client: client) { _, collection in
                     try collection.insertOne(["x": 1])
@@ -124,7 +136,10 @@ final class SDAMTests: MongoSwiftTestCase {
             }
         }
 
-        expect(failures).to(equal(2), description: "Write should fail when directly connected to secondaries")
+        expect(failures).to(
+            equal(4),
+            description: "Writes should fail when connecting to secondaries with directConnection=true"
+        )
     }
 }
 

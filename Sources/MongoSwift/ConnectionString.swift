@@ -35,7 +35,9 @@ internal class ConnectionString {
 
         // Per SDAM spec: If the ``directConnection`` option is not specified, newly developed drivers MUST behave as
         // if it was specified with the false value.
-        if !self.hasOption("directConnection") {
+        if let dc = options?.directConnection {
+            mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_DIRECTCONNECTION, dc)
+        } else if !self.hasOption("directConnection") {
             mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_DIRECTCONNECTION, false)
         }
 

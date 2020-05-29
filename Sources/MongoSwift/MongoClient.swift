@@ -16,6 +16,12 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// databases or collections that derive from it.
     public var dateCodingStrategy: DateCodingStrategy?
 
+    /// When true, the client will connect directly to a single host. When false, the client will attempt to
+    /// automatically discover all replica set members if a replica set name is provided.
+    /// It is an error to set this option to `true` when used with a mongodb+srv connection string or when multiple
+    /// hosts are specified in the connection string.
+    public var directConnection: Bool?
+
     /// The maximum number of connections that may be associated with a connection pool created by this client at a
     /// given time. This includes in-use and available connections. Defaults to 100.
     public var maxPoolSize: Int?
@@ -83,6 +89,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         credential: MongoCredential? = nil,
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
+        directConnection: Bool? = nil,
         maxPoolSize: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
@@ -101,6 +108,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.credential = credential
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
+        self.directConnection = directConnection
         self.maxPoolSize = maxPoolSize
         self.readConcern = readConcern
         self.readPreference = readPreference
