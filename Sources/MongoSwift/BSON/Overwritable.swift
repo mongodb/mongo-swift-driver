@@ -3,15 +3,8 @@ import Foundation
 
 /// A protocol indicating that a type can be overwritten in-place on a `bson_t`.
 internal protocol Overwritable: BSONValue {
-    /**
-     * Overwrites the value at the current position of the iterator with self.
-     *
-     * - Throws:
-     *   - `BSONError.InternalError` if the `BSONValue` is an `Int` and cannot be written to BSON.
-     *   - `BSONError.LogicError` if the `BSONValue` is a `BSONDecimal128` or `BSONObjectID` and is improperly
-     *     formatted.
-     */
-    func writeToCurrentPosition(of iter: BSONDocumentIterator) throws
+    /// Overwrites the value at the current position of the iterator with self.
+    func writeToCurrentPosition(of iter: BSONDocumentIterator)
 }
 
 extension Bool: Overwritable {
@@ -39,7 +32,7 @@ extension Double: Overwritable {
 }
 
 extension BSONDecimal128: Overwritable {
-    internal func writeToCurrentPosition(of iter: BSONDocumentIterator) throws {
+    internal func writeToCurrentPosition(of iter: BSONDocumentIterator) {
         withUnsafePointer(to: self.decimal128) { decPtr in
             iter.withMutableBSONIterPointer { iterPtr in
                 bson_iter_overwrite_decimal128(iterPtr, decPtr)
@@ -49,7 +42,7 @@ extension BSONDecimal128: Overwritable {
 }
 
 extension BSONObjectID: Overwritable {
-    internal func writeToCurrentPosition(of iter: BSONDocumentIterator) throws {
+    internal func writeToCurrentPosition(of iter: BSONDocumentIterator) {
         withUnsafePointer(to: self.oid) { oidPtr in
             iter.withMutableBSONIterPointer { iterPtr in bson_iter_overwrite_oid(iterPtr, oidPtr) }
         }

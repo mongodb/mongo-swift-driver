@@ -70,9 +70,8 @@ internal protocol BSONValue: Codable {
      *   - key: A `String`, the key under which to store the value.
      *
      * - Throws:
-     *   - `BSONError.InternalError` if the `DocumentStorage` would exceed the maximum size by encoding this
+     *   - `BSONError.InternalError` if the `BSONDocument` would exceed the maximum size by encoding this
      *     key-value pair.
-     *   - `BSONError.LogicError` if the value is an `Array` and it contains a non-`BSONValue` element.
      */
     func encode(to document: inout BSONDocument, forKey key: String) throws
 

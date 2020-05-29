@@ -173,19 +173,13 @@ public class BSONDocumentIterator: IteratorProtocol {
         self.advance() ? (self.currentKey, self.currentValue) : nil
     }
 
-    /**
-     * Overwrites the current value of this `BSONDocumentIterator` with the supplied value.
-     *
-     * - Throws:
-     *   - `BSONError.InternalError` if the new value is an `Int` and cannot be written to BSON.
-     *   - `BSONError.LogicError` if the new value is a `BSONDecimal128` or `BSONObjectID` and is improperly formatted.
-     */
+    /// Overwrites the current value of this `BSONDocumentIterator` with the supplied value.
     internal func overwriteCurrentValue(with newValue: Overwritable) throws {
         let newValueType = type(of: newValue).bsonType
         guard newValueType == self.currentType else {
             fatalError("Expected \(newValue) to have BSON type \(self.currentType), but has type \(newValueType)")
         }
-        try newValue.writeToCurrentPosition(of: self)
+        newValue.writeToCurrentPosition(of: self)
     }
 
     /// Internal helper function for explicitly accessing the `bson_iter_t` as an unsafe pointer
