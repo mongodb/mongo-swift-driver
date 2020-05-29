@@ -65,7 +65,7 @@ internal struct DistinctOperation<T: Codable>: Operation {
             }
         }
 
-        guard let values = try reply.getValue(for: "values")?.arrayValue else {
+        guard let values = try getValue(from: reply, for: "values")?.arrayValue else {
             throw MongoError.InternalError(
                 message:
                 "expected server reply \(reply) to contain an array of distinct values"
