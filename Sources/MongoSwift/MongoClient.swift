@@ -17,7 +17,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
     public var dateCodingStrategy: DateCodingStrategy?
 
     /// When true, the client will connect directly to a single host. When false, the client will attempt to
-    /// automatically discover all replica set members if a replica set name is provided.
+    /// automatically discover all replica set members if a replica set name is provided. Defaults to false.
     /// It is an error to set this option to `true` when used with a mongodb+srv connection string or when multiple
     /// hosts are specified in the connection string.
     public var directConnection: Bool?
