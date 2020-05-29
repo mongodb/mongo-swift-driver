@@ -148,7 +148,7 @@ extension BSONDocument {
      *      - `T`: Any type conforming to the `BSONValue` protocol
      *  - Returns: The value stored under key, as type `T`
      *  - Throws:
-     *    - `InternalError` if the value cannot be cast to type `T` or is not in the `Document`, or an
+     *    - `MongoError.InternalError` if the value cannot be cast to type `T` or is not in the `Document`, or an
      *      unexpected error occurs while decoding the `BSONValue`.
      *
      */

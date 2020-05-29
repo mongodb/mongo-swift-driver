@@ -145,10 +145,10 @@ extension BSONDocument {
      * presence first.
      *
      * - Throws:
-     *   - `InternalError` if the new value is an `Int` and cannot be written to BSON.
+     *   - `MongoError.InternalError` if the new value is an `Int` and cannot be written to BSON.
      *   - `MongoError.LogicError` if the new value is a `BSONDecimal128` or `BSONObjectID` and is improperly formatted.
      *   - `MongoError.LogicError` if the new value is an `Array` and it contains a non-`BSONValue` element.
-     *   - `InternalError` if the underlying `bson_t` would exceed the maximum size by encoding this
+     *   - `MongoError.InternalError` if the underlying `bson_t` would exceed the maximum size by encoding this
      *     key-value pair.
      */
     internal mutating func setValue(for key: String, to newValue: BSON, checkForKey: Bool = true) throws {
@@ -210,7 +210,7 @@ extension BSONDocument {
     /// Retrieves the value associated with `for` as a `BSON?`, which can be nil if the key does not exist in the
     /// `BSONDocument`.
     ///
-    /// - Throws: `InternalError` if the BSON buffer is too small (< 5 bytes).
+    /// - Throws: `MongoError.InternalError` if the BSON buffer is too small (< 5 bytes).
     internal func getValue(for key: String) throws -> BSON? {
         guard let iter = BSONDocumentIterator(over: self) else {
             throw BSONDocument.BSONBufferTooSmallError

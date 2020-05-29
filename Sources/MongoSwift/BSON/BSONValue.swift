@@ -70,7 +70,7 @@ internal protocol BSONValue: Codable {
      *   - key: A `String`, the key under which to store the value.
      *
      * - Throws:
-     *   - `InternalError` if the `DocumentStorage` would exceed the maximum size by encoding this
+     *   - `MongoError.InternalError` if the `DocumentStorage` would exceed the maximum size by encoding this
      *     key-value pair.
      *   - `MongoError.LogicError` if the value is an `Array` and it contains a non-`BSONValue` element.
      */
@@ -240,18 +240,18 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
         /// Initializes a `Subtype` with a custom value. This value must be in the range 0x80-0xFF.
         /// - Throws:
-        ///   - `InvalidArgumentError` if value passed is outside of the range 0x80-0xFF
+        ///   - `MongoError.InvalidArgumentError` if value passed is outside of the range 0x80-0xFF
         public static func userDefined(_ value: Int) throws -> Subtype {
             guard let byteValue = UInt8(exactly: value) else {
-                throw InvalidArgumentError(message: "Cannot represent \(value) as UInt8")
+                throw MongoError.InvalidArgumentError(message: "Cannot represent \(value) as UInt8")
             }
             guard byteValue >= 0x80 else {
-                throw InvalidArgumentError(
+                throw MongoError.InvalidArgumentError(
                     message: "userDefined value must be greater than or equal to 0x80 got \(byteValue)"
                 )
             }
             guard let subtype = Subtype(rawValue: byteValue) else {
-                throw InvalidArgumentError(message: "Cannot represent \(byteValue) as Subtype")
+                throw MongoError.InvalidArgumentError(message: "Cannot represent \(byteValue) as Subtype")
             }
             return subtype
         }
@@ -360,7 +360,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         }
 
         guard let data = self.data.getBytes(at: 0, length: 16) else {
-            throw InternalError(message: "Unable to read 16 bytes from Binary.data")
+            throw MongoError.InternalError(message: "Unable to read 16 bytes from Binary.data")
         }
 
         let uuid: uuid_t = (
@@ -524,7 +524,7 @@ public struct BSONDecimal128: BSONValue, Equatable, Codable, CustomStringConvert
      *   - a BSONDecimal128 number as a string.
      *
      * - Throws:
-     *   - A `InvalidArgumentError` if the string does not represent a BSONDecimal128 encodable value.
+     *   - A `MongoError.InvalidArgumentError` if the string does not represent a BSONDecimal128 encodable value.
      *
      * - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
      */
@@ -862,11 +862,11 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
 
     /// Initializes an `BSONObjectID` from the provided hex `String`.
     /// - Throws:
-    ///   - `InvalidArgumentError` if string passed is not a valid BSONObjectID
+    ///   - `MongoError.InvalidArgumentError` if string passed is not a valid BSONObjectID
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
     public init(_ hex: String) throws {
         guard bson_oid_is_valid(hex, hex.utf8.count) else {
-            throw InvalidArgumentError(message: "Cannot create ObjectId from \(hex)")
+            throw MongoError.InvalidArgumentError(message: "Cannot create ObjectId from \(hex)")
         }
         var oid_t = bson_oid_t()
         bson_oid_init_from_string(&oid_t, hex)

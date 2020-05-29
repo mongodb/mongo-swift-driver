@@ -472,7 +472,7 @@ private func extractWriteConcernError(from reply: BSONDocument) throws -> MongoE
 
 /// Internal function used by write methods performing single writes that are implemented via the bulk API. If the
 /// provided error is not a `MongoError.BulkWriteError`, it will be returned as-is. Otherwise, the error will be
-/// converted to a `MongoError.WriteError`. If conversion fails, an `InternalError` will be returned.
+/// converted to a `MongoError.WriteError`. If conversion fails, an `MongoError.InternalError` will be returned.
 internal func convertBulkWriteError(_ error: Error) -> Error {
     guard let bwe = error as? MongoError.BulkWriteError else {
         return error

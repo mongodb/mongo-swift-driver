@@ -401,7 +401,7 @@ public struct BulkWriteResult: Decodable {
      *   - insertedIDs: Map of inserted IDs
      *
      * - Throws:
-     *   - `InternalError` if an unexpected error occurs reading the reply from the server.
+     *   - `MongoError.InternalError` if an unexpected error occurs reading the reply from the server.
      */
     fileprivate init?(reply: BSONDocument, insertedIDs: [Int: BSON]) throws {
         guard reply.keys.contains(where: { MongocKeys(rawValue: $0) != nil }) else {
