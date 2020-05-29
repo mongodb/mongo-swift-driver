@@ -91,6 +91,41 @@ final class SDAMTests: MongoSwiftTestCase {
 
         self.checkEmptyLists(newTopology.servers[0])
     }
+
+    func testInitialReplicaSetDiscovery() throws {
+        guard MongoSwiftTestCase.topologyType == .replicaSetWithPrimary else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        let hostURIs = Self.getConnectionStringPerHost()
+        // separately connect to each host and verify we are able to perform a write,
+        // meaning that the primary was successfully discovered
+        for uri in hostURIs {
+            let client = try MongoClient.makeTestClient(uri)
+            try withTestNamespace(client: client) { _, collection in
+                expect(try collection.insertOne(["x": 1])).toNot(throwError())
+            }
+        }
+
+        // separately connect to each host with directConnection=true and verify 2/3 write
+        // attempts fail as the primary will not be discovered
+        var failures = 0
+        for var uri in hostURIs {
+            uri += "&directConnection=true"
+            let client = try MongoClient.makeTestClient(uri)
+            do {
+                _ = try withTestNamespace(client: client) { _, collection in
+                    try collection.insertOne(["x": 1])
+                }
+            } catch {
+                expect(error).to(beAnInstanceOf(CommandError.self))
+                failures += 1
+            }
+        }
+
+        expect(failures).to(equal(2), description: "Write should fail when directly connected to secondaries")
+    }
 }
 
 /// SDAM monitoring event handler that behaves similarly to the `TestCommandMonitor`
