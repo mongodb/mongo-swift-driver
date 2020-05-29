@@ -146,8 +146,8 @@ extension BSONDocument {
      *
      * - Throws:
      *   - `InternalError` if the new value is an `Int` and cannot be written to BSON.
-     *   - `LogicError` if the new value is a `BSONDecimal128` or `BSONObjectID` and is improperly formatted.
-     *   - `LogicError` if the new value is an `Array` and it contains a non-`BSONValue` element.
+     *   - `MongoError.LogicError` if the new value is a `BSONDecimal128` or `BSONObjectID` and is improperly formatted.
+     *   - `MongoError.LogicError` if the new value is an `Array` and it contains a non-`BSONValue` element.
      *   - `InternalError` if the underlying `bson_t` would exceed the maximum size by encoding this
      *     key-value pair.
      */
@@ -373,7 +373,7 @@ extension BSONDocument {
      * - Returns: the parsed `BSONDocument`
      *
      * - Throws:
-     *   - A `InvalidArgumentError` if the data passed in is invalid JSON.
+     *   - A `MongoError.InvalidArgumentError` if the data passed in is invalid JSON.
      */
     public init(fromJSON: Data) throws {
         self._storage = Storage(stealing: try fromJSON.withUnsafeBytePointer { bytes in
@@ -391,7 +391,7 @@ extension BSONDocument {
 
     /// Convenience initializer for constructing a `BSONDocument` from a `String`.
     /// - Throws:
-    ///   - A `InvalidArgumentError` if the string passed in is invalid JSON.
+    ///   - A `MongoError.InvalidArgumentError` if the string passed in is invalid JSON.
     public init(fromJSON json: String) throws {
         // `String`s are Unicode under the hood so force unwrap always succeeds.
         // see https://www.objc.io/blog/2018/02/13/string-to-data-and-back/
@@ -401,9 +401,9 @@ extension BSONDocument {
     /**
      * Constructs a `BSONDocument` from raw BSON `Data`.
      * - Throws:
-     *   - A `InvalidArgumentError` if `bson` is too short or too long to be valid BSON.
-     *   - A `InvalidArgumentError` if the first four bytes of `bson` do not contain `bson.count`.
-     *   - A `InvalidArgumentError` if the final byte of `bson` is not a null byte.
+     *   - A `MongoError.InvalidArgumentError` if `bson` is too short or too long to be valid BSON.
+     *   - A `MongoError.InvalidArgumentError` if the first four bytes of `bson` do not contain `bson.count`.
+     *   - A `MongoError.InvalidArgumentError` if the final byte of `bson` is not a null byte.
      * - SeeAlso: http://bsonspec.org/
      */
     public init(fromBSON bson: Data) throws {

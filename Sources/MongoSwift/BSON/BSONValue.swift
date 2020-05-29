@@ -72,7 +72,7 @@ internal protocol BSONValue: Codable {
      * - Throws:
      *   - `InternalError` if the `DocumentStorage` would exceed the maximum size by encoding this
      *     key-value pair.
-     *   - `LogicError` if the value is an `Array` and it contains a non-`BSONValue` element.
+     *   - `MongoError.LogicError` if the value is an `Array` and it contains a non-`BSONValue` element.
      */
     func encode(to document: inout BSONDocument, forKey key: String) throws
 
@@ -80,7 +80,7 @@ internal protocol BSONValue: Codable {
      * Given a `BSONDocumentIterator` known to have a next value of this type,
      * initializes the value.
      *
-     * - Throws: `LogicError` if the current type of the `BSONDocumentIterator` does not correspond to the
+     * - Throws: `MongoError.LogicError` if the current type of the `BSONDocumentIterator` does not correspond to the
      *           associated type of this `BSONValue`.
      */
     static func from(iterator iter: BSONDocumentIterator) throws -> BSON
@@ -259,7 +259,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
     /// Initializes a `BSONBinary` instance from a `UUID`.
     /// - Throws:
-    ///   - `InvalidArgumentError` if a `BSONBinary` cannot be constructed from this UUID.
+    ///   - `MongoError.InvalidArgumentError` if a `BSONBinary` cannot be constructed from this UUID.
     public init(from uuid: UUID) throws {
         let uuidt = uuid.uuid
 
@@ -275,7 +275,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
     /// Initializes a `BSONBinary` instance from a `Data` object and a `UInt8` subtype.
     /// - Throws:
-    ///   - `InvalidArgumentError` if the provided data is incompatible with the specified subtype.
+    ///   - `MongoError.InvalidArgumentError` if the provided data is incompatible with the specified subtype.
     public init(data: Data, subtype: Subtype) throws {
         if [Subtype.uuid, Subtype.uuidDeprecated].contains(subtype) && data.count != 16 {
             throw MongoError.InvalidArgumentError(
@@ -291,7 +291,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
     /// Initializes a `BSONBinary` instance from a base64 `String` and a `Subtype`.
     /// - Throws:
-    ///   - `InvalidArgumentError` if the base64 `String` is invalid or if the provided data is
+    ///   - `MongoError.InvalidArgumentError` if the base64 `String` is invalid or if the provided data is
     ///     incompatible with the specified subtype.
     public init(base64: String, subtype: Subtype) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
@@ -315,7 +315,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         let subtype = bson_subtype_t(UInt32(self.subtype.rawValue))
         let length = self.data.writerIndex
         guard let byteArray = self.data.getBytes(at: 0, length: length) else {
-            throw InternalError(message: "Cannot read \(length) bytes from Binary.data")
+            throw MongoError.InternalError(message: "Cannot read \(length) bytes from Binary.data")
         }
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_binary(docPtr, key, Int32(key.utf8.count), subtype, byteArray, UInt32(length)) else {
@@ -351,7 +351,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
     /// Converts this `BSONBinary` instance to a `UUID`.
     /// - Throws:
-    ///   - `InvalidArgumentError` if a non-UUID subtype is set on this `BSONBinary`.
+    ///   - `MongoError.InvalidArgumentError` if a non-UUID subtype is set on this `BSONBinary`.
     public func toUUID() throws -> UUID {
         guard [Subtype.uuid, Subtype.uuidDeprecated].contains(self.subtype) else {
             throw MongoError.InvalidArgumentError(
@@ -554,7 +554,7 @@ public struct BSONDecimal128: BSONValue, Equatable, Codable, CustomStringConvert
     /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
     /// invalid string.
     /// - Throws:
-    ///   - `InvalidArgumentError` if the parameter string does not correspond to a valid `BSONDecimal128`.
+    ///   - `MongoError.InvalidArgumentError` if the parameter string does not correspond to a valid `BSONDecimal128`.
     internal static func toLibBSONType(_ str: String) throws -> bson_decimal128_t {
         var value = bson_decimal128_t()
         guard bson_decimal128_from_string(str, &value) else {

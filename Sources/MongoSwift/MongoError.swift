@@ -369,7 +369,7 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: BSONDocume
     }
 }
 
-/// Internal function used to get a `BulkWriteError` from a libmongoc error and a server reply to a
+/// Internal function used to get a `MongoError.BulkWriteError` from a libmongoc error and a server reply to a
 /// `BulkWriteOperation`. If a partial result is provided, an updated result with the failed results filtered out will
 /// be returned as part of the error.
 internal func extractBulkWriteError<T: Codable>(
@@ -471,8 +471,8 @@ private func extractWriteConcernError(from reply: BSONDocument) throws -> MongoE
 }
 
 /// Internal function used by write methods performing single writes that are implemented via the bulk API. If the
-/// provided error is not a `BulkWriteError`, it will be returned as-is. Otherwise, the error will be converted to a
-/// `WriteError`. If conversion fails, an `InternalError` will be returned.
+/// provided error is not a `MongoError.BulkWriteError`, it will be returned as-is. Otherwise, the error will be
+/// converted to a `MongoError.WriteError`. If conversion fails, an `InternalError` will be returned.
 internal func convertBulkWriteError(_ error: Error) -> Error {
     guard let bwe = error as? MongoError.BulkWriteError else {
         return error

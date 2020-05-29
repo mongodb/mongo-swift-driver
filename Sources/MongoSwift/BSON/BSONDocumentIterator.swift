@@ -178,7 +178,7 @@ public class BSONDocumentIterator: IteratorProtocol {
      *
      * - Throws:
      *   - `InternalError` if the new value is an `Int` and cannot be written to BSON.
-     *   - `LogicError` if the new value is a `BSONDecimal128` or `BSONObjectID` and is improperly formatted.
+     *   - `MongoError.LogicError` if the new value is a `BSONDecimal128` or `BSONObjectID` and is improperly formatted.
      */
     internal func overwriteCurrentValue(with newValue: Overwritable) throws {
         let newValueType = type(of: newValue).bsonType

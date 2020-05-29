@@ -16,7 +16,7 @@ internal class FindAndModifyOptions {
 
     /// Initializes a new `FindAndModifyOptions` with the given settings.
     ///
-    /// - Throws: `InvalidArgumentError` if any of the options are invalid.
+    /// - Throws: `MongoError.InvalidArgumentError` if any of the options are invalid.
     // swiftlint:disable:next cyclomatic_complexity
     internal init(
         arrayFilters: [BSONDocument]? = nil,

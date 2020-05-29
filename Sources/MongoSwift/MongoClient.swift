@@ -221,7 +221,7 @@ public class MongoClient {
      * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
      *
      * - Throws:
-     *   - A `InvalidArgumentError` if the connection string passed in is improperly formatted.
+     *   - A `MongoError.InvalidArgumentError` if the connection string passed in is improperly formatted.
      */
     public init(
         _ connectionString: String = "mongodb://localhost:27017",
@@ -329,7 +329,7 @@ public class MongoClient {
      *
      *    If the future fails, the error is likely one of the following:
      *    - `CompatibilityError` if the deployment does not support sessions.
-     *    - `LogicError` if this client has already been closed.
+     *    - `MongoError.LogicError` if this client has already been closed.
      */
     public func withSession<T>(
         options: ClientSessionOptions? = nil,
@@ -373,10 +373,11 @@ public class MongoClient {
      *    of databases matching the provided criteria.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this client has already been closed.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this client has already been closed.
      *    - `EncodingError` if an error is encountered while encoding the options to BSON.
-     *    - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
+     *    - `MongoError.CommandError` if options.authorizedDatabases is false and the user does not have listDatabases
+     *      permissions.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
@@ -407,9 +408,10 @@ public class MongoClient {
      *    match the provided filter.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this client has already been closed.
-     *    - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this client has already been closed.
+     *    - `MongoError.CommandError` if options.authorizedDatabases is false and the user does not have listDatabases
+     *      permissions.
      */
     public func listMongoDatabases(
         _ filter: BSONDocument? = nil,
@@ -432,9 +434,10 @@ public class MongoClient {
      *    match the provided filter.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this client has already been closed.
-     *    - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this client has already been closed.
+     *    - `MongoError.CommandError` if options.authorizedDatabases is false and the user does not have listDatabases
+     *      permissions.
      */
     public func listDatabaseNames(
         _ filter: BSONDocument? = nil,
@@ -484,9 +487,10 @@ public class MongoClient {
      *    deployment.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs on the server while creating the change stream.
-     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the pipeline.
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *      pipeline.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/
@@ -525,9 +529,10 @@ public class MongoClient {
      *    deployment.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs on the server while creating the change stream.
-     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the pipeline.
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *      pipeline.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/
@@ -571,9 +576,10 @@ public class MongoClient {
      *    deployment.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs on the server while creating the change stream.
-     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the pipeline.
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *      pipeline.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/changeStreams/

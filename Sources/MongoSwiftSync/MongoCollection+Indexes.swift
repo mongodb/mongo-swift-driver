@@ -14,10 +14,10 @@ extension MongoCollection {
      * - Returns: The name of the created index.
      *
      * - Throws:
-     *   - `WriteError` if an error occurs while performing the write.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
+     *   - `MongoError.WriteError` if an error occurs while performing the write.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `MongoError.LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     @discardableResult
@@ -47,10 +47,10 @@ extension MongoCollection {
      * - Returns: The name of the created index.
      *
      * - Throws:
-     *   - `WriteError` if an error occurs while performing the write.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
+     *   - `MongoError.WriteError` if an error occurs while performing the write.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `MongoError.LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     @discardableResult
@@ -73,10 +73,10 @@ extension MongoCollection {
      * - Returns: An `[String]` containing the names of all the indexes that were created.
      *
      * - Throws:
-     *   - `WriteError` if an error occurs while performing the write.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
+     *   - `MongoError.WriteError` if an error occurs while performing the write.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `MongoError.LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
     @discardableResult
@@ -97,9 +97,9 @@ extension MongoCollection {
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `MongoError.WriteError` if an error occurs while performing the command.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
@@ -119,10 +119,10 @@ extension MongoCollection {
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
+     *   - `MongoError.WriteError` if an error occurs while performing the command.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `MongoError.LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
@@ -142,10 +142,10 @@ extension MongoCollection {
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
+     *   - `MongoError.WriteError` if an error occurs while performing the command.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `MongoError.LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
@@ -164,10 +164,10 @@ extension MongoCollection {
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Throws:
-     *   - `WriteError` if an error occurs while performing the command.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *   - `LogicError` if the provided session is inactive.
+     *   - `MongoError.WriteError` if an error occurs while performing the command.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `MongoError.LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndexes(
@@ -185,7 +185,7 @@ extension MongoCollection {
      *
      * - Returns: A `MongoCursor` over the `IndexModel`s.
      *
-     * - Throws: `LogicError` if the provided session is inactive.
+     * - Throws: `MongoError.LogicError` if the provided session is inactive.
      */
     public func listIndexes(session: ClientSession? = nil) throws -> MongoCursor<IndexModel> {
         let asyncCursor = try self.asyncColl.listIndexes(session: session?.asyncSession).wait()
@@ -200,7 +200,7 @@ extension MongoCollection {
      *
      * - Returns: A `MongoCursor` over the index names.
      *
-     * - Throws: `LogicError` if the provided session is inactive.
+     * - Throws: `MongoError.LogicError` if the provided session is inactive.
      */
     public func listIndexNames(session: ClientSession? = nil) throws -> [String] {
         try self.asyncColl.listIndexNames(session: session?.asyncSession).wait()

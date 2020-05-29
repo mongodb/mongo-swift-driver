@@ -17,11 +17,11 @@ extension MongoCollection {
      *    `nil` if the write concern is unacknowledged.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the command.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the `CollectionType` to BSON.
      */
     public func insertOne(
@@ -48,11 +48,11 @@ extension MongoCollection {
      *    contains `nil` if the write concern is unacknowledged.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `BulkWriteError` if an error occurs while performing any of the writes.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.BulkWriteError` if an error occurs while performing any of the writes.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     public func insertMany(
@@ -78,11 +78,11 @@ extension MongoCollection {
      *    contains `nil` if the write concern is unacknowledged.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the command.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the `CollectionType` or options to BSON.
      */
     public func replaceOne(
@@ -112,11 +112,11 @@ extension MongoCollection {
      *    `nil` if the write concern is unacknowledged.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the command.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func updateOne(
@@ -150,11 +150,11 @@ extension MongoCollection {
      *    `nil` if the write concern is unacknowledged.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the command.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func updateMany(
@@ -187,11 +187,11 @@ extension MongoCollection {
      *    `nil` if the write concern is unacknowledged.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the command.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func deleteOne(
@@ -219,11 +219,11 @@ extension MongoCollection {
      *    `nil` if the write concern is unacknowledged.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the command.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func deleteMany(

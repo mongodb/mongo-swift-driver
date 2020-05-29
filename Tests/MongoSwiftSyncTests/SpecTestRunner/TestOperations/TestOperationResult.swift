@@ -17,7 +17,8 @@ enum TestOperationResult: Decodable, Equatable, Matchable {
     /// Result of CRUD operations whose result can be represented by a `BulkWriteResult` (e.g. `InsertOne`).
     case bulkWrite(BulkWriteResult)
 
-    /// Result of test operations that are expected to return an error (e.g. `CommandError`, `WriteError`).
+    /// Result of test operations that are expected to return an error
+    /// (e.g. `MongoError.CommandError`, `MongoError.WriteError`).
     case error(ErrorResult)
 
     public init?(from doc: BSONDocument?) {

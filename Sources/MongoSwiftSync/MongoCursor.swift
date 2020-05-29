@@ -58,9 +58,9 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *   if the cursor was exhausted.
      *
      *   On failure, there error returned is likely one of the following:
-     *   - `CommandError` if an error occurs while fetching more results from the server.
-     *   - `LogicError` if this function is called after the cursor has died.
-     *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *   - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *   - `MongoError.LogicError` if this function is called after the cursor has died.
+     *   - `MongoError.LogicError` if this function is called and the session associated with this cursor is inactive.
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
     public func next() -> Result<T, Error>? {
@@ -85,9 +85,9 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *   if there were no results.
      *
      *   On failure, there error returned is likely one of the following:
-     *     - `CommandError` if an error occurs while fetching more results from the server.
-     *     - `LogicError` if this function is called after the cursor has died.
-     *     - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *     - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *     - `MongoError.LogicError` if this function is called after the cursor has died.
+     *     - `MongoError.LogicError` if this function is called and the session associated with this cursor is inactive.
      *     - `DecodingError` if an error occurs decoding the server's response.
      */
     public func tryNext() -> Result<T, Error>? {
@@ -105,9 +105,9 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *
      * - Returns: an array of type `T`
      * - Throws:
-     *   - `CommandError` if an error occurs while fetching more results from the server.
-     *   - `LogicError` if this function is called after the cursor has died.
-     *   - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *   - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *   - `MongoError.LogicError` if this function is called after the cursor has died.
+     *   - `MongoError.LogicError` if this function is called and the session associated with this cursor is inactive.
      *   - `DecodingError` if an error occurs decoding the server's response.
      */
     internal func _all() throws -> [T] {

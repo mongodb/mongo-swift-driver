@@ -16,11 +16,11 @@ extension MongoCollection {
      *    contains `nil` if the write concern is unacknowledged.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if `requests` is empty.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
-     *    - `BulkWriteError` if any error occurs while performing the writes. This includes errors that would
-     *       typically be propagated as `RuntimeError`s or `CommandError`s elsewhere.
+     *    - `MongoError.InvalidArgumentError` if `requests` is empty.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.BulkWriteError` if any error occurs while performing the writes. This includes errors that would
+     *       typically be propagated as `RuntimeError`s or `MongoError.CommandError`s elsewhere.
      *    - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
      */
     public func bulkWrite(
@@ -210,8 +210,8 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
      * `nil` if the write concern is unacknowledged.
      *
      * - Throws:
-     *   - `CommandError` if an error occurs that prevents the operation from executing.
-     *   - `BulkWriteError` if an error occurs while performing the writes.
+     *   - `MongoError.CommandError` if an error occurs that prevents the operation from executing.
+     *   - `MongoError.BulkWriteError` if an error occurs while performing the writes.
      */
     internal func execute(using connection: Connection, session: ClientSession?) throws -> BulkWriteResult? {
         let opts = try encodeOptions(options: options, session: session)

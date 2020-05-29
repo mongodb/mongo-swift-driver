@@ -58,7 +58,7 @@ public struct MongoCollection<T: Codable> {
      *   - session: An optional `ClientSession` to use when executing this command
      *
      * - Throws:
-     *   - `CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
      */
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) throws {
         try self.asyncColl.drop(options: options, session: session?.asyncSession).wait()

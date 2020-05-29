@@ -325,7 +325,7 @@ public final class ClientSession {
 
     /// Appends this provided session to an options document for libmongoc interoperability.
     /// - Throws:
-    ///   - `LogicError` if this session is inactive
+    ///   - `MongoError.LogicError` if this session is inactive
     internal func append(to doc: inout BSONDocument) throws {
         guard case let .started(session, _) = self.state else {
             throw ClientSession.SessionInactiveError
@@ -360,9 +360,9 @@ public final class ClientSession {
      *    An `EventLoopFuture<Void>` that succeeds when `startTransaction` is successful.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `LogicError` if the session already has an in-progress transaction.
-     *    - `LogicError` if `startTransaction` is called on an ended session.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.LogicError` if the session already has an in-progress transaction.
+     *    - `MongoError.LogicError` if `startTransaction` is called on an ended session.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/transactions/
@@ -384,9 +384,9 @@ public final class ClientSession {
      *    An `EventLoopFuture<Void>` that succeeds when `commitTransaction` is successful.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `LogicError` if the session has no in-progress transaction.
-     *    - `LogicError` if `commitTransaction` is called on an ended session.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.LogicError` if the session has no in-progress transaction.
+     *    - `MongoError.LogicError` if `commitTransaction` is called on an ended session.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/transactions/
@@ -408,8 +408,8 @@ public final class ClientSession {
      *    An `EventLoopFuture<Void>` that succeeds when `abortTransaction` is successful.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `LogicError` if the session has no in-progress transaction.
-     *    - `LogicError` if `abortTransaction` is called on an ended session.
+     *    - `MongoError.LogicError` if the session has no in-progress transaction.
+     *    - `MongoError.LogicError` if `abortTransaction` is called on an ended session.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/transactions/

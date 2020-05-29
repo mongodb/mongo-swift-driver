@@ -32,7 +32,7 @@ The possible errors that conform to `MongoServerError` are as follows:
 - `MongoError.BulkWriteError`
     - Thrown when the server returns errors as part of an executed bulk write.
     - If WriteConcernFailure is populated, writeErrors may not be.
-    - **Note:** `InsertMany` throws a `BulkWriteError`, _not_ a `WriteError`.
+    - **Note:** `InsertMany` throws a `MongoError.BulkWriteError`, _not_ a `MongoError.WriteError`.
 
 
 ### User Errors

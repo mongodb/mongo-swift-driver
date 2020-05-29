@@ -96,7 +96,7 @@ public struct ReadPreference: Equatable {
      *     secondaries.
      *
      * - Throws:
-     *   - `InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
+     *   - `MongoError.InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/read-preference/#primaryPreferred
@@ -121,7 +121,7 @@ public struct ReadPreference: Equatable {
      *     secondaries.
      *
      * - Throws:
-     *   - `InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
+     *   - `MongoError.InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/read-preference/#secondary
@@ -147,7 +147,7 @@ public struct ReadPreference: Equatable {
      *     secondaries.
      *
      * - Throws:
-     *   - `InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
+     *   - `MongoError.InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/read-preference/#secondaryPreferred
@@ -172,7 +172,7 @@ public struct ReadPreference: Equatable {
      *     secondaries.
      *
      * - Throws:
-     *   - `InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
+     *   - `MongoError.InvalidArgumentError` if `maxStalenessSeconds` is non-nil and < 90.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/read-preference/#nearest

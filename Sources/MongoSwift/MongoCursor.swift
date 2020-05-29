@@ -50,7 +50,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      * true, this initializer will force a connection to the server if one is not already established.
      *
      * - Throws:
-     *   - `InvalidArgumentError` if the options passed to the command that generated this cursor formed an
+     *   - `MongoError.InvalidArgumentError` if the options passed to the command that generated this cursor formed an
      *     invalid combination.
      */
     internal init(
@@ -134,10 +134,11 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *    there was no data.
      *
      *    If the future evaluates to an error, it is likely one of the following:
-     *      - `CommandError` if an error occurs while fetching more results from the server.
-     *      - `LogicError` if this function is called after the cursor has died.
-     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
-     *      - `LogicError` if this cursor's parent client has already been closed.
+     *      - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *      - `MongoError.LogicError` if this function is called after the cursor has died.
+     *      - `MongoError.LogicError` if this function is called and the session associated with this cursor is
+     *        inactive.
+     *      - `MongoError.LogicError` if this cursor's parent client has already been closed.
      *      - `DecodingError` if an error occurs decoding the server's response.
      */
     public func tryNext() -> EventLoopFuture<T?> {
@@ -166,9 +167,10 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *   multiple requests to the server), the cursor is closed, or an error occurs.
      *
      *   If the future fails, the error is likely one of the following:
-     *     - `CommandError` if an error occurs while fetching more results from the server.
-     *     - `LogicError` if this function is called after the cursor has died.
-     *     - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *     - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *     - `MongoError.LogicError` if this function is called after the cursor has died.
+     *     - `MongoError.LogicError` if this function is called and the session associated with this cursor is
+     *        inactive.
      *     - `DecodingError` if an error occurs decoding the server's response.
      */
     public func next() -> EventLoopFuture<T?> {
@@ -192,9 +194,10 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *    An `EventLoopFuture<[T]>` evaluating to the results currently available in this cursor, or an error.
      *
      *    If the future evaluates to an error, that error is likely one of the following:
-     *      - `CommandError` if an error occurs while fetching more results from the server.
-     *      - `LogicError` if this function is called after the cursor has died.
-     *      - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *      - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *      - `MongoError.LogicError` if this function is called after the cursor has died.
+     *      - `MongoError.LogicError` if this function is called and the session associated with this cursor is
+     *        inactive.
      *      - `DecodingError` if an error occurs decoding the server's responses.
      */
     public func toArray() -> EventLoopFuture<[T]> {
@@ -223,9 +226,9 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      *     tailable cursor, when the cursor is killed via `kill`.
      *
      *     If the future evaluates to an error, that error is likely one of the following:
-     *     - `CommandError` if an error occurs while fetching more results from the server.
-     *     - `LogicError` if this function is called after the cursor has died.
-     *     - `LogicError` if this function is called and the session associated with this cursor is inactive.
+     *     - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *     - `MongoError.LogicError` if this function is called after the cursor has died.
+     *     - `MongoError.LogicError` if this function is called and the session associated with this cursor is inactive.
      *     - `DecodingError` if an error occurs decoding the server's responses.
      */
     public func forEach(_ body: @escaping (T) throws -> Void) -> EventLoopFuture<Void> {

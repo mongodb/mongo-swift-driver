@@ -20,9 +20,9 @@ extension MongoCollection {
      *    An `EventLoopFuture<ChangeStream>`. On success, contains a `ChangeStream` watching this collection.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs on the server while creating the change stream.
-     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *      pipeline.
      *
      * - SeeAlso:
@@ -58,9 +58,9 @@ extension MongoCollection {
      *    An `EventLoopFuture<ChangeStream>`. On success, contains a `ChangeStream` watching this collection.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs on the server while creating the change stream.
-     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *      pipeline.
      *
      * - SeeAlso:
@@ -101,9 +101,9 @@ extension MongoCollection {
      *    An `EventLoopFuture<ChangeStream>`. On success, contains a `ChangeStream` watching this collection.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs on the server while creating the change stream.
-     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *      pipeline.
      *
      * - SeeAlso:

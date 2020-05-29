@@ -114,7 +114,7 @@ public struct WriteConcern: Codable {
 
     /// Initializes a new `WriteConcern`.
     /// - Throws:
-    ///   - `InvalidArgumentError` if the options form an invalid combination.
+    ///   - `MongoError.InvalidArgumentError` if the options form an invalid combination.
     public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int? = nil) throws {
         self.journal = journal
 
