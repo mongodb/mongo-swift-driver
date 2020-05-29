@@ -31,7 +31,7 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
         let options3 = RunCommandOptions(readConcern: .other("blah"))
         // error code 9: FailedToParse
         expect(try db.runCommand(command, options: options3))
-            .to(throwError(CommandError(
+            .to(throwError(MongoError.CommandError(
                 code: 9,
                 codeName: "FailedToParse",
                 message: "",
@@ -72,11 +72,11 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
 
         let wc = try WriteConcern(w: .number(45))
         let expectedWCError =
-            WriteConcernFailure(code: 100, codeName: "", details: nil, message: "")
+            MongoError.WriteConcernFailure(code: 100, codeName: "", details: nil, message: "")
         let expectedWriteError =
-            WriteError(writeFailure: nil, writeConcernFailure: expectedWCError, errorLabels: nil)
+            MongoError.WriteError(writeFailure: nil, writeConcernFailure: expectedWCError, errorLabels: nil)
         let expectedBulkResult = BulkWriteResult(insertedCount: 1, insertedIDs: [0: 1])
-        let expectedBulkError = BulkWriteError(
+        let expectedBulkError = MongoError.BulkWriteError(
             writeFailures: [],
             writeConcernFailure: expectedWCError,
             otherError: nil,

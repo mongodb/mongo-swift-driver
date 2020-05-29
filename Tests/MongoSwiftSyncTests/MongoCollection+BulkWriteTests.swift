@@ -47,7 +47,7 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
     }
 
     func testEmptyRequests() {
-        expect(try self.coll.bulkWrite([])).to(throwError(errorType: InvalidArgumentError.self))
+        expect(try self.coll.bulkWrite([])).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
     func testInserts() throws {
@@ -104,8 +104,10 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         )
 
         // Expect a duplicate key error (11000)
-        let expectedError = BulkWriteError.new(
-            writeFailures: [BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 1)],
+        let expectedError = MongoError.BulkWriteError.new(
+            writeFailures: [
+                MongoError.BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 1)
+            ],
             writeConcernFailure: nil,
             otherError: nil,
             result: expectedResult,
@@ -205,7 +207,8 @@ final class MongoCollection_BulkWriteTests: MongoSwiftTestCase {
         expect(try cursor.next()?.get()).to(equal(["_id": 3, "x": 34]))
         expect(try cursor.next()?.get()).to(equal(["_id": 4, "x": 44]))
         expect(cursor.next()).to(beNil()) // cursor ends
-        expect(try cursor.next()?.get()).to(throwError(errorType: LogicError.self)) // iterate after cursor ends
+        expect(try cursor.next()?.get())
+            .to(throwError(errorType: MongoError.LogicError.self)) // iterate after cursor ends
     }
 
     func testUnacknowledgedWriteConcern() throws {

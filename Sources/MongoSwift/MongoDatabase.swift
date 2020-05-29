@@ -122,9 +122,9 @@ public struct MongoDatabase {
      *    An `EventLoopFuture<Void>` that succeeds when the drop is successful.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this database's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this database's parent client has already been closed.
      */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
         let operation = DropDatabaseOperation(database: self, options: options)
@@ -181,10 +181,10 @@ public struct MongoDatabase {
      *    An `EventLoopFuture<MongoCollection<Document>>`. On success, contains the newly created collection.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this databases's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this databases's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func createCollection(
@@ -210,10 +210,10 @@ public struct MongoDatabase {
      *    An `EventLoopFuture<MongoCollection<T>>`. On success, contains the newly created collection.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this databases's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this databases's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func createCollection<T: Codable>(
@@ -242,9 +242,9 @@ public struct MongoDatabase {
      *    An `EventLoopFuture<MongoCursor<CollectionSpecification>>` containing a cursor over the collections.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if the options passed are an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this databases's parent client has already been closed.
+     *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this databases's parent client has already been closed.
      */
     public func listCollections(
         _ filter: BSONDocument? = nil,
@@ -256,7 +256,7 @@ public struct MongoDatabase {
             operation, client: self._client, session: session
         ).flatMapThrowing { result in
             guard case let .specs(result) = result else {
-                throw InternalError(message: "invalid result")
+                throw MongoError.InternalError(message: "invalid result")
             }
             return result
         }
@@ -275,9 +275,9 @@ public struct MongoDatabase {
      *    provided filter.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if the options passed are an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this databases's parent client has already been closed.
+     *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this databases's parent client has already been closed.
      */
     public func listMongoCollections(
         _ filter: BSONDocument? = nil,
@@ -301,9 +301,9 @@ public struct MongoDatabase {
      *    An `EventLoopFuture<[String]>`. On success, contains names of collections that match the provided filter.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if the options passed are an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this databases's parent client has already been closed.
+     *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this databases's parent client has already been closed.
      */
     public func listCollectionNames(
         _ filter: BSONDocument? = nil,
@@ -314,7 +314,7 @@ public struct MongoDatabase {
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
             .flatMapThrowing { result in
                 guard case let .names(names) = result else {
-                    throw InternalError(message: "Invalid result")
+                    throw MongoError.InternalError(message: "Invalid result")
                 }
                 return names
             }
@@ -332,11 +332,11 @@ public struct MongoDatabase {
      *    An `EventLoopFuture<Document>`. On success, contains the server response to the command.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if `requests` is empty.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this databases's parent client has already been closed.
-     *    - `WriteError` if any error occurs while the command was performing a write.
-     *    - `CommandError` if an error occurs that prevents the command from being performed.
+     *    - `MongoError.InvalidArgumentError` if `requests` is empty.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this databases's parent client has already been closed.
+     *    - `MongoError.WriteError` if any error occurs while the command was performing a write.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from being performed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func runCommand(
@@ -365,9 +365,9 @@ public struct MongoDatabase {
      *    database.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs on the server while creating the change stream.
-     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *      pipeline.
      *
      * - SeeAlso:
@@ -406,9 +406,9 @@ public struct MongoDatabase {
      *    database.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs on the server while creating the change stream.
-     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *      pipeline.
      *
      * - SeeAlso:
@@ -452,9 +452,9 @@ public struct MongoDatabase {
      *    database.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs on the server while creating the change stream.
-     *    - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *    - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *      pipeline.
      *
      * - SeeAlso:

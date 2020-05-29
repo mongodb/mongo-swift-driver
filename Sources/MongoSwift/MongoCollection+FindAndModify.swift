@@ -16,11 +16,11 @@ extension MongoCollection {
      *    `CollectionType`, or contains `nil` if no document was deleted.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if any of the provided options are invalid.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `WriteError` if an error occurs while executing the command.
+     *    - `MongoError.InvalidArgumentError` if any of the provided options are invalid.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.WriteError` if an error occurs while executing the command.
      *    - `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value.
      */
     public func findOneAndDelete(
@@ -48,11 +48,11 @@ extension MongoCollection {
      *    matching document.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if any of the provided options are invalid.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `WriteError` if an error occurs while executing the command.
+     *    - `MongoError.InvalidArgumentError` if any of the provided options are invalid.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.WriteError` if an error occurs while executing the command.
      *    - `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value.
      *    - `EncodingError` if `replacement` cannot be encoded to a `BSONDocument`.
      */
@@ -84,11 +84,11 @@ extension MongoCollection {
      *    on selected options, or contains `nil` if there was no match.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if any of the provided options are invalid.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `WriteError` if an error occurs while executing the command.
+     *    - `MongoError.InvalidArgumentError` if any of the provided options are invalid.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.WriteError` if an error occurs while executing the command.
      *    - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
      */
     public func findOneAndUpdate(
@@ -107,11 +107,11 @@ extension MongoCollection {
      *    An `EventLoopFuture<CollectionType?>. On success, contains the document returned by the server, if one exists.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if any of the provided options are invalid.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `WriteError` if an error occurs while executing the command.
+     *    - `MongoError.InvalidArgumentError` if any of the provided options are invalid.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.WriteError` if an error occurs while executing the command.
      *    - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
      */
     private func findAndModify(
@@ -137,7 +137,7 @@ public enum ReturnDocument: String, Decodable {
 internal protocol FindAndModifyOptionsConvertible {
     /// Converts `self` to a `FindAndModifyOptions`
     ///
-    /// - Throws: `InvalidArgumentError` if any of the options are invalid.
+    /// - Throws: `MongoError.InvalidArgumentError` if any of the options are invalid.
     func toFindAndModifyOptions() throws -> FindAndModifyOptions
 }
 

@@ -13,10 +13,10 @@ extension MongoCollection {
      * - Returns: The deleted document, represented as a `CollectionType`, or `nil` if no document was deleted.
      *
      * - Throws:
-     *   - `InvalidArgumentError` if any of the provided options are invalid.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `WriteError` if an error occurs while executing the command.
+     *   - `MongoError.InvalidArgumentError` if any of the provided options are invalid.
+     *   - `MongoError.LogicError` if the provided session is inactive.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.WriteError` if an error occurs while executing the command.
      *   - `DecodingError` if the deleted document cannot be decoded to a `CollectionType` value.
      */
     @discardableResult
@@ -41,10 +41,10 @@ extension MongoCollection {
      *      depending on selected options, or `nil` if there was no match.
      *
      * - Throws:
-     *   - `InvalidArgumentError` if any of the provided options are invalid.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `WriteError` if an error occurs while executing the command.
+     *   - `MongoError.InvalidArgumentError` if any of the provided options are invalid.
+     *   - `MongoError.LogicError` if the provided session is inactive.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.WriteError` if an error occurs while executing the command.
      *   - `DecodingError` if the replaced document cannot be decoded to a `CollectionType` value.
      *   - `EncodingError` if `replacement` cannot be encoded to a `Document`.
      */
@@ -77,10 +77,10 @@ extension MongoCollection {
      *      depending on selected options, or `nil` if there was no match.
      *
      * - Throws:
-     *   - `InvalidArgumentError` if any of the provided options are invalid.
-     *   - `LogicError` if the provided session is inactive.
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `WriteError` if an error occurs while executing the command.
+     *   - `MongoError.InvalidArgumentError` if any of the provided options are invalid.
+     *   - `MongoError.LogicError` if the provided session is inactive.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.WriteError` if an error occurs while executing the command.
      *   - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
      */
     @discardableResult

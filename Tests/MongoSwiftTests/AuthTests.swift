@@ -29,7 +29,10 @@ final class AuthTests: MongoSwiftTestCase {
             for testCase in file.tests {
                 guard testCase.valid else {
                     expect(try ConnectionString(testCase.uri))
-                        .to(throwError(errorType: InvalidArgumentError.self), description: testCase.description)
+                        .to(
+                            throwError(errorType: MongoError.InvalidArgumentError.self),
+                            description: testCase.description
+                        )
                     return
                 }
 

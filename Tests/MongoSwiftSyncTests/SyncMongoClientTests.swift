@@ -75,7 +75,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
 
     func testFailedClientInitialization() {
         // check that we fail gracefully with an error if passing in an invalid URI
-        expect(try MongoClient("abcd")).to(throwError(errorType: InvalidArgumentError.self))
+        expect(try MongoClient("abcd")).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
     func testServerVersion() throws {

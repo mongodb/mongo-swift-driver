@@ -93,7 +93,7 @@ extension MongoSwiftTestCase {
         let collection: MongoCollection<BSONDocument>
         do {
             collection = try database.createCollection(collName, options: options).wait()
-        } catch let error as CommandError where error.code == 48 {
+        } catch let error as MongoError.CommandError where error.code == 48 {
             try database.collection(collName).drop().wait()
             collection = try database.createCollection(collName, options: options).wait()
         }

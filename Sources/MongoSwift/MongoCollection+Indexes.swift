@@ -171,11 +171,11 @@ extension MongoCollection {
      *    An `EventLoopFuture<String>`. On success, contains the name of the created index.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the write.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the write.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     public func createIndex(
@@ -200,11 +200,11 @@ extension MongoCollection {
      *    An `EventLoopFuture<String>`. On success, contains the name of the created index.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the write.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the write.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the index specification or options.
      */
     public func createIndex(
@@ -214,7 +214,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<String> {
         self.createIndexes([model], options: options, session: session).flatMapThrowing { result in
             guard result.count == 1 else {
-                throw InternalError(message: "expected 1 result, got \(result.count)")
+                throw MongoError.InternalError(message: "expected 1 result, got \(result.count)")
             }
             return result[0]
         }
@@ -232,12 +232,12 @@ extension MongoCollection {
      *    An `EventLoopFuture<[String]>`. On success, contains the names of the created indexes.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the write.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if `models` is empty.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the write.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if `models` is empty.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the index specifications or options.
      */
     public func createIndexes(
@@ -247,7 +247,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<[String]> {
         guard !models.isEmpty else {
             return self._client.operationExecutor
-                .makeFailedFuture(InvalidArgumentError(message: "models cannot be empty"))
+                .makeFailedFuture(MongoError.InvalidArgumentError(message: "models cannot be empty"))
         }
         let operation = CreateIndexesOperation(collection: self, models: models, options: options)
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
@@ -265,11 +265,11 @@ extension MongoCollection {
      *    An `EventLoopFuture<Void>` that succeeds when the drop is successful.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the command.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
@@ -278,7 +278,7 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) -> EventLoopFuture<Void> {
         guard name != "*" else {
-            return self._client.operationExecutor.makeFailedFuture(InvalidArgumentError(
+            return self._client.operationExecutor.makeFailedFuture(MongoError.InvalidArgumentError(
                 message: "Invalid index name '*'; use dropIndexes() to drop all indexes"
             ))
         }
@@ -297,11 +297,11 @@ extension MongoCollection {
      *    An `EventLoopFuture<Void>` that succeeds when the drop is successful.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the command.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
@@ -324,11 +324,11 @@ extension MongoCollection {
      *    An `EventLoopFuture<Void>` that succeeds when the drop is successful.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the command.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndex(
@@ -350,11 +350,11 @@ extension MongoCollection {
      *    An `EventLoopFuture<Void>` that succeeds when the drop is successful.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `WriteError` if an error occurs while performing the command.
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options.
      */
     public func dropIndexes(
@@ -389,15 +389,15 @@ extension MongoCollection {
      *    An `EventLoopFuture<MongoCursor<IndexModel>>`. On success, contains a cursor over the indexes.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      */
     public func listIndexes(session: ClientSession? = nil) -> EventLoopFuture<MongoCursor<IndexModel>> {
         let operation = ListIndexesOperation(collection: self, nameOnly: false)
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
             .flatMapThrowing { result in
                 guard case let .models(result) = result else {
-                    throw InternalError(message: "Invalid result")
+                    throw MongoError.InternalError(message: "Invalid result")
                 }
                 return result
             }
@@ -413,15 +413,15 @@ extension MongoCollection {
      *    An `EventLoopFuture<[String]>` containing the index names.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      */
     public func listIndexNames(session: ClientSession? = nil) -> EventLoopFuture<[String]> {
         let operation = ListIndexesOperation(collection: self, nameOnly: true)
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
             .flatMapThrowing { result in
                 guard case let .names(names) = result else {
-                    throw InternalError(message: "Invalid result")
+                    throw MongoError.InternalError(message: "Invalid result")
                 }
                 return names
             }

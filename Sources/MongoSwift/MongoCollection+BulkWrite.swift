@@ -16,11 +16,11 @@ extension MongoCollection {
      *    contains `nil` if the write concern is unacknowledged.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if `requests` is empty.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
-     *    - `BulkWriteError` if any error occurs while performing the writes. This includes errors that would
-     *       typically be propagated as `RuntimeError`s or `CommandError`s elsewhere.
+     *    - `MongoError.InvalidArgumentError` if `requests` is empty.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.BulkWriteError` if any error occurs while performing the writes. This includes errors that would
+     *       typically be propagated as `RuntimeError`s or `MongoError.CommandError`s elsewhere.
      *    - `EncodingError` if an error occurs while encoding the `CollectionType` or the options to BSON.
      */
     public func bulkWrite(
@@ -30,7 +30,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<BulkWriteResult?> {
         guard !requests.isEmpty else {
             return self._client.operationExecutor
-                .makeFailedFuture(InvalidArgumentError(message: "requests cannot be empty"))
+                .makeFailedFuture(MongoError.InvalidArgumentError(message: "requests cannot be empty"))
         }
         let operation = BulkWriteOperation(collection: self, models: requests, options: options)
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
@@ -210,15 +210,15 @@ internal struct BulkWriteOperation<T: Codable>: Operation {
      * `nil` if the write concern is unacknowledged.
      *
      * - Throws:
-     *   - `CommandError` if an error occurs that prevents the operation from executing.
-     *   - `BulkWriteError` if an error occurs while performing the writes.
+     *   - `MongoError.CommandError` if an error occurs that prevents the operation from executing.
+     *   - `MongoError.BulkWriteError` if an error occurs while performing the writes.
      */
     internal func execute(using connection: Connection, session: ClientSession?) throws -> BulkWriteResult? {
         let opts = try encodeOptions(options: options, session: session)
         var insertedIDs: [Int: BSON] = [:]
 
         if session?.inTransaction == true && self.options?.writeConcern != nil {
-            throw InvalidArgumentError(
+            throw MongoError.InvalidArgumentError(
                 message: "Cannot specify a write concern on an individual helper in a " +
                     "transaction. Instead specify it when starting the transaction."
             )
@@ -401,7 +401,7 @@ public struct BulkWriteResult: Decodable {
      *   - insertedIDs: Map of inserted IDs
      *
      * - Throws:
-     *   - `InternalError` if an unexpected error occurs reading the reply from the server.
+     *   - `MongoError.InternalError` if an unexpected error occurs reading the reply from the server.
      */
     fileprivate init?(reply: BSONDocument, insertedIDs: [Int: BSON]) throws {
         guard reply.keys.contains(where: { MongocKeys(rawValue: $0) != nil }) else {
@@ -419,12 +419,12 @@ public struct BulkWriteResult: Decodable {
 
         if let upserted = try reply.getValue(for: MongocKeys.upserted.rawValue)?.arrayValue {
             guard let upserted = upserted.toArrayOf(BSONDocument.self) else {
-                throw InternalError(message: "\"upserted\" array did not contain only documents")
+                throw MongoError.InternalError(message: "\"upserted\" array did not contain only documents")
             }
 
             for upsert in upserted {
                 guard let index = try upsert.getValue(for: "index")?.toInt() else {
-                    throw InternalError(message: "Could not cast upserted index to `Int`")
+                    throw MongoError.InternalError(message: "Could not cast upserted index to `Int`")
                 }
                 upsertedIDs[index] = upsert["_id"]
             }

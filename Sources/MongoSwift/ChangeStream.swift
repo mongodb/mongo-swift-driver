@@ -77,7 +77,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
     private func processEvent(_ event: BSONDocument) throws -> T {
         // Update the resumeToken with the `_id` field from the document.
         guard let resumeToken = event["_id"]?.documentValue else {
-            throw InternalError(message: "_id field is missing from the change stream document.")
+            throw MongoError.InternalError(message: "_id field is missing from the change stream document.")
         }
         self.resumeToken = ResumeToken(resumeToken)
         return try self.decoder.decode(T.self, from: event)
@@ -152,9 +152,10 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *   met, potentially after multiple requests to the server.
      *
      *   If the future evaluates to an error, it is likely one of the following:
-     *     - `CommandError` if an error occurs while fetching more results from the server.
-     *     - `LogicError` if this function is called after the change stream has died.
-     *     - `LogicError` if this function is called and the session associated with this change stream is inactive.
+     *     - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *     - `MongoError.LogicError` if this function is called after the change stream has died.
+     *     - `MongoError.LogicError` if this function is called and the session associated with this change stream is
+     *       inactive.
      *     - `DecodingError` if an error occurs decoding the server's response.
      */
     public func next() -> EventLoopFuture<T?> {
@@ -179,9 +180,10 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *    there was no data.
      *
      *    If the future evaluates to an error, it is likely one of the following:
-     *      - `CommandError` if an error occurs while fetching more results from the server.
-     *      - `LogicError` if this function is called after the change stream has died.
-     *      - `LogicError` if this function is called and the session associated with this change stream is inactive.
+     *      - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *      - `MongoError.LogicError` if this function is called after the change stream has died.
+     *      - `MongoError.LogicError` if this function is called and the session associated with this change stream is
+     *        inactive.
      *      - `DecodingError` if an error occurs decoding the server's response.
      */
     public func tryNext() -> EventLoopFuture<T?> {
@@ -203,9 +205,10 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *    An `EventLoopFuture<[T]>` evaluating to the results currently available in this change stream, or an error.
      *
      *    If the future evaluates to an error, that error is likely one of the following:
-     *      - `CommandError` if an error occurs while fetching more results from the server.
-     *      - `LogicError` if this function is called after the change stream has died.
-     *      - `LogicError` if this function is called and the session associated with this change stream is inactive.
+     *      - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *      - `MongoError.LogicError` if this function is called after the change stream has died.
+     *      - `MongoError.LogicError` if this function is called and the session associated with this change stream is
+     *        inactive.
      *      - `DecodingError` if an error occurs decoding the server's responses.
      */
     public func toArray() -> EventLoopFuture<[T]> {
@@ -230,9 +233,10 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *     encountered.
      *
      *     If the future evaluates to an error, that error is likely one of the following:
-     *     - `CommandError` if an error occurs while fetching more results from the server.
-     *     - `LogicError` if this function is called after the change stream has died.
-     *     - `LogicError` if this function is called and the session associated with this change stream is inactive.
+     *     - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *     - `MongoError.LogicError` if this function is called after the change stream has died.
+     *      - `MongoError.LogicError` if this function is called and the session associated with this change stream is
+     *        inactive.
      *     - `DecodingError` if an error occurs decoding the server's responses.
      */
     public func forEach(_ body: @escaping (T) throws -> Void) -> EventLoopFuture<Void> {

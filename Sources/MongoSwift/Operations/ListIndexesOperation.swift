@@ -46,7 +46,7 @@ internal struct ListIndexesOperation<T: Codable>: Operation {
             var names: [String] = []
             while let nextDoc = try cursor.tryNext() {
                 guard let name = nextDoc["name"]?.stringValue else {
-                    throw InternalError(message: "Invalid server response: index has no name")
+                    throw MongoError.InternalError(message: "Invalid server response: index has no name")
                 }
                 names.append(name)
             }

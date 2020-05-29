@@ -70,9 +70,9 @@ internal protocol BSONValue: Codable {
      *   - key: A `String`, the key under which to store the value.
      *
      * - Throws:
-     *   - `InternalError` if the `DocumentStorage` would exceed the maximum size by encoding this
+     *   - `MongoError.InternalError` if the `DocumentStorage` would exceed the maximum size by encoding this
      *     key-value pair.
-     *   - `LogicError` if the value is an `Array` and it contains a non-`BSONValue` element.
+     *   - `MongoError.LogicError` if the value is an `Array` and it contains a non-`BSONValue` element.
      */
     func encode(to document: inout BSONDocument, forKey key: String) throws
 
@@ -80,7 +80,7 @@ internal protocol BSONValue: Codable {
      * Given a `BSONDocumentIterator` known to have a next value of this type,
      * initializes the value.
      *
-     * - Throws: `LogicError` if the current type of the `BSONDocumentIterator` does not correspond to the
+     * - Throws: `MongoError.LogicError` if the current type of the `BSONDocumentIterator` does not correspond to the
      *           associated type of this `BSONValue`.
      */
     static func from(iterator iter: BSONDocumentIterator) throws -> BSON
@@ -117,7 +117,7 @@ extension Array: BSONValue where Element == BSON {
             // since an array is a nested object with keys '0', '1', etc.,
             // create a new Document using the array data so we can recursively parse
             guard let arrayData = bson_new_from_data(array.pointee, Int(length)) else {
-                throw InternalError(message: "Failed to create an Array from iterator")
+                throw MongoError.InternalError(message: "Failed to create an Array from iterator")
             }
 
             let arrDoc = BSONDocument(stealing: arrayData)
@@ -240,18 +240,18 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
         /// Initializes a `Subtype` with a custom value. This value must be in the range 0x80-0xFF.
         /// - Throws:
-        ///   - `InvalidArgumentError` if value passed is outside of the range 0x80-0xFF
+        ///   - `MongoError.InvalidArgumentError` if value passed is outside of the range 0x80-0xFF
         public static func userDefined(_ value: Int) throws -> Subtype {
             guard let byteValue = UInt8(exactly: value) else {
-                throw InvalidArgumentError(message: "Cannot represent \(value) as UInt8")
+                throw MongoError.InvalidArgumentError(message: "Cannot represent \(value) as UInt8")
             }
             guard byteValue >= 0x80 else {
-                throw InvalidArgumentError(
+                throw MongoError.InvalidArgumentError(
                     message: "userDefined value must be greater than or equal to 0x80 got \(byteValue)"
                 )
             }
             guard let subtype = Subtype(rawValue: byteValue) else {
-                throw InvalidArgumentError(message: "Cannot represent \(byteValue) as Subtype")
+                throw MongoError.InvalidArgumentError(message: "Cannot represent \(byteValue) as Subtype")
             }
             return subtype
         }
@@ -259,7 +259,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
     /// Initializes a `BSONBinary` instance from a `UUID`.
     /// - Throws:
-    ///   - `InvalidArgumentError` if a `BSONBinary` cannot be constructed from this UUID.
+    ///   - `MongoError.InvalidArgumentError` if a `BSONBinary` cannot be constructed from this UUID.
     public init(from uuid: UUID) throws {
         let uuidt = uuid.uuid
 
@@ -275,10 +275,10 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
     /// Initializes a `BSONBinary` instance from a `Data` object and a `UInt8` subtype.
     /// - Throws:
-    ///   - `InvalidArgumentError` if the provided data is incompatible with the specified subtype.
+    ///   - `MongoError.InvalidArgumentError` if the provided data is incompatible with the specified subtype.
     public init(data: Data, subtype: Subtype) throws {
         if [Subtype.uuid, Subtype.uuidDeprecated].contains(subtype) && data.count != 16 {
-            throw InvalidArgumentError(
+            throw MongoError.InvalidArgumentError(
                 message:
                 "Binary data with UUID subtype must be 16 bytes, but data has \(data.count) bytes"
             )
@@ -291,11 +291,11 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
     /// Initializes a `BSONBinary` instance from a base64 `String` and a `Subtype`.
     /// - Throws:
-    ///   - `InvalidArgumentError` if the base64 `String` is invalid or if the provided data is
+    ///   - `MongoError.InvalidArgumentError` if the base64 `String` is invalid or if the provided data is
     ///     incompatible with the specified subtype.
     public init(base64: String, subtype: Subtype) throws {
         guard let dataObj = Data(base64Encoded: base64) else {
-            throw InvalidArgumentError(
+            throw MongoError.InvalidArgumentError(
                 message:
                 "failed to create Data object from invalid base64 string \(base64)"
             )
@@ -315,7 +315,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         let subtype = bson_subtype_t(UInt32(self.subtype.rawValue))
         let length = self.data.writerIndex
         guard let byteArray = self.data.getBytes(at: 0, length: length) else {
-            throw InternalError(message: "Cannot read \(length) bytes from Binary.data")
+            throw MongoError.InternalError(message: "Cannot read \(length) bytes from Binary.data")
         }
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_binary(docPtr, key, Int32(key.utf8.count), subtype, byteArray, UInt32(length)) else {
@@ -341,7 +341,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
             bson_iter_binary(iterPtr, &subtype, &length, dataPointer)
 
             guard let data = dataPointer.pointee else {
-                throw InternalError(message: "failed to retrieve data stored for binary BSON value")
+                throw MongoError.InternalError(message: "failed to retrieve data stored for binary BSON value")
             }
 
             let dataObj = Data(bytes: data, count: Int(length))
@@ -351,16 +351,16 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
 
     /// Converts this `BSONBinary` instance to a `UUID`.
     /// - Throws:
-    ///   - `InvalidArgumentError` if a non-UUID subtype is set on this `BSONBinary`.
+    ///   - `MongoError.InvalidArgumentError` if a non-UUID subtype is set on this `BSONBinary`.
     public func toUUID() throws -> UUID {
         guard [Subtype.uuid, Subtype.uuidDeprecated].contains(self.subtype) else {
-            throw InvalidArgumentError(
+            throw MongoError.InvalidArgumentError(
                 message: "Expected a UUID binary subtype, got subtype \(self.subtype) instead."
             )
         }
 
         guard let data = self.data.getBytes(at: 0, length: 16) else {
-            throw InternalError(message: "Unable to read 16 bytes from Binary.data")
+            throw MongoError.InternalError(message: "Unable to read 16 bytes from Binary.data")
         }
 
         let uuid: uuid_t = (
@@ -524,7 +524,7 @@ public struct BSONDecimal128: BSONValue, Equatable, Codable, CustomStringConvert
      *   - a BSONDecimal128 number as a string.
      *
      * - Throws:
-     *   - A `InvalidArgumentError` if the string does not represent a BSONDecimal128 encodable value.
+     *   - A `MongoError.InvalidArgumentError` if the string does not represent a BSONDecimal128 encodable value.
      *
      * - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/bson-decimal128/decimal128.rst
      */
@@ -554,11 +554,11 @@ public struct BSONDecimal128: BSONValue, Equatable, Codable, CustomStringConvert
     /// Returns the provided string as a `bson_decimal128_t`, or throws an error if initialization fails due an
     /// invalid string.
     /// - Throws:
-    ///   - `InvalidArgumentError` if the parameter string does not correspond to a valid `BSONDecimal128`.
+    ///   - `MongoError.InvalidArgumentError` if the parameter string does not correspond to a valid `BSONDecimal128`.
     internal static func toLibBSONType(_ str: String) throws -> bson_decimal128_t {
         var value = bson_decimal128_t()
         guard bson_decimal128_from_string(str, &value) else {
-            throw InvalidArgumentError(message: "Invalid Decimal128 string \(str)")
+            throw MongoError.InvalidArgumentError(message: "Invalid Decimal128 string \(str)")
         }
         return value
     }
@@ -714,7 +714,7 @@ public struct BSONCodeWithScope: BSONValue, Equatable, Codable, Hashable {
 
             let code = String(cString: bson_iter_codewscope(iterPtr, &length, &scopeLength, scopePointer))
             guard let scopeData = bson_new_from_data(scopePointer.pointee, Int(scopeLength)) else {
-                throw InternalError(message: "Failed to create a bson_t from scope data")
+                throw MongoError.InternalError(message: "Failed to create a bson_t from scope data")
             }
             let scopeDoc = BSONDocument(stealing: scopeData)
 
@@ -862,11 +862,11 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
 
     /// Initializes an `BSONObjectID` from the provided hex `String`.
     /// - Throws:
-    ///   - `InvalidArgumentError` if string passed is not a valid BSONObjectID
+    ///   - `MongoError.InvalidArgumentError` if string passed is not a valid BSONObjectID
     /// - SeeAlso: https://github.com/mongodb/specifications/blob/master/source/objectid.rst
     public init(_ hex: String) throws {
         guard bson_oid_is_valid(hex, hex.utf8.count) else {
-            throw InvalidArgumentError(message: "Cannot create ObjectId from \(hex)")
+            throw MongoError.InvalidArgumentError(message: "Cannot create ObjectId from \(hex)")
         }
         var oid_t = bson_oid_t()
         bson_oid_init_from_string(&oid_t, hex)
@@ -1024,7 +1024,7 @@ public struct BSONRegularExpression: BSONValue, Equatable, Codable, Hashable {
             let patternString = String(cString: pattern)
 
             guard let stringOptions = options.pointee else {
-                throw InternalError(message: "Failed to retrieve regular expression options")
+                throw MongoError.InternalError(message: "Failed to retrieve regular expression options")
             }
             let optionsString = String(cString: stringOptions)
 
@@ -1069,11 +1069,11 @@ extension String: BSONValue {
             }
 
             guard bson_utf8_validate(strValue, Int(length), true) else {
-                throw InternalError(message: "String \(strValue) not valid UTF-8")
+                throw MongoError.InternalError(message: "String \(strValue) not valid UTF-8")
             }
 
             guard let out = self.init(rawStringData: strValue, length: Int(length)) else {
-                throw InternalError(
+                throw MongoError.InternalError(
                     message: "Underlying string data could not be parsed to a Swift String"
                 )
             }
@@ -1131,7 +1131,7 @@ public struct BSONSymbol: BSONValue, CustomStringConvertible, Codable, Equatable
             }
 
             guard let strValue = String(rawStringData: cStr, length: Int(length)) else {
-                throw InternalError(message: "Cannot parse String from underlying data")
+                throw MongoError.InternalError(message: "Cannot parse String from underlying data")
             }
 
             return BSONSymbol(strValue)

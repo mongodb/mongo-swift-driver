@@ -88,7 +88,7 @@ internal protocol MongocCursorWrapper {
     func destroy()
 }
 
-internal let ClosedCursorError: Error = LogicError(
+internal let ClosedCursorError: Error = MongoError.LogicError(
     message: "Cannot advance a dead cursor or change stream"
 )
 

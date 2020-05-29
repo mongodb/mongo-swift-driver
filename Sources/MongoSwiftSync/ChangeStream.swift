@@ -58,9 +58,10 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *   multiple requests to the server.
      *
      *   If the result contains an error, it is likely one of the following:
-     *     - `CommandError` if an error occurs while fetching more results from the server.
-     *     - `LogicError` if this function is called after the change stream has died.
-     *     - `LogicError` if this function is called and the session associated with this change stream is inactive.
+     *     - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *     - `MongoError.LogicError` if this function is called after the change stream has died.
+     *     - `MongoError.LogicError` if this function is called and the session associated with this change stream is
+     *       inactive.
      *     - `DecodingError` if an error occurs decoding the server's response.
      */
     public func next() -> Result<T, Error>? {
@@ -87,9 +88,10 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *    there was no data.
      *
      *    If the result is an error, it is likely one of the following:
-     *      - `CommandError` if an error occurs while fetching more results from the server.
-     *      - `LogicError` if this function is called after the change stream has died.
-     *      - `LogicError` if this function is called and the session associated with this change stream is inactive.
+     *      - `MongoError.CommandError` if an error occurs while fetching more results from the server.
+     *      - `MongoError.LogicError` if this function is called after the change stream has died.
+     *     - `MongoError.LogicError` if this function is called and the session associated with this change stream is
+     *       inactive.
      *      - `DecodingError` if an error occurs decoding the server's response.
      */
     public func tryNext() -> Result<T, Error>? {

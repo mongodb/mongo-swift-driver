@@ -14,9 +14,9 @@ extension MongoCollection {
      * - Returns: A `ChangeStream` on a specific collection.
      *
      * - Throws:
-     *   - `CommandError` if an error occurs on the server while creating the change stream.
-     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *   - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *   - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *   - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      *
      * - SeeAlso:
@@ -52,9 +52,9 @@ extension MongoCollection {
      * - Returns: A `ChangeStream` on a specific collection.
      *
      * - Throws:
-     *   - `CommandError` if an error occurs on the server while creating the change stream.
-     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *   - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *   - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *   - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      *
      * - SeeAlso:
@@ -90,9 +90,9 @@ extension MongoCollection {
      * - Returns: A `ChangeStream` on a specific collection.
      *
      * - Throws:
-     *   - `CommandError` if an error occurs on the server while creating the change stream.
-     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *   - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *   - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *   - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      *
      * - SeeAlso:

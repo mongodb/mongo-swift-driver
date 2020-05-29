@@ -80,13 +80,13 @@ internal struct ListDatabasesOperation: Operation {
         }
 
         guard let databases = reply["databases"]?.arrayValue?.toArrayOf(BSONDocument.self) else {
-            throw InternalError(message: "Invalid server response: \(reply)")
+            throw MongoError.InternalError(message: "Invalid server response: \(reply)")
         }
 
         if self.nameOnly ?? false {
             let names: [String] = try databases.map {
                 guard let name = $0["name"]?.stringValue else {
-                    throw InternalError(message: "Server response missing names: \(reply)")
+                    throw MongoError.InternalError(message: "Server response missing names: \(reply)")
                 }
                 return name
             }

@@ -16,7 +16,7 @@ internal class FindAndModifyOptions {
 
     /// Initializes a new `FindAndModifyOptions` with the given settings.
     ///
-    /// - Throws: `InvalidArgumentError` if any of the options are invalid.
+    /// - Throws: `MongoError.InvalidArgumentError` if any of the options are invalid.
     // swiftlint:disable:next cyclomatic_complexity
     internal init(
         arrayFilters: [BSONDocument]? = nil,
@@ -34,13 +34,13 @@ internal class FindAndModifyOptions {
 
         if let bypass = bypassDocumentValidation,
             !mongoc_find_and_modify_opts_set_bypass_document_validation(self._options, bypass) {
-            throw InvalidArgumentError(message: "Error setting bypassDocumentValidation to \(bypass)")
+            throw MongoError.InvalidArgumentError(message: "Error setting bypassDocumentValidation to \(bypass)")
         }
 
         if let fields = projection {
             try fields.withBSONPointer { fieldsPtr in
                 guard mongoc_find_and_modify_opts_set_fields(self._options, fieldsPtr) else {
-                    throw InvalidArgumentError(message: "Error setting fields to \(fields)")
+                    throw MongoError.InvalidArgumentError(message: "Error setting fields to \(fields)")
                 }
             }
         }
@@ -57,7 +57,7 @@ internal class FindAndModifyOptions {
             let remStr = String(describing: remove)
             let upsStr = String(describing: upsert)
             let retStr = String(describing: returnDocument)
-            throw InvalidArgumentError(
+            throw MongoError.InvalidArgumentError(
                 message:
                 "Error setting flags to \(flags); remove=\(remStr), upsert=\(upsStr), returnDocument=\(retStr)"
             )
@@ -66,7 +66,7 @@ internal class FindAndModifyOptions {
         if let sort = sort {
             try sort.withBSONPointer { sortPtr in
                 guard mongoc_find_and_modify_opts_set_sort(self._options, sortPtr) else {
-                    throw InvalidArgumentError(message: "Error setting sort to \(sort)")
+                    throw MongoError.InvalidArgumentError(message: "Error setting sort to \(sort)")
                 }
             }
         }
@@ -83,7 +83,7 @@ internal class FindAndModifyOptions {
         // set maxTimeMS by directly appending it instead. see CDRIVER-1329
         if let maxTime = maxTimeMS {
             guard maxTime > 0 else {
-                throw InvalidArgumentError(message: "maxTimeMS must be positive, but got value \(maxTime)")
+                throw MongoError.InvalidArgumentError(message: "maxTimeMS must be positive, but got value \(maxTime)")
             }
             try extra.setValue(for: "maxTimeMS", to: .int64(Int64(maxTime)))
         }
@@ -92,14 +92,14 @@ internal class FindAndModifyOptions {
             do {
                 try extra.setValue(for: "writeConcern", to: .document(try BSONEncoder().encode(wc)))
             } catch {
-                throw InternalError(message: "Error encoding WriteConcern \(wc): \(error)")
+                throw MongoError.InternalError(message: "Error encoding WriteConcern \(wc): \(error)")
             }
         }
 
         if !extra.isEmpty {
             try extra.withBSONPointer { extraPtr in
                 guard mongoc_find_and_modify_opts_append(self._options, extraPtr) else {
-                    throw InvalidArgumentError(message: "Error appending extra fields \(extra)")
+                    throw MongoError.InvalidArgumentError(message: "Error appending extra fields \(extra)")
                 }
             }
         }
@@ -110,7 +110,7 @@ internal class FindAndModifyOptions {
     fileprivate func setUpdate(_ update: BSONDocument) throws {
         try update.withBSONPointer { updatePtr in
             guard mongoc_find_and_modify_opts_set_update(self._options, updatePtr) else {
-                throw InvalidArgumentError(message: "Error setting update to \(update)")
+                throw MongoError.InvalidArgumentError(message: "Error setting update to \(update)")
             }
         }
     }
@@ -124,7 +124,7 @@ internal class FindAndModifyOptions {
 
         try doc.withBSONPointer { docPtr in
             guard mongoc_find_and_modify_opts_append(self._options, docPtr) else {
-                throw InternalError(message: "Couldn't read session information")
+                throw MongoError.InternalError(message: "Couldn't read session information")
             }
         }
     }

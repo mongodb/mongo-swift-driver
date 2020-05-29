@@ -19,9 +19,9 @@ extension MongoCollection {
      *    An `EventLoopFuture<MongoCursor<CollectionType>`. On success, contains a cursor over the resulting documents.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if the options passed are an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func find(
@@ -46,9 +46,9 @@ extension MongoCollection {
      *    match.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if the options passed are an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func findOne(
@@ -78,9 +78,9 @@ extension MongoCollection {
      *    An `EventLoopFuture<MongoCursor<CollectionType>`. On success, contains a cursor over the resulting documents.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `InvalidArgumentError` if the options passed are an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func aggregate(
@@ -106,10 +106,10 @@ extension MongoCollection {
      *    An `EventLoopFuture<Int>`. On success, contains the count of the documents that matched the filter.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func countDocuments(
@@ -132,9 +132,9 @@ extension MongoCollection {
      *    An `EventLoopFuture<Int>`. On success, contains an estimate of the count of documents in this collection.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func estimatedDocumentCount(options: EstimatedDocumentCountOptions? = nil) -> EventLoopFuture<Int> {
@@ -156,10 +156,10 @@ extension MongoCollection {
      *    An `EventLoopFuture<[BSON]>`. On success, contains the distinct values for the specified criteria.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `CommandError` if an error occurs that prevents the command from executing.
-     *    - `InvalidArgumentError` if the options passed in form an invalid combination.
-     *    - `LogicError` if the provided session is inactive.
-     *    - `LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func distinct(

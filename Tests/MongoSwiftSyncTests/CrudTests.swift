@@ -232,7 +232,7 @@ private class BulkWriteTest: CrudTest {
                 self.verifyBulkWriteResult(result)
             }
             expect(expectError).to(beFalse())
-        } catch let bwe as BulkWriteError {
+        } catch let bwe as MongoError.BulkWriteError {
             if let result = bwe.result {
                 verifyBulkWriteResult(result)
             }
@@ -416,7 +416,7 @@ private class InsertManyTest: CrudTest {
                 verifyInsertManyResult(result)
             }
             expect(expectError).to(beFalse())
-        } catch let bwe as BulkWriteError {
+        } catch let bwe as MongoError.BulkWriteError {
             if let result = bwe.result {
                 verifyInsertManyResult(InsertManyResult.fromBulkResult(result)!)
             }

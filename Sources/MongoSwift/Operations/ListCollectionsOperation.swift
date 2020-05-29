@@ -140,7 +140,7 @@ internal struct ListCollectionsOperation: Operation {
             var names: [String] = []
             while let nextDoc = try cursor.tryNext() {
                 guard let name = nextDoc["name"]?.stringValue else {
-                    throw InternalError(message: "Invalid server response: collection has no name")
+                    throw MongoError.InternalError(message: "Invalid server response: collection has no name")
                 }
                 names.append(name)
             }

@@ -115,9 +115,9 @@ public final class ClientSession {
      *   - options: The options to use when starting this transaction
      *
      * - Throws:
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `LogicError` if the session already has an in-progress transaction.
-     *   - `LogicError` if `startTransaction` is called on an ended session.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.LogicError` if the session already has an in-progress transaction.
+     *   - `MongoError.LogicError` if `startTransaction` is called on an ended session.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/transactions/
@@ -130,9 +130,9 @@ public final class ClientSession {
      * Commits a multi-document transaction for this session. Server and network errors are not ignored.
      *
      * - Throws:
-     *   - `CommandError` if an error occurs that prevents the command from executing.
-     *   - `LogicError` if the session has no in-progress transaction.
-     *   - `LogicError` if `commitTransaction` is called on an ended session.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.LogicError` if the session has no in-progress transaction.
+     *   - `MongoError.LogicError` if `commitTransaction` is called on an ended session.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/transactions/
@@ -145,8 +145,8 @@ public final class ClientSession {
      * Aborts a multi-document transaction for this session. Server and network errors are ignored.
      *
      * - Throws:
-     *   - `LogicError` if the session has no in-progress transaction.
-     *   - `LogicError` if `abortTransaction` is called on an ended session.
+     *   - `MongoError.LogicError` if the session has no in-progress transaction.
+     *   - `MongoError.LogicError` if `abortTransaction` is called on an ended session.
      *
      * - SeeAlso:
      *   - https://docs.mongodb.com/manual/core/transactions/

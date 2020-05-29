@@ -122,7 +122,7 @@ final class SyncAuthTests: MongoSwiftTestCase {
                 let connStrWrongMech = try user.addToConnString(connString, mechanism: wrongMech)
                 let clientWrongMech = try MongoClient.makeTestClient(connStrWrongMech)
                 expect(try clientWrongMech.db("admin").runCommand(["dbstats": 1]))
-                    .to(throwError(errorType: AuthenticationError.self))
+                    .to(throwError(errorType: MongoError.AuthenticationError.self))
             }
         }
 
@@ -148,7 +148,7 @@ final class SyncAuthTests: MongoSwiftTestCase {
                 let options = MongoClientOptions(credential: user.createCredential(mechanism: wrongMech))
                 let clientWrongMech = try MongoClient.makeTestClient(connString, options: options)
                 expect(try clientWrongMech.db("admin").runCommand(["dbstats": 1]))
-                    .to(throwError(errorType: AuthenticationError.self))
+                    .to(throwError(errorType: MongoError.AuthenticationError.self))
             }
         }
 

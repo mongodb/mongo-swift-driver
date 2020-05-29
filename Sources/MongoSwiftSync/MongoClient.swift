@@ -36,8 +36,8 @@ public class MongoClient {
      * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
      *
      * - Throws:
-     *   - A `InvalidArgumentError` if the connection string passed in is improperly formatted.
-     *   - A `InvalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
+     *   - A `MongoError.InvalidArgumentError` if the connection string passed in is improperly formatted.
+     *   - A `MongoError.InvalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
      *     built with TLS support.
      */
     public init(_ connectionString: String = "mongodb://localhost:27017", options: MongoClientOptions? = nil) throws {
@@ -98,9 +98,10 @@ public class MongoClient {
      * - Returns: A `[DatabaseSpecification]` containing the databases matching provided criteria.
      *
      * - Throws:
-     *   - `LogicError` if the provided session is inactive.
+     *   - `MongoError.LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error is encountered while encoding the options to BSON.
-     *   - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
+     *   - `MongoError.CommandError` if options.authorizedDatabases is false and the user does not have listDatabases
+     *     permissions.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
@@ -123,8 +124,9 @@ public class MongoClient {
      * - Returns: An Array of `MongoDatabase`s that match the provided filter.
      *
      * - Throws:
-     *   - `LogicError` if the provided session is inactive.
-     *   - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
+     *   - `MongoError.LogicError` if the provided session is inactive.
+     *   - `MongoError.CommandError` if options.authorizedDatabases is false and the user does not have listDatabases
+     *     permissions.
      */
     public func listMongoDatabases(
         _ filter: BSONDocument? = nil,
@@ -145,8 +147,9 @@ public class MongoClient {
      * - Returns: A `[String]` containing names of databases that match the provided filter.
      *
      * - Throws:
-     *   - `LogicError` if the provided session is inactive.
-     *   - `CommandError` if options.authorizedDatabases is false and the user does not have listDatabases permissions.
+     *   - `MongoError.LogicError` if the provided session is inactive.
+     *   - `MongoError.CommandError` if options.authorizedDatabases is false and the user does not have listDatabases
+     *     permissions.
      */
     public func listDatabaseNames(
         _ filter: BSONDocument? = nil,
@@ -184,9 +187,9 @@ public class MongoClient {
      * - Returns: a `ChangeStream` on all collections in all databases in a cluster.
      *
      * - Throws:
-     *   - `CommandError` if an error occurs on the server while creating the change stream.
-     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *   - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *   - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *   - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      *
      * - SeeAlso:
@@ -225,9 +228,9 @@ public class MongoClient {
      * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
      *
      * - Throws:
-     *   - `CommandError` if an error occurs on the server while creating the change stream.
-     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *   - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *   - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *   - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      *
      * - SeeAlso:
@@ -266,9 +269,9 @@ public class MongoClient {
      * - Returns: A `ChangeStream` on all collections in all databases in a cluster.
      *
      * - Throws:
-     *   - `CommandError` if an error occurs on the server while creating the change stream.
-     *   - `InvalidArgumentError` if the options passed formed an invalid combination.
-     *   - `InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *   - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *   - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *   - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
      *     pipeline.
      *
      * - SeeAlso:

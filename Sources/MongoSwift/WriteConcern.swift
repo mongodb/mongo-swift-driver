@@ -60,7 +60,7 @@ public struct WriteConcern: Codable {
                     // Int size check is required by libmongoc
                     try container.encode(wNumber)
                 } else {
-                    throw InvalidArgumentError(
+                    throw MongoError.InvalidArgumentError(
                         message: "Invalid WriteConcern.w \(wNumber): must be between 0 and \(Int32.max)"
                     )
                 }
@@ -114,20 +114,22 @@ public struct WriteConcern: Codable {
 
     /// Initializes a new `WriteConcern`.
     /// - Throws:
-    ///   - `InvalidArgumentError` if the options form an invalid combination.
+    ///   - `MongoError.InvalidArgumentError` if the options form an invalid combination.
     public init(journal: Bool? = nil, w: W? = nil, wtimeoutMS: Int? = nil) throws {
         self.journal = journal
 
         if let wtimeoutMS = wtimeoutMS {
             if wtimeoutMS < 0 {
-                throw InvalidArgumentError(message: "Invalid value: wtimeoutMS=\(wtimeoutMS) cannot be negative.")
+                throw MongoError.InvalidArgumentError(
+                    message: "Invalid value: wtimeoutMS=\(wtimeoutMS) cannot be negative."
+                )
             }
         }
         self.wtimeoutMS = wtimeoutMS
 
         if let w = w, case let .number(wNumber) = w {
             if wNumber < 0 {
-                throw InvalidArgumentError(message: "Invalid value: w=\(w) cannot be negative.")
+                throw MongoError.InvalidArgumentError(message: "Invalid value: w=\(w) cannot be negative.")
             }
         }
         self.w = w
@@ -136,7 +138,7 @@ public struct WriteConcern: Codable {
             let journalStr = String(describing: journal)
             let wStr = String(describing: w)
             let timeoutStr = String(describing: wtimeoutMS)
-            throw InvalidArgumentError(
+            throw MongoError.InvalidArgumentError(
                 message:
                 "Invalid combination of options: journal=\(journalStr), w=\(wStr), wtimeoutMS=\(timeoutStr)"
             )

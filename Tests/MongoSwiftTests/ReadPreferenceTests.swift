@@ -58,11 +58,11 @@ final class ReadPreferenceTests: MongoSwiftTestCase {
 
         // maxStalenessSeconds cannot be less than 90
         expect(try ReadPreference.nearest(maxStalenessSeconds: -1))
-            .to(throwError(errorType: InvalidArgumentError.self))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
         expect(try ReadPreference.nearest(maxStalenessSeconds: 0))
-            .to(throwError(errorType: InvalidArgumentError.self))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
         expect(try ReadPreference.nearest(maxStalenessSeconds: 89))
-            .to(throwError(errorType: InvalidArgumentError.self))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
     func testRoundTripThroughLibmongoc() throws {

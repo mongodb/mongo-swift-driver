@@ -148,13 +148,13 @@ extension BSONDocument {
      *      - `T`: Any type conforming to the `BSONValue` protocol
      *  - Returns: The value stored under key, as type `T`
      *  - Throws:
-     *    - `InternalError` if the value cannot be cast to type `T` or is not in the `Document`, or an
+     *    - `MongoError.InternalError` if the value cannot be cast to type `T` or is not in the `Document`, or an
      *      unexpected error occurs while decoding the `BSONValue`.
      *
      */
     public func get<T: BSONValue>(_ key: String) throws -> T {
         guard let value = try self.getValue(for: key)?.bsonValue as? T else {
-            throw InternalError(message: "Could not cast value for key \(key) to type \(T.self)")
+            throw MongoError.InternalError(message: "Could not cast value for key \(key) to type \(T.self)")
         }
         return value
     }
@@ -258,14 +258,14 @@ extension ServerAddress: Decodable {
     }
 }
 
-extension CommandError {
+extension MongoError.CommandError {
     public static func new(
-        code: ServerErrorCode,
+        code: MongoError.ServerErrorCode,
         codeName: String,
         message: String,
         errorLabels: [String]?
-    ) -> CommandError {
-        CommandError(
+    ) -> MongoError.CommandError {
+        MongoError.CommandError(
             code: code,
             codeName: codeName,
             message: message,
@@ -298,19 +298,23 @@ extension CollectionSpecification {
     }
 }
 
-extension WriteFailure {
-    public static func new(code: ServerErrorCode, codeName: String, message: String) -> WriteFailure {
-        WriteFailure(code: code, codeName: codeName, message: message)
+extension MongoError.WriteFailure {
+    public static func new(
+        code: MongoError.ServerErrorCode,
+        codeName: String,
+        message: String
+    ) -> MongoError.WriteFailure {
+        MongoError.WriteFailure(code: code, codeName: codeName, message: message)
     }
 }
 
-extension WriteError {
+extension MongoError.WriteError {
     public static func new(
-        writeFailure: WriteFailure?,
-        writeConcernFailure: WriteConcernFailure?,
+        writeFailure: MongoError.WriteFailure?,
+        writeConcernFailure: MongoError.WriteConcernFailure?,
         errorLabels: [String]?
-    ) -> WriteError {
-        WriteError(
+    ) -> MongoError.WriteError {
+        MongoError.WriteError(
             writeFailure: writeFailure,
             writeConcernFailure: writeConcernFailure,
             errorLabels: errorLabels
@@ -340,21 +344,26 @@ extension BulkWriteResult {
     }
 }
 
-extension BulkWriteFailure {
-    public static func new(code: ServerErrorCode, codeName: String, message: String, index: Int) -> BulkWriteFailure {
-        BulkWriteFailure(code: code, codeName: codeName, message: message, index: index)
+extension MongoError.BulkWriteFailure {
+    public static func new(
+        code: MongoError.ServerErrorCode,
+        codeName: String,
+        message: String,
+        index: Int
+    ) -> MongoError.BulkWriteFailure {
+        MongoError.BulkWriteFailure(code: code, codeName: codeName, message: message, index: index)
     }
 }
 
-extension BulkWriteError {
+extension MongoError.BulkWriteError {
     public static func new(
-        writeFailures: [BulkWriteFailure]?,
-        writeConcernFailure: WriteConcernFailure?,
+        writeFailures: [MongoError.BulkWriteFailure]?,
+        writeConcernFailure: MongoError.WriteConcernFailure?,
         otherError: Error?,
         result: BulkWriteResult?,
         errorLabels: [String]?
-    ) -> BulkWriteError {
-        BulkWriteError(
+    ) -> MongoError.BulkWriteError {
+        MongoError.BulkWriteError(
             writeFailures: writeFailures,
             writeConcernFailure: writeConcernFailure,
             otherError: otherError,
