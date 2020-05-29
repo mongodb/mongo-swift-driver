@@ -131,7 +131,7 @@ final class SDAMTests: MongoSwiftTestCase {
                     try collection.insertOne(["x": 1])
                 }
             } catch {
-                expect(error).to(beAnInstanceOf(CommandError.self))
+                expect(error).to(beAnInstanceOf(MongoError.CommandError.self))
                 failures += 1
             }
         }
