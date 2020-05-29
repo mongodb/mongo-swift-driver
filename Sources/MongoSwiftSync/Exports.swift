@@ -20,6 +20,7 @@
 @_exported import struct MongoSwift.BSONDocument
 @_exported import class MongoSwift.BSONDocumentIterator
 @_exported import class MongoSwift.BSONEncoder
+@_exported import enum MongoSwift.BSONError
 @_exported import struct MongoSwift.BSONObjectID
 @_exported import struct MongoSwift.BSONRegularExpression
 @_exported import struct MongoSwift.BSONSymbol
@@ -104,6 +105,9 @@
 @_exported import enum MongoSwift.WriteModel
 
 // Protocols are not included in the types list, so we list them separately here.
+@_exported import protocol MongoSwift.BSONErrorProtocol
+@_exported import protocol MongoSwift.BSONRuntimeError
+@_exported import protocol MongoSwift.BSONUserError
 @_exported import protocol MongoSwift.CodingStrategyProvider
 @_exported import protocol MongoSwift.CommandEventHandler
 @_exported import protocol MongoSwift.MongoErrorProtocol
