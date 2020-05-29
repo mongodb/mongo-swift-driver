@@ -2,7 +2,9 @@ internal func getValue(from document: BSONDocument, for key: String) throws -> B
     do {
         return try document.getValue(for: key)
     } catch let error as BSONError.InvalidArgumentError {
-        throw BSONError.InvalidArgumentError(message: error.message)
+        throw MongoError.InvalidArgumentError(message: error.message)
+    } catch let error as BSONError.InternalError {
+        throw MongoError.InternalError(message: error.message)
     }
 }
 
@@ -10,6 +12,8 @@ internal func setValue(in document: inout BSONDocument, for key: String, to valu
     do {
         try document.setValue(for: key, to: value)
     } catch let error as BSONError.InvalidArgumentError {
-        throw BSONError.InvalidArgumentError(message: error.message)
+        throw MongoError.InvalidArgumentError(message: error.message)
+    } catch let error as BSONError.InternalError {
+        throw MongoError.InternalError(message: error.message)
     }
 }
