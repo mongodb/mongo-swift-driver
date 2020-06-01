@@ -19,6 +19,7 @@ extension Application {
     }
 }
 
+/// Configures the application.
 public func configure(_ app: Application) throws {
     // Initialize a client using the application's `EventLoopGroup`.
     let client = try MongoClient("mongodb://localhost:27017", using: app.eventLoopGroup)

@@ -2,7 +2,7 @@
 
 This repository contains an example application built using [Vapor 4](vapor.codes) along with version 1.0 of the [MongoDB Swift driver](https://github.com/mongodb/mongo-swift-driver).
 
-This application is intended to demonstrate best practices for integrating the driver into your backend. It is **not** production-ready, and does not necessarily follow best HTML or Javascript practices. The frontend implementation is the minimal amount of code to allow you to interact with all of the application's HTTP endpoints.
+This application is intended to demonstrate best practices for integrating the driver into your backend. It is **not** production-ready, and does not necessarily follow best HTML or Javascript practices. The frontend implementation is a minimal amount of code built with Vapor's templating language [Leaf](https://github.com/vapor/leaf) to allow you to interact with all of the application's HTTP endpoints.
 
 This application require Swift 5.2 and MongoDB 3.6+. It will run on Linux as well as macOS 10.15+.
 

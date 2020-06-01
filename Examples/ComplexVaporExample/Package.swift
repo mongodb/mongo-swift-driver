@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "ComplexVaporExample",
     platforms: [
-       .macOS(.v10_15)
+        .macOS(.v10_15)
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor", .upToNextMajor(from: "4.7.0")),

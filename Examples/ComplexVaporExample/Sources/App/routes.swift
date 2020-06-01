@@ -4,7 +4,11 @@ import Vapor
 /// Constructs a document using the ID from the specified request which can be used a filter
 /// for MongoDB reads/updates/deletions.
 func getIDFilter(from request: Request) throws -> BSONDocument {
-    let idString = request.parameters.get("_id")!
+    // We only call this method from request handlers that have _id parameters so the value
+    // will always be available.
+    guard let idString = request.parameters.get("_id") else {
+        throw Abort(.internalServerError, reason: "Request unexpectedly missing _id parameter")
+    }
     // If the BSONObjectID constructor throws, the ID is invalid.
     guard let id = try? BSONObjectID(idString) else {
         throw Abort(.notFound, reason: "Invalid ID \(idString)")
@@ -25,6 +29,7 @@ func routes(_ app: Application) throws {
         // Hop to ensure that the final response future happens on the request's event loop.
         }.hop(to: req.eventLoop)
         .flatMap { kittens in
+            // Return the corresponding Leaf view, providing the list of kittens as context.
             req.view.render("index.leaf", IndexContext(kittens: kittens))
         }
         .flatMapErrorThrowing { error in
@@ -39,7 +44,8 @@ func routes(_ app: Application) throws {
         // Hop to ensure that the final response future happens on the request's event loop.
         .hop(to: req.eventLoop)
         .map { _ in
-            return req.redirect(to: "/")
+            // On success, redirect to the index to reload the updated list.
+            req.redirect(to: "/")
         }
         .flatMapErrorThrowing { error in
             // Give a more helpful error message in case of a duplicate key error.
@@ -58,6 +64,7 @@ func routes(_ app: Application) throws {
             .hop(to: req.eventLoop)
             .unwrap(or: Abort(.notFound, reason: "No kitten with matching ID")
             .flatMap { kitten in
+                // Return the corresponding Leaf view, providing the kitten as context.
                 req.view.render("kitten.leaf", kitten)
             }
     }
