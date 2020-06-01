@@ -171,13 +171,21 @@ public class BSONEncoder {
             }
 
             return try dict.toDocument()
-        } catch let error as LocalizedError {
+        } catch let error as BSONErrorProtocol {
+            var debugDescription = ""
+            switch error.self {
+            case let error as BSONError.InvalidArgumentError:
+                debugDescription = error.message
+            case let error as BSONError.InternalError:
+                debugDescription = error.message
+            case let error as BSONError.LogicError:
+                debugDescription = error.message
+            default:
+                debugDescription = "Unknown Error occurred while encoding BSON"
+            }
             throw EncodingError.invalidValue(
                 value,
-                EncodingError.Context(
-                    codingPath: [],
-                    debugDescription: error.errorDescription ?? "Error encoding BSON"
-                )
+                EncodingError.Context(codingPath: [], debugDescription: debugDescription)
             )
         }
     }
@@ -502,12 +510,7 @@ extension _BSONEncoder {
         if let bsonValue = value as? BSONValue {
             return bsonValue
         } else if let bsonArray = value as? [BSONValue] {
-            return try bsonArray.map {
-                if let array = $0 as? MutableArray {
-                    return try array.toBSONArray().bson
-                }
-                return $0.bson
-            }
+            return try bsonArray.map { $0.bson }
         }
 
         // The value should request a container from the _BSONEncoder.
@@ -786,6 +789,9 @@ private class MutableArray: BSONValue {
         return try self.array.map {
             if let item = $0 as? MutableDictionary {
                 return try item.toDocument().bson
+            }
+            if let item = $0 as? MutableArray {
+                return try item.toBSONArray().bson
             }
             return $0.bson
         }
