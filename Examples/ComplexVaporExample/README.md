@@ -19,7 +19,7 @@ This application require Swift 5.2 and MongoDB 3.6+. It will run on Linux as wel
 
 This is a fully asynchronous application. At its core is [SwiftNIO](https://github.com/apple/swift-nio), which is used to implement both Vapor and the MongoDB driver.
 
-The application is a basic HTTP server combined with a minimal frontend, which supports storing a list of kittens and details about them. The application provides examples of various common CRUD operations through its HTTP endpointsS:
+The application is a basic HTTP server combined with a minimal frontend, which supports storing a list of kittens and details about them. The application provides examples of various common CRUD operations through its HTTP endpoints:
 This application is a basic HTTP server built using [Vapor](vapor.codes). The server will handle the following types of requests:
 1. A GET request at the root URL `/` loads the main index page containing a list of kittens.
 1. A POST request at the root URL `/` adds a new kitten.

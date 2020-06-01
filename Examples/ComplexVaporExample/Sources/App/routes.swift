@@ -49,7 +49,7 @@ func routes(_ app: Application) throws {
         }
         .flatMapErrorThrowing { error in
             // Give a more helpful error message in case of a duplicate key error.
-            if let err = error as? MongoSwift.WriteError, err.writeFailure?.code == 11000 {
+            if let err = error as? MongoError.WriteError, err.writeFailure?.code == 11000 {
                 throw Abort(.conflict, reason: "A kitten with the name \(newKitten.name) already exists!")
             }
             throw Abort(.internalServerError, reason: "Failed to save new kitten: \(error)")
@@ -62,7 +62,7 @@ func routes(_ app: Application) throws {
         return collection.findOne(idFilter)
             // Hop to ensure that the final response future happens on the request's event loop.
             .hop(to: req.eventLoop)
-            .unwrap(or: Abort(.notFound, reason: "No kitten with matching ID")
+            .unwrap(or: Abort(.notFound, reason: "No kitten with matching ID"))
             .flatMap { kitten in
                 // Return the corresponding Leaf view, providing the kitten as context.
                 req.view.render("kitten.leaf", kitten)
