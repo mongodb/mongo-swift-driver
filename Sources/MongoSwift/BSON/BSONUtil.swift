@@ -4,9 +4,9 @@
 
 /// We don't want driver users to handle any BSONErrors
 /// this will convert BSONError.* thrown from `fn` to MongoError.* and rethrow
-internal func convertingBSONErrors<T>(_ fn: () throws -> T) rethrows -> T {
+internal func convertingBSONErrors<T>(_ body: () throws -> T) rethrows -> T {
     do {
-        return try fn()
+        return try body()
     } catch let error as BSONError.InvalidArgumentError {
         throw MongoError.InvalidArgumentError(message: error.message)
     } catch let error as BSONError.InternalError {
