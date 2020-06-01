@@ -149,37 +149,38 @@ public class BSONEncoder {
 
         let encoder = _BSONEncoder(options: self.options)
 
-        guard let boxedValue = try? encoder.box_(value) else {
+        do {
+            let optionalBoxedValue = try encoder.box_(value)
+            guard let boxedValue = optionalBoxedValue else {
+                throw EncodingError.invalidValue(
+                    value,
+                    EncodingError.Context(
+                        codingPath: [],
+                        debugDescription: "Top-level \(T.self) did not encode any values."
+                    )
+                )
+            }
+
+            guard let dict = boxedValue as? MutableDictionary else {
+                throw EncodingError.invalidValue(
+                    value,
+                    EncodingError.Context(
+                        codingPath: [],
+                        debugDescription: "Top-level \(T.self) was not encoded as a complete document."
+                    )
+                )
+            }
+
+            return try dict.toDocument()
+        } catch let error as LocalizedError {
             throw EncodingError.invalidValue(
                 value,
                 EncodingError.Context(
                     codingPath: [],
-                    debugDescription: "Top-level \(T.self) did not encode any values."
+                    debugDescription: error.errorDescription ?? "Error encoding BSON"
                 )
             )
         }
-
-        guard let dict = boxedValue as? MutableDictionary else {
-            throw EncodingError.invalidValue(
-                value,
-                EncodingError.Context(
-                    codingPath: [],
-                    debugDescription: "Top-level \(T.self) was not encoded as a complete document."
-                )
-            )
-        }
-
-        guard let doc = try? dict.toDocument() else {
-            throw EncodingError.invalidValue(
-                value,
-                EncodingError.Context(
-                    codingPath: [],
-                    debugDescription: "Failed to construct BSON Document"
-                )
-            )
-        }
-
-        return doc
     }
 
     /**
@@ -743,7 +744,16 @@ extension _BSONEncoder: SingleValueEncodingContainer {
 private class MutableArray: BSONValue {
     fileprivate static var bsonType: BSONType { .array }
 
-    fileprivate var bson: BSON { .array(self.array.map { $0.bson }) }
+    fileprivate var bson: BSON {
+        .array(self.array.map {
+            if let item = $0 as? MutableDictionary {
+                do { return try item.toDocument().bson } catch {
+                    fatalError("Cannot convert to BSONDocument")
+                }
+            }
+            return $0.bson
+        })
+    }
 
     fileprivate var array = [BSONValue]()
 
@@ -784,7 +794,13 @@ private class MutableArray: BSONValue {
 private class MutableDictionary: BSONValue {
     fileprivate static var bsonType: BSONType { .document }
 
-    fileprivate var bson: BSON { .document((try? self.toDocument()) ?? [:]) }
+    fileprivate var bson: BSON {
+        do {
+            return .document(try self.toDocument())
+        } catch {
+            fatalError("Cannot convert MutableDictionary to BSONDocument")
+        }
+    }
 
     // rather than using a dictionary, do this so we preserve key orders
     fileprivate var keys = [String]()
@@ -815,7 +831,13 @@ private class MutableDictionary: BSONValue {
     fileprivate func toDocument() throws -> BSONDocument {
         var doc = BSONDocument()
         for i in 0..<self.keys.count {
-            try doc.setValue(for: self.keys[i], to: self.values[i].bson)
+            try convertingBSONErrors {
+                if let value = self.values[i] as? MutableDictionary {
+                    try doc.setValue(for: self.keys[i], to: value.toDocument().bson)
+                } else {
+                    try doc.setValue(for: self.keys[i], to: self.values[i].bson)
+                }
+            }
         }
         return doc
     }

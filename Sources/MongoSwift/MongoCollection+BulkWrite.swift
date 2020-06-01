@@ -97,12 +97,12 @@ public enum WriteModel<CollectionType: Codable> {
             }
 
         case let .insertOne(value):
-            let document = try withID(document: encoder.encode(value))
+            let document = try convertingBSONErrors { try encoder.encode(value).withID() }
             success = document.withBSONPointer { docPtr in
                 mongoc_bulk_operation_insert_with_opts(bulk, docPtr, nil, &error)
             }
 
-            guard let insertedID = try getValue(from: document, for: "_id") else {
+            guard let insertedID = (try convertingBSONErrors { try document.getValue(for: "_id") }) else {
                 // we called `withID()`, so this should be present.
                 fatalError("Failed to get value for _id from document")
             }
@@ -408,22 +408,36 @@ public struct BulkWriteResult: Decodable {
             return nil
         }
 
-        self.deletedCount = try getValue(from: reply, for: MongocKeys.deletedCount.rawValue)?.toInt() ?? 0
-        self.insertedCount = try getValue(from: reply, for: MongocKeys.insertedCount.rawValue)?.toInt() ?? 0
+        self.deletedCount = try convertingBSONErrors {
+            try reply.getValue(for: MongocKeys.deletedCount.rawValue)?.toInt() ?? 0
+        }
+        self.insertedCount = try convertingBSONErrors {
+            try reply.getValue(for: MongocKeys.insertedCount.rawValue)?.toInt() ?? 0
+        }
         self.insertedIDs = insertedIDs
-        self.matchedCount = try getValue(from: reply, for: MongocKeys.matchedCount.rawValue)?.toInt() ?? 0
-        self.modifiedCount = try getValue(from: reply, for: MongocKeys.modifiedCount.rawValue)?.toInt() ?? 0
-        self.upsertedCount = try getValue(from: reply, for: MongocKeys.upsertedCount.rawValue)?.toInt() ?? 0
+        self.matchedCount = try convertingBSONErrors {
+            try reply.getValue(for: MongocKeys.matchedCount.rawValue)?.toInt() ?? 0
+        }
+        self.modifiedCount = try convertingBSONErrors {
+            try reply.getValue(for: MongocKeys.modifiedCount.rawValue)?.toInt() ?? 0
+        }
+        self.upsertedCount = try convertingBSONErrors {
+            try reply.getValue(for: MongocKeys.upsertedCount.rawValue)?.toInt() ?? 0
+        }
 
         var upsertedIDs = [Int: BSON]()
 
-        if let upserted = try getValue(from: reply, for: MongocKeys.upserted.rawValue)?.arrayValue {
+        if let upserted = (try convertingBSONErrors {
+            try reply.getValue(for: MongocKeys.upserted.rawValue)?.arrayValue
+        }) {
             guard let upserted = upserted.toArrayOf(BSONDocument.self) else {
                 throw MongoError.InternalError(message: "\"upserted\" array did not contain only documents")
             }
 
             for upsert in upserted {
-                guard let index = try getValue(from: upsert, for: "index")?.toInt() else {
+                guard let index = (try convertingBSONErrors {
+                    try upsert.getValue(for: "index")?.toInt()
+                }) else {
                     throw MongoError.InternalError(message: "Could not cast upserted index to `Int`")
                 }
                 upsertedIDs[index] = upsert["_id"]
