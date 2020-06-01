@@ -786,7 +786,7 @@ private class MutableArray: BSONValue {
     }
 
     internal func toBSONArray() throws -> [BSON] {
-        return try self.array.map {
+        try self.array.map {
             if let item = $0 as? MutableDictionary {
                 return try item.toDocument().bson
             }
@@ -837,13 +837,13 @@ private class MutableDictionary: BSONValue {
         for i in 0..<self.keys.count {
             let value = self.values[i]
             switch value {
-                case let val as MutableDictionary:
-                    try doc.setValue(for: self.keys[i], to: val.toDocument().bson)
-                case let val as MutableArray:
-                    let array = try val.toBSONArray()
-                    try doc.setValue(for: self.keys[i], to: array.bson)
-                default:
-                    try doc.setValue(for: self.keys[i], to: value.bson)
+            case let val as MutableDictionary:
+                try doc.setValue(for: self.keys[i], to: val.toDocument().bson)
+            case let val as MutableArray:
+                let array = try val.toBSONArray()
+                try doc.setValue(for: self.keys[i], to: array.bson)
+            default:
+                try doc.setValue(for: self.keys[i], to: value.bson)
             }
         }
         return doc
