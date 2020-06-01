@@ -7,9 +7,8 @@ let package = Package(
        .macOS(.v10_15)
     ],
     dependencies: [
-        // 💧 A server-side Swift web framework.
         .package(url: "https://github.com/vapor/vapor", .upToNextMajor(from: "4.7.0")),
-        // 🍃 MongoDB driver.
+        .package(url: "https://github.com/vapor/leaf", .exact("4.0.0-rc.1.2")),
         .package(url: "https://github.com/mongodb/mongo-swift-driver", .branch("master"))
     ],
     targets: [
@@ -17,22 +16,13 @@ let package = Package(
             name: "App",
             dependencies: [
                 .product(name: "Vapor", package: "vapor"),
+                .product(name: "Leaf", package: "leaf"),
                 .product(name: "MongoSwift", package: "mongo-swift-driver")
-            ],
-            swiftSettings: [
-                // Enable better optimizations when building in Release configuration. Despite the use of
-                // the `.unsafeFlags` construct required by SwiftPM, this flag is recommended for Release
-                // builds. See <https://github.com/swift-server/guides#building-for-production> for details.
-                .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
             ]
         ),
         .target(name: "Run", dependencies: [
             .target(name: "App"),
             .product(name: "MongoSwift", package: "mongo-swift-driver")
-        ]),
-        .testTarget(name: "AppTests", dependencies: [
-            .target(name: "App"),
-            .product(name: "XCTVapor", package: "vapor")
         ])
     ]
 )

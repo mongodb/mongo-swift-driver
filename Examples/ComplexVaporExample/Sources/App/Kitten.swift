@@ -2,22 +2,33 @@ import Foundation
 import MongoSwift
 import Vapor
 
+/// Possible cat food choices.
+enum CatFood: String, Codable {
+    case salmon,
+        tuna,
+        chicken,
+        turkey,
+        beef
+}
+
+/// The structure of a food update request.
+struct FoodUpdate: Codable {
+    let favoriteFood: CatFood
+}
+
 /// Represents a kitten.
 struct Kitten: Content {
     /// Unique identifier.
     var _id: BSONObjectID?
     /// Name.
     let name: String
-    /// Date of birth.
-    let birthdate: Date
-    /// Fur length.
-    let furLength: FurLength
     /// Fur color.
     let color: String
-
+    /// Favorite food.
+    let favoriteFood: CatFood
 }
 
-/// Represents possible fur lengths.
-enum FurLength: String, Codable {
-    case short, medium, long
+/// Context struct for the index page.
+struct IndexContext: Encodable {
+    let kittens: [Kitten]
 }
