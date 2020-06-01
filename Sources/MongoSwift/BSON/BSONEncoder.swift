@@ -149,7 +149,7 @@ public class BSONEncoder {
 
         let encoder = _BSONEncoder(options: self.options)
 
-        guard let boxedValue = try encoder.box_(value) else {
+        guard let boxedValue = try? encoder.box_(value) else {
             throw EncodingError.invalidValue(
                 value,
                 EncodingError.Context(
@@ -169,7 +169,17 @@ public class BSONEncoder {
             )
         }
 
-        return dict.toDocument()
+        guard let doc = try? dict.toDocument() else {
+            throw EncodingError.invalidValue(
+                value,
+                EncodingError.Context(
+                    codingPath: [],
+                    debugDescription: "Failed to construct BSON Document"
+                )
+            )
+        }
+
+        return doc
     }
 
     /**
@@ -774,8 +784,7 @@ private class MutableArray: BSONValue {
 private class MutableDictionary: BSONValue {
     fileprivate static var bsonType: BSONType { .document }
 
-    // This is unused
-    fileprivate var bson: BSON { .document(self.toDocument()) }
+    fileprivate var bson: BSON { .document((try? self.toDocument()) ?? [:]) }
 
     // rather than using a dictionary, do this so we preserve key orders
     fileprivate var keys = [String]()
@@ -803,10 +812,10 @@ private class MutableDictionary: BSONValue {
     }
 
     /// Converts self to a `BSONDocument` with equivalent key-value pairs.
-    fileprivate func toDocument() -> BSONDocument {
+    fileprivate func toDocument() throws -> BSONDocument {
         var doc = BSONDocument()
         for i in 0..<self.keys.count {
-            doc[self.keys[i]] = self.values[i].bson
+            try doc.setValue(for: self.keys[i], to: self.values[i].bson)
         }
         return doc
     }
