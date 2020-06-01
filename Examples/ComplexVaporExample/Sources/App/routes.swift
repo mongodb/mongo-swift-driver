@@ -26,34 +26,34 @@ func routes(_ app: Application) throws {
     app.get { req -> EventLoopFuture<View> in
         collection.find().flatMap { cursor in
             cursor.toArray()
-        // Hop to ensure that the final response future happens on the request's event loop.
+            // Hop to ensure that the final response future happens on the request's event loop.
         }.hop(to: req.eventLoop)
-        .flatMap { kittens in
-            // Return the corresponding Leaf view, providing the list of kittens as context.
-            req.view.render("index.leaf", IndexContext(kittens: kittens))
-        }
-        .flatMapErrorThrowing { error in
-            throw Abort(.internalServerError, reason: "Failed to load kittens: \(error)")
-        }
+            .flatMap { kittens in
+                // Return the corresponding Leaf view, providing the list of kittens as context.
+                req.view.render("index.leaf", IndexContext(kittens: kittens))
+            }
+            .flatMapErrorThrowing { error in
+                throw Abort(.internalServerError, reason: "Failed to load kittens: \(error)")
+            }
     }
 
     /// Handles a request to add a new kitten.
     app.post { req -> EventLoopFuture<Response> in
         let newKitten = try req.content.decode(Kitten.self)
         return collection.insertOne(newKitten)
-        // Hop to ensure that the final response future happens on the request's event loop.
-        .hop(to: req.eventLoop)
-        .map { _ in
-            // On success, redirect to the index to reload the updated list.
-            req.redirect(to: "/")
-        }
-        .flatMapErrorThrowing { error in
-            // Give a more helpful error message in case of a duplicate key error.
-            if let err = error as? MongoError.WriteError, err.writeFailure?.code == 11000 {
-                throw Abort(.conflict, reason: "A kitten with the name \(newKitten.name) already exists!")
+            // Hop to ensure that the final response future happens on the request's event loop.
+            .hop(to: req.eventLoop)
+            .map { _ in
+                // On success, redirect to the index to reload the updated list.
+                req.redirect(to: "/")
             }
-            throw Abort(.internalServerError, reason: "Failed to save new kitten: \(error)")
-        }
+            .flatMapErrorThrowing { error in
+                // Give a more helpful error message in case of a duplicate key error.
+                if let err = error as? MongoError.WriteError, err.writeFailure?.code == 11000 {
+                    throw Abort(.conflict, reason: "A kitten with the name \(newKitten.name) already exists!")
+                }
+                throw Abort(.internalServerError, reason: "Failed to save new kitten: \(error)")
+            }
     }
 
     /// Handles a request to load info about a particular kitten.
@@ -72,20 +72,20 @@ func routes(_ app: Application) throws {
     app.delete("kittens", ":_id") { req -> EventLoopFuture<Response> in
         let idFilter = try getIDFilter(from: req)
         return collection.deleteOne(idFilter)
-        // Hop to ensure that the final response future happens on the request's event loop.
-        .hop(to: req.eventLoop)
-        .flatMapErrorThrowing { error in
-            throw Abort(.internalServerError, reason: "Failed to delete kitten: \(error)")
-        }
-        // since we are not using an unacknowledged write concern we can expect deleteOne to return
-        // a non-nil result.
-        .unwrap(or: Abort(.internalServerError, reason: "Unexpectedly nil response from database"))
-        .flatMapThrowing { result in
-            guard result.deletedCount == 1 else {
-                throw Abort(.notFound, reason: "No kitten with matching ID")
+            // Hop to ensure that the final response future happens on the request's event loop.
+            .hop(to: req.eventLoop)
+            .flatMapErrorThrowing { error in
+                throw Abort(.internalServerError, reason: "Failed to delete kitten: \(error)")
             }
-            return Response(status: .ok)
-        }
+            // since we are not using an unacknowledged write concern we can expect deleteOne to return
+            // a non-nil result.
+            .unwrap(or: Abort(.internalServerError, reason: "Unexpectedly nil response from database"))
+            .flatMapThrowing { result in
+                guard result.deletedCount == 1 else {
+                    throw Abort(.notFound, reason: "No kitten with matching ID")
+                }
+                return Response(status: .ok)
+            }
     }
 
     app.patch("kittens", ":_id") { req -> EventLoopFuture<Response> in
@@ -96,19 +96,19 @@ func routes(_ app: Application) throws {
         let updateDocument: BSONDocument = ["$set": .document(try BSONEncoder().encode(update))]
 
         return collection.updateOne(filter: idFilter, update: updateDocument)
-        // Hop to ensure that the final response future happens on the request's event loop.
-        .hop(to: req.eventLoop)
-        .flatMapErrorThrowing { error in
-            throw Abort(.internalServerError, reason: "Failed to update kitten: \(error)")
-        }
-        // since we are not using an unacknowledged write concern we can expect updateOne to return
-        // a non-nil result.
-        .unwrap(or: Abort(.internalServerError, reason: "Unexpectedly nil response from database"))
-        .flatMapThrowing { result in
-            guard result.modifiedCount == 1 else {
-                throw Abort(.notFound, reason: "No kitten with matching ID")
+            // Hop to ensure that the final response future happens on the request's event loop.
+            .hop(to: req.eventLoop)
+            .flatMapErrorThrowing { error in
+                throw Abort(.internalServerError, reason: "Failed to update kitten: \(error)")
             }
-            return Response(status: .ok)
-        }
+            // since we are not using an unacknowledged write concern we can expect updateOne to return
+            // a non-nil result.
+            .unwrap(or: Abort(.internalServerError, reason: "Unexpectedly nil response from database"))
+            .flatMapThrowing { result in
+                guard result.modifiedCount == 1 else {
+                    throw Abort(.notFound, reason: "No kitten with matching ID")
+                }
+                return Response(status: .ok)
+            }
     }
 }
