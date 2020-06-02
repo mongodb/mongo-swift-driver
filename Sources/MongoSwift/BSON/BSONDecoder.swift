@@ -148,8 +148,8 @@ public class BSONDecoder {
             let unknownErrorMessage = "Unknown Error occurred while decoding BSON"
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
-                codingPath: [],
-                debugDescription: "Unable to decode BSON: \(error.errorDescription ?? unknownErrorMessage)"
+                    codingPath: [],
+                    debugDescription: "Unable to decode BSON: \(error.errorDescription ?? unknownErrorMessage)"
                 )
             )
         }
