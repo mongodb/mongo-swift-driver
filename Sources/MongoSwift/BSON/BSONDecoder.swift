@@ -142,7 +142,16 @@ public class BSONDecoder {
             return doc
         }
         let _decoder = _BSONDecoder(referencing: .document(document), options: self.options)
-        return try type.init(from: _decoder)
+        do {
+            return try type.init(from: _decoder)
+        } catch let error as BSONErrorProtocol {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(
+                codingPath: [],
+                debugDescription: "Unable to decode BSON \(error.errorDescription ?? "")"
+                )
+            )
+        }
     }
 
     /**
@@ -532,7 +541,7 @@ private struct _BSONKeyedDecodingContainer<K: CodingKey>: KeyedDecodingContainer
     /// Private helper function to check for a value in self.container. Returns the value stored
     /// under `key`, or throws an error if the value is not found.
     private func getValue(forKey key: Key) throws -> BSON {
-        guard let entry = (try convertingBSONErrors { try self.container.getValue(for: key.stringValue) }) else {
+        guard let entry = try self.container.getValue(for: key.stringValue) else {
             throw DecodingError.keyNotFound(
                 key,
                 DecodingError.Context(
