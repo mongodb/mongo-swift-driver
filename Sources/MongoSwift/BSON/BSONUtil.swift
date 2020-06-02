@@ -13,6 +13,8 @@ internal func convertingBSONErrors<T>(_ body: () throws -> T) rethrows -> T {
         throw MongoError.InternalError(message: error.message)
     } catch let error as BSONError.LogicError {
         throw MongoError.LogicError(message: error.message)
+    } catch let error as BSONError.TooLargeError {
+        throw MongoError.InternalError(message: error.message)
     } catch let error as BSONErrorProtocol {
         throw MongoError.InternalError(message: error.errorDescription ?? "Uknown BSON Error")
     }
