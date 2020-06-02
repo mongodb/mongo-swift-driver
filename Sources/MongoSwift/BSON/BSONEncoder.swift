@@ -172,20 +172,12 @@ public class BSONEncoder {
 
             return try dict.toDocument()
         } catch let error as BSONErrorProtocol {
-            var debugDescription = ""
-            switch error.self {
-            case let error as BSONError.InvalidArgumentError:
-                debugDescription = error.message
-            case let error as BSONError.InternalError:
-                debugDescription = error.message
-            case let error as BSONError.LogicError:
-                debugDescription = error.message
-            default:
-                debugDescription = "Unknown Error occurred while encoding BSON"
-            }
             throw EncodingError.invalidValue(
                 value,
-                EncodingError.Context(codingPath: [], debugDescription: debugDescription)
+                EncodingError.Context(
+                    codingPath: [],
+                    debugDescription: error.errorDescription ?? "Unknown Error occurred while encoding BSON"
+                )
             )
         }
     }
