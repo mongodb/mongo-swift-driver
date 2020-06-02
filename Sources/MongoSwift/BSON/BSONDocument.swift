@@ -495,7 +495,7 @@ extension BSONDocument: BSONValue {
         try document.withMutableBSONPointer { docPtr in
             try self.withBSONPointer { nestedDocPtr in
                 guard bson_append_document(docPtr, key, Int32(key.utf8.count), nestedDocPtr) else {
-                    throw BSONError.TooLargeError(value: self, forKey: key)
+                    throw BSONError.DocumentTooLargeError(value: self, forKey: key)
                 }
             }
         }
