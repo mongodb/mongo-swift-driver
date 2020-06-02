@@ -27,7 +27,7 @@ public enum BSONError {
         public var errorDescription: String? { self.message }
     }
 
-    /// An error thrown when a document exceeds the maximum BSON encoding size
+    /// An error thrown when a document exceeds the maximum BSON encoding size.
     public struct DocumentTooLargeError: BSONErrorProtocol {
         internal let message: String
 

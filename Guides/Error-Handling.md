@@ -84,6 +84,7 @@ BSON Errors can be found in [Sources/MongoSwift/BSON/BSONError.swift](Sources/Mo
 - `BSONError.InvalidArgumentError` - This error is thrown when a BSON type is being incorrectly constructed.
 - `BSONError.InternalError` - This error is thrown when there is an issue that is a result of system failure (e.g, allocation issue).
 - `BSONError.LogicError` - This error is thrown when there is an unexpected usage of the the API.
+- `BSONError.DocumentTooLargeError` - This error is thrown when there is an unexpected usage of the the API.
 
 ## Examples
 ### Handling any error thrown by the driver

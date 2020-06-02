@@ -145,7 +145,7 @@ extension BSONDocument {
      * presence first.
      *
      * - Throws:
-     *   - `BSONError.InternalError` if the underlying `bson_t` would exceed the maximum size by encoding this
+     *   - `BSONError.DocumentTooLargeError` if the underlying `bson_t` would exceed the maximum size by encoding this
      *     key-value pair.
      */
     internal mutating func setValue(for key: String, to newValue: BSON, checkForKey: Bool = true) throws {
