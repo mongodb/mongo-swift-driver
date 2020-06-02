@@ -133,7 +133,7 @@ extension Array: BSONValue where Element == BSON {
         try document.withMutableBSONPointer { docPtr in
             try arr.withBSONPointer { arrPtr in
                 guard bson_append_array(docPtr, key, Int32(key.utf8.count), arrPtr) else {
-                    throw bsonTooLargeError(value: self, forKey: key)
+                    throw BSONError.TooLargeError(value: self, forKey: key)
                 }
             }
         }
@@ -179,7 +179,7 @@ internal struct BSONNull: BSONValue, Codable, Equatable {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_null(docPtr, key, Int32(key.utf8.count)) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -318,7 +318,7 @@ public struct BSONBinary: BSONValue, Equatable, Codable, Hashable {
         }
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_binary(docPtr, key, Int32(key.utf8.count), subtype, byteArray, UInt32(length)) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -382,7 +382,7 @@ extension Bool: BSONValue {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_bool(docPtr, key, Int32(key.utf8.count), self) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -416,7 +416,7 @@ extension Date: BSONValue {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_date_time(docPtr, key, Int32(key.utf8.count), self.msSinceEpoch) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -462,7 +462,7 @@ public struct BSONDBPointer: BSONValue, Codable, Equatable, Hashable {
         try document.withMutableBSONPointer { docPtr in
             try withUnsafePointer(to: self.id.oid) { oidPtr in
                 guard bson_append_dbpointer(docPtr, key, Int32(key.utf8.count), self.ref, oidPtr) else {
-                    throw bsonTooLargeError(value: self, forKey: key)
+                    throw BSONError.TooLargeError(value: self, forKey: key)
                 }
             }
         }
@@ -544,7 +544,7 @@ public struct BSONDecimal128: BSONValue, Equatable, Codable, CustomStringConvert
         try document.withMutableBSONPointer { docPtr in
             try withUnsafePointer(to: self.decimal128) { ptr in
                 guard bson_append_decimal128(docPtr, key, Int32(key.utf8.count), ptr) else {
-                    throw bsonTooLargeError(value: self, forKey: key)
+                    throw BSONError.TooLargeError(value: self, forKey: key)
                 }
             }
         }
@@ -594,7 +594,7 @@ extension Double: BSONValue {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_double(docPtr, key, Int32(key.utf8.count), self) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -619,7 +619,7 @@ extension Int32: BSONValue {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_int32(docPtr, key, Int32(key.utf8.count), self) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -644,7 +644,7 @@ extension Int64: BSONValue {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_int64(docPtr, key, Int32(key.utf8.count), self) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -691,7 +691,7 @@ public struct BSONCodeWithScope: BSONValue, Equatable, Codable, Hashable {
         try document.withMutableBSONPointer { docPtr in
             try self.scope.withBSONPointer { scopePtr in
                 guard bson_append_code_with_scope(docPtr, key, Int32(key.utf8.count), self.code, scopePtr) else {
-                    throw bsonTooLargeError(value: self, forKey: key)
+                    throw BSONError.TooLargeError(value: self, forKey: key)
                 }
             }
         }
@@ -747,7 +747,7 @@ public struct BSONCode: BSONValue, Equatable, Codable, Hashable {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_code(docPtr, key, Int32(key.utf8.count), self.code) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -772,7 +772,7 @@ internal struct BSONMaxKey: BSONValue, Equatable, Codable, Hashable {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_maxkey(docPtr, key, Int32(key.utf8.count)) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -805,7 +805,7 @@ internal struct BSONMinKey: BSONValue, Equatable, Codable, Hashable {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_minkey(docPtr, key, Int32(key.utf8.count)) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -902,7 +902,7 @@ public struct BSONObjectID: BSONValue, Equatable, CustomStringConvertible, Codab
         try document.withMutableBSONPointer { docPtr in
             try withUnsafePointer(to: self.oid) { oidPtr in
                 guard bson_append_oid(docPtr, key, Int32(key.utf8.count), oidPtr) else {
-                    throw bsonTooLargeError(value: self, forKey: key)
+                    throw BSONError.TooLargeError(value: self, forKey: key)
                 }
             }
         }
@@ -1004,7 +1004,7 @@ public struct BSONRegularExpression: BSONValue, Equatable, Codable, Hashable {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_regex(docPtr, key, Int32(key.utf8.count), self.pattern, self.options) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -1049,7 +1049,7 @@ extension String: BSONValue {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_utf8(docPtr, key, Int32(key.utf8.count), self, Int32(self.utf8.count)) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -1117,7 +1117,7 @@ public struct BSONSymbol: BSONValue, CustomStringConvertible, Codable, Equatable
                 self.stringValue,
                 Int32(self.stringValue.utf8.count)
             ) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -1173,7 +1173,7 @@ public struct BSONTimestamp: BSONValue, Equatable, Codable, Hashable {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_timestamp(docPtr, key, Int32(key.utf8.count), self.timestamp, self.increment) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }
@@ -1213,7 +1213,7 @@ internal struct BSONUndefined: BSONValue, Equatable, Codable {
     internal func encode(to document: inout BSONDocument, forKey key: String) throws {
         try document.withMutableBSONPointer { docPtr in
             guard bson_append_undefined(docPtr, key, Int32(key.utf8.count)) else {
-                throw bsonTooLargeError(value: self, forKey: key)
+                throw BSONError.TooLargeError(value: self, forKey: key)
             }
         }
     }

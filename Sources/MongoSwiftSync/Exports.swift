@@ -106,8 +106,6 @@
 
 // Protocols are not included in the types list, so we list them separately here.
 @_exported import protocol MongoSwift.BSONErrorProtocol
-@_exported import protocol MongoSwift.BSONRuntimeError
-@_exported import protocol MongoSwift.BSONUserError
 @_exported import protocol MongoSwift.CodingStrategyProvider
 @_exported import protocol MongoSwift.CommandEventHandler
 @_exported import protocol MongoSwift.MongoErrorProtocol
