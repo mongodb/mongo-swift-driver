@@ -145,10 +145,11 @@ public class BSONDecoder {
         do {
             return try type.init(from: _decoder)
         } catch let error as BSONErrorProtocol {
+            let unknownErrorMessage = "Unknown Error occurred while decoding BSON"
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(
                 codingPath: [],
-                debugDescription: "Unable to decode BSON \(error.errorDescription ?? "")"
+                debugDescription: "Unable to decode BSON: \(error.errorDescription ?? unknownErrorMessage)"
                 )
             )
         }
