@@ -9,7 +9,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/vapor/vapor", .upToNextMajor(from: "4.7.0")),
         .package(url: "https://github.com/vapor/leaf", .exact("4.0.0-rc.1.2")),
-        .package(url: "https://github.com/mongodb/mongo-swift-driver", .branch("master"))
+        .package(url: "https://github.com/mongodb/mongo-swift-driver", .upToNextMajor(from: "1.0.0"))
     ],
     targets: [
         .target(
