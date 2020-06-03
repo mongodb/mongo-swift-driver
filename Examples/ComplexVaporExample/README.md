@@ -22,9 +22,9 @@ This is a fully asynchronous application. At its core is [SwiftNIO](https://gith
 The application is a basic HTTP server combined with a minimal frontend, which supports storing a list of kittens and details about them. The server will handle the following types of requests:
 1. A GET request at the root URL `/` loads the main index page containing a list of kittens.
 1. A POST request at the root URL `/` adds a new kitten.
-1. A GET request at the URL `/kittens/{_id}` loads information about the kitten with the specified MongoDB `_id`.
-1. A PATCH request at the URL `/kittens/{_id}` edits the `favoriteFood` property for the kitten with the specified MongoDB `_id`.
-1. A DELETE request  at the URL `/kittens/{_id}` deletes the kitten with the specified MongoDB `_id`.
+1. A GET request at the URL `/kittens/{name}` loads information about the kitten with the specified name.
+1. A PATCH request at the URL `/kittens/{name}` edits the `favoriteFood` property for the kitten with the specified name.
+1. A DELETE request  at the URL `/kittens/{name}` deletes the kitten with the specified name.
 
 ### MongoDB Usage
 This application connects to a local standalone MongoDB server. It uses the collection "kittens" in the database "home". The "kittens" collection has a [unique index](https://docs.mongodb.com/manual/core/index-unique/) on the "name" field, ensuring that no two kittens in the collection can have the same name.
@@ -55,7 +55,7 @@ let collection = client.db("home").collection("kittens", withType: Kitten.self)
 
 This will instantiate a `MongoCollection<Kitten>`. You can then use `Kitten` directly with many API methods -- for example, `insertOne` will directly accept a `Kitten` instance, and `findOne` will return an `EventLoopFuture<Kitten>`.
 
-Sometimes you may need to work with the `BSONDocument` type as well, for example when providing a query filter. If you want to construct these documents from `Codable` types you may do so using `BSONEncoder`, as we do with the `updateDocument` in our PATCH handler for `/kittens/{_id}`.
+Sometimes you may need to work with the `BSONDocument` type as well, for example when providing a query filter. If you want to construct these documents from `Codable` types you may do so using `BSONEncoder`, as we do with the `updateDocument` in our PATCH handler for `/kittens/{name}`.
 
 The driver also exposes a `BSONDecoder` for initializing `Decodable` types from `BSONDocument`s if you need to do the reverse.
 

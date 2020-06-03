@@ -101,7 +101,7 @@ func routes(_ app: Application) throws {
             // a non-nil result.
             .unwrap(or: Abort(.internalServerError, reason: "Unexpectedly nil response from database"))
             .flatMapThrowing { result in
-                guard result.modifiedCount == 1 else {
+                guard result.matchedCount == 1 else {
                     throw Abort(.notFound, reason: "No kitten with matching name")
                 }
                 return Response(status: .ok)
