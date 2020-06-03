@@ -511,20 +511,6 @@ internal func toErrorString(_ error: bson_error_t) -> String {
     }
 }
 
-internal func bsonTooLargeError(value: BSONValue, forKey: String) -> MongoErrorProtocol {
-    MongoError.InternalError(
-        message:
-        "Failed to set value for key \(forKey) to \(value) with BSON type \(value.bsonType): document too large"
-    )
-}
-
-internal func wrongIterTypeError(_ iter: BSONDocumentIterator, expected type: BSONValue.Type) -> MongoErrorProtocol {
-    MongoError.LogicError(
-        message: "Tried to retreive a \(type) from an iterator whose next type " +
-            "is \(iter.currentType) for key \(iter.currentKey)"
-    )
-}
-
 internal let failedToRetrieveCursorMessage = "Couldn't get cursor from the server"
 
 extension MongoErrorProtocol {

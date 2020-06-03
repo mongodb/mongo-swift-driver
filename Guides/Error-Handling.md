@@ -15,8 +15,7 @@
 * [See Also](#see-also)
 
 ## Error Types
-The driver uses errors to communicate that an operation failed, an assumption wasn't met, or that the user did something incorrectly. Applications that use the driver can in turn catch these errors and respond appropriately without crashing or resulting in an otherwise inconsistent state. To correctly model the different sources of errors, the driver defines three separate caregories of errors (`MongoServerError`, `MongoUserError`, `MongoRuntimeError`), each of which are protocols that inherit from the `MongoErrorProtocol` protocol. These protocols are defined in `MongoError.swift`, and the structs that conform to them are outlined here. The documentation for every public function that throws lists some of the errors that could possibly be thrown and the reasons they might be. The errors listed there are not comprehensive but will generally cover the most common cases.
-
+The driver uses errors to communicate that an operation failed, an assumption wasn't met, or that the user did something incorrectly. Applications that use the driver can in turn catch these errors and respond appropriately without crashing or resulting in an otherwise inconsistent state. To correctly model the different sources of errors, the driver defines three separate categories of errors (`MongoServerError`, `MongoUserError`, `MongoRuntimeError`), each of which are protocols that inherit from the `MongoErrorProtocol` protocol. These protocols are defined in `MongoError.swift`, and the structs that conform to them are outlined here. The documentation for every public function that throws lists some of the errors that could possibly be thrown and the reasons they might be. The errors listed there are not comprehensive but will generally cover the most common cases.
 
 ### Server Errors
 Server errors correspond to failures that occur in the database itself and are returned to the driver via some response to a command. Each error that conforms to `ServerError` contains at least one error code representing what went wrong on the server.
@@ -77,6 +76,15 @@ As part of the driver, `BSONEncoder` and `BSONDecoder` are implemented according
 
 See the official documentation for both [`EncodingErrors`](https://developer.apple.com/documentation/swift/encodingerror) and [`DecodingErrors`](https://developer.apple.com/documentation/swift/decodingerror) for more information.
 
+### BSON Errors
+
+The BSON library has its own subset of errors that communicate issues when constructing or using BSON.
+BSON Errors can be found in [Sources/MongoSwift/BSON/BSONError.swift](Sources/MongoSwift/BSON/BSONError.swift) and are as follows:
+
+- `BSONError.InvalidArgumentError` - This error is thrown when a BSON type is being incorrectly constructed.
+- `BSONError.InternalError` - This error is thrown when there is an issue that is a result of system failure (e.g, allocation issue).
+- `BSONError.LogicError` - This error is thrown when there is an unexpected usage of the the API.
+- `BSONError.DocumentTooLargeError` - This error is thrown when the document exceeds the maximum encoding size of 16MB.
 
 ## Examples
 ### Handling any error thrown by the driver
@@ -154,6 +162,24 @@ Result:
 nInserted: 1
 InsertedIds: [0: 2]
 ```
+
+### Handling a BSONError
+
+```swift
+var string = "+1..23e8"
+do {
+    return try BSONDecimal128(string)
+} catch let bsonError as BSONError.InvalidArgumentError {
+    print(bsonError.message)
+}
+```
+
+Output:
+
+```plain
+Invalid Decimal128 string +1..23e8
+```
+
 ## See Also
 - [Error handling in Swift](https://docs.swift.org/swift-book/LanguageGuide/ErrorHandling.html)
 - [List of server error codes](https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err)

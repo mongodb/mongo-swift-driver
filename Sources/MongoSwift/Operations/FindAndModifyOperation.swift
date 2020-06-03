@@ -74,9 +74,13 @@ internal class FindAndModifyOptions {
         // build an "extra" document of fields without their own setters
         var extra = BSONDocument()
         if let filters = arrayFilters {
-            try extra.setValue(for: "arrayFilters", to: .array(filters.map { .document($0) }))
+            try convertingBSONErrors {
+                try extra.setValue(for: "arrayFilters", to: .array(filters.map { .document($0) }))
+            }
         }
-        if let coll = collation { try extra.setValue(for: "collation", to: .document(coll)) }
+        if let coll = collation { try convertingBSONErrors {
+            try extra.setValue(for: "collation", to: .document(coll))
+        } }
 
         // note: mongoc_find_and_modify_opts_set_max_time_ms() takes in a
         // uint32_t, but it should be a positive 64-bit integer, so we
@@ -85,7 +89,9 @@ internal class FindAndModifyOptions {
             guard maxTime > 0 else {
                 throw MongoError.InvalidArgumentError(message: "maxTimeMS must be positive, but got value \(maxTime)")
             }
-            try extra.setValue(for: "maxTimeMS", to: .int64(Int64(maxTime)))
+            try convertingBSONErrors {
+                try extra.setValue(for: "maxTimeMS", to: .int64(Int64(maxTime)))
+            }
         }
 
         if let wc = writeConcern {

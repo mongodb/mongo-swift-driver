@@ -128,9 +128,9 @@ final class DocumentTests: MongoSwiftTestCase {
 
         // UUIDs must have 16 bytes
         expect(try BSONBinary(data: testData, subtype: .uuidDeprecated))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+            .to(throwError(errorType: BSONError.InvalidArgumentError.self))
         expect(try BSONBinary(data: testData, subtype: .uuid))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+            .to(throwError(errorType: BSONError.InvalidArgumentError.self))
 
         let expectedKeys = [
             "string", "true", "false", "int", "int32", "int64", "double", "decimal128",
@@ -926,7 +926,7 @@ final class DocumentTests: MongoSwiftTestCase {
         ]
 
         for data in invalidData {
-            expect(try BSONDocument(fromBSON: data)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+            expect(try BSONDocument(fromBSON: data)).to(throwError(errorType: BSONError.InvalidArgumentError.self))
         }
     }
 }
