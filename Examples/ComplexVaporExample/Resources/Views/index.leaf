@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Kittens</title>
+  <style type="text/css">
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+    }
+    h1, h2, th, td, label {
+      font-family: "Trebuchet MS", Helvetica, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  
+  <h1>Kittens 🐱🐱</h1>
+<table>
+<tr>
+    <th>Name</th>
+    <th>Color</th>
+    <th>Favorite Food</th>
+</tr>
+#for(kitten in kittens):
+ <tr>
+     <td><a href="/kittens/#(kitten.name)">#(kitten.name)</a></td>
+     <td>#(kitten.color)</td>
+     <td>#(kitten.favoriteFood)</td>
+ </tr>
+#endfor   
+</table>
+<br>
+<br>
+<h2>Add a new kitten</h2>
+<form method="POST">
+    <div>
+    <label for="name">Name</label>
+    <input name="name">
+  </div>
+  <div>
+    <label for="color">Color</label>
+    <input name="color">
+  <div>
+    <label for="favoriteFood">Favorite Food</label>
+    <select id="favoriteFood" name="favoriteFood">
+      <option value="" selected disabled hidden>Select</option>
+      <option value="salmon">salmon</option>
+      <option value="turkey">turkey</option>
+      <option value="chicken">chicken</option>
+      <option value="tuna">tuna</option>
+      <option value="beef">beef</option>
+    </select>
+  </div>
+  <div>
+    <button>Add</button>
+  </div>
+</form>
+</body>
+</html>

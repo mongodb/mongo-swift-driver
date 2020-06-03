@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Kittens</title>
+  <style type="text/css">
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+    }
+    h1, h2, th, td, label {
+      font-family: "Trebuchet MS", Helvetica, sans-serif;
+    }
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+<h1>#(name) 🐱</h1>
+<table>
+<tr>
+  <th>Color</th>
+  <td>#(color)</td>
+</tr>
+<tr>
+  <th>Favorite Food</th>
+  <td>#(favoriteFood)
+  </td>
+</tr>
+</table>
+<br><br>
+<h2>Edit</h2>
+<label for="favoriteFood">New Favorite Food</label>
+<select id="favoriteFood" name="favoriteFood">
+  <option value="" selected disabled hidden>Select</option>
+  <option value="salmon">salmon</option>
+  <option value="turkey">turkey</option>
+  <option value="chicken">chicken</option>
+  <option value="tuna">tuna</option>
+  <option value="beef">beef</option>
+</select>
+</div>
+<div>
+<button id="save-btn">Save</button>
+<br>
+<br>
+</div>
+<br><br><br>
+<button id="delete-btn">Delete kitten</button>
+<br>
+<br>
+<a href="/">Home</a>
+<div id="error-info"></div>
+
+<script type="text/javascript">
+$(document).ready(() => {
+  $("\#delete-btn").click(() => {
+    $.ajax({
+        type:'DELETE',
+        url:'/kittens/#(name)',
+        success: () => {
+          window.location.href = '/';
+        },
+        error: (req, status, message) => {
+          alert("Error: " + message);
+        }
+    });
+  });
+
+  $("\#save-btn").click(() => {
+    var newFood = $("\#favoriteFood").val();
+    if (newFood === null) return;
+    $.ajax({
+        type:'PATCH',
+        contentType : 'application/json',
+        url:'/kittens/#(name)',
+        data: JSON.stringify({"favoriteFood": newFood}),
+        success: () => {
+          window.location.href = '/kittens/#(name)';
+        },
+        error: (req, status, message) => {
+          alert("Error: " + message);
+        }
+    });
+  });
+});
+</script>
+
+</body>
+</html>
