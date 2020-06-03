@@ -58,7 +58,7 @@ $(document).ready(() => {
   $("\#delete-btn").click(() => {
     $.ajax({
         type:'DELETE',
-        url:'/kittens/#(_id)',
+        url:'/kittens/#(name)',
         success: () => {
           window.location.href = '/';
         },
@@ -74,10 +74,10 @@ $(document).ready(() => {
     $.ajax({
         type:'PATCH',
         contentType : 'application/json',
-        url:'/kittens/#(_id)',
+        url:'/kittens/#(name)',
         data: JSON.stringify({"favoriteFood": newFood}),
         success: () => {
-          window.location.href = '/kittens/#(_id)';
+          window.location.href = '/kittens/#(name)';
         },
         error: (req, status, message) => {
           alert("Error: " + message);

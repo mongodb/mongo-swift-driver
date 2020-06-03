@@ -1,19 +1,15 @@
 import MongoSwift
 import Vapor
 
-/// Constructs a document using the ID from the specified request which can be used a filter
+/// Constructs a document using the name from the specified request which can be used a filter
 /// for MongoDB reads/updates/deletions.
-func getIDFilter(from request: Request) throws -> BSONDocument {
-    // We only call this method from request handlers that have _id parameters so the value
+func getNameFilter(from request: Request) throws -> BSONDocument {
+    // We only call this method from request handlers that have name parameters so the value
     // will always be available.
-    guard let idString = request.parameters.get("_id") else {
-        throw Abort(.internalServerError, reason: "Request unexpectedly missing _id parameter")
+    guard let name = request.parameters.get("name") else {
+        throw Abort(.internalServerError, reason: "Request unexpectedly missing name parameter")
     }
-    // If the BSONObjectID constructor throws, the ID is invalid.
-    guard let id = try? BSONObjectID(idString) else {
-        throw Abort(.notFound, reason: "Invalid ID \(idString)")
-    }
-    return ["_id": .objectID(id)]
+    return ["name": .string(name)]
 }
 
 /// Adds a collection of routes to the application.
@@ -57,21 +53,21 @@ func routes(_ app: Application) throws {
     }
 
     /// Handles a request to load info about a particular kitten.
-    app.get("kittens", ":_id") { req -> EventLoopFuture<View> in
-        let idFilter = try getIDFilter(from: req)
-        return collection.findOne(idFilter)
+    app.get("kittens", ":name") { req -> EventLoopFuture<View> in
+        let nameFilter = try getNameFilter(from: req)
+        return collection.findOne(nameFilter)
             // Hop to ensure that the final response future happens on the request's event loop.
             .hop(to: req.eventLoop)
-            .unwrap(or: Abort(.notFound, reason: "No kitten with matching ID"))
+            .unwrap(or: Abort(.notFound, reason: "No kitten with matching name"))
             .flatMap { kitten in
                 // Return the corresponding Leaf view, providing the kitten as context.
                 req.view.render("kitten.leaf", kitten)
             }
     }
 
-    app.delete("kittens", ":_id") { req -> EventLoopFuture<Response> in
-        let idFilter = try getIDFilter(from: req)
-        return collection.deleteOne(idFilter)
+    app.delete("kittens", ":name") { req -> EventLoopFuture<Response> in
+        let nameFilter = try getNameFilter(from: req)
+        return collection.deleteOne(nameFilter)
             // Hop to ensure that the final response future happens on the request's event loop.
             .hop(to: req.eventLoop)
             .flatMapErrorThrowing { error in
@@ -82,20 +78,20 @@ func routes(_ app: Application) throws {
             .unwrap(or: Abort(.internalServerError, reason: "Unexpectedly nil response from database"))
             .flatMapThrowing { result in
                 guard result.deletedCount == 1 else {
-                    throw Abort(.notFound, reason: "No kitten with matching ID")
+                    throw Abort(.notFound, reason: "No kitten with matching name")
                 }
                 return Response(status: .ok)
             }
     }
 
-    app.patch("kittens", ":_id") { req -> EventLoopFuture<Response> in
-        let idFilter = try getIDFilter(from: req)
+    app.patch("kittens", ":name") { req -> EventLoopFuture<Response> in
+        let nameFilter = try getNameFilter(from: req)
         // Parse the update data from the request.
         let update = try req.content.decode(FoodUpdate.self)
         /// Create a document using MongoDB update syntax that specifies we want to set a field.
         let updateDocument: BSONDocument = ["$set": .document(try BSONEncoder().encode(update))]
 
-        return collection.updateOne(filter: idFilter, update: updateDocument)
+        return collection.updateOne(filter: nameFilter, update: updateDocument)
             // Hop to ensure that the final response future happens on the request's event loop.
             .hop(to: req.eventLoop)
             .flatMapErrorThrowing { error in
@@ -106,7 +102,7 @@ func routes(_ app: Application) throws {
             .unwrap(or: Abort(.internalServerError, reason: "Unexpectedly nil response from database"))
             .flatMapThrowing { result in
                 guard result.modifiedCount == 1 else {
-                    throw Abort(.notFound, reason: "No kitten with matching ID")
+                    throw Abort(.notFound, reason: "No kitten with matching name")
                 }
                 return Response(status: .ok)
             }

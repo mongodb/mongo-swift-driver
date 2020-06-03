@@ -26,7 +26,7 @@
 </tr>
 #for(kitten in kittens):
  <tr>
-     <td><a href="/kittens/#(kitten._id)">#(kitten.name)</a></td>
+     <td><a href="/kittens/#(kitten.name)">#(kitten.name)</a></td>
      <td>#(kitten.color)</td>
      <td>#(kitten.favoriteFood)</td>
  </tr>

@@ -19,8 +19,7 @@ This application require Swift 5.2 and MongoDB 3.6+. It will run on Linux as wel
 
 This is a fully asynchronous application. At its core is [SwiftNIO](https://github.com/apple/swift-nio), which is used to implement both Vapor and the MongoDB driver.
 
-The application is a basic HTTP server combined with a minimal frontend, which supports storing a list of kittens and details about them. The application provides examples of various common CRUD operations through its HTTP endpoints:
-This application is a basic HTTP server built using [Vapor](vapor.codes). The server will handle the following types of requests:
+The application is a basic HTTP server combined with a minimal frontend, which supports storing a list of kittens and details about them. The server will handle the following types of requests:
 1. A GET request at the root URL `/` loads the main index page containing a list of kittens.
 1. A POST request at the root URL `/` adds a new kitten.
 1. A GET request at the URL `/kittens/{_id}` loads information about the kitten with the specified MongoDB `_id`.
@@ -32,13 +31,14 @@ This application connects to a local standalone MongoDB server. It uses the coll
 
 If you'd like to point the application to a MongoDB server elsewhere (e.g. on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)) or running on a different port, or change any configuration options for the client, you can edit the code where the client is created in `Sources/App/configure.swift`.
 
-This application use a single `MongoClient` for the entire application. `MongoClient` is implemented with that approach in mind: it is safe to use across threads, and is backed by a [connection pool](https://en.wikipedia.org/wiki/Connection_pool) which enables sharing resources throughout the application.
+This application uses a single `MongoClient` for the entire application. `MongoClient` is implemented with that approach in mind: it is safe to use across threads, and is backed by a [connection pool](https://en.wikipedia.org/wiki/Connection_pool) which enables sharing resources throughout the application.
 
 We recommend storing the client in `Application.storage` and adding a computed property to access it in an extension of `Application`, to allow easy shared access throughout the application. You can see an example of how to do this in `Sources/App/configure.swift`.
 
 The application also uses a single shared `MongoCollection` object for the entire application, defined in `routes.swift`. `MongoCollection` is also thread-safe, and is essentially a wrapper around a `MongoClient` specifying a namespace and providing access to collection-specific API methods.
 
-An important thing to note in our code is that anywhere we call a MongoDB API method returning an `EventLoopFuture`, we use `hop(to: req.eventLoop)` after to return to the request's `EventLoop`. As `MongoClient` is backed by an `EventLoopGroup`, the `EventLoopFuture`s it (as well as its child `MongoDatabase`s and `MongoCollection`s) returns may fire on any `EventLoop` in the group. However, per Vapor's [documentation](https://docs.vapor.codes/4.0/async/):
+#### Important Note on `EventLoop` hopping
+Anywhere we call a MongoDB API method returning an `EventLoopFuture`, we use `hop(to: req.eventLoop)` after to return to the request's `EventLoop`. As `MongoClient` is backed by an `EventLoopGroup`, the `EventLoopFuture`s it (as well as its child `MongoDatabase`s and `MongoCollection`s) returns may fire on any `EventLoop` in the group. However, per Vapor's [documentation](https://docs.vapor.codes/4.0/async/):
 > Vapor expects that route closures will stay on `req.eventLoop`. If you hop threads, you must ensure access to `Request` and the final response future all happen on the request's event loop.
 
 Therefore, we must always `hop` when we are done calling a driver API. Please see the `EventLoopFuture` [documentation](https://apple.github.io/swift-nio/docs/current/NIO/Classes/EventLoopFuture.html) for more details on this method.
