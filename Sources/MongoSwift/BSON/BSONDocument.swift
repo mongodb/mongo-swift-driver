@@ -300,7 +300,7 @@ extension BSONDocument {
 
     /// Returns the relaxed extended JSON representation of this `BSONDocument`.
     /// On error, an empty string will be returned.
-    public var extendedJSON: String {
+    public func toExtendedJSONString() -> String {
         let result = self.withBSONPointer { ptr in
             bson_as_relaxed_extended_json(ptr, nil)
         }
@@ -314,7 +314,7 @@ extension BSONDocument {
 
     /// Returns the canonical extended JSON representation of this `BSONDocument`.
     /// On error, an empty string will be returned.
-    public var canonicalExtendedJSON: String {
+    public func toCanonicalExtendedJSONString() -> String {
         let result = self.withBSONPointer { ptr in
             bson_as_canonical_extended_json(ptr, nil)
         }
@@ -541,7 +541,7 @@ extension BSONDocument: CustomStringConvertible {
     /// Returns the relaxed extended JSON representation of this `BSONDocument`.
     /// On error, an empty string will be returned.
     public var description: String {
-        self.extendedJSON
+        self.toExtendedJSONString()
     }
 }
 

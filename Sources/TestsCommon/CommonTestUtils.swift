@@ -167,7 +167,7 @@ private func clean(json: String?) -> String {
     }
     do {
         let doc = try BSONDocument(fromJSON: str.data(using: .utf8)!)
-        return doc.extendedJSON
+        return doc.toExtendedJSONString()
     } catch {
         print("Failed to clean string: \(str)")
         return String()
