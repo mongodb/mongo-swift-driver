@@ -38,6 +38,10 @@ public enum BSONError {
                 "Failed to set value for key \(forKey) to \(value) with" +
                 " BSON type \(value.bsonType): document too large"
         }
+
+        internal init(message: String) {
+            self.message = message
+        }
     }
 }
 

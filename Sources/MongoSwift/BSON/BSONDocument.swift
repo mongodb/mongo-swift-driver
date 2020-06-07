@@ -229,7 +229,7 @@ extension BSONDocument {
             }
         }
         guard success else {
-            throw BSONError.InternalError(
+            throw BSONError.DocumentTooLargeError(
                 message: "Failed to merge \(doc) with \(self). This is likely due to " +
                     "the merged document being too large."
             )
