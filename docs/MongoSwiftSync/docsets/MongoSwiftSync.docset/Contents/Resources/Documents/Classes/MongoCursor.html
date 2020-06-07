@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwiftSync 1.0.0-rc1 Docs
+          MongoSwiftSync 1.0.0 Docs
         </a>
          (100% documented)
       </p>
@@ -40,7 +40,7 @@
         </p>
     
         <p class="header-col header-col--secondary">
-          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync%2Exml">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
             <img class="header-icon" src="../img/dash.png"/>
             Install in Dash
           </a>
@@ -156,9 +156,13 @@
 <p>This method is mainly useful if this cursor is tailable, since in that case <code>tryNext</code> may return more results
  even after returning <code>nil</code>.</p>
 
-<p>If this cursor is non-tailable, it will always be dead as soon as either <code>tryNext</code> returns <code>nil</code> or an error.</p>
+<p>If this cursor is non-tailable, it will always be dead after either <code>tryNext</code> returns <code>nil</code> or a
+ non-<code>DecodingError</code> error.</p>
 
-<p>This cursor will be dead as soon as <code>next</code> returns <code>nil</code> or an error, regardless of the <code>CursorType</code>.</p>
+<p>This cursor will be dead after <code>next</code> returns <code>nil</code> or a non-<code>DecodingError</code> error, regardless of the
+ <code>MongoCursorType</code>.</p>
+
+<p>This cursor may still be alive after <code>next</code> or <code>tryNext</code> returns a <code>DecodingError</code>.</p>
 
                       </div>
                       <div class="declaration">
@@ -170,7 +174,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/MongoCursor.swift#L26-L32">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoCursor.swift#L30-L36">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -200,7 +204,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/MongoCursor.swift#L35-L37">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoCursor.swift#L39-L41">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -227,9 +231,9 @@
 <p>On failure, there error returned is likely one of the following:</p>
 
 <ul>
-<li><code>CommandError</code> if an error occurs while fetching more results from the server.</li>
-<li><code>LogicError</code> if this function is called after the cursor has died.</li>
-<li><code>LogicError</code> if this function is called and the session associated with this cursor is inactive.</li>
+<li><code>MongoError.CommandError</code> if an error occurs while fetching more results from the server.</li>
+<li><code>MongoError.LogicError</code> if this function is called after the cursor has died.</li>
+<li><code>MongoError.LogicError</code> if this function is called and the session associated with this cursor is inactive.</li>
 <li><code>DecodingError</code> if an error occurs decoding the server&rsquo;s response.</li>
 </ul>
 
@@ -248,7 +252,7 @@
 if the cursor was exhausted.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/MongoCursor.swift#L62-L68">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoCursor.swift#L66-L72">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -275,9 +279,9 @@ if the cursor was exhausted.</p>
  cursor (e.g. the <code>maxAwaitTimeMS</code> option on the <code>FindOptions</code> passed to <code>find</code>).</p>
 
 <p>On failure, there error returned is likely one of the following:
-     - <code>CommandError</code> if an error occurs while fetching more results from the server.
-     - <code>LogicError</code> if this function is called after the cursor has died.
-     - <code>LogicError</code> if this function is called and the session associated with this cursor is inactive.
+     - <code>MongoError.CommandError</code> if an error occurs while fetching more results from the server.
+     - <code>MongoError.LogicError</code> if this function is called after the cursor has died.
+     - <code>MongoError.LogicError</code> if this function is called and the session associated with this cursor is inactive.
      - <code>DecodingError</code> if an error occurs decoding the server&rsquo;s response.</p>
 
                       </div>
@@ -295,7 +299,7 @@ if the cursor was exhausted.</p>
 if there were no results.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/MongoCursor.swift#L89-L95">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoCursor.swift#L93-L99">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -330,7 +334,7 @@ if there were no results.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/MongoCursor.swift#L128-L131">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoCursor.swift#L132-L135">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -343,8 +347,8 @@ if there were no results.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
 </div>

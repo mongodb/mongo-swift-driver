@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwiftSync 1.0.0-rc1 Docs
+          MongoSwiftSync 1.0.0 Docs
         </a>
          (100% documented)
       </p>
@@ -39,7 +39,7 @@
         </p>
     
         <p class="header-col header-col--secondary">
-          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync%2Exml">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
             <img class="header-icon" src="img/dash.png"/>
             Install in Dash
           </a>
@@ -120,7 +120,7 @@
 
 <p>MongoDB stores and transmits data in the form of <a href="bsonspec.org">BSON</a> documents, and MongoSwift provides a libary that can be used to work with such documents. The following is an example of some of the functionality provided as part of that:</p>
 <pre class="highlight swift"><code><span class="c1">// Document construction.</span>
-<span class="k">let</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span>
+<span class="k">let</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">BSONDocument</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s">"name"</span><span class="p">:</span> <span class="s">"Bob"</span><span class="p">,</span>
     <span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Software Engineer"</span><span class="p">,</span>
     <span class="s">"projects"</span><span class="p">:</span> <span class="p">[</span>
@@ -137,7 +137,7 @@
     <span class="k">let</span> <span class="nv">occupation</span><span class="p">:</span> <span class="kt">String</span>
 <span class="p">}</span>
 <span class="nf">print</span><span class="p">(</span><span class="k">try</span> <span class="kt">BSONDecoder</span><span class="p">()</span><span class="o">.</span><span class="nf">decode</span><span class="p">(</span><span class="kt">Person</span><span class="o">.</span><span class="k">self</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="n">doc</span><span class="p">))</span> <span class="c1">// Person(name: "Bob", occupation: "Software Engineer")</span>
-<span class="nf">print</span><span class="p">(</span><span class="k">try</span> <span class="kt">BSONEncoder</span><span class="p">()</span><span class="o">.</span><span class="nf">encode</span><span class="p">(</span><span class="kt">Person</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"Ted"</span><span class="p">,</span> <span class="nv">occupation</span><span class="p">:</span> <span class="s">"Janitor"</span><span class="p">))</span> <span class="c1">// { "name": "Ted", "occupation": "Janitor" }</span>
+<span class="nf">print</span><span class="p">(</span><span class="k">try</span> <span class="kt">BSONEncoder</span><span class="p">()</span><span class="o">.</span><span class="nf">encode</span><span class="p">(</span><span class="kt">Person</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"Ted"</span><span class="p">,</span> <span class="nv">occupation</span><span class="p">:</span> <span class="s">"Janitor"</span><span class="p">)))</span> <span class="c1">// { "name": "Ted", "occupation": "Janitor" }</span>
 </code></pre>
 
 <p>This guide will serve as an overview of various parts of the BSON library. To learn more specifics and cover the entirety of the API surface, please refer to the driver&rsquo;s <a href="https://mongodb.github.io/mongo-swift-driver/">API reference</a>.</p>
@@ -146,7 +146,7 @@
 <p>BSON values have many possible types, ranging from simple 32-bit integers to documents which store more BSON values themselves. To accurately model this, the driver defines the <code>BSON</code> enum, which has a distinct case for each BSON type. For the more simple cases such as BSON null, the case has no associated value. For the more complex ones, such as documents, a separate type is defined that the case wraps. Where possible, the enum case will wrap the standard library/Foundation equivalent (e.g. <code>Double</code>, <code>String</code>, <code>Date</code>)</p>
 <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">BSON</span> <span class="p">{</span>
     <span class="k">case</span> <span class="o">.</span><span class="n">null</span><span class="p">,</span>
-    <span class="k">case</span> <span class="o">.</span><span class="nf">document</span><span class="p">(</span><span class="kt">Document</span><span class="p">)</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">document</span><span class="p">(</span><span class="kt">BSONDocument</span><span class="p">)</span>
     <span class="k">case</span> <span class="o">.</span><span class="nf">double</span><span class="p">(</span><span class="kt">Double</span><span class="p">)</span>
     <span class="k">case</span> <span class="o">.</span><span class="nf">datetime</span><span class="p">(</span><span class="kt">Date</span><span class="p">)</span>
     <span class="k">case</span> <span class="o">.</span><span class="nf">string</span><span class="p">(</span><span class="kt">String</span><span class="p">)</span>
@@ -166,59 +166,60 @@
 
 <p>All other cases must be initialized directly:</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">date</span> <span class="o">=</span> <span class="kt">BSON</span><span class="o">.</span><span class="nf">datetime</span><span class="p">(</span><span class="kt">Date</span><span class="p">())</span>
-<span class="k">let</span> <span class="nv">objectId</span> <span class="o">=</span> <span class="kt">BSON</span><span class="o">.</span><span class="nf">objectId</span><span class="p">(</span><span class="kt">ObjectId</span><span class="p">())</span>
+<span class="k">let</span> <span class="nv">objectId</span> <span class="o">=</span> <span class="kt">BSON</span><span class="o">.</span><span class="nf">objectID</span><span class="p">()</span>
 <span class="c1">// ...rest of cases...</span>
 </code></pre>
 <h3 id='unwrapping-a-code-bson-code' class='heading'>Unwrapping a <code>BSON</code></h3>
 
 <p>To get a <code>BSON</code> value as a specific type, you can use <code>switch</code> or <code>if/guard case let</code> like any other enum in Swift:</p>
-<pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="kt">BSON</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="kt">BSON</span><span class="p">)</span> <span class="k">throws</span> <span class="p">{</span>
+<pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="kt">BSON</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="kt">BSON</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">switch</span> <span class="n">x</span> <span class="p">{</span>
     <span class="k">case</span> <span class="kd">let</span> <span class="o">.</span><span class="nf">int32</span><span class="p">(</span><span class="n">int32</span><span class="p">):</span>
         <span class="nf">print</span><span class="p">(</span><span class="s">"got an Int32: </span><span class="se">\(</span><span class="n">int32</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-    <span class="k">case</span> <span class="kd">let</span> <span class="o">.</span><span class="nf">objectId</span><span class="p">(</span><span class="n">oid</span><span class="p">):</span>
+    <span class="k">case</span> <span class="kd">let</span> <span class="o">.</span><span class="nf">objectID</span><span class="p">(</span><span class="n">oid</span><span class="p">):</span>
         <span class="nf">print</span><span class="p">(</span><span class="s">"got an objectId: </span><span class="se">\(</span><span class="n">oid</span><span class="o">.</span><span class="n">hex</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
     <span class="k">default</span><span class="p">:</span>
         <span class="nf">print</span><span class="p">(</span><span class="s">"got something else"</span><span class="p">)</span>
     <span class="p">}</span>
     <span class="k">guard</span> <span class="k">case</span> <span class="kd">let</span> <span class="o">.</span><span class="nf">double</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">=</span> <span class="n">y</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="k">throw</span> <span class="kt">InvalidArgumentError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="s">"y must be a double"</span><span class="p">)</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"y must be a double"</span><span class="p">)</span>
+        <span class="k">return</span>
     <span class="p">}</span>
     <span class="nf">print</span><span class="p">(</span><span class="n">d</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre>
 
 <p>While these methods are good for branching, sometimes it is useful to get just the value (e.g. for optional chaining, passing as a parameter, or returning from a function). For those cases, <code>BSON</code> has computed properties for each case that wraps a type. These properties will return <code>nil</code> unless the underlying BSON value is an exact match to the return type of the property.</p>
-<pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="kt">BSON</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">Document</span><span class="p">]</span> <span class="p">{</span>
-    <span class="k">guard</span> <span class="k">let</span> <span class="nv">documents</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">arrayValue</span><span class="p">?</span><span class="o">.</span><span class="n">compactMap</span> <span class="p">{</span> <span class="nv">$0</span><span class="o">.</span><span class="n">documentValue</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="kt">BSON</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">BSONDocument</span><span class="p">]</span> <span class="p">{</span>
+    <span class="k">guard</span> <span class="k">let</span> <span class="nv">documents</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">arrayValue</span><span class="p">?</span><span class="o">.</span><span class="nf">compactMap</span><span class="p">({</span> <span class="nv">$0</span><span class="o">.</span><span class="n">documentValue</span> <span class="p">})</span> <span class="k">else</span> <span class="p">{</span>
         <span class="nf">print</span><span class="p">(</span><span class="s">"x is not an array"</span><span class="p">)</span>
-        <span class="k">return</span>
+        <span class="k">return</span> <span class="p">[]</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">documents</span>
 <span class="p">}</span>
-<span class="nf">print</span><span class="p">(</span><span class="o">.</span><span class="nf">int64</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">int32Value</span><span class="p">)</span> <span class="c1">// nil</span>
-<span class="nf">print</span><span class="p">(</span><span class="o">.</span><span class="nf">int32</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">int32Value</span><span class="p">)</span> <span class="c1">// Int32(5)</span>
-<span class="nf">print</span><span class="p">(</span><span class="o">.</span><span class="nf">double</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">int64Value</span><span class="p">)</span> <span class="c1">// nil</span>
-<span class="nf">print</span><span class="p">(</span><span class="o">.</span><span class="nf">double</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">doubleValue</span><span class="p">)</span> <span class="c1">// Double(5.0)</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">BSON</span><span class="o">.</span><span class="nf">int64</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">int32Value</span><span class="p">)</span> <span class="c1">// nil</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">BSON</span><span class="o">.</span><span class="nf">int32</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">int32Value</span><span class="p">)</span> <span class="c1">// Int32(5)</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">BSON</span><span class="o">.</span><span class="nf">double</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">int64Value</span><span class="p">)</span> <span class="c1">// nil</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">BSON</span><span class="o">.</span><span class="nf">double</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">doubleValue</span><span class="p">)</span> <span class="c1">// Double(5.0)</span>
 </code></pre>
 <h3 id='converting-a-code-bson-code' class='heading'>Converting a <code>BSON</code></h3>
 
 <p>In some cases, especially when dealing with numbers, it may make sense to coerce a <code>BSON</code>&lsquo;s wrapped value into a similar one. For those situations, there are several conversion methods defined on <code>BSON</code> that will unwrap the underlying value and attempt to convert it to the desired type. If that conversion would be lossless, a non-<code>nil</code> value is returned. </p>
-<pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="kt">BSON</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="kt">BSON</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Int</span> <span class="p">{</span>
-    <span class="k">guard</span> <span class="k">let</span> <span class="nv">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="nf">asInt</span><span class="p">(),</span> <span class="k">let</span> <span class="nv">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="nf">asInt</span><span class="p">()</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="k">throw</span> <span class="kt">UserError</span><span class="o">.</span><span class="nf">invalidArugmentError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="s">"provide two integer types"</span><span class="p">)</span>
+<pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="kt">BSON</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="kt">BSON</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">guard</span> <span class="k">let</span> <span class="nv">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="nf">toInt</span><span class="p">(),</span> <span class="k">let</span> <span class="nv">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="nf">toInt</span><span class="p">()</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"provide two integer types"</span><span class="p">)</span>
+        <span class="k">return</span>
     <span class="p">}</span>
-    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span>
 <span class="p">}</span>
-<span class="k">try</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">)</span> <span class="c1">// 10</span>
-<span class="k">try</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span> <span class="c1">// 10</span>
-<span class="k">try</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">)</span> <span class="c1">// 10</span>
-<span class="k">try</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="o">.</span><span class="nf">int32</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="nv">y</span><span class="p">:</span> <span class="o">.</span><span class="nf">int64</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span> <span class="c1">// 10</span>
-<span class="k">try</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="mf">5.01</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span> <span class="c1">// error</span>
-<span class="k">try</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="s">"5"</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span> <span class="c1">// error</span>
+<span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">)</span> <span class="c1">// 10</span>
+<span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span> <span class="c1">// 10</span>
+<span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">)</span> <span class="c1">// 10</span>
+<span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="o">.</span><span class="nf">int32</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="nv">y</span><span class="p">:</span> <span class="o">.</span><span class="nf">int64</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span> <span class="c1">// 10</span>
+<span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="mf">5.01</span><span class="p">,</span> <span class="nv">y</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span> <span class="c1">// error</span>
 </code></pre>
 
-<p>There are similar conversion methods for the other types, namely <code>asInt32()</code>, <code>asDouble()</code>, <code>asInt64()</code>, and <code>asDecimal128()</code>.</p>
+<p>There are similar conversion methods for the other types, namely <code>toInt32()</code>, <code>toDouble()</code>, <code>toInt64()</code>, and <code>toDecimal128()</code>.</p>
 <h3 id='using-a-code-bson-code-value' class='heading'>Using a <code>BSON</code> value</h3>
 
 <p><code>BSON</code> conforms to a number of useful Foundation protocols, namely <code>Codable</code>, <code>Equatable</code>, and <code>Hashable</code>. This allows them to be compared, encoded/decoded, and used as keys in maps:</p>
@@ -237,42 +238,41 @@
     <span class="s">"x"</span><span class="p">:</span> <span class="s">"string"</span><span class="p">,</span>
     <span class="nv">false</span><span class="p">:</span> <span class="s">"bool"</span><span class="p">,</span>
     <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span> <span class="s">"array"</span><span class="p">,</span>
-    <span class="o">.</span><span class="nf">objectId</span><span class="p">(</span><span class="kt">ObjectId</span><span class="p">()):</span> <span class="s">"oid"</span><span class="p">,</span>
+    <span class="o">.</span><span class="nf">objectID</span><span class="p">():</span> <span class="s">"oid"</span><span class="p">,</span>
     <span class="o">.</span><span class="nv">null</span><span class="p">:</span> <span class="s">"null"</span><span class="p">,</span>
     <span class="o">.</span><span class="nv">maxKey</span><span class="p">:</span> <span class="s">"maxKey"</span>
 <span class="p">]</span>
 </code></pre>
 <h2 id='documents' class='heading'>Documents</h2>
 
-<p>BSON documents are the top-level structures that contain the aforementioned BSON values, and they are also BSON values themselves. The driver defines the <code>Document</code> struct to model this specific BSON type.</p>
+<p>BSON documents are the top-level structures that contain the aforementioned BSON values, and they are also BSON values themselves. The driver defines the <code>BSONDocument</code> struct to model this specific BSON type.</p>
 <h3 id='initializing-documents' class='heading'>Initializing documents</h3>
 
-<p>Like <code>BSON</code>, <code>Document</code> can also be initialized by a dictionary literal. The elements within the literal must be <code>BSON</code>s, so further literals can be embedded within the top level literal definition:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">x</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span>
+<p>Like <code>BSON</code>, <code>BSONDocument</code> can also be initialized by a dictionary literal. The elements within the literal must be <code>BSON</code>s, so further literals can be embedded within the top level literal definition:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">x</span><span class="p">:</span> <span class="kt">BSONDocument</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s">"x"</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-    <span class="s">"y"</span><span class="p">:</span> <span class="mf">5.5</span>
+    <span class="s">"y"</span><span class="p">:</span> <span class="mf">5.5</span><span class="p">,</span>
     <span class="s">"z"</span><span class="p">:</span> <span class="p">[</span>
         <span class="s">"a"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="kc">true</span><span class="p">,</span> <span class="o">.</span><span class="nf">datetime</span><span class="p">(</span><span class="kt">Date</span><span class="p">())]</span>
     <span class="p">]</span>
 <span class="p">]</span>
 </code></pre>
 
-<p>Documents can also be initialized directly by passing in a <code>Data</code> containing raw BSON bytes. If the bytes do not constitute valid BSON, an error is thrown.</p>
-<pre class="highlight swift"><code><span class="k">try</span> <span class="kt">Document</span><span class="p">(</span><span class="nv">fromBSON</span><span class="p">:</span> <span class="kt">Data</span><span class="p">(</span><span class="nv">hexString</span><span class="p">:</span> <span class="s">"0F00000010246B6579002A00000000"</span><span class="p">))</span> <span class="c1">// { "$key": 42 }</span>
-<span class="k">try</span> <span class="kt">Document</span><span class="p">(</span><span class="nv">fromBSON</span><span class="p">:</span> <span class="kt">Data</span><span class="p">(</span><span class="nv">hexString</span><span class="p">:</span> <span class="s">"1200000002666F6F0004000000626172"</span><span class="p">))</span> <span class="c1">// error </span>
+<p>Documents can also be initialized directly by passing in a <code>Data</code> containing raw BSON bytes:</p>
+<pre class="highlight swift"><code><span class="k">try</span> <span class="kt">BSONDocument</span><span class="p">(</span><span class="nv">fromBSON</span><span class="p">:</span> <span class="kt">Data</span><span class="p">(</span><span class="o">...</span><span class="p">))</span>
 </code></pre>
 
 <p>Documents may be initialized from an <a href="https://docs.mongodb.com/manual/reference/mongodb-extended-json/">extended JSON</a> string as well:</p>
-<pre class="highlight swift"><code><span class="k">try</span> <span class="kt">Document</span><span class="p">(</span><span class="nv">fromJSON</span><span class="p">:</span> <span class="s">"{ </span><span class="se">\"</span><span class="s">x</span><span class="se">\"</span><span class="s">: true }"</span><span class="p">)</span> <span class="c1">// { "x": true }</span>
-<span class="k">try</span> <span class="kt">Document</span><span class="p">(</span><span class="nv">fromJSON</span><span class="p">:</span> <span class="s">"{ x: false }}}"</span><span class="p">)</span> <span class="c1">// error</span>
+<pre class="highlight swift"><code><span class="k">try</span> <span class="kt">BSONDocument</span><span class="p">(</span><span class="nv">fromJSON</span><span class="p">:</span> <span class="s">"{ </span><span class="se">\"</span><span class="s">x</span><span class="se">\"</span><span class="s">: true }"</span><span class="p">)</span> <span class="c1">// { "x": true }</span>
+<span class="k">try</span> <span class="kt">BSONDocument</span><span class="p">(</span><span class="nv">fromJSON</span><span class="p">:</span> <span class="s">"{ x: false }}}"</span><span class="p">)</span> <span class="c1">// error</span>
 </code></pre>
 <h3 id='using-documents' class='heading'>Using documents</h3>
 
-<p>Documents define the interface in which an application communicates with a MongoDB deployment. For that reason, <code>Document</code> has been fitted with functionality to make it both powerful and ergonomic to use for developers.</p>
-<h4 id='reading-writing-to-code-document-code' class='heading'>Reading / writing to <code>Document</code></h4>
+<p>Documents define the interface in which an application communicates with a MongoDB deployment. For that reason, <code>BSONDocument</code> has been fitted with functionality to make it both powerful and ergonomic to use for developers.</p>
+<h4 id='reading-writing-to-code-bsondocument-code' class='heading'>Reading / writing to <code>BSONDocument</code></h4>
 
-<p><code>Document</code> conforms to <a href="https://developer.apple.com/documentation/swift/collection"><code>Collection</code></a>, which allows for easy reading and writing of elements via the subscript operator. On <code>Document</code>, this operator returns and accepts a <code>BSON?</code>:</p>
-<pre class="highlight swift"><code><span class="k">var</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span><span class="s">"x"</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span>
+<p><code>BSONDocument</code> conforms to <a href="https://developer.apple.com/documentation/swift/collection"><code>Collection</code></a>, which allows for easy reading and writing of elements via the subscript operator. On <code>BSONDocument</code>, this operator returns and accepts a <code>BSON?</code>:</p>
+<pre class="highlight swift"><code><span class="k">var</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">BSONDocument</span> <span class="o">=</span> <span class="p">[</span><span class="s">"x"</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span>
 <span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s">"x"</span><span class="p">])</span> <span class="c1">// .int64(1)</span>
 <span class="n">doc</span><span class="p">[</span><span class="s">"x"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s">"y"</span><span class="p">:</span> <span class="o">.</span><span class="n">null</span><span class="p">]</span>
 <span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s">"x"</span><span class="p">])</span> <span class="c1">// .document({ "y": null })</span>
@@ -281,8 +281,8 @@
 <span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="c1">// { }</span>
 </code></pre>
 
-<p><code>Document</code> also has the <code>@dynamicMemberLookup</code> attribute, meaning it&rsquo;s values can be accessed directly as if they were properties on <code>Document</code>:</p>
-<pre class="highlight swift"><code><span class="k">var</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span><span class="s">"x"</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span>
+<p><code>BSONDocument</code> also has the <code>@dynamicMemberLookup</code> attribute, meaning it&rsquo;s values can be accessed directly as if they were properties on <code>BSONDocument</code>:</p>
+<pre class="highlight swift"><code><span class="k">var</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">BSONDocument</span> <span class="o">=</span> <span class="p">[</span><span class="s">"x"</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span>
 <span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="c1">// .int64(1)</span>
 <span class="n">doc</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="s">"y"</span><span class="p">:</span> <span class="o">.</span><span class="n">null</span><span class="p">]</span>
 <span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="c1">// .document({ "y": null })</span>
@@ -291,62 +291,66 @@
 <span class="nf">print</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="c1">// { }</span>
 </code></pre>
 
-<p><code>Document</code> also conforms to <a href="https://developer.apple.com/documentation/swift/sequence"><code>Sequence</code></a>, which allows it to be iterated over:</p>
-<pre class="highlight swift"><code><span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">in</span> <span class="kt">Document</span> <span class="p">{</span> 
+<p><code>BSONDocument</code> also conforms to <a href="https://developer.apple.com/documentation/swift/sequence"><code>Sequence</code></a>, which allows it to be iterated over:</p>
+<pre class="highlight swift"><code><span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">in</span> <span class="n">doc</span> <span class="p">{</span> 
     <span class="nf">print</span><span class="p">(</span><span class="s">"</span><span class="se">\(</span><span class="n">k</span><span class="se">)</span><span class="s"> = </span><span class="se">\(</span><span class="n">v</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre>
 
 <p>Conforming to <code>Sequence</code> also gives a number of useful methods from the functional programming world, such as <code>map</code> or <code>allSatisfy</code>:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">allEvens</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">allSatisfy</span> <span class="p">{</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="k">in</span> <span class="n">v</span><span class="o">.</span><span class="nf">asInt</span><span class="p">()</span> <span class="p">??</span> <span class="mi">1</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">}</span>
-<span class="k">let</span> <span class="nv">squares</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="k">in</span> <span class="n">v</span><span class="o">.</span><span class="nf">asInt</span><span class="p">()</span><span class="o">!</span> <span class="o">*</span> <span class="n">v</span><span class="o">.</span><span class="nf">asInt</span><span class="p">()</span><span class="o">!</span> <span class="p">}</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">allEvens</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">allSatisfy</span> <span class="p">{</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="k">in</span> <span class="n">v</span><span class="o">.</span><span class="nf">toInt</span><span class="p">()</span> <span class="p">??</span> <span class="mi">1</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">}</span>
+<span class="k">let</span> <span class="nv">squares</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="k">in</span> <span class="n">v</span><span class="o">.</span><span class="nf">toInt</span><span class="p">()</span><span class="o">!</span> <span class="o">*</span> <span class="n">v</span><span class="o">.</span><span class="nf">toInt</span><span class="p">()</span><span class="o">!</span> <span class="p">}</span>
 </code></pre>
 
-<p>See the documentation for <code>Sequence</code> for a full list of methods that <code>Document</code> implements as part of this.</p>
+<p>See the documentation for <code>Sequence</code> for a full list of methods that <code>BSONDocument</code> implements as part of this.</p>
 
-<p>In addition to those protocol conformances, there are a few one-off helpers implemented on <code>Document</code> such as <code>filter</code> (that returns a <code>Document</code>) and <code>mapValues</code> (also returns a <code>Document</code>):</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">doc</span> <span class="o">=</span> <span class="p">[</span><span class="s">"_id"</span><span class="p">:</span> <span class="o">.</span><span class="nf">objectId</span><span class="p">(</span><span class="kt">ObjectId</span><span class="p">()),</span> <span class="s">"numCats"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">"numDollars"</span><span class="p">:</span> <span class="mf">1.56</span><span class="p">,</span> <span class="s">"numPhones"</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">doc</span><span class="o">.</span><span class="n">filter</span> <span class="p">{</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="k">in</span> <span class="n">k</span><span class="o">.</span><span class="nf">contains</span><span class="p">(</span><span class="s">"num"</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">v</span><span class="o">.</span><span class="nf">asInt</span><span class="p">()</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">}</span><span class="o">.</span><span class="n">mapValues</span> <span class="p">{</span> <span class="n">v</span> <span class="k">in</span> <span class="o">.</span><span class="nf">int64</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="nf">asInt64</span><span class="p">()</span><span class="o">!</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span> <span class="p">}</span> <span class="c1">// { "numCats": 7, "numPhones": 6 }</span>
+<p>In addition to those protocol conformances, there are a few one-off helpers implemented on <code>BSONDocument</code> such as <code>filter</code> (that returns a <code>BSONDocument</code>) and <code>mapValues</code> (also returns a <code>BSONDocument</code>):</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">BSONDocument</span> <span class="o">=</span> <span class="p">[</span><span class="s">"_id"</span><span class="p">:</span> <span class="o">.</span><span class="nf">objectID</span><span class="p">(),</span> <span class="s">"numCats"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">"numDollars"</span><span class="p">:</span> <span class="mf">1.56</span><span class="p">,</span> <span class="s">"numPhones"</span><span class="p">:</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">doc</span><span class="o">.</span><span class="n">filter</span> <span class="p">{</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="k">in</span> <span class="n">k</span><span class="o">.</span><span class="nf">contains</span><span class="p">(</span><span class="s">"num"</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">v</span><span class="o">.</span><span class="nf">toInt</span><span class="p">()</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">}</span><span class="o">.</span><span class="n">mapValues</span> <span class="p">{</span> <span class="n">v</span> <span class="k">in</span> <span class="o">.</span><span class="nf">int64</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="nf">toInt64</span><span class="p">()</span><span class="o">!</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span> <span class="p">}</span> <span class="c1">// { "numCats": 7, "numPhones": 6 }</span>
 </code></pre>
 
-<p>See the driver&rsquo;s documentation for a full listing of <code>Document</code>&rsquo;s public API.</p>
-<h2 id='code-codable-code-and-code-document-code' class='heading'><code>Codable</code> and <code>Document</code></h2>
+<p>See the driver&rsquo;s documentation for a full listing of <code>BSONDocument</code>&rsquo;s public API.</p>
+<h2 id='code-codable-code-and-code-bsondocument-code' class='heading'><code>Codable</code> and <code>BSONDocument</code></h2>
 
 <p><a href="https://developer.apple.com/documentation/swift/codable"><code>Codable</code></a> is a protocol defined in Foundation that allows for ergonomic conversion between various serialization schemes and Swift data types. As part of the BSON library, MongoSwift defines both <code>BSONEncoder</code> and <code>BSONDecoder</code> to facilitate this serialization and deserialization to and from BSON via <code>Codable</code>. This allows applications to work with BSON documents in a type-safe way, and it removes much of the runtime key presence and type checking required when working with raw documents. It is reccommended that users leverage <code>Codable</code> wherever possible in their applications that use the driver instead of accessing documents directly. </p>
 
 <p>For example, here is an function written using raw documents:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">person</span> <span class="o">=</span> <span class="p">[</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">person</span><span class="p">:</span> <span class="kt">BSONDocument</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s">"name"</span><span class="p">:</span> <span class="s">"Bob"</span><span class="p">,</span>
-    <span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Software Engineer"</span>
+    <span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Software Engineer"</span><span class="p">,</span>
     <span class="s">"projects"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">[</span><span class="s">"id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">title</span><span class="p">:</span> <span class="s">"Server Side Swift Application"</span><span class="p">],</span>
-        <span class="p">[</span><span class="s">"id"</span><span class="p">:</span> <span class="mi">76</span><span class="p">,</span> <span class="nv">title</span><span class="p">:</span> <span class="s">"Write documentation"</span><span class="p">],</span>
+        <span class="p">[</span><span class="s">"id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">"title"</span><span class="p">:</span> <span class="s">"Server Side Swift Application"</span><span class="p">],</span>
+        <span class="p">[</span><span class="s">"id"</span><span class="p">:</span> <span class="mi">76</span><span class="p">,</span> <span class="s">"title"</span><span class="p">:</span> <span class="s">"Write documentation"</span><span class="p">],</span>
     <span class="p">]</span>
 <span class="p">]</span>
 
-<span class="kd">func</span> <span class="nf">prettyPrint</span><span class="p">(</span><span class="nv">doc</span><span class="p">:</span> <span class="kt">Document</span><span class="p">)</span> <span class="k">throws</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="nf">prettyPrint</span><span class="p">(</span><span class="nv">doc</span><span class="p">:</span> <span class="kt">BSONDocument</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">guard</span> <span class="k">let</span> <span class="nv">name</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="s">"name"</span><span class="p">]?</span><span class="o">.</span><span class="n">stringValue</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="k">throw</span> <span class="nf">argumentError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="s">"missing name"</span><span class="p">)</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"missing name"</span><span class="p">)</span>
+        <span class="k">return</span>
     <span class="p">}</span>
     <span class="nf">print</span><span class="p">(</span><span class="s">"Name: </span><span class="se">\(</span><span class="n">name</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
     <span class="k">guard</span> <span class="k">let</span> <span class="nv">occupation</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="s">"occupation"</span><span class="p">]?</span><span class="o">.</span><span class="n">stringValue</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="k">throw</span> <span class="nf">argumentError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="s">"missing occupation"</span><span class="p">)</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"missing occupation"</span><span class="p">)</span>
+        <span class="k">return</span>
     <span class="p">}</span>
     <span class="nf">print</span><span class="p">(</span><span class="s">"Occupation: </span><span class="se">\(</span><span class="n">occupation</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-    <span class="k">guard</span> <span class="k">let</span> <span class="nv">projects</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="s">"projects"</span><span class="p">]?</span><span class="o">.</span><span class="n">arrayValue</span><span class="o">.</span><span class="n">compactMap</span> <span class="p">{</span> <span class="nv">$0</span><span class="o">.</span><span class="n">documentValue</span> <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="k">throw</span> <span class="nf">argumentError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="s">"missing projects"</span><span class="p">)</span>
+    <span class="k">guard</span> <span class="k">let</span> <span class="nv">projects</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="s">"projects"</span><span class="p">]?</span><span class="o">.</span><span class="n">arrayValue</span><span class="p">?</span><span class="o">.</span><span class="nf">compactMap</span><span class="p">({</span> <span class="nv">$0</span><span class="o">.</span><span class="n">documentValue</span> <span class="p">})</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"missing projects"</span><span class="p">)</span>
+        <span class="k">return</span>
     <span class="p">}</span>
     <span class="nf">print</span><span class="p">(</span><span class="s">"Projects:"</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">project</span> <span class="k">in</span> <span class="n">projects</span> <span class="p">{</span>
         <span class="k">guard</span> <span class="k">let</span> <span class="nv">title</span> <span class="o">=</span> <span class="n">project</span><span class="p">[</span><span class="s">"title"</span><span class="p">]</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="k">throw</span> <span class="nf">argumentError</span><span class="p">(</span><span class="nv">message</span><span class="p">:</span> <span class="s">"missing title"</span><span class="p">)</span>
+            <span class="nf">print</span><span class="p">(</span><span class="s">"missing title"</span><span class="p">)</span>
+            <span class="k">return</span>
         <span class="p">}</span>
         <span class="nf">print</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
 
-<p>Due to the flexible nature of <code>Document</code>, a number of checks have to be put into the body of the function. This clutters the actual function&rsquo;s logic and requires a lot of boilerplate code. Now, consider the following function which does the same thing but is written leveraging <code>Codable</code>:</p>
+<p>Due to the flexible nature of <code>BSONDocument</code>, a number of checks have to be put into the body of the function. This clutters the actual function&rsquo;s logic and requires a lot of boilerplate code. Now, consider the following function which does the same thing but is written leveraging <code>Codable</code>:</p>
 <pre class="highlight swift"><code><span class="kd">struct</span> <span class="kt">Project</span><span class="p">:</span> <span class="kt">Codable</span> <span class="p">{</span>
     <span class="k">let</span> <span class="nv">id</span><span class="p">:</span> <span class="kt">BSON</span>
     <span class="k">let</span> <span class="nv">title</span><span class="p">:</span> <span class="kt">String</span>
@@ -358,7 +362,7 @@
     <span class="k">let</span> <span class="nv">projects</span><span class="p">:</span> <span class="p">[</span><span class="kt">Project</span><span class="p">]</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="nf">prettyPrint</span><span class="p">(</span><span class="nv">doc</span><span class="p">:</span> <span class="kt">Document</span><span class="p">)</span> <span class="k">throws</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="nf">prettyPrint</span><span class="p">(</span><span class="nv">doc</span><span class="p">:</span> <span class="kt">BSONDocument</span><span class="p">)</span> <span class="k">throws</span> <span class="p">{</span>
     <span class="k">let</span> <span class="nv">person</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">BSONDecoder</span><span class="p">()</span><span class="o">.</span><span class="nf">decode</span><span class="p">(</span><span class="kt">Person</span><span class="o">.</span><span class="k">self</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="n">doc</span><span class="p">)</span>
     <span class="nf">print</span><span class="p">(</span><span class="s">"Name: </span><span class="se">\(</span><span class="n">person</span><span class="o">.</span><span class="n">name</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
     <span class="nf">print</span><span class="p">(</span><span class="s">"Occupation: </span><span class="se">\(</span><span class="n">person</span><span class="o">.</span><span class="n">occupation</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
@@ -372,27 +376,107 @@
 <p>In this version, the definition of the data type and the logic of the function are defined completely separately, and it leads to far more readable and concise versions of both. </p>
 <h3 id='code-codable-code-in-mongoswift' class='heading'><code>Codable</code> in MongoSwift</h3>
 
-<p>There are a number of ways for users to leverage <code>Codable</code> via driver&rsquo;s API. One such example is through <code><a href="Structs/MongoCollection.html">MongoCollection&lt;T&gt;</a></code>. By default, <code>MongoDatabase.collection</code> returns a <code><a href="Structs/MongoCollection.html">MongoCollection&lt;Document&gt;</a></code>. Any <code>find</code> or <code>aggregate</code> method invocation on that returned collection would then return a <code><a href="Classes/MongoCursor.html">MongoCursor&lt;Document&gt;</a></code>, which when iterated returns a <code>Document?</code>:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">collection</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"person"</span><span class="p">,</span> <span class="nv">withType</span><span class="p">:</span> <span class="kt">Person</span><span class="o">.</span><span class="k">self</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">person</span> <span class="k">in</span> <span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">find</span><span class="p">([</span><span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Software Engineer"</span><span class="p">])</span> <span class="p">{</span>
-    <span class="nf">print</span><span class="p">(</span><span class="n">person</span><span class="p">[</span><span class="s">"name"</span><span class="p">]</span> <span class="p">??</span> <span class="s">"nil"</span><span class="p">)</span>
+<p>There are a number of ways for users to leverage <code>Codable</code> via driver&rsquo;s API. One such example is through <code><a href="Structs/MongoCollection.html">MongoCollection&lt;T&gt;</a></code>. By default, <code>MongoDatabase.collection</code> returns a <code><a href="Structs/MongoCollection.html">MongoCollection&lt;BSONDocument&gt;</a></code>. Any <code>find</code> or <code>aggregate</code> method invocation on that returned collection would then return a <code><a href="Classes/MongoCursor.html">MongoCursor&lt;BSONDocument&gt;</a></code>, which when iterated returns a <code>BSONDocument?</code>:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">collection</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"person"</span><span class="p">)</span>
+
+<span class="c1">// asynchronous API</span>
+<span class="n">collection</span><span class="o">.</span><span class="nf">find</span><span class="p">([</span><span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Software Engineer"</span><span class="p">])</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">cursor</span> <span class="k">in</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="nf">toArray</span><span class="p">()</span>
+<span class="p">}</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">docs</span> <span class="k">in</span>
+    <span class="n">docs</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">person</span> <span class="k">in</span>
+        <span class="nf">print</span><span class="p">(</span><span class="n">person</span><span class="p">[</span><span class="s">"name"</span><span class="p">]</span> <span class="p">??</span> <span class="s">"nil"</span><span class="p">)</span>
+    <span class="p">}</span>
 <span class="p">}</span>
-<span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">insert</span><span class="p">([</span><span class="s">"name"</span><span class="p">:</span> <span class="s">"New Hire"</span><span class="p">,</span> <span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Doctor"</span><span class="p">,</span> <span class="s">"projects"</span><span class="p">:</span> <span class="p">[])</span>
+<span class="n">collection</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"name"</span><span class="p">:</span> <span class="s">"New Hire"</span><span class="p">,</span> <span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Doctor"</span><span class="p">,</span> <span class="s">"projects"</span><span class="p">:</span> <span class="p">[]])</span><span class="o">.</span><span class="n">whenSuccess</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span> <span class="cm">/* ... */</span> <span class="p">}</span>
+
+<span class="c1">// synchronous API</span>
+<span class="k">for</span> <span class="n">person</span> <span class="k">in</span> <span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">find</span><span class="p">([</span><span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Software Engineer"</span><span class="p">])</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="k">try</span> <span class="n">person</span><span class="o">.</span><span class="nf">get</span><span class="p">()[</span><span class="s">"name"</span><span class="p">]</span> <span class="p">??</span> <span class="s">"nil"</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"name"</span><span class="p">:</span> <span class="s">"New Hire"</span><span class="p">,</span> <span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Doctor"</span><span class="p">,</span> <span class="s">"projects"</span><span class="p">:</span> <span class="p">[]])</span>
 </code></pre>
 
-<p>However, if the schema of the collection is known, <code>Codable</code> structs can be used to work with the data in a more type safe way. To facilitate this, the alternate <code>collection(name:asType)</code> method on <code><a href="Structs/MongoDatabase.html">MongoDatabase</a></code>, which accepts a <code>Codable</code> generic type, can be used. The provided type defines the model for all the documents in that collection, and any cursor returned from <code>find</code> or <code>aggregate</code> on that collection will be generic over that type instead of <code>Document</code>. Iterating such cursors will automatically decode the result documents to the generic type specified. Similarly, <code>insert</code> on that collection will accept an instance of that type.</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">collection</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"person"</span><span class="p">,</span> <span class="nv">withType</span><span class="p">:</span> <span class="kt">Person</span><span class="o">.</span><span class="k">self</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">person</span> <span class="k">in</span> <span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">find</span><span class="p">([</span><span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Software Engineer"</span><span class="p">])</span> <span class="p">{</span>
-    <span class="nf">print</span><span class="p">(</span><span class="n">person</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<p>However, if the schema of the collection is known, <code>Codable</code> structs can be used to work with the data in a more type safe way. To facilitate this, the alternate <code>collection(name:asType)</code> method on <code><a href="Structs/MongoDatabase.html">MongoDatabase</a></code>, which accepts a <code>Codable</code> generic type, can be used. The provided type defines the model for all the documents in that collection, and any cursor returned from <code>find</code> or <code>aggregate</code> on that collection will be generic over that type instead of <code>BSONDocument</code>. Iterating such cursors will automatically decode the result documents to the generic type specified. Similarly, <code>insert</code> on that collection will accept an instance of that type.</p>
+<pre class="highlight swift"><code><span class="kd">struct</span> <span class="kt">Project</span><span class="p">:</span> <span class="kt">Codable</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">id</span><span class="p">:</span> <span class="kt">BSON</span>
+    <span class="k">let</span> <span class="nv">title</span><span class="p">:</span> <span class="kt">String</span>
 <span class="p">}</span>
-<span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">insert</span><span class="p">(</span><span class="kt">Person</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"New Hire"</span><span class="p">,</span> <span class="nv">occupation</span><span class="p">:</span> <span class="s">"Doctor"</span><span class="p">,</span> <span class="nv">projects</span><span class="p">:</span> <span class="p">[])</span>
+
+<span class="kd">struct</span> <span class="kt">Person</span><span class="p">:</span> <span class="kt">Codable</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="k">let</span> <span class="nv">occupation</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="k">let</span> <span class="nv">projects</span><span class="p">:</span> <span class="p">[</span><span class="kt">Project</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="k">let</span> <span class="nv">collection</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"person"</span><span class="p">,</span> <span class="nv">withType</span><span class="p">:</span> <span class="kt">Person</span><span class="o">.</span><span class="k">self</span><span class="p">)</span>
+
+<span class="c1">// asynchronous API</span>
+<span class="n">collection</span><span class="o">.</span><span class="nf">find</span><span class="p">([</span><span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Software Engineer"</span><span class="p">])</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">cursor</span> <span class="k">in</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="nf">toArray</span><span class="p">()</span>
+<span class="p">}</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">docs</span> <span class="k">in</span>
+    <span class="n">docs</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">person</span> <span class="k">in</span>
+        <span class="nf">print</span><span class="p">(</span><span class="n">person</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">collection</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">(</span><span class="kt">Person</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"New Hire"</span><span class="p">,</span> <span class="nv">occupation</span><span class="p">:</span> <span class="s">"Doctor"</span><span class="p">,</span> <span class="nv">projects</span><span class="p">:</span> <span class="p">[]))</span><span class="o">.</span><span class="n">whenSuccess</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span> <span class="cm">/* ... */</span> <span class="p">}</span>
+
+<span class="c1">// synchronous API</span>
+<span class="k">for</span> <span class="n">person</span> <span class="k">in</span> <span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">find</span><span class="p">([</span><span class="s">"occupation"</span><span class="p">:</span> <span class="s">"Software Engineer"</span><span class="p">])</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="k">try</span> <span class="n">person</span><span class="o">.</span><span class="nf">get</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">(</span><span class="kt">Person</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"New Hire"</span><span class="p">,</span> <span class="nv">occupation</span><span class="p">:</span> <span class="s">"Doctor"</span><span class="p">,</span> <span class="nv">projects</span><span class="p">:</span> <span class="p">[]))</span>
 </code></pre>
 
 <p>This allows applications that interact with the database to use well-defined Swift types, resulting in clearer and less error-prone code. Similar things can be done with <code><a href="Classes/ChangeStream.html">ChangeStream&lt;T&gt;</a></code> and <code>ChangeStreamEvent&lt;T&gt;</code>.</p>
-<h2 id='migrating-from-the-old-bson-api' class='heading'>Migrating from the old BSON API</h2>
+<h2 id='migration-guides' class='heading'>Migration Guides</h2>
+<h3 id='migrating-from-the-0-2-0-through-1-0-0-rc1-api-to-the-1-0-api' class='heading'>Migrating from the 0.2.0 through 1.0.0-rc1 API to the 1.0 API</h3>
+<h4 id='name-changes' class='heading'>Name Changes</h4>
+
+<p>In order to avoid naming conflicts with other libraries, we have prefixed all BSON types that we own with <code>BSON</code>:</p>
+
+<ul>
+<li><code>Document</code> is now <code>BSONDocument</code></li>
+<li><code>Binary</code> is now <code>BSONBinary</code></li>
+<li><code>ObjectId</code> is now <code>BSONObjectID</code></li>
+<li><code>RegularExpression</code> is now <code>BSONRegularExpression</code></li>
+<li><code>DBPointer</code> is now <code>BSONDBPointer</code></li>
+<li><code>Symbol</code> is now <code>BSONSymbol</code></li>
+<li><code>Code</code> is now <code>BSONCode</code></li>
+<li><code>CodeWithScope</code> is now <code>BSONCodeWithScope</code></li>
+<li><code>Timestamp</code> is now <code>BSONTimestamp</code></li>
+<li><code>Decimal128</code> is now <code>BSONDecimal128</code></li>
+</ul>
+<h4 id='objectid-updates' class='heading'>ObjectID Updates</h4>
+
+<p>Note that the <code>D</code> in <code>ID</code> is now capitalized in both the type name <code>BSONObjectID</code> and in the <code>BSON</code> enum case <code>.objectID</code>. We have also provided a default value of <code>BSONObjectID()</code> for the <code>BSON.objectID</code> case, which simplifies embedding <code>BSONObjectID</code>s in <code>BSONDocument</code> literals in cases where you are inserting a new ID:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span><span class="s">"_id"</span><span class="p">:</span> <span class="o">.</span><span class="nf">objectID</span><span class="p">(</span><span class="kt">ObjectID</span><span class="p">())]</span>
+<span class="k">let</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">BSONDocument</span> <span class="o">=</span> <span class="p">[</span><span class="s">"_id"</span><span class="p">:</span> <span class="o">.</span><span class="nf">objectID</span><span class="p">()]</span> <span class="c1">// new</span>
+</code></pre>
+
+<p>If you need to use an existing <code>BSONObjectID</code> you can still provide one:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">BSONDocument</span> <span class="o">=</span> <span class="p">[</span><span class="s">"_id"</span><span class="p">:</span> <span class="o">.</span><span class="nf">objectID</span><span class="p">(</span><span class="n">myID</span><span class="p">)]</span>
+</code></pre>
+<h4 id='conversion-apis' class='heading'>Conversion APIs</h4>
+
+<p>The BSON library contains a number of methods for converting between types. Many of these are defined on <code>BSON</code> and were previously named <code>asX()</code>, e.g. <code>asInt32()</code>. These are now all named <code>toX()</code> instead.</p>
+
+<p>Additionally, the driver previously supported conversions from <code>Binary</code> -&gt; <code>UUID</code> and <code>RegularExpression</code> -&gt; <code>NSRegularExpression</code> through initializers defined in extensions of the type being converted to. For discoverability, this logic has now been moved into <code>toX()</code> methods on the source types instead:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">regExp</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">NSRegularExpression</span><span class="p">(</span><span class="nv">from</span><span class="p">:</span> <span class="n">myBSONRegExp</span><span class="p">)</span> <span class="c1">// old</span>
+<span class="k">let</span> <span class="nv">regExp</span> <span class="o">=</span> <span class="k">try</span> <span class="n">myBSONRegExp</span><span class="o">.</span><span class="nf">toNSRegularExpression</span><span class="p">()</span> <span class="c1">// new</span>
+
+<span class="k">let</span> <span class="nv">uuid</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">UUID</span><span class="p">(</span><span class="nv">from</span><span class="p">:</span> <span class="n">myBSONBinary</span><span class="p">)</span> <span class="c1">// old</span>
+<span class="k">let</span> <span class="nv">uuid</span> <span class="o">=</span> <span class="k">try</span> <span class="n">myBSONBinary</span><span class="o">.</span><span class="nf">toUUID</span><span class="p">()</span> <span class="c1">// new</span>
+</code></pre>
+<h4 id='extended-json-conversion' class='heading'>Extended JSON Conversion</h4>
+
+<p>Previously, <code>Document</code>/<code>BSONDocument</code> had computed properties, <code>extendedJSON</code> and <code>canonicalExtendedJSON</code>, to support converting to those formats. To better signify that these methods involve a non-constant time conversion, we&rsquo;ve converted these properties to methods named <code>toExtendedJSONString()</code> and <code>toCanonicalExtendedJSONString()</code>, respectively.</p>
+<h4 id='errors' class='heading'>Errors</h4>
+
+<p>Previously, the BSON library used the same types of errors as the driver. As of 1.0.0, the BSON library has its own set of errors. Please see the <a href="https://github.com/mongodb/mongo-swift-driver/blob/master/Guides/Error-Handling.md">error handling guide</a> for more details.</p>
+<h3 id='migrating-from-the-0-0-1-0-1-3-api-to-the-0-2-0-bson-api' class='heading'>Migrating from the 0.0.1-0.1.3 API to the 0.2.0 BSON API</h3>
 
 <p>In version 0.2.0 of <code>MongoSwift</code>, the public API for using BSON values was changed dramatically. This section will describe the process for migrating from the old API (BSON API v1) to this new one (BSON API v2).</p>
-<h3 id='overview-of-bson-api-v1' class='heading'>Overview of BSON API v1</h3>
+<h4 id='overview-of-bson-api-v1' class='heading'>Overview of BSON API v1</h4>
 
 <p>The previous API was based around the <code>BSONValue</code> protocol. Types that conformed to this protocol could be inserted to or read out of <code>Document</code> and could aslo be used in <code>Document</code> literals. The protocol was also used in various places around the driver as an existential type or conformance requirement. A related protocol, <code>BSONNumber</code>, inherited from <code>BSONValue</code> and provided some numeric conversion helpers for the various BSON number types (e.g. <code>Double</code>, <code>Int32</code>, <code>Int</code>). </p>
 <pre class="highlight swift"><code><span class="k">var</span> <span class="nv">doc</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span>
@@ -415,10 +499,10 @@
     <span class="p">]</span> <span class="k">as</span> <span class="kt">Document</span>
 <span class="p">]</span>
 </code></pre>
-<h3 id='required-updates' class='heading'>Required Updates</h3>
+<h4 id='required-updates' class='heading'>Required Updates</h4>
 
 <p>In BSON API v2, <code>BSONNumber</code>, <code>BSONValue</code>, and <code>AnyBSONValue</code> no longer exist. They are all entirely replaced by the <code>BSON</code> enum.</p>
-<h4 id='updating-code-bsonvalue-code-references' class='heading'>Updating <code>BSONValue</code> references</h4>
+<h5 id='updating-code-bsonvalue-code-references' class='heading'>Updating <code>BSONValue</code> references</h5>
 
 <p>Anywhere in the driver that formerly accepted or returned a <code>BSONValue</code> will now accept or return a <code>BSON</code>. Wherever <code>BSONValue</code> is used as an existential value in your application, a <code>BSON</code> will probably work as a drop-in replacement. Any casts will need to be updated to call the appropriate helper property instead.</p>
 <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">x</span><span class="p">:</span> <span class="kt">BSONValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">String</span><span class="p">?</span> <span class="p">{</span>
@@ -456,7 +540,7 @@
 
 <p><strong>Generic Requirement</strong>
 Currently, there is no equivalent protocol in BSON API v2 to <code>BSONValue</code>, so if your application was using it as a generic requirement there is no alternative in the driver. You may have to implement your own similar protocol to achieve the same effect. If such a protocol would be useful to you, please <a href="https://github.com/mongodb/mongo-swift-driver#bugs--feature-requests">file a ticket on the driver&rsquo;s Jira project</a>.</p>
-<h4 id='updating-code-bsonnumber-code-references' class='heading'>Updating <code>BSONNumber</code> references</h4>
+<h5 id='updating-code-bsonnumber-code-references' class='heading'>Updating <code>BSONNumber</code> references</h5>
 
 <p><code>BSON</code> should be a drop-in replacement for anywhere <code>BSONNumber</code> is used, except for as a generic requirement. One thing to note that <code>BSONNumber</code>&rsquo;s properties (e.g. <code>.int32Value</code>) are <em>conversions</em>, whereas <code>BSON</code>&rsquo;s are simple unwraps. The conversions on <code>BSON</code> are implemented as methods (e.g. <code>asInt32()</code>).</p>
 <pre class="highlight swift"><code><span class="c1">// old</span>
@@ -489,7 +573,7 @@ Currently, there is no equivalent protocol in BSON API v2 to <code>BSONValue</co
     <span class="k">return</span> <span class="n">int</span> <span class="o">*</span> <span class="kt">Int</span><span class="p">(</span><span class="n">otherInt</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre>
-<h4 id='updating-code-anybsonvalue-code-references' class='heading'>Updating <code>AnyBSONValue</code> references</h4>
+<h5 id='updating-code-anybsonvalue-code-references' class='heading'>Updating <code>AnyBSONValue</code> references</h5>
 
 <p><code>BSON</code> should be able to serve as a complete replacement for <code>AnyBSONValue</code>.
 <code>Codable</code> usage:</p>
@@ -522,7 +606,7 @@ Currently, there is no equivalent protocol in BSON API v2 to <code>BSONValue</co
 <span class="k">let</span> <span class="nv">a</span><span class="p">:</span> <span class="p">[</span><span class="kt">BSON</span><span class="p">,</span> <span class="kt">Int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s">"hello"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="o">.</span><span class="nf">objectId</span><span class="p">(</span><span class="kt">ObjectId</span><span class="p">()):</span> <span class="mi">26</span><span class="p">]</span>
 <span class="nf">print</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="kc">true</span><span class="p">]</span> <span class="p">??</span> <span class="s">"nil"</span><span class="p">)</span>
 </code></pre>
-<h4 id='updating-code-document-code-literals' class='heading'>Updating <code>Document</code> literals</h4>
+<h5 id='updating-code-document-code-literals' class='heading'>Updating <code>Document</code> literals</h5>
 
 <p><code>BSON</code> can be expressed by a dictionary literal, string literal, integer literal, float literal, boolean literal, and array literal, so document literals consisting of those literals can largely be left alone. All the other types that formerly conformed to <code>BSONValue</code> will need to have their cases explicitly constructed. The cast to <code>Document</code> will no longer be required for subdocuments and will need to be removed. All runtime variables will also need to have their cases explicitly constructed whereas in BSON API v1 they could just be inserted directly.</p>
 <pre class="highlight swift"><code><span class="c1">// BSON API v1</span>
@@ -553,8 +637,8 @@ Currently, there is no equivalent protocol in BSON API v2 to <code>BSONValue</co
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
 </div>

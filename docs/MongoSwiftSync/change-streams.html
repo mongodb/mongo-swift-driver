@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwiftSync 1.0.0-rc1 Docs
+          MongoSwiftSync 1.0.0 Docs
         </a>
          (100% documented)
       </p>
@@ -39,7 +39,7 @@
         </p>
     
         <p class="header-col header-col--secondary">
-          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync%2Exml">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
             <img class="header-icon" src="img/dash.png"/>
             Install in Dash
           </a>
@@ -127,9 +127,9 @@
 <span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">)</span>
 
-<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;Document&gt;&gt;`</span>
+<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;BSONDocument&gt;&gt;`</span>
     <span class="n">stream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
-        <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;BSONDocument&gt;` here</span>
     <span class="p">}</span>
 <span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
@@ -187,9 +187,9 @@
 <span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">db</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span>
 
-<span class="n">db</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;Document&gt;&gt;`</span>
+<span class="n">db</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;BSONDocument&gt;&gt;`</span>
     <span class="n">stream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
-        <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;BSONDocument&gt;` here</span>
     <span class="p">}</span>
 <span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
@@ -203,9 +203,9 @@
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 
-<span class="n">client</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;Document&gt;&gt;`</span>
+<span class="n">client</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;BSONDocument&gt;&gt;`</span>
     <span class="n">stream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
-        <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;BSONDocument&gt;` here</span>
     <span class="p">}</span>
 <span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
@@ -220,7 +220,7 @@
 <span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">)</span>
 
-<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="o">-&gt;</span> <span class="kt">EventLoopFuture</span><span class="o">&lt;</span><span class="kt">ChangeStream</span><span class="o">&lt;</span><span class="kt">ChangeStreamEvent</span><span class="o">&lt;</span><span class="kt">Document</span><span class="o">&gt;&gt;&gt;</span> <span class="k">in</span>
+<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="o">-&gt;</span> <span class="kt">EventLoopFuture</span><span class="o">&lt;</span><span class="kt">ChangeStream</span><span class="o">&lt;</span><span class="kt">ChangeStreamEvent</span><span class="o">&lt;</span><span class="kt">BSONDocument</span><span class="o">&gt;&gt;&gt;</span> <span class="k">in</span>
     <span class="c1">// read the first change event</span>
     <span class="n">stream</span><span class="o">.</span><span class="nf">next</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
         <span class="c1">// simulate an error by killing the stream</span>
@@ -232,7 +232,7 @@
     <span class="p">}</span>
 <span class="p">}</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">resumedStream</span> <span class="k">in</span>
     <span class="n">resumedStream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
-        <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;BSONDocument&gt;` here</span>
     <span class="p">}</span>
 <span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
@@ -246,13 +246,13 @@
 <span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">)</span>
 
 <span class="c1">// Only include events where the changed document's username = "alice"</span>
-<span class="k">let</span> <span class="nv">pipeline</span><span class="p">:</span> <span class="p">[</span><span class="kt">Document</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">[</span><span class="s">"$match"</span><span class="p">:</span> <span class="p">[</span><span class="s">"fullDocument.username"</span><span class="p">:</span> <span class="s">"alice"</span><span class="p">]</span> <span class="k">as</span> <span class="kt">Document</span><span class="p">]</span>
+<span class="k">let</span> <span class="nv">pipeline</span><span class="p">:</span> <span class="p">[</span><span class="kt">BSONDocument</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="s">"$match"</span><span class="p">:</span> <span class="p">[</span><span class="s">"fullDocument.username"</span><span class="p">:</span> <span class="s">"alice"</span><span class="p">]]</span>
 <span class="p">]</span>
 
-<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;Document&gt;&gt;`</span>
+<span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">stream</span> <span class="k">in</span> <span class="c1">// a `ChangeStream&lt;ChangeStreamEvent&lt;BSONDocument&gt;&gt;`</span>
     <span class="n">stream</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">event</span> <span class="k">in</span>
-        <span class="c1">// process `ChangeStreamEvent&lt;Document&gt;` here</span>
+        <span class="c1">// process `ChangeStreamEvent&lt;BSONDocument&gt;` here</span>
     <span class="p">}</span>
 <span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
     <span class="c1">// handle error</span>
@@ -273,8 +273,8 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
 </div>

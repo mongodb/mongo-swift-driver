@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.0.0-rc1 Docs
+          MongoSwift 1.0.0 Docs
         </a>
          (99% documented)
       </p>
@@ -40,7 +40,7 @@
         </p>
     
         <p class="header-col header-col--secondary">
-          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwift%2Fdocsets%2FMongoSwift%2Exml">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwift%2Fdocsets%2FMongoSwift.xml">
             <img class="header-icon" src="../img/dash.png"/>
             Install in Dash
           </a>
@@ -98,6 +98,9 @@
                 <a class="nav-group-task-link" href="../Classes/BSONDecoder/DataDecodingStrategy.html">– DataDecodingStrategy</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BSONDocumentIterator.html">BSONDocumentIterator</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/BSONEncoder.html">BSONEncoder</a>
               </li>
               <li class="nav-group-task">
@@ -116,9 +119,6 @@
                 <a class="nav-group-task-link" href="../Classes/ClientSession.html">ClientSession</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/DocumentIterator.html">DocumentIterator</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
@@ -133,6 +133,21 @@
                 <a class="nav-group-task-link" href="../Enums/BSON.html">BSON</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError.html">BSONError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/DocumentTooLargeError.html">– DocumentTooLargeError</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/BSONType.html">BSONType</a>
               </li>
               <li class="nav-group-task">
@@ -142,19 +157,58 @@
                 <a class="nav-group-task-link" href="../Enums/CommandEvent.html">CommandEvent</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Enums/CursorType.html">CursorType</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/DataCodingStrategy.html">DataCodingStrategy</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/DateCodingStrategy.html">DateCodingStrategy</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Enums/FullDocument.html">FullDocument</a>
+                <a class="nav-group-task-link" href="../Enums/IndexHint.html">IndexHint</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Enums/Hint.html">Hint</a>
+                <a class="nav-group-task-link" href="../Enums/MongoCursorType.html">MongoCursorType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError.html">MongoError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/CommandError.html">– CommandError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/WriteError.html">– WriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/BulkWriteError.html">– BulkWriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/ConnectionError.html">– ConnectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/AuthenticationError.html">– AuthenticationError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/CompatibilityError.html">– CompatibilityError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/ServerSelectionError.html">– ServerSelectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/WriteFailure.html">– WriteFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/WriteConcernFailure.html">– WriteConcernFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/BulkWriteFailure.html">– BulkWriteFailure</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/OperationType.html">OperationType</a>
@@ -174,20 +228,6 @@
             </ul>
           </li>
           <li class="nav-group-name">
-            <a class="nav-group-name-link" href="../Extensions.html">Extensions</a>
-            <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Extensions/Date.html">Date</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Extensions/NSRegularExpression.html">NSRegularExpression</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Extensions/UUID.html">UUID</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-group-name">
             <a class="nav-group-name-link" href="../Functions.html">Functions</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
@@ -199,28 +239,31 @@
             <a class="nav-group-name-link" href="../Protocols.html">Protocols</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift17BSONErrorProtocolP">BSONErrorProtocol</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Protocols/CommandEventHandler.html">CommandEventHandler</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Protocols/LabeledError.html">LabeledError</a>
+                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift0A13ErrorProtocolP">MongoErrorProtocol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift0A5ErrorP">MongoError</a>
+                <a class="nav-group-task-link" href="../Protocols/MongoLabeledError.html">MongoLabeledError</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift12RuntimeErrorP">RuntimeError</a>
+                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift0A12RuntimeErrorP">MongoRuntimeError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift0A11ServerErrorP">MongoServerError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift0A9UserErrorP">MongoUserError</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Protocols/SDAMEventHandler.html">SDAMEventHandler</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift11ServerErrorP">ServerError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift9UserErrorP">UserError</a>
               </li>
             </ul>
           </li>
@@ -228,28 +271,43 @@
             <a class="nav-group-name-link" href="../Structs.html">Structures</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Address.html">Address</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/AggregateOptions.html">AggregateOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/AuthenticationError.html">AuthenticationError</a>
+                <a class="nav-group-task-link" href="../Structs/BSONBinary.html">BSONBinary</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONBinary/Subtype.html">– Subtype</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONCode.html">BSONCode</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONCodeWithScope.html">BSONCodeWithScope</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/BSONCoderOptions.html">BSONCoderOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Binary.html">Binary</a>
+                <a class="nav-group-task-link" href="../Structs/BSONDBPointer.html">BSONDBPointer</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Binary/Subtype.html">– Subtype</a>
+                <a class="nav-group-task-link" href="../Structs/BSONDecimal128.html">BSONDecimal128</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/BulkWriteError.html">BulkWriteError</a>
+                <a class="nav-group-task-link" href="../Structs/BSONDocument.html">BSONDocument</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/BulkWriteFailure.html">BulkWriteFailure</a>
+                <a class="nav-group-task-link" href="../Structs/BSONObjectID.html">BSONObjectID</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONRegularExpression.html">BSONRegularExpression</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONSymbol.html">BSONSymbol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONTimestamp.html">BSONTimestamp</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/BulkWriteOptions.html">BulkWriteOptions</a>
@@ -264,28 +322,13 @@
                 <a class="nav-group-task-link" href="../Structs/ChangeStreamOptions.html">ChangeStreamOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/ClientOptions.html">ClientOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ClientSessionOptions.html">ClientSessionOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Code.html">Code</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/CodeWithScope.html">CodeWithScope</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/CollectionOptions.html">CollectionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CollectionSpecification.html">CollectionSpecification</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CollectionSpecificationInfo.html">CollectionSpecificationInfo</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/CommandError.html">CommandError</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CommandFailedEvent.html">CommandFailedEvent</a>
@@ -297,12 +340,6 @@
                 <a class="nav-group-task-link" href="../Structs/CommandSucceededEvent.html">CommandSucceededEvent</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/CompatibilityError.html">CompatibilityError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/ConnectionError.html">ConnectionError</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CountDocumentsOptions.html">CountDocumentsOptions</a>
               </li>
               <li class="nav-group-task">
@@ -312,16 +349,7 @@
                 <a class="nav-group-task-link" href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/DBPointer.html">DBPointer</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/DatabaseOptions.html">DatabaseOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/DatabaseSpecification.html">DatabaseSpecification</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Decimal128.html">Decimal128</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/DeleteModelOptions.html">DeleteModelOptions</a>
@@ -334,9 +362,6 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/DistinctOptions.html">DistinctOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Document.html">Document</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/DropCollectionOptions.html">DropCollectionOptions</a>
@@ -366,6 +391,9 @@
                 <a class="nav-group-task-link" href="../Structs/FindOptions.html">FindOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FullDocument.html">FullDocument</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/IndexModel.html">IndexModel</a>
               </li>
               <li class="nav-group-task">
@@ -381,46 +409,43 @@
                 <a class="nav-group-task-link" href="../Structs/InsertOneResult.html">InsertOneResult</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/InternalError.html">InternalError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/InvalidArgumentError.html">InvalidArgumentError</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/LogicError.html">LogicError</a>
+                <a class="nav-group-task-link" href="../Structs/MongoClientOptions.html">MongoClientOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MongoCollection.html">MongoCollection</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoCollectionOptions.html">MongoCollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoCredential.html">MongoCredential</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoCredential/Mechanism.html">– Mechanism</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoDatabaseOptions.html">MongoDatabaseOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/ObjectId.html">ObjectId</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadConcern.html">ReadConcern</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/ReadConcern/Level.html">– Level</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadPreference.html">ReadPreference</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadPreference/Mode.html">– Mode</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/RegularExpression.html">RegularExpression</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReplaceOneModelOptions.html">ReplaceOneModelOptions</a>
@@ -433,6 +458,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ServerAddress.html">ServerAddress</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ServerClosedEvent.html">ServerClosedEvent</a>
@@ -457,15 +485,6 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/ServerSelectionError.html">ServerSelectionError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Symbol.html">Symbol</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/TopologyClosedEvent.html">TopologyClosedEvent</a>
@@ -503,15 +522,6 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/WriteConcern/W.html">– W</a>
               </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/WriteConcernFailure.html">WriteConcernFailure</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/WriteError.html">WriteError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/WriteFailure.html">WriteFailure</a>
-              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -519,9 +529,6 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Typealiases.html#/s:10MongoSwift17InsertManyOptionsa">InsertManyOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Typealiases.html#/s:10MongoSwift15ServerErrorCodea">ServerErrorCode</a>
               </li>
             </ul>
           </li>
@@ -549,7 +556,7 @@
  <a href="https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions">https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions</a> for more details.</p>
 
 <p>e.g.</p>
-<pre class="highlight swift"><code>   <span class="k">let</span> <span class="nv">opts</span> <span class="o">=</span> <span class="kt">CollectionOptions</span><span class="p">(</span><span class="nv">readConcern</span><span class="p">:</span> <span class="kt">ReadConcern</span><span class="p">(</span><span class="o">.</span><span class="n">majority</span><span class="p">),</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="k">try</span> <span class="kt">WriteConcern</span><span class="p">(</span><span class="nv">w</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">))</span>
+<pre class="highlight swift"><code>   <span class="k">let</span> <span class="nv">opts</span> <span class="o">=</span> <span class="kt">MongoCollectionOptions</span><span class="p">(</span><span class="nv">readConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">,</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">)</span>
    <span class="k">let</span> <span class="nv">collection</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"mycoll"</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="n">opts</span><span class="p">)</span>
    <span class="k">let</span> <span class="nv">futureCount</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">withSession</span> <span class="p">{</span> <span class="n">session</span> <span class="k">in</span>
        <span class="n">collection</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"x"</span><span class="p">:</span> <span class="mi">1</span><span class="p">],</span> <span class="nv">session</span><span class="p">:</span> <span class="n">session</span><span class="p">)</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
@@ -601,7 +608,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ClientSession.swift#L67">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ClientSession.swift#L67">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -609,9 +616,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift13ClientSessionC11clusterTimeAA8DocumentVSgvp"></a>
+                    <a name="/s:10MongoSwift13ClientSessionC11clusterTimeAA12BSONDocumentVSgvp"></a>
                     <a name="//apple_ref/swift/Property/clusterTime" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift13ClientSessionC11clusterTimeAA8DocumentVSgvp">clusterTime</a>
+                    <a class="token" href="#/s:10MongoSwift13ClientSessionC11clusterTimeAA12BSONDocumentVSgvp">clusterTime</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -631,12 +638,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">clusterTime</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">clusterTime</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ClientSession.swift#L150-L162">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ClientSession.swift#L166-L178">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -644,9 +651,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift13ClientSessionC13operationTimeAA9TimestampVSgvp"></a>
+                    <a name="/s:10MongoSwift13ClientSessionC13operationTimeAA13BSONTimestampVSgvp"></a>
                     <a name="//apple_ref/swift/Property/operationTime" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift13ClientSessionC13operationTimeAA9TimestampVSgvp">operationTime</a>
+                    <a class="token" href="#/s:10MongoSwift13ClientSessionC13operationTimeAA13BSONTimestampVSgvp">operationTime</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -667,12 +674,12 @@ of the following are true:</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">operationTime</span><span class="p">:</span> <span class="kt"><a href="../Structs/Timestamp.html">Timestamp</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">operationTime</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONTimestamp.html">BSONTimestamp</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ClientSession.swift#L168-L184">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ClientSession.swift#L184-L200">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -702,7 +709,7 @@ of the following are true:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ClientSession.swift#L187">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ClientSession.swift#L203">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -734,7 +741,7 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ClientSession.swift#L225-L236">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ClientSession.swift#L265-L276">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -742,9 +749,9 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift13ClientSessionC18advanceClusterTime2toyAA8DocumentV_tF"></a>
+                    <a name="/s:10MongoSwift13ClientSessionC18advanceClusterTime2toyAA12BSONDocumentV_tF"></a>
                     <a name="//apple_ref/swift/Method/advanceClusterTime(to:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift13ClientSessionC18advanceClusterTime2toyAA8DocumentV_tF">advanceClusterTime(to:)</a>
+                    <a class="token" href="#/s:10MongoSwift13ClientSessionC18advanceClusterTime2toyAA12BSONDocumentV_tF">advanceClusterTime(to:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -761,7 +768,7 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">advanceClusterTime</span><span class="p">(</span><span class="n">to</span> <span class="nv">clusterTime</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">advanceClusterTime</span><span class="p">(</span><span class="n">to</span> <span class="nv">clusterTime</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -777,7 +784,7 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
                               </td>
                               <td>
                                 <div>
-                                  <p>The session&rsquo;s new cluster time, as a <code><a href="../Structs/Document.html">Document</a></code> like <code>[&quot;cluster time&quot;: Timestamp(...)]</code></p>
+                                  <p>The session&rsquo;s new cluster time, as a <code><a href="../Structs/BSONDocument.html">BSONDocument</a></code> like <code>[&quot;cluster time&quot;: Timestamp(...)]</code></p>
                                 </div>
                               </td>
                             </tr>
@@ -785,7 +792,7 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ClientSession.swift#L254-L265">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ClientSession.swift#L294-L305">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -793,9 +800,9 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift13ClientSessionC20advanceOperationTime2toyAA9TimestampV_tF"></a>
+                    <a name="/s:10MongoSwift13ClientSessionC20advanceOperationTime2toyAA13BSONTimestampV_tF"></a>
                     <a name="//apple_ref/swift/Method/advanceOperationTime(to:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift13ClientSessionC20advanceOperationTime2toyAA9TimestampV_tF">advanceOperationTime(to:)</a>
+                    <a class="token" href="#/s:10MongoSwift13ClientSessionC20advanceOperationTime2toyAA13BSONTimestampV_tF">advanceOperationTime(to:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -812,7 +819,7 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">advanceOperationTime</span><span class="p">(</span><span class="n">to</span> <span class="nv">operationTime</span><span class="p">:</span> <span class="kt"><a href="../Structs/Timestamp.html">Timestamp</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">advanceOperationTime</span><span class="p">(</span><span class="n">to</span> <span class="nv">operationTime</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONTimestamp.html">BSONTimestamp</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -836,7 +843,7 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ClientSession.swift#L275-L284">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ClientSession.swift#L315-L324">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -846,7 +853,7 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
                     <code>
                     <a name="/s:10MongoSwift13ClientSessionC16startTransaction7options3NIO15EventLoopFutureCyytGAA0F7OptionsVSg_tF"></a>
                     <a name="//apple_ref/swift/Method/startTransaction(options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift13ClientSessionC16startTransaction7options3NIO15EventLoopFutureCyytGAA0F7OptionsVSg_tF">startTransaction(options:)</a>
+                    <a class="token" href="#/s:10MongoSwift13ClientSessionC16startTransaction7options3NIO15EventLoopFutureCyytGAA0F7OptionsVSg_tF">startTransaction(options:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -854,10 +861,18 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Starts a multi-document transaction for all subsequent operations in this session. Any options provided in
- <code><a href="../Classes/ClientSession.html#/s:10MongoSwift13ClientSessionC7optionsAA0cD7OptionsVSgvp">options</a></code> override the default transaction options for this session and any options inherited from
- <code><a href="../Classes/MongoClient.html">MongoClient</a></code>. The transaction must be completed with <code>commitTransaction</code> or <code>abortTransaction</code>. An in-progress
- transaction is automatically aborted when <code><a href="../Classes/ClientSession.html#/s:10MongoSwift13ClientSessionC3end3NIO15EventLoopFutureCyytGyF">ClientSession.end()</a></code> is called.</p>
+                        <p>Starts a multi-document transaction for all subsequent operations in this session.</p>
+
+<p>Any options provided in <code><a href="../Classes/ClientSession.html#/s:10MongoSwift13ClientSessionC7optionsAA0cD7OptionsVSgvp">options</a></code> will override the default transaction options for this session and any options
+ inherited from <code><a href="../Classes/MongoClient.html">MongoClient</a></code>.</p>
+
+<p>Operations executed as part of the transaction will use the options specified on the transaction, and those
+ options cannot be overridden at a per-operation level. Any options that overlap with the transaction options
+ which can be specified at a per operation level (e.g. write concern) <em>will be ignored</em> if specified. This
+ includes options specified at the database or collection level on the object used to execute an operation.</p>
+
+<p>The transaction must be completed with <code>commitTransaction</code> or <code>abortTransaction</code>. An in-progress transaction is
+ automatically aborted when <code><a href="../Classes/ClientSession.html#/s:10MongoSwift13ClientSessionC3end3NIO15EventLoopFutureCyytGyF">ClientSession.end()</a></code> is called.</p>
 <div class="aside aside-see-also">
     <p class="aside-title">See also</p>
     <p>SeeAlso:</p>
@@ -903,13 +918,13 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
 <p>If the future fails, the error is likely one of the following:</p>
 
 <ul>
-<li><code><a href="../Structs/CommandError.html">CommandError</a></code> if an error occurs that prevents the command from executing.</li>
-<li><code><a href="../Structs/LogicError.html">LogicError</a></code> if the session already has an in-progress transaction.</li>
-<li><code><a href="../Structs/LogicError.html">LogicError</a></code> if <code>startTransaction</code> is called on an ended session.</li>
+<li><code><a href="../Enums/MongoError/CommandError.html">MongoError.CommandError</a></code> if an error occurs that prevents the command from executing.</li>
+<li><code><a href="../Enums/MongoError/LogicError.html">MongoError.LogicError</a></code> if the session already has an in-progress transaction.</li>
+<li><code><a href="../Enums/MongoError/LogicError.html">MongoError.LogicError</a></code> if <code>startTransaction</code> is called on an ended session.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ClientSession.swift#L322-L330">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ClientSession.swift#L370-L378">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -954,13 +969,13 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
 <p>If the future fails, the error is likely one of the following:</p>
 
 <ul>
-<li><code><a href="../Structs/CommandError.html">CommandError</a></code> if an error occurs that prevents the command from executing.</li>
-<li><code><a href="../Structs/LogicError.html">LogicError</a></code> if the session has no in-progress transaction.</li>
-<li><code><a href="../Structs/LogicError.html">LogicError</a></code> if <code>commitTransaction</code> is called on an ended session.</li>
+<li><code><a href="../Enums/MongoError/CommandError.html">MongoError.CommandError</a></code> if an error occurs that prevents the command from executing.</li>
+<li><code><a href="../Enums/MongoError/LogicError.html">MongoError.LogicError</a></code> if the session has no in-progress transaction.</li>
+<li><code><a href="../Enums/MongoError/LogicError.html">MongoError.LogicError</a></code> if <code>commitTransaction</code> is called on an ended session.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ClientSession.swift#L346-L354">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ClientSession.swift#L394-L402">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1005,12 +1020,12 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
 <p>If the future fails, the error is likely one of the following:</p>
 
 <ul>
-<li><code><a href="../Structs/LogicError.html">LogicError</a></code> if the session has no in-progress transaction.</li>
-<li><code><a href="../Structs/LogicError.html">LogicError</a></code> if <code>abortTransaction</code> is called on an ended session.</li>
+<li><code><a href="../Enums/MongoError/LogicError.html">MongoError.LogicError</a></code> if the session has no in-progress transaction.</li>
+<li><code><a href="../Enums/MongoError/LogicError.html">MongoError.LogicError</a></code> if <code>abortTransaction</code> is called on an ended session.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ClientSession.swift#L369-L377">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ClientSession.swift#L417-L425">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1023,8 +1038,8 @@ this session&rsquo;s parent <code><a href="../Classes/MongoClient.html">MongoCli
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
 </div>

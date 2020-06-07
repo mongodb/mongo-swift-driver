@@ -1,58 +1,16 @@
 {
   "warnings": [
     {
-      "file": "/Users/km/mongo-swift-driver/Sources/MongoSwift/MongoError.swift",
-      "line": 75,
-      "symbol": "LogicError.errorDescription",
-      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "file": "/Users/km/mongo-swift-driver/Sources/MongoSwift/MongoCredential.swift",
+      "line": 24,
+      "symbol": "MongoCredential.init(username:password:source:mechanism:mechanismProperties:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/km/mongo-swift-driver/Sources/MongoSwift/MongoError.swift",
-      "line": 82,
-      "symbol": "InvalidArgumentError.errorDescription",
-      "symbol_kind": "source.lang.swift.decl.var.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/km/mongo-swift-driver/Sources/MongoSwift/MongoError.swift",
-      "line": 93,
-      "symbol": "InternalError.errorDescription",
-      "symbol_kind": "source.lang.swift.decl.var.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/km/mongo-swift-driver/Sources/MongoSwift/MongoError.swift",
-      "line": 99,
-      "symbol": "ConnectionError.message",
-      "symbol_kind": "source.lang.swift.decl.var.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/km/mongo-swift-driver/Sources/MongoSwift/MongoError.swift",
-      "line": 103,
-      "symbol": "ConnectionError.errorDescription",
-      "symbol_kind": "source.lang.swift.decl.var.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/km/mongo-swift-driver/Sources/MongoSwift/MongoError.swift",
-      "line": 110,
-      "symbol": "AuthenticationError.errorDescription",
-      "symbol_kind": "source.lang.swift.decl.var.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/km/mongo-swift-driver/Sources/MongoSwift/MongoError.swift",
-      "line": 117,
-      "symbol": "CompatibilityError.errorDescription",
-      "symbol_kind": "source.lang.swift.decl.var.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/km/mongo-swift-driver/Sources/MongoSwift/MongoError.swift",
-      "line": 126,
-      "symbol": "ServerSelectionError.errorDescription",
+      "line": 124,
+      "symbol": "MongoError.ConnectionError.message",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     }

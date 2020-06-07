@@ -16,5 +16,7 @@
       <true/>
     <key>DashDocSetFamily</key>
       <string>dashtoc</string>
+    <key>DashDocSetFallbackURL</key>
+      <string>https://mongodb.github.io/mongo-swift-driver/docs/MongoSwift/</string>
   </dict>
 </plist>

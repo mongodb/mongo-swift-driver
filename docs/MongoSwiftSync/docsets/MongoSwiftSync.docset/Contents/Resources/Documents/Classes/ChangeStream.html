@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwiftSync 1.0.0-rc1 Docs
+          MongoSwiftSync 1.0.0 Docs
         </a>
          (100% documented)
       </p>
@@ -40,7 +40,7 @@
         </p>
     
         <p class="header-col header-col--secondary">
-          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync%2Exml">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
             <img class="header-icon" src="../img/dash.png"/>
             Install in Dash
           </a>
@@ -162,7 +162,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ChangeStream.swift#L22-L24">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ChangeStream.swift#L22-L24">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -182,8 +182,11 @@
                       <div class="abstract">
                         <p>Indicates whether this change stream has the potential to return more data.</p>
 
-<p>This change stream will be dead if <code>next</code> returns <code>nil</code> or an error. It will also be dead if <code>tryNext</code> returns
- an error, but will still be alive if <code>tryNext</code> returns <code>nil</code>.</p>
+<p>This change stream will be dead after <code>next</code> returns <code>nil</code>, but it may still be alive after <code>tryNext</code> returns
+ <code>nil</code>.</p>
+
+<p>After either of <code>next</code> or <code>tryNext</code> return a non-<code>DecodingError</code> error, this change stream will be dead. It may
+ still be alive after either returns a <code>DecodingError</code>, however.</p>
 
                       </div>
                       <div class="declaration">
@@ -195,7 +198,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ChangeStream.swift#L32-L38">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ChangeStream.swift#L35-L41">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -221,13 +224,14 @@
 
 <p>A thread from the pool will be occupied by this method until it returns, so performance degradation is possible
  if the number of polling change streams is too close to the total number of threads in the thread pool. To
- configure the total number of threads in the pool, set the <code>ClientOptions.threadPoolSize</code> option on client
+ configure the total number of threads in the pool, set the <code>MongoClientOptions.threadPoolSize</code> option on client
  creation.</p>
 
 <p>If the result contains an error, it is likely one of the following:
-     - <code>CommandError</code> if an error occurs while fetching more results from the server.
-     - <code>LogicError</code> if this function is called after the change stream has died.
-     - <code>LogicError</code> if this function is called and the session associated with this change stream is inactive.
+     - <code>MongoError.CommandError</code> if an error occurs while fetching more results from the server.
+     - <code>MongoError.LogicError</code> if this function is called after the change stream has died.
+     - <code>MongoError.LogicError</code> if this function is called and the session associated with this change stream is
+       inactive.
      - <code>DecodingError</code> if an error occurs decoding the server&rsquo;s response.</p>
 
                       </div>
@@ -246,7 +250,7 @@ the change stream is exhausted. This method will block until one of those condit
 multiple requests to the server.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ChangeStream.swift#L63-L72">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ChangeStream.swift#L67-L76">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -288,14 +292,18 @@ there was no data.</p>
 <p>If the result is an error, it is likely one of the following:</p>
 
 <ul>
-<li><code>CommandError</code> if an error occurs while fetching more results from the server.</li>
-<li><code>LogicError</code> if this function is called after the change stream has died.</li>
-<li><code>LogicError</code> if this function is called and the session associated with this change stream is inactive.</li>
+<li><code>MongoError.CommandError</code> if an error occurs while fetching more results from the server.</li>
+<li><code>MongoError.LogicError</code> if this function is called after the change stream has died.
+
+<ul>
+<li><code>MongoError.LogicError</code> if this function is called and the session associated with this change stream is
+inactive.</li>
+</ul></li>
 <li><code>DecodingError</code> if an error occurs decoding the server&rsquo;s response.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ChangeStream.swift#L92-L101">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ChangeStream.swift#L97-L106">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -333,7 +341,7 @@ there was no data.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ChangeStream.swift#L114-L116">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ChangeStream.swift#L119-L121">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -346,8 +354,8 @@ there was no data.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
 </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.0.0-rc1 Docs
+          MongoSwift 1.0.0 Docs
         </a>
          (99% documented)
       </p>
@@ -40,7 +40,7 @@
         </p>
     
         <p class="header-col header-col--secondary">
-          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwift%2Fdocsets%2FMongoSwift%2Exml">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwift%2Fdocsets%2FMongoSwift.xml">
             <img class="header-icon" src="../img/dash.png"/>
             Install in Dash
           </a>
@@ -98,6 +98,9 @@
                 <a class="nav-group-task-link" href="../Classes/BSONDecoder/DataDecodingStrategy.html">– DataDecodingStrategy</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BSONDocumentIterator.html">BSONDocumentIterator</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/BSONEncoder.html">BSONEncoder</a>
               </li>
               <li class="nav-group-task">
@@ -116,9 +119,6 @@
                 <a class="nav-group-task-link" href="../Classes/ClientSession.html">ClientSession</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Classes/DocumentIterator.html">DocumentIterator</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
@@ -133,6 +133,21 @@
                 <a class="nav-group-task-link" href="../Enums/BSON.html">BSON</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError.html">BSONError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/DocumentTooLargeError.html">– DocumentTooLargeError</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/BSONType.html">BSONType</a>
               </li>
               <li class="nav-group-task">
@@ -142,19 +157,58 @@
                 <a class="nav-group-task-link" href="../Enums/CommandEvent.html">CommandEvent</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Enums/CursorType.html">CursorType</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/DataCodingStrategy.html">DataCodingStrategy</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/DateCodingStrategy.html">DateCodingStrategy</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Enums/FullDocument.html">FullDocument</a>
+                <a class="nav-group-task-link" href="../Enums/IndexHint.html">IndexHint</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Enums/Hint.html">Hint</a>
+                <a class="nav-group-task-link" href="../Enums/MongoCursorType.html">MongoCursorType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError.html">MongoError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/CommandError.html">– CommandError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/WriteError.html">– WriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/BulkWriteError.html">– BulkWriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/ConnectionError.html">– ConnectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/AuthenticationError.html">– AuthenticationError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/CompatibilityError.html">– CompatibilityError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/ServerSelectionError.html">– ServerSelectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/WriteFailure.html">– WriteFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/WriteConcernFailure.html">– WriteConcernFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/BulkWriteFailure.html">– BulkWriteFailure</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/OperationType.html">OperationType</a>
@@ -174,20 +228,6 @@
             </ul>
           </li>
           <li class="nav-group-name">
-            <a class="nav-group-name-link" href="../Extensions.html">Extensions</a>
-            <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Extensions/Date.html">Date</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Extensions/NSRegularExpression.html">NSRegularExpression</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Extensions/UUID.html">UUID</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-group-name">
             <a class="nav-group-name-link" href="../Functions.html">Functions</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
@@ -199,28 +239,31 @@
             <a class="nav-group-name-link" href="../Protocols.html">Protocols</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift17BSONErrorProtocolP">BSONErrorProtocol</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Protocols/CommandEventHandler.html">CommandEventHandler</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Protocols/LabeledError.html">LabeledError</a>
+                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift0A13ErrorProtocolP">MongoErrorProtocol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift0A5ErrorP">MongoError</a>
+                <a class="nav-group-task-link" href="../Protocols/MongoLabeledError.html">MongoLabeledError</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift12RuntimeErrorP">RuntimeError</a>
+                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift0A12RuntimeErrorP">MongoRuntimeError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift0A11ServerErrorP">MongoServerError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift0A9UserErrorP">MongoUserError</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Protocols/SDAMEventHandler.html">SDAMEventHandler</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift11ServerErrorP">ServerError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Protocols.html#/s:10MongoSwift9UserErrorP">UserError</a>
               </li>
             </ul>
           </li>
@@ -228,28 +271,43 @@
             <a class="nav-group-name-link" href="../Structs.html">Structures</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Address.html">Address</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/AggregateOptions.html">AggregateOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/AuthenticationError.html">AuthenticationError</a>
+                <a class="nav-group-task-link" href="../Structs/BSONBinary.html">BSONBinary</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONBinary/Subtype.html">– Subtype</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONCode.html">BSONCode</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONCodeWithScope.html">BSONCodeWithScope</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/BSONCoderOptions.html">BSONCoderOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Binary.html">Binary</a>
+                <a class="nav-group-task-link" href="../Structs/BSONDBPointer.html">BSONDBPointer</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Binary/Subtype.html">– Subtype</a>
+                <a class="nav-group-task-link" href="../Structs/BSONDecimal128.html">BSONDecimal128</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/BulkWriteError.html">BulkWriteError</a>
+                <a class="nav-group-task-link" href="../Structs/BSONDocument.html">BSONDocument</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/BulkWriteFailure.html">BulkWriteFailure</a>
+                <a class="nav-group-task-link" href="../Structs/BSONObjectID.html">BSONObjectID</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONRegularExpression.html">BSONRegularExpression</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONSymbol.html">BSONSymbol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONTimestamp.html">BSONTimestamp</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/BulkWriteOptions.html">BulkWriteOptions</a>
@@ -264,28 +322,13 @@
                 <a class="nav-group-task-link" href="../Structs/ChangeStreamOptions.html">ChangeStreamOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/ClientOptions.html">ClientOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ClientSessionOptions.html">ClientSessionOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Code.html">Code</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/CodeWithScope.html">CodeWithScope</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/CollectionOptions.html">CollectionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CollectionSpecification.html">CollectionSpecification</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CollectionSpecificationInfo.html">CollectionSpecificationInfo</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/CommandError.html">CommandError</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CommandFailedEvent.html">CommandFailedEvent</a>
@@ -297,12 +340,6 @@
                 <a class="nav-group-task-link" href="../Structs/CommandSucceededEvent.html">CommandSucceededEvent</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/CompatibilityError.html">CompatibilityError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/ConnectionError.html">ConnectionError</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CountDocumentsOptions.html">CountDocumentsOptions</a>
               </li>
               <li class="nav-group-task">
@@ -312,16 +349,7 @@
                 <a class="nav-group-task-link" href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/DBPointer.html">DBPointer</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/DatabaseOptions.html">DatabaseOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/DatabaseSpecification.html">DatabaseSpecification</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Decimal128.html">Decimal128</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/DeleteModelOptions.html">DeleteModelOptions</a>
@@ -334,9 +362,6 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/DistinctOptions.html">DistinctOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Document.html">Document</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/DropCollectionOptions.html">DropCollectionOptions</a>
@@ -366,6 +391,9 @@
                 <a class="nav-group-task-link" href="../Structs/FindOptions.html">FindOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FullDocument.html">FullDocument</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/IndexModel.html">IndexModel</a>
               </li>
               <li class="nav-group-task">
@@ -381,46 +409,43 @@
                 <a class="nav-group-task-link" href="../Structs/InsertOneResult.html">InsertOneResult</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/InternalError.html">InternalError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/InvalidArgumentError.html">InvalidArgumentError</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/LogicError.html">LogicError</a>
+                <a class="nav-group-task-link" href="../Structs/MongoClientOptions.html">MongoClientOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MongoCollection.html">MongoCollection</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoCollectionOptions.html">MongoCollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoCredential.html">MongoCredential</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoCredential/Mechanism.html">– Mechanism</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoDatabaseOptions.html">MongoDatabaseOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/ObjectId.html">ObjectId</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadConcern.html">ReadConcern</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/ReadConcern/Level.html">– Level</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadPreference.html">ReadPreference</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReadPreference/Mode.html">– Mode</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/RegularExpression.html">RegularExpression</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ReplaceOneModelOptions.html">ReplaceOneModelOptions</a>
@@ -433,6 +458,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ServerAddress.html">ServerAddress</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ServerClosedEvent.html">ServerClosedEvent</a>
@@ -457,15 +485,6 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/ServerSelectionError.html">ServerSelectionError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Symbol.html">Symbol</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/TopologyClosedEvent.html">TopologyClosedEvent</a>
@@ -503,15 +522,6 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/WriteConcern/W.html">– W</a>
               </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/WriteConcernFailure.html">WriteConcernFailure</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/WriteError.html">WriteError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Structs/WriteFailure.html">WriteFailure</a>
-              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -519,9 +529,6 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Typealiases.html#/s:10MongoSwift17InsertManyOptionsa">InsertManyOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Typealiases.html#/s:10MongoSwift15ServerErrorCodea">ServerErrorCode</a>
               </li>
             </ul>
           </li>
@@ -561,7 +568,14 @@
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Enables the server to write to temporary files. When set to true, the find operation
-can write data to the _tmp subdirectory in the dbPath directory.</p>
+can write data to the _tmp subdirectory in the dbPath directory. This helps prevent
+out-of-memory failures server side when working with large result sets.</p>
+<div class="aside aside-note">
+    <p class="aside-title">Note</p>
+    This option is only supported in MongoDB 4.4+. Specifying it against earlier versions of the server
+will result in an error.
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -573,7 +587,7 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L37">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L42">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -603,7 +617,7 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L40">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L45">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -633,7 +647,7 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L46">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L51">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -641,9 +655,9 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11FindOptionsV9collationAA8DocumentVSgvp"></a>
+                    <a name="/s:10MongoSwift11FindOptionsV9collationAA12BSONDocumentVSgvp"></a>
                     <a name="//apple_ref/swift/Property/collation" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11FindOptionsV9collationAA8DocumentVSgvp">collation</a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsV9collationAA12BSONDocumentVSgvp">collation</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -658,12 +672,12 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L49">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L54">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -693,7 +707,7 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L52">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L57">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -701,9 +715,9 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11FindOptionsV10cursorTypeAA06CursorF0OSgvp"></a>
+                    <a name="/s:10MongoSwift11FindOptionsV10cursorTypeAA0a6CursorF0OSgvp"></a>
                     <a name="//apple_ref/swift/Property/cursorType" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11FindOptionsV10cursorTypeAA06CursorF0OSgvp">cursorType</a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsV10cursorTypeAA0a6CursorF0OSgvp">cursorType</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -718,12 +732,12 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">cursorType</span><span class="p">:</span> <span class="kt"><a href="../Enums/CursorType.html">CursorType</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">cursorType</span><span class="p">:</span> <span class="kt"><a href="../Enums/MongoCursorType.html">MongoCursorType</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L55-L81">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L60-L86">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -731,9 +745,9 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11FindOptionsV4hintAA4HintOSgvp"></a>
+                    <a name="/s:10MongoSwift11FindOptionsV4hintAA9IndexHintOSgvp"></a>
                     <a name="//apple_ref/swift/Property/hint" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11FindOptionsV4hintAA4HintOSgvp">hint</a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsV4hintAA9IndexHintOSgvp">hint</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -748,12 +762,12 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/Hint.html">Hint</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/IndexHint.html">IndexHint</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L84">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L89">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -783,7 +797,7 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L87">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L92">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -791,9 +805,9 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11FindOptionsV3maxAA8DocumentVSgvp"></a>
+                    <a name="/s:10MongoSwift11FindOptionsV3maxAA12BSONDocumentVSgvp"></a>
                     <a name="//apple_ref/swift/Property/max" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11FindOptionsV3maxAA8DocumentVSgvp">max</a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsV3maxAA12BSONDocumentVSgvp">max</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -808,12 +822,12 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">max</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">max</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L90">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L95">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -832,7 +846,8 @@ can write data to the _tmp subdirectory in the dbPath directory.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>The maximum amount of time, in milliseconds, for the server to wait on new documents to satisfy a tailable
-cursor query. This only applies when used with <code><a href="../Enums/CursorType.html#/s:10MongoSwift10CursorTypeO13tailableAwaityA2CmF">CursorType.tailableAwait</a></code>. Otherwise, this option is ignored.</p>
+cursor query. This only applies when used with <code><a href="../Enums/MongoCursorType.html#/s:10MongoSwift0A10CursorTypeO13tailableAwaityA2CmF">MongoCursorType.tailableAwait</a></code>. Otherwise, this option is
+ignored.</p>
 
                       </div>
                       <div class="declaration">
@@ -844,7 +859,7 @@ cursor query. This only applies when used with <code><a href="../Enums/CursorTyp
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L94">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L100">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -874,7 +889,7 @@ cursor query. This only applies when used with <code><a href="../Enums/CursorTyp
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L97">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L103">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -882,9 +897,9 @@ cursor query. This only applies when used with <code><a href="../Enums/CursorTyp
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11FindOptionsV3minAA8DocumentVSgvp"></a>
+                    <a name="/s:10MongoSwift11FindOptionsV3minAA12BSONDocumentVSgvp"></a>
                     <a name="//apple_ref/swift/Property/min" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11FindOptionsV3minAA8DocumentVSgvp">min</a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsV3minAA12BSONDocumentVSgvp">min</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -899,12 +914,12 @@ cursor query. This only applies when used with <code><a href="../Enums/CursorTyp
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">min</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">min</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L100">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L106">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -935,7 +950,7 @@ to prevent excess memory use. Set this option to prevent that.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L104">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L110">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -943,9 +958,9 @@ to prevent excess memory use. Set this option to prevent that.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11FindOptionsV10projectionAA8DocumentVSgvp"></a>
+                    <a name="/s:10MongoSwift11FindOptionsV10projectionAA12BSONDocumentVSgvp"></a>
                     <a name="//apple_ref/swift/Property/projection" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11FindOptionsV10projectionAA8DocumentVSgvp">projection</a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsV10projectionAA12BSONDocumentVSgvp">projection</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -960,12 +975,12 @@ to prevent excess memory use. Set this option to prevent that.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">projection</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">projection</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L107">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L113">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -995,7 +1010,7 @@ to prevent excess memory use. Set this option to prevent that.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L110">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L116">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1025,7 +1040,7 @@ to prevent excess memory use. Set this option to prevent that.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L115">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L121">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1055,7 +1070,7 @@ to prevent excess memory use. Set this option to prevent that.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L118">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L124">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1063,9 +1078,9 @@ to prevent excess memory use. Set this option to prevent that.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11FindOptionsV12showRecordIdSbSgvp"></a>
-                    <a name="//apple_ref/swift/Property/showRecordId" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11FindOptionsV12showRecordIdSbSgvp">showRecordId</a>
+                    <a name="/s:10MongoSwift11FindOptionsV12showRecordIDSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/showRecordID" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsV12showRecordIDSbSgvp">showRecordID</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1081,12 +1096,12 @@ to the returned documents.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">showRecordId</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">showRecordID</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L122">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L128">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1116,7 +1131,7 @@ to the returned documents.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L125">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L131">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1124,9 +1139,9 @@ to the returned documents.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11FindOptionsV4sortAA8DocumentVSgvp"></a>
+                    <a name="/s:10MongoSwift11FindOptionsV4sortAA12BSONDocumentVSgvp"></a>
                     <a name="//apple_ref/swift/Property/sort" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11FindOptionsV4sortAA8DocumentVSgvp">sort</a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsV4sortAA12BSONDocumentVSgvp">sort</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1141,12 +1156,12 @@ to the returned documents.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">sort</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">sort</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L128">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L134">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1154,9 +1169,9 @@ to the returned documents.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift11FindOptionsV12allowDiskUse0E14PartialResults9batchSize9collation7comment10cursorType4hint5limit3max0R11AwaitTimeMS0rtU03min15noCursorTimeout10projection11readConcern14readPreference9returnKey12showRecordId4skip4sortACSbSg_AXSiSgAA8DocumentVSgSSSgAA0xO0OSgAA4HintOSgAYA0_A2YA0_AXA0_AA11ReadConcernVSgAA14ReadPreferenceVSgA2xYA0_tcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(allowDiskUse:allowPartialResults:batchSize:collation:comment:cursorType:hint:limit:max:maxAwaitTimeMS:maxTimeMS:min:noCursorTimeout:projection:readConcern:readPreference:returnKey:showRecordId:skip:sort:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift11FindOptionsV12allowDiskUse0E14PartialResults9batchSize9collation7comment10cursorType4hint5limit3max0R11AwaitTimeMS0rtU03min15noCursorTimeout10projection11readConcern14readPreference9returnKey12showRecordId4skip4sortACSbSg_AXSiSgAA8DocumentVSgSSSgAA0xO0OSgAA4HintOSgAYA0_A2YA0_AXA0_AA11ReadConcernVSgAA14ReadPreferenceVSgA2xYA0_tcfc">init(allowDiskUse:allowPartialResults:batchSize:collation:comment:cursorType:hint:limit:max:maxAwaitTimeMS:maxTimeMS:min:noCursorTimeout:projection:readConcern:readPreference:returnKey:showRecordId:skip:sort:)</a>
+                    <a name="/s:10MongoSwift11FindOptionsV12allowDiskUse0E14PartialResults9batchSize9collation7comment10cursorType4hint5limit3max0R11AwaitTimeMS0rtU03min15noCursorTimeout10projection11readConcern14readPreference9returnKey12showRecordID4skip4sortACSbSg_AXSiSgAA12BSONDocumentVSgSSSgAA0axO0OSgAA9IndexHintOSgAYA0_A2YA0_AXA0_AA11ReadConcernVSgAA14ReadPreferenceVSgA2xYA0_tcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(allowDiskUse:allowPartialResults:batchSize:collation:comment:cursorType:hint:limit:max:maxAwaitTimeMS:maxTimeMS:min:noCursorTimeout:projection:readConcern:readPreference:returnKey:showRecordID:skip:sort:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift11FindOptionsV12allowDiskUse0E14PartialResults9batchSize9collation7comment10cursorType4hint5limit3max0R11AwaitTimeMS0rtU03min15noCursorTimeout10projection11readConcern14readPreference9returnKey12showRecordID4skip4sortACSbSg_AXSiSgAA12BSONDocumentVSgSSSgAA0axO0OSgAA9IndexHintOSgAYA0_A2YA0_AXA0_AA11ReadConcernVSgAA14ReadPreferenceVSgA2xYA0_tcfc">init(allowDiskUse:<wbr>allowPartialResults:<wbr>batchSize:<wbr>collation:<wbr>comment:<wbr>cursorType:<wbr>hint:<wbr>limit:<wbr>max:<wbr>maxAwaitTimeMS:<wbr>maxTimeMS:<wbr>min:<wbr>noCursorTimeout:<wbr>projection:<wbr>readConcern:<wbr>readPreference:<wbr>returnKey:<wbr>showRecordID:<wbr>skip:<wbr>sort:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1175,29 +1190,29 @@ to the returned documents.</p>
     <span class="nv">allowDiskUse</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">allowPartialResults</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">batchSize</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">comment</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">cursorType</span><span class="p">:</span> <span class="kt"><a href="../Enums/CursorType.html">CursorType</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/Hint.html">Hint</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">cursorType</span><span class="p">:</span> <span class="kt"><a href="../Enums/MongoCursorType.html">MongoCursorType</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/IndexHint.html">IndexHint</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">max</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">max</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">maxAwaitTimeMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">min</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">min</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">noCursorTimeout</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">projection</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">projection</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadConcern.html">ReadConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadPreference.html">ReadPreference</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">returnKey</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">showRecordId</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">showRecordID</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">skip</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
-    <span class="nv">sort</span><span class="p">:</span> <span class="kt"><a href="../Structs/Document.html">Document</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+    <span class="nv">sort</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
 <span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L136-L178">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L142-L184">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1210,8 +1225,8 @@ to the returned documents.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
 </div>

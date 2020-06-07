@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwiftSync 1.0.0-rc1 Docs
+          MongoSwiftSync 1.0.0 Docs
         </a>
          (100% documented)
       </p>
@@ -39,7 +39,7 @@
         </p>
     
         <p class="header-col header-col--secondary">
-          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync%2Exml">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
             <img class="header-icon" src="img/dash.png"/>
             Install in Dash
           </a>
@@ -124,6 +124,8 @@
 
 <p><strong>Note</strong>: Transactions only work with MongoDB replica sets (v4.0+) and sharded clusters (v4.2+).</p>
 <h2 id='examples' class='heading'>Examples</h2>
+
+<p>Below are some basic examples of using transactions in <code>MongoSwift</code>. In realistic use cases, transactions would ideally be retried when facing transient errors. For more detailed examples featuring retry logic, see the <a href="https://docs.mongodb.com/manual/core/transactions-in-applications/#txn-core-api">official MongoDB documentation&rsquo;s examples</a>. </p>
 <h3 id='transaction-that-atomically-moves-a-code-document-code-from-one-code-mongocollection-code-to-another' class='heading'>Transaction that Atomically Moves a <code>Document</code> from One <code><a href="Structs/MongoCollection.html">MongoCollection</a></code> to Another</h3>
 
 <p>The transaction below atomically deletes the document <code>{ &quot;hello&quot;: &quot;world&quot; }</code> from the collection <code>test.src</code> and inserts the document in the collection <code>test.dest</code>. This ensures that the document exists in either <code>test.src</code> or <code>test.dest</code>, but not both or neither. Executing the delete and insert non-atomically raises the following issues:</p>
@@ -133,7 +135,13 @@
 <li>If <code>deleteOne()</code> fails and <code>insertOne()</code> succeeds, the document exists in both collections.</li>
 <li>If <code>deleteOne()</code> succeeds and <code>insertOne()</code> fails, the document does not exist in either collection.</li>
 </ul>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
+
+<p>In order to achieve the highest safety guarantees that MongoDB transactions offer, a &ldquo;snapshot&rdquo; read concern and a &ldquo;majority&rdquo; write concern must be used. To see the varying levels safety provided by different read concern / write concern configurations, see the <a href="https://docs.mongodb.com/manual/core/transactions/#read-concern-write-concern-read-preference">official MongoDB documentation</a>.</p>
+
+<p>Transactions will inherit the read concern / write concern / read preference specified on the client that started the transaction&rsquo;s session unless they were also specified in either the default transaction options or in the transaction options passed to <code>startTransaction</code>. See the below sections on how to do either.</p>
+
+<p><strong>Note:</strong> All operations executed as part of a transaction will use the transaction&rsquo;s read concern / write concern / read preference. Any of those options specified on the database or collection that executes the operation or on a per-operation basis will be <em>ignored</em>.</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">ClientOptions</span><span class="p">(</span><span class="nv">readConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">snapshot</span><span class="p">,</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">))</span>
 <span class="k">let</span> <span class="nv">session</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">startSession</span><span class="p">()</span>
 
 <span class="k">let</span> <span class="nv">db</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"test"</span><span class="p">)</span>
@@ -157,9 +165,9 @@
 <p>The default transaction options specified below apply to any transaction started on the session.</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">txnOpts</span> <span class="o">=</span> <span class="kt">TransactionOptions</span><span class="p">(</span>
     <span class="nv">maxCommitTimeMS</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
-    <span class="nv">readConcern</span><span class="p">:</span> <span class="kt">ReadConcern</span><span class="p">(</span><span class="o">.</span><span class="n">local</span><span class="p">),</span>
-    <span class="nv">readPreference</span><span class="p">:</span> <span class="o">.</span><span class="n">primaryPreferred</span><span class="p">,</span>
-    <span class="nv">writeConcern</span><span class="p">:</span> <span class="k">try</span> <span class="kt">WriteConcern</span><span class="p">(</span><span class="nv">w</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">)</span>
+    <span class="nv">readConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">snapshot</span><span class="p">,</span>
+    <span class="nv">readPreference</span><span class="p">:</span> <span class="o">.</span><span class="n">primary</span><span class="p">,</span>
+    <span class="nv">writeConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span>
 <span class="p">)</span>
 
 <span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
@@ -176,15 +184,15 @@
 </code></pre>
 <h3 id='transaction-with-custom-transaction-options' class='heading'>Transaction with Custom Transaction Options</h3>
 
-<p><strong>Note</strong>:: Any transaction options provided directly to <code>startTransaction()</code> override the default transaction options for the session. More so, the default transaction options for the session override any options inherited from the client.</p>
+<p><strong>Note</strong>: Any transaction options provided directly to <code>startTransaction()</code> override the default transaction options for the session. More so, the default transaction options for the session override any options inherited from the client.</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">session</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">startSession</span><span class="p">()</span>
 
 <span class="k">let</span> <span class="nv">txnOpts</span> <span class="o">=</span> <span class="kt">TransactionOptions</span><span class="p">(</span>
     <span class="nv">maxCommitTimeMS</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
-    <span class="nv">readConcern</span><span class="p">:</span> <span class="kt">ReadConcern</span><span class="p">(</span><span class="o">.</span><span class="n">local</span><span class="p">),</span>
-    <span class="nv">readPreference</span><span class="p">:</span> <span class="o">.</span><span class="n">primaryPreferred</span><span class="p">,</span>
-    <span class="nv">writeConcern</span><span class="p">:</span> <span class="k">try</span> <span class="kt">WriteConcern</span><span class="p">(</span><span class="nv">w</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">)</span>
+    <span class="nv">readConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">snapshot</span><span class="p">,</span>
+    <span class="nv">readPreference</span><span class="p">:</span> <span class="o">.</span><span class="n">primary</span><span class="p">,</span>
+    <span class="nv">writeConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span>
 <span class="p">)</span>
 
 <span class="n">session</span><span class="o">.</span><span class="nf">startTransaction</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="n">txnOpts</span><span class="p">)</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
@@ -200,6 +208,8 @@
 
 <ul>
 <li><a href="https://docs.mongodb.com/manual/core/transactions/">MongoDB Transactions documentation</a></li>
+<li><a href="https://docs.mongodb.com/manual/core/transactions-in-applications/#txn-core-api">MongoDB Driver Transactions Core API</a></li>
+<li><a href="https://docs.mongodb.com/manual/core/transactions/#read-concern-write-concern-read-preference">MongoDB Transactions and Read Concern / Write Concern / Read Preference</a></li>
 </ul>
 
           </div>
@@ -209,8 +219,8 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
 </div>

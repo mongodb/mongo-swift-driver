@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwift 1.0.0-rc1 Docs
+          MongoSwift 1.0.0 Docs
         </a>
          (99% documented)
       </p>
@@ -40,7 +40,7 @@
         </p>
     
         <p class="header-col header-col--secondary">
-          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwift%2Fdocsets%2FMongoSwift%2Exml">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwift%2Fdocsets%2FMongoSwift.xml">
             <img class="header-icon" src="img/dash.png"/>
             Install in Dash
           </a>
@@ -98,6 +98,9 @@
                 <a class="nav-group-task-link" href="Classes/BSONDecoder/DataDecodingStrategy.html">– DataDecodingStrategy</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONDocumentIterator.html">BSONDocumentIterator</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/BSONEncoder.html">BSONEncoder</a>
               </li>
               <li class="nav-group-task">
@@ -116,9 +119,6 @@
                 <a class="nav-group-task-link" href="Classes/ClientSession.html">ClientSession</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Classes/DocumentIterator.html">DocumentIterator</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/MongoClient.html">MongoClient</a>
               </li>
               <li class="nav-group-task">
@@ -133,6 +133,21 @@
                 <a class="nav-group-task-link" href="Enums/BSON.html">BSON</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError.html">BSONError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/DocumentTooLargeError.html">– DocumentTooLargeError</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/BSONType.html">BSONType</a>
               </li>
               <li class="nav-group-task">
@@ -142,19 +157,58 @@
                 <a class="nav-group-task-link" href="Enums/CommandEvent.html">CommandEvent</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Enums/CursorType.html">CursorType</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/DataCodingStrategy.html">DataCodingStrategy</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/DateCodingStrategy.html">DateCodingStrategy</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Enums/FullDocument.html">FullDocument</a>
+                <a class="nav-group-task-link" href="Enums/IndexHint.html">IndexHint</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Enums/Hint.html">Hint</a>
+                <a class="nav-group-task-link" href="Enums/MongoCursorType.html">MongoCursorType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError.html">MongoError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/CommandError.html">– CommandError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/WriteError.html">– WriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/BulkWriteError.html">– BulkWriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/ConnectionError.html">– ConnectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/AuthenticationError.html">– AuthenticationError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/CompatibilityError.html">– CompatibilityError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/ServerSelectionError.html">– ServerSelectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/WriteFailure.html">– WriteFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/WriteConcernFailure.html">– WriteConcernFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/BulkWriteFailure.html">– BulkWriteFailure</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/OperationType.html">OperationType</a>
@@ -174,20 +228,6 @@
             </ul>
           </li>
           <li class="nav-group-name">
-            <a class="nav-group-name-link" href="Extensions.html">Extensions</a>
-            <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Extensions/Date.html">Date</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Extensions/NSRegularExpression.html">NSRegularExpression</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Extensions/UUID.html">UUID</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-group-name">
             <a class="nav-group-name-link" href="Functions.html">Functions</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
@@ -199,28 +239,31 @@
             <a class="nav-group-name-link" href="Protocols.html">Protocols</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift17BSONErrorProtocolP">BSONErrorProtocol</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Protocols/CommandEventHandler.html">CommandEventHandler</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Protocols/LabeledError.html">LabeledError</a>
+                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift0A13ErrorProtocolP">MongoErrorProtocol</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift0A5ErrorP">MongoError</a>
+                <a class="nav-group-task-link" href="Protocols/MongoLabeledError.html">MongoLabeledError</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift12RuntimeErrorP">RuntimeError</a>
+                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift0A12RuntimeErrorP">MongoRuntimeError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift0A11ServerErrorP">MongoServerError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift0A9UserErrorP">MongoUserError</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Protocols/SDAMEventHandler.html">SDAMEventHandler</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift11ServerErrorP">ServerError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift9UserErrorP">UserError</a>
               </li>
             </ul>
           </li>
@@ -228,28 +271,43 @@
             <a class="nav-group-name-link" href="Structs.html">Structures</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/Address.html">Address</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/AggregateOptions.html">AggregateOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/AuthenticationError.html">AuthenticationError</a>
+                <a class="nav-group-task-link" href="Structs/BSONBinary.html">BSONBinary</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONBinary/Subtype.html">– Subtype</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONCode.html">BSONCode</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONCodeWithScope.html">BSONCodeWithScope</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/BSONCoderOptions.html">BSONCoderOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/Binary.html">Binary</a>
+                <a class="nav-group-task-link" href="Structs/BSONDBPointer.html">BSONDBPointer</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/Binary/Subtype.html">– Subtype</a>
+                <a class="nav-group-task-link" href="Structs/BSONDecimal128.html">BSONDecimal128</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/BulkWriteError.html">BulkWriteError</a>
+                <a class="nav-group-task-link" href="Structs/BSONDocument.html">BSONDocument</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/BulkWriteFailure.html">BulkWriteFailure</a>
+                <a class="nav-group-task-link" href="Structs/BSONObjectID.html">BSONObjectID</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONRegularExpression.html">BSONRegularExpression</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONSymbol.html">BSONSymbol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONTimestamp.html">BSONTimestamp</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/BulkWriteOptions.html">BulkWriteOptions</a>
@@ -264,28 +322,13 @@
                 <a class="nav-group-task-link" href="Structs/ChangeStreamOptions.html">ChangeStreamOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/ClientOptions.html">ClientOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/ClientSessionOptions.html">ClientSessionOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/Code.html">Code</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/CodeWithScope.html">CodeWithScope</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/CollectionOptions.html">CollectionOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/CollectionSpecification.html">CollectionSpecification</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/CollectionSpecificationInfo.html">CollectionSpecificationInfo</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/CommandError.html">CommandError</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/CommandFailedEvent.html">CommandFailedEvent</a>
@@ -297,12 +340,6 @@
                 <a class="nav-group-task-link" href="Structs/CommandSucceededEvent.html">CommandSucceededEvent</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/CompatibilityError.html">CompatibilityError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/ConnectionError.html">ConnectionError</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/CountDocumentsOptions.html">CountDocumentsOptions</a>
               </li>
               <li class="nav-group-task">
@@ -312,16 +349,7 @@
                 <a class="nav-group-task-link" href="Structs/CreateIndexOptions.html">CreateIndexOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/DBPointer.html">DBPointer</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/DatabaseOptions.html">DatabaseOptions</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/DatabaseSpecification.html">DatabaseSpecification</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/Decimal128.html">Decimal128</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/DeleteModelOptions.html">DeleteModelOptions</a>
@@ -334,9 +362,6 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/DistinctOptions.html">DistinctOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/Document.html">Document</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/DropCollectionOptions.html">DropCollectionOptions</a>
@@ -366,6 +391,9 @@
                 <a class="nav-group-task-link" href="Structs/FindOptions.html">FindOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FullDocument.html">FullDocument</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/IndexModel.html">IndexModel</a>
               </li>
               <li class="nav-group-task">
@@ -381,46 +409,43 @@
                 <a class="nav-group-task-link" href="Structs/InsertOneResult.html">InsertOneResult</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/InternalError.html">InternalError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/InvalidArgumentError.html">InvalidArgumentError</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/LogicError.html">LogicError</a>
+                <a class="nav-group-task-link" href="Structs/MongoClientOptions.html">MongoClientOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/MongoCollection.html">MongoCollection</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCollectionOptions.html">MongoCollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCredential.html">MongoCredential</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCredential/Mechanism.html">– Mechanism</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoDatabaseOptions.html">MongoDatabaseOptions</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/ObjectId.html">ObjectId</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/ReadConcern.html">ReadConcern</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/ReadConcern/Level.html">– Level</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/ReadPreference.html">ReadPreference</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/ReadPreference/Mode.html">– Mode</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/RegularExpression.html">RegularExpression</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/ReplaceOneModelOptions.html">ReplaceOneModelOptions</a>
@@ -433,6 +458,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/RunCommandOptions.html">RunCommandOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerAddress.html">ServerAddress</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/ServerClosedEvent.html">ServerClosedEvent</a>
@@ -457,15 +485,6 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/ServerSelectionError.html">ServerSelectionError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/Symbol.html">Symbol</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/Timestamp.html">Timestamp</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/TopologyClosedEvent.html">TopologyClosedEvent</a>
@@ -503,15 +522,6 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/WriteConcern/W.html">– W</a>
               </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/WriteConcernFailure.html">WriteConcernFailure</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/WriteError.html">WriteError</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Structs/WriteFailure.html">WriteFailure</a>
-              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -519,9 +529,6 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Typealiases.html#/s:10MongoSwift17InsertManyOptionsa">InsertManyOptions</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Typealiases.html#/s:10MongoSwift15ServerErrorCodea">ServerErrorCode</a>
               </li>
             </ul>
           </li>
@@ -567,7 +574,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L106-L152">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L106-L152">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -598,7 +605,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L155-L202">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L155-L202">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -629,7 +636,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L205-L253">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L205-L253">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -660,7 +667,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L293-L334">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L293-L334">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -691,7 +698,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L337-L369">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L337-L369">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -722,7 +729,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L372-L404">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L372-L404">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -753,7 +760,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L407-L444">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L407-L444">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -784,7 +791,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L447-L475">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L447-L475">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -815,7 +822,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L478-L506">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L478-L506">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -847,7 +854,7 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L510-L534">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L510-L534">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -878,7 +885,7 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L537-L570">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L537-L570">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -909,7 +916,7 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/APM.swift#L573-L607">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/APM.swift#L573-L607">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -917,9 +924,48 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift6BinaryV"></a>
-                    <a name="//apple_ref/swift/Struct/Binary" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift6BinaryV">Binary</a>
+                    <a name="/s:10MongoSwift12BSONDocumentV"></a>
+                    <a name="//apple_ref/swift/Struct/BSONDocument" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift12BSONDocumentV">BSONDocument</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A struct representing the BSON document type.</p>
+
+                        <a href="Structs/BSONDocument.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@dynamicMemberLookup</span>
+<span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONDocument</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">Codable</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">Collection</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">Sequence</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">Equatable</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">CustomStringConvertible</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">ExpressibleByDictionaryLiteral</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">Hashable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/BSON/BSONDocument.swift#L9-L42">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift10BSONBinaryV"></a>
+                    <a name="//apple_ref/swift/Struct/BSONBinary" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift10BSONBinaryV">BSONBinary</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -929,18 +975,18 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                       <div class="abstract">
                         <p>A struct to represent the BSON Binary type.</p>
 
-                        <a href="Structs/Binary.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/BSONBinary.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Binary</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONBinary</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONValue.swift#L193-L324">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/BSON/BSONValue.swift#L196-L374">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -948,9 +994,9 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift9DBPointerV"></a>
-                    <a name="//apple_ref/swift/Struct/DBPointer" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift9DBPointerV">DBPointer</a>
+                    <a name="/s:10MongoSwift13BSONDBPointerV"></a>
+                    <a name="//apple_ref/swift/Struct/BSONDBPointer" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift13BSONDBPointerV">BSONDBPointer</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -961,18 +1007,18 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                         <p>A struct to represent the deprecated DBPointer type.
 DBPointers cannot be instantiated, but they can be read from existing documents that contain them.</p>
 
-                        <a href="Structs/DBPointer.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/BSONDBPointer.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DBPointer</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONDBPointer</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONValue.swift#L387-L445">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/BSON/BSONValue.swift#L437-L495">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -980,9 +1026,9 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift10Decimal128V"></a>
-                    <a name="//apple_ref/swift/Struct/Decimal128" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift10Decimal128V">Decimal128</a>
+                    <a name="/s:10MongoSwift14BSONDecimal128V"></a>
+                    <a name="//apple_ref/swift/Struct/BSONDecimal128" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift14BSONDecimal128V">BSONDecimal128</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -992,19 +1038,19 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                       <div class="abstract">
                         <p>A struct to represent the BSON Decimal128 type.</p>
 
-                        <a href="Structs/Decimal128.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/BSONDecimal128.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Decimal128</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">Decimal128</span><span class="p">:</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONDecimal128</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDecimal128</span><span class="p">:</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONValue.swift#L448-L525">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/BSON/BSONValue.swift#L498-L579">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1012,9 +1058,9 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift13CodeWithScopeV"></a>
-                    <a name="//apple_ref/swift/Struct/CodeWithScope" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift13CodeWithScopeV">CodeWithScope</a>
+                    <a name="/s:10MongoSwift17BSONCodeWithScopeV"></a>
+                    <a name="//apple_ref/swift/Struct/BSONCodeWithScope" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift17BSONCodeWithScopeV">BSONCodeWithScope</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1024,18 +1070,18 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                       <div class="abstract">
                         <p>A struct to represent BSON CodeWithScope.</p>
 
-                        <a href="Structs/CodeWithScope.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/BSONCodeWithScope.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CodeWithScope</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONCodeWithScope</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONValue.swift#L610-L669">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/BSON/BSONValue.swift#L664-L723">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1043,9 +1089,9 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift4CodeV"></a>
-                    <a name="//apple_ref/swift/Struct/Code" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift4CodeV">Code</a>
+                    <a name="/s:10MongoSwift8BSONCodeV"></a>
+                    <a name="//apple_ref/swift/Struct/BSONCode" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift8BSONCodeV">BSONCode</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1055,18 +1101,18 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                       <div class="abstract">
                         <p>A struct to represent the BSON Code type.</p>
 
-                        <a href="Structs/Code.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/BSONCode.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Code</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONCode</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONValue.swift#L672-L710">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/BSON/BSONValue.swift#L726-L764">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1074,9 +1120,9 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift8ObjectIdV"></a>
-                    <a name="//apple_ref/swift/Struct/ObjectId" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift8ObjectIdV">ObjectId</a>
+                    <a name="/s:10MongoSwift12BSONObjectIDV"></a>
+                    <a name="//apple_ref/swift/Struct/BSONObjectID" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift12BSONObjectIDV">BSONObjectID</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1084,21 +1130,21 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>A struct to represent the BSON ObjectId type.</p>
+                        <p>A struct to represent the BSON ObjectID type.</p>
 
-                        <a href="Structs/ObjectId.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/BSONObjectID.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ObjectId</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span><span class="p">,</span> <span class="kt">Codable</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">ObjectId</span><span class="p">:</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONObjectID</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span><span class="p">,</span> <span class="kt">Codable</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONObjectID</span><span class="p">:</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONValue.swift#L779-L876">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/BSON/BSONValue.swift#L833-L927">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1106,9 +1152,9 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift17RegularExpressionV"></a>
-                    <a name="//apple_ref/swift/Struct/RegularExpression" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift17RegularExpressionV">RegularExpression</a>
+                    <a name="/s:10MongoSwift21BSONRegularExpressionV"></a>
+                    <a name="//apple_ref/swift/Struct/BSONRegularExpression" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift21BSONRegularExpressionV">BSONRegularExpression</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1118,18 +1164,18 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                       <div class="abstract">
                         <p>A struct to represent a BSON regular expression.</p>
 
-                        <a href="Structs/RegularExpression.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/BSONRegularExpression.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">RegularExpression</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONRegularExpression</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONValue.swift#L955-L1015">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/BSON/BSONValue.swift#L973-L1041">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1137,9 +1183,9 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift6SymbolV"></a>
-                    <a name="//apple_ref/swift/Struct/Symbol" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift6SymbolV">Symbol</a>
+                    <a name="/s:10MongoSwift10BSONSymbolV"></a>
+                    <a name="//apple_ref/swift/Struct/BSONSymbol" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift10BSONSymbolV">BSONSymbol</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1150,18 +1196,18 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                         <p>A struct to represent the deprecated Symbol type.
 Symbols cannot be instantiated, but they can be read from existing documents that contain them.</p>
 
-                        <a href="Structs/Symbol.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/BSONSymbol.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Symbol</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONSymbol</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONValue.swift#L1061-L1113">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/BSON/BSONValue.swift#L1087-L1139">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1169,9 +1215,9 @@ Symbols cannot be instantiated, but they can be read from existing documents tha
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift9TimestampV"></a>
-                    <a name="//apple_ref/swift/Struct/Timestamp" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift9TimestampV">Timestamp</a>
+                    <a name="/s:10MongoSwift13BSONTimestampV"></a>
+                    <a name="//apple_ref/swift/Struct/BSONTimestamp" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift13BSONTimestampV">BSONTimestamp</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1181,18 +1227,18 @@ Symbols cannot be instantiated, but they can be read from existing documents tha
                       <div class="abstract">
                         <p>A struct to represent the BSON Timestamp type.</p>
 
-                        <a href="Structs/Timestamp.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/BSONTimestamp.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Timestamp</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONTimestamp</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/BSONValue.swift#L1116-L1168">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/BSON/BSONValue.swift#L1142-L1194">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1223,46 +1269,7 @@ Symbols cannot be instantiated, but they can be read from existing documents tha
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/CodingStrategies.swift#L19-L36">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift8DocumentV"></a>
-                    <a name="//apple_ref/swift/Struct/Document" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift8DocumentV">Document</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>A struct representing the BSON document type.</p>
-
-                        <a href="Structs/Document.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">@dynamicMemberLookup</span>
-<span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Document</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">Document</span><span class="p">:</span> <span class="kt">Codable</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">Document</span><span class="p">:</span> <span class="kt">Collection</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">Document</span><span class="p">:</span> <span class="kt">Sequence</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">Document</span><span class="p">:</span> <span class="kt">Equatable</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">Document</span><span class="p">:</span> <span class="kt">CustomStringConvertible</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">Document</span><span class="p">:</span> <span class="kt">ExpressibleByDictionaryLiteral</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">Document</span><span class="p">:</span> <span class="kt">Hashable</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/BSON/Document.swift#L9-L42">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/BSON/CodingStrategies.swift#L19-L36">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1299,7 +1306,7 @@ Symbols cannot be instantiated, but they can be read from existing documents tha
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ChangeStream.swift#L35-L51">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ChangeStream.swift#L35-L51">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1331,7 +1338,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ChangeStreamDocument.swift#L3-L10">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ChangeStreamDocument.swift#L3-L10">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1362,7 +1369,38 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ChangeStreamDocument.swift#L41-L76">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ChangeStreamDocument.swift#L41-L76">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift12FullDocumentV"></a>
+                    <a name="//apple_ref/swift/Struct/FullDocument" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift12FullDocumentV">FullDocument</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Describes the modes for configuring the fullDocument field of a change stream document.</p>
+
+                        <a href="Structs/FullDocument.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">FullDocument</span> <span class="p">:</span> <span class="kt">RawRepresentable</span><span class="p">,</span> <span class="kt">Codable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ChangeStreamOptions.swift#L2-L17">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1393,7 +1431,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ChangeStreamOptions.swift#L30-L93">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ChangeStreamOptions.swift#L20-L83">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1401,9 +1439,9 @@ operations of type <code>update</code>.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift13ClientOptionsV"></a>
-                    <a name="//apple_ref/swift/Struct/ClientOptions" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift13ClientOptionsV">ClientOptions</a>
+                    <a name="/s:10MongoSwift0A13ClientOptionsV"></a>
+                    <a name="//apple_ref/swift/Struct/MongoClientOptions" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A13ClientOptionsV">MongoClientOptions</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1413,18 +1451,18 @@ operations of type <code>update</code>.</p>
                       <div class="abstract">
                         <p>Options to use when creating a <code><a href="Classes/MongoClient.html">MongoClient</a></code>.</p>
 
-                        <a href="Structs/ClientOptions.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/MongoClientOptions.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ClientOptions</span> <span class="p">:</span> <span class="kt"><a href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">MongoClientOptions</span> <span class="p">:</span> <span class="kt"><a href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a></span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L7-L114">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoClient.swift#L7-L127">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1432,9 +1470,9 @@ operations of type <code>update</code>.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift15DatabaseOptionsV"></a>
-                    <a name="//apple_ref/swift/Struct/DatabaseOptions" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift15DatabaseOptionsV">DatabaseOptions</a>
+                    <a name="/s:10MongoSwift0A15DatabaseOptionsV"></a>
+                    <a name="//apple_ref/swift/Struct/MongoDatabaseOptions" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A15DatabaseOptionsV">MongoDatabaseOptions</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1444,18 +1482,18 @@ operations of type <code>update</code>.</p>
                       <div class="abstract">
                         <p>Options to use when retrieving a <code><a href="Structs/MongoDatabase.html">MongoDatabase</a></code> from a <code><a href="Classes/MongoClient.html">MongoClient</a></code>.</p>
 
-                        <a href="Structs/DatabaseOptions.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/MongoDatabaseOptions.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DatabaseOptions</span> <span class="p">:</span> <span class="kt"><a href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">MongoDatabaseOptions</span> <span class="p">:</span> <span class="kt"><a href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a></span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoClient.swift#L117-L155">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoClient.swift#L130-L168">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1486,7 +1524,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection.swift#L17-L179">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection.swift#L17-L181">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1517,7 +1555,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L152-L160">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L152-L160">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1548,7 +1586,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L163-L174">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L163-L174">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1579,7 +1617,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L177-L191">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L177-L191">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1610,7 +1648,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L283-L316">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L283-L316">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1641,7 +1679,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L319-L432">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L319-L468">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1672,7 +1710,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L145-L186">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L145-L186">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1703,7 +1741,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L189-L247">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L189-L247">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1734,7 +1772,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L250-L314">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L250-L314">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1765,7 +1803,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L5-L39">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+Indexes.swift#L5-L39">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1796,7 +1834,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Indexes.swift#L42-L157">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+Indexes.swift#L42-L157">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1827,7 +1865,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Write.swift#L262-L274">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+Write.swift#L262-L274">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1858,7 +1896,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Write.swift#L280-L310">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+Write.swift#L280-L310">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1889,7 +1927,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Write.swift#L313-L338">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+Write.swift#L313-L338">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1920,7 +1958,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Write.swift#L341-L357">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+Write.swift#L341-L357">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1951,7 +1989,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Write.swift#L362-L376">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+Write.swift#L362-L380">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1982,7 +2020,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Write.swift#L379-L394">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+Write.swift#L383-L398">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2013,7 +2051,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Write.swift#L397-L407">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+Write.swift#L401-L411">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2044,7 +2082,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection+Write.swift#L410-L443">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection+Write.swift#L414-L447">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2075,7 +2113,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoCollection.swift#L5-L13">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCollection.swift#L5-L13">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2083,9 +2121,40 @@ operations of type <code>update</code>.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift17CollectionOptionsV"></a>
-                    <a name="//apple_ref/swift/Struct/CollectionOptions" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift17CollectionOptionsV">CollectionOptions</a>
+                    <a name="/s:10MongoSwift0A10CredentialV"></a>
+                    <a name="//apple_ref/swift/Struct/MongoCredential" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A10CredentialV">MongoCredential</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Represents an authentication credential.</p>
+
+                        <a href="Structs/MongoCredential.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">MongoCredential</span> <span class="p">:</span> <span class="kt">Decodable</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoCredential.swift#L2-L75">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A17CollectionOptionsV"></a>
+                    <a name="//apple_ref/swift/Struct/MongoCollectionOptions" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A17CollectionOptionsV">MongoCollectionOptions</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2095,18 +2164,18 @@ operations of type <code>update</code>.</p>
                       <div class="abstract">
                         <p>Options to set on a retrieved <code><a href="Structs/MongoCollection.html">MongoCollection</a></code>.</p>
 
-                        <a href="Structs/CollectionOptions.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/MongoCollectionOptions.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CollectionOptions</span> <span class="p">:</span> <span class="kt"><a href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">MongoCollectionOptions</span> <span class="p">:</span> <span class="kt"><a href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a></span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L5-L46">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoDatabase.swift#L5-L46">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2137,7 +2206,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L49-L57">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoDatabase.swift#L49-L57">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2168,417 +2237,7 @@ operations of type <code>update</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoDatabase.swift#L61-L531">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift12CommandErrorV"></a>
-                    <a name="//apple_ref/swift/Struct/CommandError" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12CommandErrorV">CommandError</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Thrown when commands experience errors on the server that prevent execution.</p>
-
-                        <a href="Structs/CommandError.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CommandError</span> <span class="p">:</span> <span class="kt"><a href="Protocols.html#/s:10MongoSwift11ServerErrorP">ServerError</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L22-L34">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift10WriteErrorV"></a>
-                    <a name="//apple_ref/swift/Struct/WriteError" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift10WriteErrorV">WriteError</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>An error that is thrown when a single write command fails on the server.</p>
-
-                        <a href="Structs/WriteError.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">WriteError</span> <span class="p">:</span> <span class="kt"><a href="Protocols.html#/s:10MongoSwift11ServerErrorP">ServerError</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L37-L46">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift14BulkWriteErrorV"></a>
-                    <a name="//apple_ref/swift/Struct/BulkWriteError" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift14BulkWriteErrorV">BulkWriteError</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>A error that ocurred while executing a bulk write.</p>
-
-                        <a href="Structs/BulkWriteError.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BulkWriteError</span> <span class="p">:</span> <span class="kt"><a href="Protocols.html#/s:10MongoSwift11ServerErrorP">ServerError</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L49-L66">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift10LogicErrorV"></a>
-                    <a name="//apple_ref/swift/Struct/LogicError" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift10LogicErrorV">LogicError</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>An error thrown when the driver is incorrectly used.</p>
-
-                        <a href="Structs/LogicError.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">LogicError</span> <span class="p">:</span> <span class="kt"><a href="Protocols.html#/s:10MongoSwift9UserErrorP">UserError</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L72-L76">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift20InvalidArgumentErrorV"></a>
-                    <a name="//apple_ref/swift/Struct/InvalidArgumentError" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift20InvalidArgumentErrorV">InvalidArgumentError</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>An error thrown when the user passes in invalid arguments to a driver method.</p>
-
-                        <a href="Structs/InvalidArgumentError.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">InvalidArgumentError</span> <span class="p">:</span> <span class="kt"><a href="Protocols.html#/s:10MongoSwift9UserErrorP">UserError</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L79-L83">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift13InternalErrorV"></a>
-                    <a name="//apple_ref/swift/Struct/InternalError" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift13InternalErrorV">InternalError</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>An error thrown when the driver encounters a internal error not caused by the user. This is usually indicative of
-a bug in the driver or system related failure (e.g. memory allocation failure).</p>
-
-                        <a href="Structs/InternalError.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">InternalError</span> <span class="p">:</span> <span class="kt"><a href="Protocols.html#/s:10MongoSwift12RuntimeErrorP">RuntimeError</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L90-L94">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift15ConnectionErrorV"></a>
-                    <a name="//apple_ref/swift/Struct/ConnectionError" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift15ConnectionErrorV">ConnectionError</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>An error thrown when encountering a connection or socket related error.
-May contain labels providing additional information on the nature of the error.</p>
-
-                        <a href="Structs/ConnectionError.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ConnectionError</span> <span class="p">:</span> <span class="kt"><a href="Protocols.html#/s:10MongoSwift12RuntimeErrorP">RuntimeError</a></span><span class="p">,</span> <span class="kt"><a href="Protocols/LabeledError.html">LabeledError</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L98-L104">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift19AuthenticationErrorV"></a>
-                    <a name="//apple_ref/swift/Struct/AuthenticationError" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19AuthenticationErrorV">AuthenticationError</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>An error thrown when encountering an authentication related error (e.g. invalid credentials).</p>
-
-                        <a href="Structs/AuthenticationError.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">AuthenticationError</span> <span class="p">:</span> <span class="kt"><a href="Protocols.html#/s:10MongoSwift12RuntimeErrorP">RuntimeError</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L107-L111">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift18CompatibilityErrorV"></a>
-                    <a name="//apple_ref/swift/Struct/CompatibilityError" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift18CompatibilityErrorV">CompatibilityError</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>An error thrown when trying to use a feature that the deployment does not support.</p>
-
-                        <a href="Structs/CompatibilityError.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CompatibilityError</span> <span class="p">:</span> <span class="kt"><a href="Protocols.html#/s:10MongoSwift12RuntimeErrorP">RuntimeError</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L114-L118">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift20ServerSelectionErrorV"></a>
-                    <a name="//apple_ref/swift/Struct/ServerSelectionError" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift20ServerSelectionErrorV">ServerSelectionError</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>An error that occured when trying to select a server (e.g. a timeout, or no server matched read preference).</p>
-<div class="aside aside-see-also">
-    <p class="aside-title">See also</p>
-    <a href="https://docs.mongodb.com/manual/core/read-preference-mechanics/">https://docs.mongodb.com/manual/core/read-preference-mechanics/</a>
-
-</div>
-
-                        <a href="Structs/ServerSelectionError.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ServerSelectionError</span> <span class="p">:</span> <span class="kt"><a href="Protocols.html#/s:10MongoSwift12RuntimeErrorP">RuntimeError</a></span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L123-L127">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift12WriteFailureV"></a>
-                    <a name="//apple_ref/swift/Struct/WriteFailure" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12WriteFailureV">WriteFailure</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>A struct to represent a single write error not resulting from an executed write operation.</p>
-
-                        <a href="Structs/WriteFailure.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">WriteFailure</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L130-L160">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift19WriteConcernFailureV"></a>
-                    <a name="//apple_ref/swift/Struct/WriteConcernFailure" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19WriteConcernFailureV">WriteConcernFailure</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>A struct to represent a write concern error resulting from an executed write operation.</p>
-
-                        <a href="Structs/WriteConcernFailure.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">WriteConcernFailure</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L163-L207">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift16BulkWriteFailureV"></a>
-                    <a name="//apple_ref/swift/Struct/BulkWriteFailure" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift16BulkWriteFailureV">BulkWriteFailure</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>A struct to represent a write error resulting from an executed bulk write.</p>
-
-                        <a href="Structs/BulkWriteFailure.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BulkWriteFailure</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoError.swift#L210-L246">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoDatabase.swift#L61-L549">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2610,7 +2269,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/MongoNamespace.swift#L2-L11">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/MongoNamespace.swift#L2-L11">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2641,7 +2300,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/AggregateOperation.swift#L5-L70">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/AggregateOperation.swift#L5-L70">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2672,7 +2331,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L4-L50">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/CountDocumentsOperation.swift#L4-L50">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2703,7 +2362,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/CreateCollectionOperation.swift#L4-L103">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/CreateCollectionOperation.swift#L4-L103">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2734,7 +2393,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/CreateIndexesOperation.swift#L4-L16">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/CreateIndexesOperation.swift#L4-L16">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2765,7 +2424,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/DistinctOperation.swift#L4-L35">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/DistinctOperation.swift#L4-L35">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2796,7 +2455,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/DropIndexesOperation.swift#L4-L16">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/DropIndexesOperation.swift#L4-L16">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2827,7 +2486,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/EstimatedDocumentCountOperation.swift#L4-L30">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/EstimatedDocumentCountOperation.swift#L4-L30">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2858,7 +2517,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L34-L204">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L34-L210">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2889,7 +2548,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/FindOperation.swift#L207-L289">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/FindOperation.swift#L213-L295">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2927,7 +2586,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/ListCollectionsOperation.swift#L42-L49">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/ListCollectionsOperation.swift#L42-L49">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2965,7 +2624,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/ListCollectionsOperation.swift#L57-L72">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/ListCollectionsOperation.swift#L57-L72">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2996,7 +2655,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/ListCollectionsOperation.swift#L75-L83">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/ListCollectionsOperation.swift#L75-L83">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3027,7 +2686,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/ListDatabasesOperation.swift#L4-L17">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/ListDatabasesOperation.swift#L4-L17">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3058,7 +2717,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/ListDatabasesOperation.swift#L29-L37">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/ListDatabasesOperation.swift#L29-L37">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3089,7 +2748,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/RunCommandOperation.swift#L4-L31">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/RunCommandOperation.swift#L4-L31">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3120,7 +2779,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/StartSessionOperation.swift#L5-L19">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/StartSessionOperation.swift#L5-L24">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3151,7 +2810,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/Operations/StartTransactionOperation.swift#L4-L29">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/Operations/StartTransactionOperation.swift#L4-L29">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3184,7 +2843,7 @@ May contain labels providing additional information on the nature of the error.<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ReadConcern.swift#L4-L98">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ReadConcern.swift#L4-L67">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3221,7 +2880,7 @@ directed to.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/ReadPreference.swift#L6-L263">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/ReadPreference.swift#L6-L263">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3229,9 +2888,9 @@ directed to.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift7AddressV"></a>
-                    <a name="//apple_ref/swift/Struct/Address" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift7AddressV">Address</a>
+                    <a name="/s:10MongoSwift13ServerAddressV"></a>
+                    <a name="//apple_ref/swift/Struct/ServerAddress" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift13ServerAddressV">ServerAddress</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -3241,18 +2900,19 @@ directed to.</p>
                       <div class="abstract">
                         <p>A struct representing a network address, consisting of a host and port.</p>
 
-                        <a href="Structs/Address.html" class="slightly-smaller">See more</a>
+                        <a href="Structs/ServerAddress.html" class="slightly-smaller">See more</a>
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Address</span> <span class="p">:</span> <span class="kt">Equatable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ServerAddress</span> <span class="p">:</span> <span class="kt">Equatable</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">ServerAddress</span><span class="p">:</span> <span class="kt">CustomStringConvertible</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/SDAM.swift#L5-L39">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/SDAM.swift#L5-L39">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3284,7 +2944,7 @@ directed to.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/SDAM.swift#L62-L173">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/SDAM.swift#L68-L179">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3316,7 +2976,7 @@ which servers are up, what type of servers they are, which is primary, and so on
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/SDAM.swift#L197-L264">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/SDAM.swift#L203-L270">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3349,7 +3009,7 @@ which servers are up, what type of servers they are, which is primary, and so on
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwift/WriteConcern.swift#L5-L178">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwift/WriteConcern.swift#L5-L210">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3362,8 +3022,8 @@ which servers are up, what type of servers they are, which is primary, and so on
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
 </div>

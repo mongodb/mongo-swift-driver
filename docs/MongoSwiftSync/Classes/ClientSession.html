@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwiftSync 1.0.0-rc1 Docs
+          MongoSwiftSync 1.0.0 Docs
         </a>
          (100% documented)
       </p>
@@ -40,7 +40,7 @@
         </p>
     
         <p class="header-col header-col--secondary">
-          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb%2Egithub%2Eio%2Fmongo%2Dswift%2Ddriver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync%2Exml">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
             <img class="header-icon" src="../img/dash.png"/>
             Install in Dash
           </a>
@@ -134,7 +134,7 @@
  <a href="https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions">https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#sessions</a> for more details.</p>
 
 <p>e.g.</p>
-<pre class="highlight swift"><code>   <span class="k">let</span> <span class="nv">opts</span> <span class="o">=</span> <span class="kt">CollectionOptions</span><span class="p">(</span><span class="nv">readConcern</span><span class="p">:</span> <span class="kt">ReadConcern</span><span class="p">(</span><span class="o">.</span><span class="n">majority</span><span class="p">),</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="k">try</span> <span class="kt">WriteConcern</span><span class="p">(</span><span class="nv">w</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">))</span>
+<pre class="highlight swift"><code>   <span class="k">let</span> <span class="nv">opts</span> <span class="o">=</span> <span class="kt">MongoCollectionOptions</span><span class="p">(</span><span class="nv">readConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">,</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">)</span>
    <span class="k">let</span> <span class="nv">collection</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"mycoll"</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="n">opts</span><span class="p">)</span>
    <span class="k">try</span> <span class="n">client</span><span class="o">.</span><span class="n">withSession</span> <span class="p">{</span> <span class="n">session</span> <span class="k">in</span>
        <span class="k">try</span> <span class="n">collection</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"x"</span><span class="p">:</span> <span class="mi">1</span><span class="p">],</span> <span class="nv">session</span><span class="p">:</span> <span class="n">session</span><span class="p">)</span>
@@ -185,7 +185,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L33">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ClientSession.swift#L33">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -193,9 +193,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:14MongoSwiftSync13ClientSessionC11clusterTime0aB08DocumentVSgvp"></a>
+                    <a name="/s:14MongoSwiftSync13ClientSessionC11clusterTime0aB012BSONDocumentVSgvp"></a>
                     <a name="//apple_ref/swift/Property/clusterTime" class="dashAnchor"></a>
-                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC11clusterTime0aB08DocumentVSgvp">clusterTime</a>
+                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC11clusterTime0aB012BSONDocumentVSgvp">clusterTime</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -215,12 +215,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">clusterTime</span><span class="p">:</span> <span class="kt">Document</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">clusterTime</span><span class="p">:</span> <span class="kt">BSONDocument</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L40">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ClientSession.swift#L40">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -228,9 +228,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:14MongoSwiftSync13ClientSessionC13operationTime0aB09TimestampVSgvp"></a>
+                    <a name="/s:14MongoSwiftSync13ClientSessionC13operationTime0aB013BSONTimestampVSgvp"></a>
                     <a name="//apple_ref/swift/Property/operationTime" class="dashAnchor"></a>
-                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC13operationTime0aB09TimestampVSgvp">operationTime</a>
+                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC13operationTime0aB013BSONTimestampVSgvp">operationTime</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -251,12 +251,12 @@ of the following are true:</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">operationTime</span><span class="p">:</span> <span class="kt">Timestamp</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">operationTime</span><span class="p">:</span> <span class="kt">BSONTimestamp</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L46">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ClientSession.swift#L46">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -286,7 +286,7 @@ of the following are true:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L49">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ClientSession.swift#L49">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -294,9 +294,9 @@ of the following are true:</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:14MongoSwiftSync13ClientSessionC18advanceClusterTime2toy0aB08DocumentV_tF"></a>
+                    <a name="/s:14MongoSwiftSync13ClientSessionC18advanceClusterTime2toy0aB012BSONDocumentV_tF"></a>
                     <a name="//apple_ref/swift/Method/advanceClusterTime(to:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC18advanceClusterTime2toy0aB08DocumentV_tF">advanceClusterTime(to:)</a>
+                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC18advanceClusterTime2toy0aB012BSONDocumentV_tF">advanceClusterTime(to:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -313,7 +313,7 @@ of the following are true:</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">advanceClusterTime</span><span class="p">(</span><span class="n">to</span> <span class="nv">clusterTime</span><span class="p">:</span> <span class="kt">Document</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">advanceClusterTime</span><span class="p">(</span><span class="n">to</span> <span class="nv">clusterTime</span><span class="p">:</span> <span class="kt">BSONDocument</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -337,7 +337,7 @@ of the following are true:</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L84-L86">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ClientSession.swift#L84-L86">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -345,9 +345,9 @@ of the following are true:</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:14MongoSwiftSync13ClientSessionC20advanceOperationTime2toy0aB09TimestampV_tF"></a>
+                    <a name="/s:14MongoSwiftSync13ClientSessionC20advanceOperationTime2toy0aB013BSONTimestampV_tF"></a>
                     <a name="//apple_ref/swift/Method/advanceOperationTime(to:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC20advanceOperationTime2toy0aB09TimestampV_tF">advanceOperationTime(to:)</a>
+                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC20advanceOperationTime2toy0aB013BSONTimestampV_tF">advanceOperationTime(to:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -364,7 +364,7 @@ of the following are true:</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">advanceOperationTime</span><span class="p">(</span><span class="n">to</span> <span class="nv">operationTime</span><span class="p">:</span> <span class="kt">Timestamp</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">advanceOperationTime</span><span class="p">(</span><span class="n">to</span> <span class="nv">operationTime</span><span class="p">:</span> <span class="kt">BSONTimestamp</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -388,7 +388,7 @@ of the following are true:</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L96-L98">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ClientSession.swift#L96-L98">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -398,7 +398,7 @@ of the following are true:</p>
                     <code>
                     <a name="/s:14MongoSwiftSync13ClientSessionC16startTransaction7optionsy0aB00G7OptionsVSg_tKF"></a>
                     <a name="//apple_ref/swift/Method/startTransaction(options:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC16startTransaction7optionsy0aB00G7OptionsVSg_tKF">startTransaction(options:)</a>
+                    <a class="token" href="#/s:14MongoSwiftSync13ClientSessionC16startTransaction7optionsy0aB00G7OptionsVSg_tKF">startTransaction(options:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -406,18 +406,26 @@ of the following are true:</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Starts a multi-document transaction for all subsequent operations in this session. Any options provided in
- <code><a href="../Classes/ClientSession.html#/s:14MongoSwiftSync13ClientSessionC7options0aB00dE7OptionsVSgvp">options</a></code> override the default transaction options for this session and any options inherited from
- <code><a href="../Classes/MongoClient.html">MongoClient</a></code>. The transaction must be completed with <code>commitTransaction</code> or <code>abortTransaction</code>. An in-progress
- transaction is automatically aborted when <code>ClientSession</code> goes out of scope.</p>
+                        <p>Starts a multi-document transaction for all subsequent operations in this session.</p>
+
+<p>Any options provided in <code><a href="../Classes/ClientSession.html#/s:14MongoSwiftSync13ClientSessionC7options0aB00dE7OptionsVSgvp">options</a></code> will override the default transaction options for this session and any options
+ inherited from <code><a href="../Classes/MongoClient.html">MongoClient</a></code>.</p>
+
+<p>Operations executed as part of the transaction will use the options specified on the transaction, and those
+ options cannot be overridden at a per-operation level. Any options that overlap with the transaction options
+ which can be specified at a per operation level (e.g. write concern) <em>will be ignored</em> if specified. This
+ includes options specified at the database or collection level on the object used to execute an operation.</p>
+
+<p>The transaction must be completed with <code>commitTransaction</code> or <code>abortTransaction</code>. An in-progress transaction is
+ automatically aborted when <code>ClientSession.end()</code> is called.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
     <p>Throws:</p>
 
 <ul>
-<li><code>CommandError</code> if an error occurs that prevents the command from executing.</li>
-<li><code>LogicError</code> if the session already has an in-progress transaction.</li>
-<li><code>LogicError</code> if <code>startTransaction</code> is called on an ended session.</li>
+<li><code>MongoError.CommandError</code> if an error occurs that prevents the command from executing.</li>
+<li><code>MongoError.LogicError</code> if the session already has an in-progress transaction.</li>
+<li><code>MongoError.LogicError</code> if <code>startTransaction</code> is called on an ended session.</li>
 </ul>
 
 </div><div class="aside aside-see-also">
@@ -459,7 +467,7 @@ of the following are true:</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L117-L119">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ClientSession.swift#L125-L127">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -483,9 +491,9 @@ of the following are true:</p>
     <p>Throws:</p>
 
 <ul>
-<li><code>CommandError</code> if an error occurs that prevents the command from executing.</li>
-<li><code>LogicError</code> if the session has no in-progress transaction.</li>
-<li><code>LogicError</code> if <code>commitTransaction</code> is called on an ended session.</li>
+<li><code>MongoError.CommandError</code> if an error occurs that prevents the command from executing.</li>
+<li><code>MongoError.LogicError</code> if the session has no in-progress transaction.</li>
+<li><code>MongoError.LogicError</code> if <code>commitTransaction</code> is called on an ended session.</li>
 </ul>
 
 </div><div class="aside aside-see-also">
@@ -508,7 +516,7 @@ of the following are true:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L132-L134">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ClientSession.swift#L140-L142">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -532,8 +540,8 @@ of the following are true:</p>
     <p>Throws:</p>
 
 <ul>
-<li><code>LogicError</code> if the session has no in-progress transaction.</li>
-<li><code>LogicError</code> if <code>abortTransaction</code> is called on an ended session.</li>
+<li><code>MongoError.LogicError</code> if the session has no in-progress transaction.</li>
+<li><code>MongoError.LogicError</code> if <code>abortTransaction</code> is called on an ended session.</li>
 </ul>
 
 </div><div class="aside aside-see-also">
@@ -556,7 +564,7 @@ of the following are true:</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0-rc1/Sources/MongoSwiftSync/ClientSession.swift#L146-L148">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/ClientSession.swift#L154-L156">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -569,8 +577,8 @@ of the following are true:</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-05-05)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
 </div>
