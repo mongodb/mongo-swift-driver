@@ -12,9 +12,9 @@ func routes(_ app: Application) throws {
     /// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.
     let collection = app.mongoClient.db("home").collection("kittens", withType: Kitten.self)
 
-    app.get("kittens") { _ -> EventLoopFuture<[Kitten]> in
+    app.get("kittens") { req -> EventLoopFuture<[Kitten]> in
         collection.find().flatMap { cursor in
             cursor.toArray()
-        }
+        }.hop(to: req.eventLoop)
     }
 }

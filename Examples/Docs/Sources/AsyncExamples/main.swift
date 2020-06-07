@@ -188,7 +188,7 @@ private func transactions() throws {
         let eventLoop = txnFuture.eventLoop
         return txnFuture.flatMapError { error in
             guard
-                let labeledError = error as? LabeledError,
+                let labeledError = error as? MongoLabeledError,
                 labeledError.errorLabels?.contains("TransientTransactionError") == true
             else {
                 return eventLoop.makeFailedFuture(error)
@@ -205,7 +205,7 @@ private func transactions() throws {
         let eventLoop = commitFuture.eventLoop
         return commitFuture.flatMapError { error in
             guard
-                let labeledError = error as? LabeledError,
+                let labeledError = error as? MongoLabeledError,
                 labeledError.errorLabels?.contains("UnknownTransactionCommitResult") == true
             else {
                 print("Error during commit...")

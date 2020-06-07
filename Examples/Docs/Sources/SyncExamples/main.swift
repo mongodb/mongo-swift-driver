@@ -119,7 +119,7 @@ private func transactions() throws {
             } catch {
                 print("Transaction aborted. Caught exception during transaction.")
                 guard
-                    let labeledError = error as? LabeledError,
+                    let labeledError = error as? MongoLabeledError,
                     labeledError.errorLabels?.contains("TransientTransactionError") == true
                 else {
                     throw error
@@ -141,7 +141,7 @@ private func transactions() throws {
                 break
             } catch {
                 guard
-                    let labeledError = error as? LabeledError,
+                    let labeledError = error as? MongoLabeledError,
                     labeledError.errorLabels?.contains("UnknownTransactionCommitResult") == true
                 else {
                     print("Error during commit ...")

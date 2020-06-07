@@ -3,6 +3,9 @@ import PackageDescription
 
 let package = Package(
     name: "KituraExample",
+    platforms: [
+        .macOS(.v10_14)
+    ],
     dependencies: [
         .package(url: "https://github.com/IBM-Swift/Kitura", .upToNextMajor(from: "2.9.1")),
         .package(url: "https://github.com/mongodb/mongo-swift-driver", .upToNextMajor(from: "1.0.0")),
