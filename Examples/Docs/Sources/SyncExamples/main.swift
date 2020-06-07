@@ -11,7 +11,7 @@ private func causalConsistency() throws {
     // Start Causal Consistency Example 1
     let s1 = client1.startSession(options: ClientSessionOptions(causalConsistency: true))
     let currentDate = Date()
-    var dbOptions = DatabaseOptions(
+    var dbOptions = MongoDatabaseOptions(
         readConcern: .majority,
         writeConcern: try .majority(wtimeoutMS: 1000)
     )
@@ -80,12 +80,12 @@ private func changeStreams() throws {
 
     do {
         // Start Changestream Example 4
-        let pipeline: [Document] = [
+        let pipeline: [BSONDocument] = [
             ["$match": ["fullDocument.username": "alice"]],
             ["$addFields": ["newField": "this is an added field!"]]
         ]
         let inventory = db.collection("inventory")
-        let changeStream = try inventory.watch(pipeline, withEventType: Document.self)
+        let changeStream = try inventory.watch(pipeline, withEventType: BSONDocument.self)
         let next = changeStream.next()
         // End Changestream Example 4
     }

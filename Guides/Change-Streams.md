@@ -12,9 +12,9 @@ let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
 
-inventory.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
+inventory.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<BSONDocument>>`
     stream.forEach { event in
-        // process `ChangeStreamEvent<Document>` here
+        // process `ChangeStreamEvent<BSONDocument>` here
     }
 }.whenFailure { error in
     // handle error
@@ -80,9 +80,9 @@ let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let client = try MongoClient(using: elg)
 let db = client.db("example")
 
-db.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
+db.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<BSONDocument>>`
     stream.forEach { event in
-        // process `ChangeStreamEvent<Document>` here
+        // process `ChangeStreamEvent<BSONDocument>` here
     }
 }.whenFailure { error in
     // handle error
@@ -98,9 +98,9 @@ Note: the types of the `fullDocument` property, as well as the return type of `C
 let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let client = try MongoClient(using: elg)
 
-client.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
+client.watch().flatMap { stream in // a `ChangeStream<ChangeStreamEvent<BSONDocument>>`
     stream.forEach { event in
-        // process `ChangeStreamEvent<Document>` here
+        // process `ChangeStreamEvent<BSONDocument>` here
     }
 }.whenFailure { error in
     // handle error
@@ -117,7 +117,7 @@ let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
 
-inventory.watch().flatMap { stream -> EventLoopFuture<ChangeStream<ChangeStreamEvent<Document>>> in
+inventory.watch().flatMap { stream -> EventLoopFuture<ChangeStream<ChangeStreamEvent<BSONDocument>>> in
     // read the first change event
     stream.next().flatMap { _ in
         // simulate an error by killing the stream
@@ -129,7 +129,7 @@ inventory.watch().flatMap { stream -> EventLoopFuture<ChangeStream<ChangeStreamE
     }
 }.flatMap { resumedStream in
     resumedStream.forEach { event in
-        // process `ChangeStreamEvent<Document>` here
+        // process `ChangeStreamEvent<BSONDocument>` here
     }
 }.whenFailure { error in
     // handle error
@@ -145,13 +145,13 @@ let client = try MongoClient(using: elg)
 let inventory = client.db("example").collection("inventory")
 
 // Only include events where the changed document's username = "alice"
-let pipeline: [Document] = [
-    ["$match": ["fullDocument.username": "alice"] as Document]
+let pipeline: [BSONDocument] = [
+    ["$match": ["fullDocument.username": "alice"]]
 ]
 
-inventory.watch(pipeline).flatMap { stream in // a `ChangeStream<ChangeStreamEvent<Document>>`
+inventory.watch(pipeline).flatMap { stream in // a `ChangeStream<ChangeStreamEvent<BSONDocument>>`
     stream.forEach { event in
-        // process `ChangeStreamEvent<Document>` here
+        // process `ChangeStreamEvent<BSONDocument>` here
     }
 }.whenFailure { error in
     // handle error
