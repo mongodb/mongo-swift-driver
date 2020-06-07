@@ -348,6 +348,12 @@ let uuid = try UUID(from: myBSONBinary) // old
 let uuid = try myBSONBinary.toUUID() // new
 ```
 
+#### Extended JSON Conversion
+Previously, `Document`/`BSONDocument` had computed properties, `extendedJSON` and `canonicalExtendedJSON`, to support converting to those formats. To better signify that these methods involve a non-constant time conversion, we've converted these properties to methods named `toExtendedJSONString()` and `toCanonicalExtendedJSONString()`, respectively.
+
+#### Errors
+Previously, the BSON library used the same types of errors as the driver. As of 1.0.0, the BSON library has its own set of errors. Please see the [error handling guide](https://github.com/mongodb/mongo-swift-driver/blob/master/Guides/Error-Handling.md) for more details.
+
 ### Migrating from the 0.0.1-0.1.3 API to the 0.2.0 BSON API
 In version 0.2.0 of `MongoSwift`, the public API for using BSON values was changed dramatically. This section will describe the process for migrating from the old API (BSON API v1) to this new one (BSON API v2).
 #### Overview of BSON API v1
