@@ -94,6 +94,22 @@ If you have a setup for developing the driver in an editor other than the ones l
 * [swift.vim](https://github.com/Utagai/swift.vim): A fork of Keith Smiley's `swift.vim` with fixed indenting rules. This adds proper indenting and syntax for Swift to Vim. This fork also provides a match rule for column width highlighting.
   * Please read the [NOTICE](https://github.com/Utagai/swift.vim#notice) for proper credits.
 
+### VSCode
+
+* You can get formatting support by searching and installing `vknabel.vscode-swiftformat`
+  * You need to add the setting `"swiftformat.enable": true` to either your project or global settings
+  * You can add the `"editor.formatOnSave": true` setting to get format on save
+* You can get autocomplete and compile checking by searching and installing `vknabel.vscode-swift-development-environment`
+  * It should work out of the box but if you run in to issues start with explicitly specifying the language server settings:
+
+```json
+"swift.languageServerPath": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
+"sde.languageServerMode": "sourcekit-lsp",
+"sourcekit-lsp.toolchainPath": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain",
+```
+
+* If its working and you run into an issue hit Cmd+Shift+P / Cmd+Shift+P and type "reload" to get and run the 'Developer: Reload Window'
+
 ## Workflow
 1. Create a feature branch, named by the corresponding JIRA ticket if exists, along with a short descriptor of the work: for example, `SWIFT-30/writeconcern`.
 1. Do your work on the branch.
