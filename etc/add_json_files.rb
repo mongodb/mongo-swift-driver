@@ -22,6 +22,20 @@ dns_seedlist = make_reference(project, "./Tests/Specs/initial-dns-seedlist-disco
 auth = make_reference(project, "./Tests/Specs/auth")
 transactions = make_reference(project, "./Tests/Specs/transactions")
 uri_options = make_reference(project, "./Tests/Specs/uri-options")
-mongoswift_tests_target.add_resources([crud, corpus, cm, read_write_concern, retryable_writes, retryable_reads, change_streams, dns_seedlist, auth, transactions, uri_options])
+conn_string = make_reference(project, "./Tests/Specs/connection-string")
+mongoswift_tests_target.add_resources([
+    crud,
+    corpus,
+    cm,
+    read_write_concern,
+    retryable_writes,
+    retryable_reads,
+    change_streams,
+    dns_seedlist,
+    auth,
+    transactions,
+    uri_options,
+    conn_string
+])
 
 project.save
