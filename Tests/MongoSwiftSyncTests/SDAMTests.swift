@@ -41,11 +41,10 @@ final class SDAMTests: MongoSwiftTestCase {
 
         let connString = try ConnectionString(MongoSwiftTestCase.getConnectionString())
 
-        guard let host = connString.hosts?[0] else {
+        guard let hostAddress = connString.hosts?[0] else {
             XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
             return
         }
-        let hostAddress = try ServerAddress(host)
 
         expect(receivedEvents.count).to(equal(4))
         expect(receivedEvents[0].topologyOpeningValue).toNot(beNil())

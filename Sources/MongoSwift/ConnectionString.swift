@@ -200,25 +200,21 @@ internal class ConnectionString {
 
     /// Returns the host/port pairs specified in the connection string, or nil if this connection string's scheme is
     /// “mongodb+srv://”.
-    internal var hosts: [String]? {
+    internal var hosts: [ServerAddress]? {
         guard let hostList = mongoc_uri_get_hosts(self._uri) else {
             return nil
         }
 
-        var hosts = [String]()
-        var next = hostList.pointee
-        while true {
-            hosts.append(withUnsafeBytes(of: next.host_and_port) { rawPtr in
-                guard let baseAddress = rawPtr.baseAddress else {
-                    return ""
-                }
-                return String(cString: baseAddress.assumingMemoryBound(to: CChar.self))
-            })
+        var hosts = [ServerAddress]()
+        var next = hostList
 
-            if next.next == nil {
+        while true {
+            hosts.append(ServerAddress(next))
+
+            guard let nextPointer = next.pointee.next else {
                 break
             }
-            next = next.next.pointee
+            next = UnsafePointer(nextPointer)
         }
 
         return hosts
