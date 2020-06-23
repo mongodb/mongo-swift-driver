@@ -45,7 +45,7 @@ open class MongoSwiftTestCase: XCTestCase {
         var output = uri
         // remove all but the first host so we connect to a single mongos.
         for host in hosts[1...] {
-            output.removeSubstring(",\(host)")
+            output.removeSubstring(",\(host.description)")
         }
         return output
     }
@@ -66,7 +66,7 @@ open class MongoSwiftTestCase: XCTestCase {
         let hostsRange = Range(match.range(at: 1), in: uri)!
 
         return try! ConnectionString(uri).hosts!.map { host in
-            uri.replacingCharacters(in: hostsRange, with: host)
+            uri.replacingCharacters(in: hostsRange, with: host.description)
         }
     }
 

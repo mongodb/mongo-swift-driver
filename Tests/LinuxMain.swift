@@ -92,6 +92,7 @@ extension CommandMonitoringTests {
 extension ConnectionStringTests {
     static var allTests = [
         ("testURIOptions", testURIOptions),
+        ("testConnectionString", testConnectionString),
     ]
 }
 
