@@ -100,7 +100,8 @@ final class ConnectionStringTests: MongoSwiftTestCase {
                     !(shouldWarnButLibmongocErrors[filename]?.contains(testCase.description) ?? false) else {
                     expect(try ConnectionString(testCase.uri)).to(
                         throwError(
-                            errorType: MongoError.InvalidArgumentError.self),
+                            errorType: MongoError.InvalidArgumentError.self
+                        ),
                         description: testCase.description
                     )
                     continue
