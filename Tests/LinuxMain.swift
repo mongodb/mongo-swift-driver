@@ -89,6 +89,12 @@ extension CommandMonitoringTests {
     ]
 }
 
+extension ConnectionStringTests {
+    static var allTests = [
+        ("testURIOptions", testURIOptions),
+    ]
+}
+
 extension CrudTests {
     static var allTests = [
         ("testReads", testReads),
@@ -402,6 +408,7 @@ XCTMain([
     testCase(ClientSessionTests.allTests),
     testCase(CodecTests.allTests),
     testCase(CommandMonitoringTests.allTests),
+    testCase(ConnectionStringTests.allTests),
     testCase(CrudTests.allTests),
     testCase(DNSSeedlistTests.allTests),
     testCase(DocumentTests.allTests),

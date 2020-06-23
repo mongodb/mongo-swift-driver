@@ -174,7 +174,28 @@ internal class ConnectionString {
         guard let optsDoc = mongoc_uri_get_options(self._uri) else {
             return nil
         }
-        return BSONDocument(copying: optsDoc)
+        var copy = BSONDocument(copying: optsDoc)
+
+        if let authSource = self.authSource {
+            copy.authsource = .string(authSource)
+        }
+        if let authMechanism = self.authMechanism {
+            copy.authmechanism = .string(authMechanism.name)
+        }
+        if let authMechanismProperties = self.authMechanismProperties {
+            copy.authmechanismproperties = .document(authMechanismProperties)
+        }
+        if let parsedTagSets = self.readPreference.tagSets {
+            copy.readpreferencetags = .array(parsedTagSets.map { BSON.document($0) })
+        }
+        if let compressors = self.compressors {
+            copy.compressors = .array(compressors.map { .string($0) })
+        }
+        if let readConcern = self.readConcern.level {
+            copy.readconcernlevel = .string(readConcern)
+        }
+
+        return copy
     }
 
     /// Returns the host/port pairs specified in the connection string, or nil if this connection string's scheme is
@@ -201,6 +222,13 @@ internal class ConnectionString {
         }
 
         return hosts
+    }
+
+    internal var compressors: [String]? {
+        guard let compressors = mongoc_uri_get_compressors(self._uri) else {
+            return nil
+        }
+        return BSONDocument(copying: compressors).keys
     }
 
     private func hasOption(_ option: String) -> Bool {
