@@ -44,6 +44,10 @@ internal class ConnectionString {
         if let credential = options?.credential {
             try self.setMongoCredential(credential)
         }
+
+        if let appName = options?.appName {
+            mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_APPNAME, appName)
+        }
     }
 
     /// Initializes a new connection string that wraps a copy of the provided URI. Does not destroy the input URI.

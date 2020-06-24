@@ -5,6 +5,10 @@ import NIOConcurrencyHelpers
 
 /// Options to use when creating a `MongoClient`.
 public struct MongoClientOptions: CodingStrategyProvider {
+    /// Specifies a custom app name. This value is used in MongoDB logs and profiling data.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/#urioption.appName
+    public var appName: String?
+
     /// Specifies authentication options for use with the client.
     public var credential: MongoCredential?
 
@@ -86,6 +90,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
+        appName: String? = nil,
         credential: MongoCredential? = nil,
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
@@ -105,6 +110,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         uuidCodingStrategy: UUIDCodingStrategy? = nil,
         writeConcern: WriteConcern? = nil
     ) {
+        self.appName = appName
         self.credential = credential
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
