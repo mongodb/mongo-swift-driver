@@ -201,4 +201,54 @@ final class ConnectionStringTests: MongoSwiftTestCase {
     func testConnectionString() throws {
         try self.runTests("connection-string")
     }
+
+    func testAppNameOption() throws {
+        // option is set correctly from options struct
+        let opts1 = MongoClientOptions(appName: "MyApp")
+        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts1)
+        expect(connStr1.appName).to(equal("MyApp"))
+
+        // option is parsed correctly from string
+        let connStr2 = try ConnectionString("mongodb://localhost:27017/?appName=MyApp")
+        expect(connStr2.appName).to(equal("MyApp"))
+
+        // options struct overrides string
+        let connStr3 = try ConnectionString("mongodb://localhost:27017/?appName=MyApp2", options: opts1)
+        expect(connStr3.appName).to(equal("MyApp"))
+    }
+
+    func testReplSetOption() throws {
+        // option is set correctly from options struct
+        var opts = MongoClientOptions(replicaSet: "rs0")
+        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts)
+        expect(connStr1.replicaSet).to(equal("rs0"))
+
+        // option is parsed correctly from string
+        let connStr2 = try ConnectionString("mongodb://localhost:27017/?replicaSet=rs1")
+        expect(connStr2.replicaSet).to(equal("rs1"))
+
+        // options struct overrides string
+        let connStr3 = try ConnectionString("mongodb://localhost:27017/?replicaSet=rs1", options: opts)
+        expect(connStr3.replicaSet).to(equal("rs0"))
+
+        guard MongoSwiftTestCase.topologyType == .replicaSetWithPrimary else {
+            print("Skipping rest of test because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+
+        // lower server selection timeout to speed up expected failure
+        let testConnStr = MongoSwiftTestCase.getConnectionString() + "&serverSelectionTimeoutMS=1000"
+
+        // setting actual name via client options should succeed in connecting
+        opts.replicaSet = try ConnectionString(testConnStr).replicaSet
+        try self.withTestClient(testConnStr, options: opts) { client in
+            expect(try client.listDatabases().wait()).toNot(throwError())
+        }
+
+        // setting to an incorrect repl set name via client options should fail to connect
+        opts.replicaSet! += "xyz"
+        try self.withTestClient(testConnStr, options: opts) { client in
+            expect(try client.listDatabases().wait()).to(throwError())
+        }
+    }
 }

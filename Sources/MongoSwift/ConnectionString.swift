@@ -48,6 +48,10 @@ internal class ConnectionString {
         if let appName = options?.appName {
             mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_APPNAME, appName)
         }
+
+        if let replicaSet = options?.replicaSet {
+            mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_REPLICASET, replicaSet)
+        }
     }
 
     /// Initializes a new connection string that wraps a copy of the provided URI. Does not destroy the input URI.
@@ -229,6 +233,20 @@ internal class ConnectionString {
             return nil
         }
         return BSONDocument(copying: compressors).keys
+    }
+
+    internal var replicaSet: String? {
+        guard let rs = mongoc_uri_get_replica_set(self._uri) else {
+            return nil
+        }
+        return String(cString: rs)
+    }
+
+    internal var appName: String? {
+        guard let appName = mongoc_uri_get_option_as_utf8(self._uri, MONGOC_URI_APPNAME, nil) else {
+            return nil
+        }
+        return String(cString: appName)
     }
 
     private func hasOption(_ option: String) -> Bool {
