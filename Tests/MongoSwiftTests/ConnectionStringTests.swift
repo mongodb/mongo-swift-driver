@@ -236,18 +236,29 @@ final class ConnectionStringTests: MongoSwiftTestCase {
             return
         }
 
-        // lower server selection timeout to speed up expected failure
-        let testConnStr = MongoSwiftTestCase.getConnectionString() + "&serverSelectionTimeoutMS=1000"
+        let testConnStr = MongoSwiftTestCase.getConnectionString()
+        let rsName = try ConnectionString(testConnStr).replicaSet!
 
-        // setting actual name via client options should succeed in connecting
-        opts.replicaSet = try ConnectionString(testConnStr).replicaSet
+        var connStrWithoutRS = testConnStr
+        connStrWithoutRS.removeSubstring("replicaSet=\(rsName)")
+        print("without rs: \(connStrWithoutRS)")
+
+        // setting actual name via options struct only should succeed in connecting
+        opts.replicaSet = rsName
+        try self.withTestClient(connStrWithoutRS, options: opts) { client in
+            expect(try client.listDatabases().wait()).toNot(throwError())
+        }
+
+        // setting actual name via both client options and URI should succeed in connecting
+        opts.replicaSet = rsName
         try self.withTestClient(testConnStr, options: opts) { client in
             expect(try client.listDatabases().wait()).toNot(throwError())
         }
 
         // setting to an incorrect repl set name via client options should fail to connect
+        // speed up server selection timeout to fail faster
         opts.replicaSet! += "xyz"
-        try self.withTestClient(testConnStr, options: opts) { client in
+        try self.withTestClient(testConnStr + "&serverSelectionTimeoutMS=1000", options: opts) { client in
             expect(try client.listDatabases().wait()).to(throwError())
         }
     }
