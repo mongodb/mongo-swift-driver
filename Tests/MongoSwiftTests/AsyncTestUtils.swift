@@ -38,6 +38,16 @@ extension MongoClient {
             return try ServerVersion(versionString)
         }
     }
+
+    /// Determine whether server version and topology requirements for a certain test are met
+    internal func meetsRequirements(_ testRequirement: TestRequirement) throws -> UnmetRequirements? {
+        let reply: BSONDocument = try self.db("admin").runCommand(["isMaster": 1]).wait()
+        return try commonMeetsRequirements(
+            testRequirement: testRequirement,
+            serverVersion: self.serverVersion().wait(),
+            topologyType: topologyType(reply)
+        )
+    }
 }
 
 extension MongoDatabase {

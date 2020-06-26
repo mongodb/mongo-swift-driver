@@ -70,33 +70,6 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
     }
 }
 
-/// Struct representing conditions that a deployment must meet in order for a test file to be run.
-internal struct TestRequirement: Decodable {
-    private let minServerVersion: ServerVersion?
-    private let maxServerVersion: ServerVersion?
-    private let topology: [String]?
-
-    /// Determines if the given deployment meets this requirement.
-    func isMet(by version: ServerVersion, _ topology: TopologyDescription.TopologyType) -> Bool {
-        if let minVersion = self.minServerVersion {
-            guard minVersion <= version else {
-                return false
-            }
-        }
-        if let maxVersion = self.maxServerVersion {
-            guard maxVersion >= version else {
-                return false
-            }
-        }
-        if let topologies = self.topology?.map({ TopologyDescription.TopologyType(from: $0) }) {
-            guard topologies.contains(topology) else {
-                return false
-            }
-        }
-        return true
-    }
-}
-
 /// Enum representing the contents of deployment before a spec test has been run.
 internal enum TestData: Decodable {
     /// Data for multiple collections, with the name of the collection mapping to its contents.
@@ -223,10 +196,9 @@ extension SpecTestFile {
         }
 
         let setupClient = try MongoClient.makeTestClient()
-        let version = try setupClient.serverVersion()
 
         if let requirements = self.runOn {
-            guard requirements.contains(where: { $0.isMet(by: version, MongoSwiftTestCase.topologyType) }) else {
+            guard try requirements.contains(where: { try setupClient.meetsRequirements($0) == nil }) else {
                 fileLevelLog("Skipping tests from file \(self.name), deployment requirements not met.")
                 return
             }

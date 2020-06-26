@@ -64,10 +64,11 @@ final class RetryableWritesTests: MongoSwiftTestCase {
         let tests = try retrieveSpecTestFiles(specName: "retryable-writes", asType: RetryableWritesTestFile.self)
         for (fileName, testFile) in tests {
             let setupClient = try MongoClient.makeTestClient()
-            let version = try setupClient.serverVersion()
 
             if let requirements = testFile.runOn {
-                guard requirements.contains(where: { $0.isMet(by: version, MongoSwiftTestCase.topologyType) }) else {
+                guard try requirements.contains(where: {
+                    try setupClient.meetsRequirements($0) == nil
+                }) else {
                     fileLevelLog("Skipping tests from file \(fileName), deployment requirements not met.")
                     continue
                 }

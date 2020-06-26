@@ -122,6 +122,95 @@ open class MongoSwiftTestCase: XCTestCase {
     }
 }
 
+/// Enumerates the different topology configurations that are used throughout the tests
+public enum TestTopologyConfiguration {
+    case sharded
+    case replicaSet
+    case single
+    case unknown
+
+    public init(from str: String) {
+        switch str {
+        case "sharded", "sharded_cluster":
+            self = .sharded
+        case "replicaset", "replica_set", "replicaSet":
+            self = .replicaSet
+        case "single":
+            self = .single
+        default:
+            self = .unknown
+        }
+    }
+}
+
+/// Enumerates different possible unmet requirements that can be returned by meetsRequirements
+public enum UnmetRequirements {
+    case minServerVersion(actual: ServerVersion, required: ServerVersion)
+    case maxServerVersion(actual: ServerVersion, required: ServerVersion)
+    case topology(actual: TestTopologyConfiguration, required: [TestTopologyConfiguration])
+}
+
+/// Determines the topologyType of a client based on the reply returned by running an isMaster command
+public func topologyType(_ isMasterReply: BSONDocument) throws -> TestTopologyConfiguration {
+    // if statements checking for symptoms of different topologies
+    if isMasterReply["msg"] != "isdbgrid" && isMasterReply["setName"] == nil && isMasterReply["isreplicaset"] != true {
+        return .single
+    }
+    if isMasterReply["msg"] == "isdbgrid" {
+        return .sharded
+    }
+    if isMasterReply["ismaster"] == true && isMasterReply["setName"] != nil {
+        return .replicaSet
+    }
+    return .unknown
+}
+
+/// Called by Sync and Async MeetsRequirements functions
+public func commonMeetsRequirements(
+    testRequirement: TestRequirement,
+    serverVersion: ServerVersion,
+    topologyType: TestTopologyConfiguration
+) throws -> UnmetRequirements? {
+    testRequirement.isMet(by: serverVersion, topologyType)
+}
+
+/// Struct representing conditions that a deployment must meet in order for a test file to be run.
+public struct TestRequirement: Decodable {
+    private let minServerVersion: ServerVersion?
+    private let maxServerVersion: ServerVersion?
+    private let topology: [String]?
+
+    public init(
+        minServerVersion: ServerVersion? = nil,
+        maxServerVersion: ServerVersion? = nil,
+        acceptableTopologies: [TestTopologyConfiguration]? = nil
+    ) {
+        self.minServerVersion = minServerVersion
+        self.maxServerVersion = maxServerVersion
+        self.topology = acceptableTopologies?.map { "\($0)" } // convert to strings
+    }
+
+    /// Determines if the given deployment meets this requirement.
+    public func isMet(by version: ServerVersion, _ topology: TestTopologyConfiguration) -> UnmetRequirements? {
+        if let minVersion = self.minServerVersion {
+            guard minVersion <= version else {
+                return .minServerVersion(actual: version, required: minVersion)
+            }
+        }
+        if let maxVersion = self.maxServerVersion {
+            guard maxVersion >= version else {
+                return .maxServerVersion(actual: version, required: maxVersion)
+            }
+        }
+        if let topologies = self.topology?.map({ TestTopologyConfiguration(from: $0) }) {
+            guard topologies.contains(topology) else {
+                return .topology(actual: topology, required: topologies)
+            }
+        }
+        return nil
+    }
+}
+
 extension BSONDocument {
     public func sortedEquals(_ other: BSONDocument) -> Bool {
         let keys = self.keys.sorted()
@@ -211,6 +300,25 @@ public func sortedEqual(_ expectedValue: BSONDocument?) -> Predicate<BSONDocumen
 
         let matches = expected.sortedEquals(actual)
         return PredicateResult(status: PredicateStatus(bool: matches), message: msg)
+    }
+}
+
+/// Prints a message if a server version or topology requirement is not met and a test is skipped
+public func printRequirementNotMetMessage(
+    testName: String,
+    unmetRequirements: UnmetRequirements
+) {
+    switch unmetRequirements {
+    case let .minServerVersion(_, required):
+        print("Skipping test case \"\(testName)\": minimum required server " +
+            "version \(required) not met.")
+
+    case let .maxServerVersion(_, required):
+        print("Skipping test case \"\(testName)\": maximum required server " +
+            "version \(required) not met.")
+
+    case let .topology(actual, _):
+        print("Skipping \(testName) due to unsupported topology type \(actual)")
     }
 }
 
