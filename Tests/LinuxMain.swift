@@ -93,6 +93,8 @@ extension ConnectionStringTests {
     static var allTests = [
         ("testURIOptions", testURIOptions),
         ("testConnectionString", testConnectionString),
+        ("testAppNameOption", testAppNameOption),
+        ("testReplSetOption", testReplSetOption),
     ]
 }
 
