@@ -6,6 +6,7 @@ internal class ConnectionString {
     private let _uri: OpaquePointer
 
     /// Initializes a new `ConnectionString` with the provided options.
+    // swiftlint:disable:next cyclomatic_complexity
     internal init(_ connectionString: String, options: MongoClientOptions? = nil) throws {
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
@@ -47,6 +48,10 @@ internal class ConnectionString {
 
         if let appName = options?.appName {
             mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_APPNAME, appName)
+        }
+
+        if let replicaSet = options?.replicaSet {
+            mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_REPLICASET, replicaSet)
         }
     }
 
@@ -229,6 +234,20 @@ internal class ConnectionString {
             return nil
         }
         return BSONDocument(copying: compressors).keys
+    }
+
+    internal var replicaSet: String? {
+        guard let rs = mongoc_uri_get_replica_set(self._uri) else {
+            return nil
+        }
+        return String(cString: rs)
+    }
+
+    internal var appName: String? {
+        guard let appName = mongoc_uri_get_option_as_utf8(self._uri, MONGOC_URI_APPNAME, nil) else {
+            return nil
+        }
+        return String(cString: appName)
     }
 
     private func hasOption(_ option: String) -> Bool {

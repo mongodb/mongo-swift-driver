@@ -6,7 +6,7 @@ import XCTest
 extension String {
     /// Removes the first occurrence of the specified substring from the string. If the substring is not present, has
     /// no effect.
-    fileprivate mutating func removeSubstring(_ s: String) {
+    public mutating func removeSubstring(_ s: String) {
         guard s.count <= self.count else {
             return
         }

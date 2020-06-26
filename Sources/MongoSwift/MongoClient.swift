@@ -36,6 +36,9 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Specifies a ReadPreference to use for the client.
     public var readPreference: ReadPreference?
 
+    /// Specifies the name of the replica set the driver should connect to.
+    public var replicaSet: String?
+
     /// Determines whether the client should retry supported read operations (on by default).
     public var retryReads: Bool?
 
@@ -98,6 +101,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         maxPoolSize: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
+        replicaSet: String? = nil,
         retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
         threadPoolSize: Int? = nil,
@@ -118,6 +122,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.maxPoolSize = maxPoolSize
         self.readConcern = readConcern
         self.readPreference = readPreference
+        self.replicaSet = replicaSet
         self.retryWrites = retryWrites
         self.retryReads = retryReads
         self.threadPoolSize = threadPoolSize
