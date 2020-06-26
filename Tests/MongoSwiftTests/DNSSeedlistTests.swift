@@ -65,17 +65,29 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
             // TODO: DRIVERS-796 or DRIVERS-990: unskip this test
             guard fileName != "txt-record-with-overridden-uri-option.json" else {
-                return
+                continue
             }
 
             // Enclose all of the potentially throwing code in `doTest`. Sometimes the expected errors come when
             // parsing the URI, and other times they are not until we try to select a server.
             func doTest() throws -> ConnectionString {
-                let opts = MongoClientOptions(
+                var opts = MongoClientOptions(
                     tlsAllowInvalidCertificates: true,
                     tlsCAFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
                     tlsCertificateKeyFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
                 )
+
+                // NOTE: since we have to connect to the replica set and attempt server selection to get the SRV
+                // records resolved and the URI updated accordingly, we override cases where ssl=false by always
+                // setting `tls: true` in the opts struct. thus the value in the final URI after server selection
+                // selection is always true.
+                // here we assert that ssl=false is at least correctly parsed from the URI.
+                if testCase.uri.contains("ssl=false") {
+                    let tempConnStr = try ConnectionString(testCase.uri)
+                    expect(tempConnStr.options?["tls"]?.boolValue).to(beFalse())
+                    opts.tls = true
+                }
+
                 return try self.withTestClient(testCase.uri, options: opts) { client in
                     client.addSDAMEventHandler(topologyWatcher)
                     // try selecting a server to trigger SDAM
@@ -110,6 +122,10 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                 switch k {
                 // the test files still use SSL, but libmongoc uses TLS
                 case "ssl":
+                    // see note above for why we skip asserting here.
+                    guard v.boolValue == true else {
+                        continue
+                    }
                     expect(connStrOptions["tls"]).to(equal(v))
                 // these values are not returned as part of the options doc
                 case "authSource", "auth_database":

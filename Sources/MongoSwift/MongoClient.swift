@@ -251,7 +251,7 @@ public class MongoClient {
         initializeMongoc()
 
         let connString = try ConnectionString(connectionString, options: options)
-        self.connectionPool = try ConnectionPool(from: connString, options: options)
+        self.connectionPool = try ConnectionPool(from: connString)
         self.operationExecutor = OperationExecutor(
             eventLoopGroup: eventLoopGroup,
             threadPoolSize: options?.threadPoolSize ?? MongoClient.defaultThreadPoolSize
