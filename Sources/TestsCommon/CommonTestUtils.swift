@@ -123,7 +123,12 @@ open class MongoSwiftTestCase: XCTestCase {
 }
 
 /// Enumerates the different topology configurations that are used throughout the tests
-public enum TestTopologyConfiguration {
+public enum TestTopologyConfiguration: Decodable {
+    public init(from decoder: Decoder) throws {
+        let str = try decoder.singleValueContainer().decode(String.self)
+        self.init(from: str)
+    }
+
     case sharded
     case replicaSet
     case single
@@ -141,6 +146,24 @@ public enum TestTopologyConfiguration {
             self = .unknown
         }
     }
+
+    /// Determines the topologyType of a client based on the reply returned by running an isMaster command
+    public init(_ isMasterReply: BSONDocument) throws {
+        // Check for symptoms of different topologies
+        if isMasterReply["msg"] != "isdbgrid" &&
+            isMasterReply["setName"] == nil &&
+            isMasterReply["isreplicaset"] != true {
+            self = .single
+        }
+        if isMasterReply["msg"] == "isdbgrid" {
+            self = .sharded
+        }
+        if isMasterReply["ismaster"] == true && isMasterReply["setName"] != nil {
+            self = .replicaSet
+        } else {
+            self = .unknown
+        }
+    }
 }
 
 /// Enumerates different possible unmet requirements that can be returned by meetsRequirements
@@ -148,21 +171,6 @@ public enum UnmetRequirements {
     case minServerVersion(actual: ServerVersion, required: ServerVersion)
     case maxServerVersion(actual: ServerVersion, required: ServerVersion)
     case topology(actual: TestTopologyConfiguration, required: [TestTopologyConfiguration])
-}
-
-/// Determines the topologyType of a client based on the reply returned by running an isMaster command
-public func topologyType(_ isMasterReply: BSONDocument) throws -> TestTopologyConfiguration {
-    // if statements checking for symptoms of different topologies
-    if isMasterReply["msg"] != "isdbgrid" && isMasterReply["setName"] == nil && isMasterReply["isreplicaset"] != true {
-        return .single
-    }
-    if isMasterReply["msg"] == "isdbgrid" {
-        return .sharded
-    }
-    if isMasterReply["ismaster"] == true && isMasterReply["setName"] != nil {
-        return .replicaSet
-    }
-    return .unknown
 }
 
 /// Called by Sync and Async MeetsRequirements functions
@@ -178,7 +186,7 @@ public func commonMeetsRequirements(
 public struct TestRequirement: Decodable {
     private let minServerVersion: ServerVersion?
     private let maxServerVersion: ServerVersion?
-    private let topology: [String]?
+    private let topology: [TestTopologyConfiguration]?
 
     public init(
         minServerVersion: ServerVersion? = nil,
@@ -187,7 +195,7 @@ public struct TestRequirement: Decodable {
     ) {
         self.minServerVersion = minServerVersion
         self.maxServerVersion = maxServerVersion
-        self.topology = acceptableTopologies?.map { "\($0)" } // convert to strings
+        self.topology = acceptableTopologies
     }
 
     /// Determines if the given deployment meets this requirement.
@@ -202,7 +210,7 @@ public struct TestRequirement: Decodable {
                 return .maxServerVersion(actual: version, required: maxVersion)
             }
         }
-        if let topologies = self.topology?.map({ TestTopologyConfiguration(from: $0) }) {
+        if let topologies = self.topology {
             guard topologies.contains(topology) else {
                 return .topology(actual: topology, required: topologies)
             }
@@ -304,7 +312,7 @@ public func sortedEqual(_ expectedValue: BSONDocument?) -> Predicate<BSONDocumen
 }
 
 /// Prints a message if a server version or topology requirement is not met and a test is skipped
-public func printRequirementNotMetMessage(
+public func printSkipMessage(
     testName: String,
     unmetRequirements: UnmetRequirements
 ) {
