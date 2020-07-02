@@ -8,7 +8,8 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamNext() throws {
         try self.withTestClient { client in
             let testRequirements = TestRequirement(
-                acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+                acceptableTopologies: [.replicaSet, .sharded]
+            )
 
             let unmetRequirements = try client.checkRequirements(testRequirements)
             guard unmetRequirements == nil else {
@@ -83,7 +84,8 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamEmpty() throws {
         try self.withTestClient { client in
             let testRequirements = TestRequirement(
-                acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+                acceptableTopologies: [.replicaSet, .sharded]
+            )
 
             let unmetRequirements = try client.checkRequirements(testRequirements)
             guard unmetRequirements == nil else {
@@ -114,7 +116,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamToArray() throws {
         try self.withTestClient { client in
             let testRequirements = TestRequirement(
-                acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+                acceptableTopologies: [.replicaSet, .sharded])
 
             let unmetRequirements = try client.checkRequirements(testRequirements)
             guard unmetRequirements == nil else {
@@ -156,7 +158,8 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
         try self.withTestClient { client in
             let testRequirements = TestRequirement(
-                acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+                acceptableTopologies: [.replicaSet, .sharded]
+            )
 
             let unmetRequirements = try client.checkRequirements(testRequirements)
             guard unmetRequirements == nil else {

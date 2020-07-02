@@ -66,7 +66,7 @@ extension MongoClient {
     /// Determine whether server version and topology requirements for a certain test are met
     internal func checkRequirements(_ testRequirement: TestRequirement) throws -> UnmetRequirements? {
         let reply = try self.db("admin").runCommand(["isMaster": 1])
-        let topologyType = try TestTopologyConfiguration(reply)
+        let topologyType = try TestTopologyConfiguration(isMasterReply: reply)
         let serverVersion = try self.serverVersion()
         return testRequirement.isMet(by: serverVersion, topologyType)
     }

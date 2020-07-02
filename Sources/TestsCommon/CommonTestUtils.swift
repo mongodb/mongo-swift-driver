@@ -123,16 +123,10 @@ open class MongoSwiftTestCase: XCTestCase {
 }
 
 /// Enumerates the different topology configurations that are used throughout the tests
-public enum TestTopologyConfiguration: Decodable {
-    public init(from decoder: Decoder) throws {
-        let str = try decoder.singleValueContainer().decode(String.self)
-        self.init(from: str)
-    }
-
+public enum TestTopologyConfiguration: String, Decodable {
     case sharded
     case replicaSet
     case single
-    case unknown
 
     public init(from str: String) {
         switch str {
@@ -143,25 +137,23 @@ public enum TestTopologyConfiguration: Decodable {
         case "single":
             self = .single
         default:
-            self = .unknown
+            fatalError("Invalid test topology configuration")
         }
     }
 
     /// Determines the topologyType of a client based on the reply returned by running an isMaster command
-    public init(_ isMasterReply: BSONDocument) throws {
+    public init(isMasterReply: BSONDocument) throws {
         // Check for symptoms of different topologies
         if isMasterReply["msg"] != "isdbgrid" &&
             isMasterReply["setName"] == nil &&
             isMasterReply["isreplicaset"] != true {
             self = .single
-        }
-        if isMasterReply["msg"] == "isdbgrid" {
+        } else if isMasterReply["msg"] == "isdbgrid" {
             self = .sharded
-        }
-        if isMasterReply["ismaster"] == true && isMasterReply["setName"] != nil {
+        } else if isMasterReply["ismaster"] == true && isMasterReply["setName"] != nil {
             self = .replicaSet
         } else {
-            self = .unknown
+            fatalError("Invalid test topology configuration")
         }
     }
 }
@@ -308,16 +300,16 @@ public func printSkipMessage(
     unmetRequirements: UnmetRequirements
 ) {
     switch unmetRequirements {
-    case let .minServerVersion(_, required):
+    case let .minServerVersion(actual, required):
         print("Skipping test case \"\(testName)\": minimum required server " +
-            "version \(required) not met.")
+            "version \(required) not met by current server version \(actual)")
 
-    case let .maxServerVersion(_, required):
+    case let .maxServerVersion(actual, required):
         print("Skipping test case \"\(testName)\": maximum required server " +
-            "version \(required) not met.")
+            "version \(required) not met by current server version \(actual)")
 
-    case let .topology(actual, _):
-        print("Skipping \(testName) due to unsupported topology type \(actual)")
+    case let .topology(actual, required):
+        print("Skipping \(testName) due to unsupported topology type \(actual), supported topologies are: \(required)")
     }
 }
 

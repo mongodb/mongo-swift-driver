@@ -260,15 +260,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase {
 
                 let unmetRequirements = try globalClient.checkRequirements(testRequirements)
                 guard unmetRequirements == nil else {
-                    switch unmetRequirements {
-                    case .minServerVersion:
-                        print("Skipping test case \"\(test.description)\": minimum required server " +
-                            "version \(test.minServerVersion) not met.")
-                    case .topology, .maxServerVersion:
-                        printSkipMessage(testName: test.description, unmetRequirements: unmetRequirements!)
-                    case .none:
-                        break
-                    }
+                    printSkipMessage(testName: test.description, unmetRequirements: unmetRequirements!)
                     continue
                 }
 
@@ -305,8 +297,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
     /// "ChangeStream must continuously track the last seen resumeToken"
     func testChangeStreamTracksResumeToken() throws {
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
-
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
         let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
             printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
@@ -344,7 +336,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamMissingId() throws {
         let testRequirements = TestRequirement(
             maxServerVersion: ServerVersion(major: 4, minor: 3, patch: 3),
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) }
+            acceptableTopologies: [.replicaSet, .sharded]
         )
 
         let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
@@ -388,7 +380,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamAutomaticResume() throws {
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -453,7 +446,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamFailedAggregate() throws {
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -507,7 +501,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamDoesntResume() throws {
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -573,7 +568,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamDoesntCloseOnEmptyBatch() throws {
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -604,7 +600,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamFailedKillCursors() throws {
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -664,7 +661,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamResumeTokenUpdatesEmptyBatch() throws {
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -708,7 +706,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamResumeTokenUpdatesNonemptyBatch() throws {
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -741,7 +740,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
         let testRequirements = TestRequirement(
             minServerVersion: ServerVersion(major: 4, minor: 0),
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) }
+            acceptableTopologies: [.replicaSet, .sharded]
         )
 
         let unmetRequirements = try client.checkRequirements(testRequirements)
@@ -804,19 +803,12 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
         let testRequirements = TestRequirement(
             minServerVersion: ServerVersion(major: 4, minor: 0),
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) }
+            acceptableTopologies: [.replicaSet, .sharded]
         )
 
         let unmetRequirements = try client.checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
-            switch unmetRequirements {
-            case .minServerVersion:
-                print("Skipping test case for server version \(try client.serverVersion())")
-            case .topology, .maxServerVersion:
-                printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
-            case .none:
-                break
-            }
+            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
             return
         }
 
@@ -853,7 +845,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamOnACollection() throws {
         let client = try MongoClient.makeTestClient()
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try client.checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -902,7 +895,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamWithPipeline() throws {
         let client = try MongoClient.makeTestClient()
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try client.checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -934,7 +928,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamResumeToken() throws {
         let client = try MongoClient.makeTestClient()
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try client.checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -988,7 +983,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamWithEventType() throws {
         let client = try MongoClient.makeTestClient()
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try client.checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -1039,7 +1035,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
 
         let client = try MongoClient.makeTestClient()
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try client.checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -1087,7 +1084,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamOnACollectionWithCodableType() throws {
         let client = try MongoClient.makeTestClient()
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet", "sharded"].map { TestTopologyConfiguration(from: $0) })
+            acceptableTopologies: [.replicaSet, .sharded]
+        )
 
         let unmetRequirements = try client.checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
@@ -1114,8 +1112,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         // skip sharded since this test would take longer than necessary.
         let client = try MongoClient.makeTestClient()
         let testRequirements = TestRequirement(
-            acceptableTopologies: ["replicaSet"].map { TestTopologyConfiguration(from: $0) })
-
+            acceptableTopologies: [.replicaSet]
+        )
         let unmetRequirements = try client.checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
             printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
