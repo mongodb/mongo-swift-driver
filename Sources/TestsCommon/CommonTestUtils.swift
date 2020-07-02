@@ -173,15 +173,6 @@ public enum UnmetRequirements {
     case topology(actual: TestTopologyConfiguration, required: [TestTopologyConfiguration])
 }
 
-/// Called by Sync and Async MeetsRequirements functions
-public func commonMeetsRequirements(
-    testRequirement: TestRequirement,
-    serverVersion: ServerVersion,
-    topologyType: TestTopologyConfiguration
-) throws -> UnmetRequirements? {
-    testRequirement.isMet(by: serverVersion, topologyType)
-}
-
 /// Struct representing conditions that a deployment must meet in order for a test file to be run.
 public struct TestRequirement: Decodable {
     private let minServerVersion: ServerVersion?
