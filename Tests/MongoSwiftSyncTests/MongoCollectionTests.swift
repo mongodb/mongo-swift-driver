@@ -110,7 +110,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         struct AggregationFormat: Codable, Equatable {
             var bird: String
         }
-        let result = try self.coll.aggregate([["$project": ["_id": 0, "bird": "$cat"]]], withOutputType: AggregationFormat.self).all()
+        let result = try self.coll.aggregate(
+            [["$project": ["_id": 0, "bird": "$cat"]]],
+            withOutputType: AggregationFormat.self
+        ).all()
         let expected = [AggregationFormat(bird: "dog"), AggregationFormat(bird: "cat")]
         expect(result).to(equal(expected as [AggregationFormat]))
     }

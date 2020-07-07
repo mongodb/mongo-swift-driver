@@ -92,8 +92,8 @@ extension MongoCollection {
     }
 
     /**
-     * Runs an aggregation framework pipeline against this collection. Associates the `Codable` type `OutputType` with
-     * with the output given by the `AggregateOperation`.
+     * Runs an aggregation framework pipeline against this collection.
+     * Associates the `Codable` type `OutputType` with the output given by the `AggregateOperation`.
      *
      * - Parameters:
      *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform

@@ -72,8 +72,8 @@ extension MongoCollection {
     }
 
     /**
-     * Runs an aggregation framework pipeline against this collection. Associates the `Codable` type `OutputType` with
-     * with the output given by the `AggregateOperation`.
+     * Runs an aggregation framework pipeline against this collection.
+     * Associates the `Codable` type `OutputType` with the output given by the `AggregateOperation`.
      *
      * - Parameters:
      *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform
@@ -93,8 +93,12 @@ extension MongoCollection {
         session: ClientSession? = nil,
         withOutputType _: OutputType.Type
     ) throws -> MongoCursor<OutputType> {
-        let asyncCursor = try self.asyncColl.aggregate(pipeline, options: options, session: session?.asyncSession, withOutputType: OutputType.self)
-            .wait()
+        let asyncCursor = try self.asyncColl.aggregate(
+            pipeline,
+            options: options,
+            session: session?.asyncSession,
+            withOutputType: OutputType.self
+        ).wait()
         return MongoCursor(wrapping: asyncCursor, client: self.client)
     }
 
