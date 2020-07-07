@@ -1,5 +1,6 @@
 --exclude Sources/MongoSwift/MongoSwiftVersion.swift,Sources/MongoSwiftSync/Exports.swift
---exclude .build/*
+--exclude **/.build
+--exclude etc
 
 # unnecessary
 --disable andOperator
@@ -11,7 +12,7 @@
 --indent 4
 
 # 0..<3 vs 0 ..< 3
---ranges "no-space"
+--nospaceoperators ...,..<
 
 # always want explicit acl
 --disable redundantExtensionACL

@@ -22,9 +22,9 @@ jobs:
       name: lint
       os: osx
       osx_image: xcode11.3
-      install: ./etc/install_dependencies.sh swiftlint && ./etc/install_dependencies.sh swiftformat
+      install: pushd etc && ./install_dependencies.sh swiftlint && ./install_dependencies.sh swiftformat && popd
       before_script: skip
-      script: ${PWD}/swiftlint/swiftlint --strict && ${PWD}/SwiftFormat/CommandLineTool/swiftformat --verbose --lint .
+      script: ./etc/swiftlint/swiftlint --strict && ./etc/SwiftFormat/CommandLineTool/swiftformat --verbose --lint .
 
     - stage: tests
       os: osx
