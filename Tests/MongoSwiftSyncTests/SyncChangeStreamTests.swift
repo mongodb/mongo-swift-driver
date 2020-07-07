@@ -139,7 +139,7 @@ internal struct ChangeStreamTest: Decodable, FailPointConfigured {
     let target: ChangeStreamTarget
 
     /// An array of server topologies against which to run the test.
-    let topology: [String]
+    let topology: [TestTopologyConfiguration]
 
     /// An array of additional aggregation pipeline stages to pass to the `watch` used to create the change stream for
     /// this test.
@@ -255,7 +255,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase {
             for var test in testFile.tests {
                 let testRequirements = TestRequirement(
                     minServerVersion: test.minServerVersion,
-                    acceptableTopologies: test.topology.map { TestTopologyConfiguration(from: $0) }
+                    acceptableTopologies: test.topology
                 )
 
                 let unmetRequirements = try globalClient.checkRequirements(testRequirements)
@@ -745,14 +745,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
 
         let unmetRequirements = try client.checkRequirements(testRequirements)
         guard unmetRequirements == nil else {
-            switch unmetRequirements {
-            case .minServerVersion:
-                print("Skipping test case for server version \(try client.serverVersion())")
-            case .topology, .maxServerVersion:
-                printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
-            case .none:
-                break
-            }
+            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
             return
         }
 

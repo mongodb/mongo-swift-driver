@@ -125,21 +125,8 @@ open class MongoSwiftTestCase: XCTestCase {
 /// Enumerates the different topology configurations that are used throughout the tests
 public enum TestTopologyConfiguration: String, Decodable {
     case sharded
-    case replicaSet
+    case replicaSet = "replicaset"
     case single
-
-    public init(from str: String) {
-        switch str {
-        case "sharded", "sharded_cluster":
-            self = .sharded
-        case "replicaset", "replica_set", "replicaSet":
-            self = .replicaSet
-        case "single":
-            self = .single
-        default:
-            fatalError("Invalid test topology configuration")
-        }
-    }
 
     /// Determines the topologyType of a client based on the reply returned by running an isMaster command
     public init(isMasterReply: BSONDocument) throws {
