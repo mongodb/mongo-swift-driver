@@ -73,13 +73,14 @@ extension MongoCollection {
 
     /**
      * Runs an aggregation framework pipeline against this collection.
-     * Associates the `Codable` type `OutputType` with the output given by the `AggregateOperation`.
+     * Associates the `Codable` type `OutputType` with the output given by the aggregation pipeline.
      *
      * - Parameters:
      *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform
      *   - options: Optional `AggregateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
-     *   - withOutputType: the type that the output of the aggregation operation will be decoded to
+     *   - withOutputType: the type that each resulting document of the output
+     *     of the aggregation operation will be decoded to
      * - Returns: A `MongoCursor` over the resulting `OutputType`s
      *
      * - Throws:

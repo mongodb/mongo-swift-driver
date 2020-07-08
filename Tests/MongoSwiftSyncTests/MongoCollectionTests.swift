@@ -127,7 +127,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.aggregate(
             [["$project": ["_id": 0, "cat": 1]]],
             withOutputType: AggregationFormat.self
-        ).all()).to(throwError())
+        ).all()).to(throwError(errorType: DecodingError.self))
     }
 
     func testDrop() throws {
