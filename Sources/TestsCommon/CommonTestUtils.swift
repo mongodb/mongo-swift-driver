@@ -122,6 +122,76 @@ open class MongoSwiftTestCase: XCTestCase {
     }
 }
 
+/// Enumerates the different topology configurations that are used throughout the tests
+public enum TestTopologyConfiguration: String, Decodable {
+    case sharded
+    case replicaSet = "replicaset"
+    case single
+
+    /// Determines the topologyType of a client based on the reply returned by running an isMaster command
+    public init(isMasterReply: BSONDocument) throws {
+        // Check for symptoms of different topologies
+        if isMasterReply["msg"] != "isdbgrid" &&
+            isMasterReply["setName"] == nil &&
+            isMasterReply["isreplicaset"] != true {
+            self = .single
+        } else if isMasterReply["msg"] == "isdbgrid" {
+            self = .sharded
+        } else if isMasterReply["ismaster"] == true && isMasterReply["setName"] != nil {
+            self = .replicaSet
+        } else {
+            fatalError("Invalid test topology configuration given by isMaster reply: \(isMasterReply)")
+        }
+    }
+}
+
+/// Enumerates different possible unmet requirements that can be returned by meetsRequirements
+public enum UnmetRequirement {
+    case minServerVersion(actual: ServerVersion, required: ServerVersion)
+    case maxServerVersion(actual: ServerVersion, required: ServerVersion)
+    case topology(actual: TestTopologyConfiguration, required: [TestTopologyConfiguration])
+}
+
+/// Struct representing conditions that a deployment must meet in order for a test file to be run.
+public struct TestRequirement: Decodable {
+    private let minServerVersion: ServerVersion?
+    private let maxServerVersion: ServerVersion?
+    private let topology: [TestTopologyConfiguration]?
+
+    public init(
+        minServerVersion: ServerVersion? = nil,
+        maxServerVersion: ServerVersion? = nil,
+        acceptableTopologies: [TestTopologyConfiguration]? = nil
+    ) {
+        self.minServerVersion = minServerVersion
+        self.maxServerVersion = maxServerVersion
+        self.topology = acceptableTopologies
+    }
+
+    /// Determines if the given deployment meets this requirement.
+    public func getUnmetRequirement(
+        givenCurrent version: ServerVersion,
+        _ topology: TestTopologyConfiguration
+    ) -> UnmetRequirement? {
+        if let minVersion = self.minServerVersion {
+            guard minVersion <= version else {
+                return .minServerVersion(actual: version, required: minVersion)
+            }
+        }
+        if let maxVersion = self.maxServerVersion {
+            guard maxVersion >= version else {
+                return .maxServerVersion(actual: version, required: maxVersion)
+            }
+        }
+        if let topologies = self.topology {
+            guard topologies.contains(topology) else {
+                return .topology(actual: topology, required: topologies)
+            }
+        }
+        return nil
+    }
+}
+
 extension BSONDocument {
     public func sortedEquals(_ other: BSONDocument) -> Bool {
         let keys = self.keys.sorted()
@@ -211,6 +281,25 @@ public func sortedEqual(_ expectedValue: BSONDocument?) -> Predicate<BSONDocumen
 
         let matches = expected.sortedEquals(actual)
         return PredicateResult(status: PredicateStatus(bool: matches), message: msg)
+    }
+}
+
+/// Prints a message if a server version or topology requirement is not met and a test is skipped
+public func printSkipMessage(
+    testName: String,
+    unmetRequirement: UnmetRequirement
+) {
+    switch unmetRequirement {
+    case let .minServerVersion(actual, required):
+        print("Skipping test case \"\(testName)\": minimum required server " +
+            "version \(required) not met by current server version \(actual)")
+
+    case let .maxServerVersion(actual, required):
+        print("Skipping test case \"\(testName)\": maximum required server " +
+            "version \(required) not met by current server version \(actual)")
+
+    case let .topology(actual, required):
+        print("Skipping \(testName) due to unsupported topology type \(actual), supported topologies are: \(required)")
     }
 }
 

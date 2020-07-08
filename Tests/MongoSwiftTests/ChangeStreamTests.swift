@@ -6,12 +6,17 @@ import TestsCommon
 
 final class ChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamNext() throws {
-        guard MongoSwiftTestCase.topologyType != .single else {
-            print(unsupportedTopologyMessage(testName: self.name))
-            return
-        }
-
         try self.withTestClient { client in
+            let testRequirements = TestRequirement(
+                acceptableTopologies: [.replicaSet, .sharded]
+            )
+
+            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
             let db = client.db(Self.testDatabase)
             try? db.collection(self.getCollectionName()).drop().wait()
             let coll = try db.createCollection(self.getCollectionName()).wait()
@@ -42,14 +47,21 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     }
 
     func testChangeStreamError() throws {
-        guard MongoSwiftTestCase.topologyType != .single else {
-            print(unsupportedTopologyMessage(testName: self.name))
-            return
-        }
-
         try self.withTestClient { client in
-            guard try client.serverVersion().wait() < ServerVersion(major: 4, minor: 3, patch: 3) else {
-                print("Skipping test; see SWIFT-722")
+            let testRequirements = TestRequirement(
+                maxServerVersion: ServerVersion(major: 4, minor: 3, patch: 3),
+                acceptableTopologies: [.sharded, .replicaSet]
+            )
+            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            guard unmetRequirement == nil else {
+                switch unmetRequirement {
+                case .minServerVersion, .maxServerVersion:
+                    print("Skipping test; see SWIFT-722")
+                case .topology:
+                    printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                case .none:
+                    break
+                }
                 return
             }
 
@@ -70,12 +82,17 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     }
 
     func testChangeStreamEmpty() throws {
-        guard MongoSwiftTestCase.topologyType != .single else {
-            print(unsupportedTopologyMessage(testName: self.name))
-            return
-        }
-
         try self.withTestClient { client in
+            let testRequirements = TestRequirement(
+                acceptableTopologies: [.replicaSet, .sharded]
+            )
+
+            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
             let db = client.db(Self.testDatabase)
             try? db.collection(self.getCollectionName()).drop().wait()
             let coll = try db.createCollection(self.getCollectionName()).wait()
@@ -97,11 +114,16 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     }
 
     func testChangeStreamToArray() throws {
-        guard MongoSwiftTestCase.topologyType != .single else {
-            print(unsupportedTopologyMessage(testName: self.name))
-            return
-        }
         try self.withTestClient { client in
+            let testRequirements = TestRequirement(
+                acceptableTopologies: [.replicaSet, .sharded])
+
+            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
             let db = client.db(Self.testDatabase)
             try? db.collection(self.getCollectionName()).drop().wait()
             let coll = try db.createCollection(self.getCollectionName()).wait()
@@ -131,15 +153,19 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     }
 
     func testChangeStreamForEach() throws {
-        guard MongoSwiftTestCase.topologyType != .single else {
-            print(unsupportedTopologyMessage(testName: self.name))
-            return
-        }
-
         var count = 0
         let increment: (ChangeStreamEvent<BSONDocument>) -> Void = { _ in count += 1 }
 
         try self.withTestClient { client in
+            let testRequirements = TestRequirement(
+                acceptableTopologies: [.replicaSet, .sharded]
+            )
+
+            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
             let db = client.db(Self.testDatabase)
             try? db.collection(self.getCollectionName()).drop().wait()
             let coll = try db.createCollection(self.getCollectionName()).wait()

@@ -63,6 +63,14 @@ extension MongoClient {
         return try ServerVersion(versionString)
     }
 
+    /// Determine whether server version and topology requirements for a certain test are met
+    internal func getUnmetRequirement(_ testRequirement: TestRequirement) throws -> UnmetRequirement? {
+        let reply = try self.db("admin").runCommand(["isMaster": 1])
+        let topologyType = try TestTopologyConfiguration(isMasterReply: reply)
+        let serverVersion = try self.serverVersion()
+        return testRequirement.getUnmetRequirement(givenCurrent: serverVersion, topologyType)
+    }
+
     /// Get the max wire version of the primary.
     internal func maxWireVersion() throws -> Int {
         let options = RunCommandOptions(readPreference: .primary)
