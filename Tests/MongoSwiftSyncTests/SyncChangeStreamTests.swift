@@ -258,9 +258,9 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase {
                     acceptableTopologies: test.topology
                 )
 
-                let unmetRequirements = try globalClient.checkRequirements(testRequirements)
-                guard unmetRequirements == nil else {
-                    printSkipMessage(testName: test.description, unmetRequirements: unmetRequirements!)
+                let unmetRequirement = try globalClient.getUnmetRequirement(testRequirements)
+                guard unmetRequirement == nil else {
+                    printSkipMessage(testName: test.description, unmetRequirement: unmetRequirement!)
                     continue
                 }
 
@@ -299,9 +299,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let testRequirements = TestRequirement(
             acceptableTopologies: [.replicaSet, .sharded]
         )
-        let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 
@@ -339,13 +339,13 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            switch unmetRequirements {
+        let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            switch unmetRequirement {
             case .minServerVersion, .maxServerVersion:
                 print("Skipping test; see SWIFT-722")
             case .topology:
-                printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             case .none:
                 break
             }
@@ -383,9 +383,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 
@@ -449,9 +449,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 
@@ -504,9 +504,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 
@@ -571,9 +571,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 
@@ -603,9 +603,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 
@@ -664,9 +664,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 
@@ -709,9 +709,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try MongoClient.makeTestClient().checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 
@@ -743,9 +743,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try client.checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 
@@ -799,9 +799,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try client.checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 
@@ -841,9 +841,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try client.checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
         let db = client.db(Self.testDatabase)
@@ -891,9 +891,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try client.checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
         let db = client.db(Self.testDatabase)
@@ -924,9 +924,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try client.checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
         let db = client.db(Self.testDatabase)
@@ -979,9 +979,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try client.checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
         let db = client.db(Self.testDatabase)
@@ -1031,9 +1031,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try client.checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
         let db = client.db(Self.testDatabase)
@@ -1080,9 +1080,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
-        let unmetRequirements = try client.checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
         let db = client.db(Self.testDatabase)
@@ -1107,9 +1107,9 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let testRequirements = TestRequirement(
             acceptableTopologies: [.replicaSet]
         )
-        let unmetRequirements = try client.checkRequirements(testRequirements)
-        guard unmetRequirements == nil else {
-            printSkipMessage(testName: self.name, unmetRequirements: unmetRequirements!)
+        let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+        guard unmetRequirement == nil else {
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 

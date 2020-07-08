@@ -140,13 +140,13 @@ public enum TestTopologyConfiguration: String, Decodable {
         } else if isMasterReply["ismaster"] == true && isMasterReply["setName"] != nil {
             self = .replicaSet
         } else {
-            fatalError("Invalid test topology configuration")
+            fatalError("Invalid test topology configuration given by isMaster reply: \(isMasterReply)")
         }
     }
 }
 
 /// Enumerates different possible unmet requirements that can be returned by meetsRequirements
-public enum UnmetRequirements {
+public enum UnmetRequirement {
     case minServerVersion(actual: ServerVersion, required: ServerVersion)
     case maxServerVersion(actual: ServerVersion, required: ServerVersion)
     case topology(actual: TestTopologyConfiguration, required: [TestTopologyConfiguration])
@@ -169,7 +169,10 @@ public struct TestRequirement: Decodable {
     }
 
     /// Determines if the given deployment meets this requirement.
-    public func isMet(by version: ServerVersion, _ topology: TestTopologyConfiguration) -> UnmetRequirements? {
+    public func getUnmetRequirement(
+        givenCurrent version: ServerVersion,
+        _ topology: TestTopologyConfiguration
+    ) -> UnmetRequirement? {
         if let minVersion = self.minServerVersion {
             guard minVersion <= version else {
                 return .minServerVersion(actual: version, required: minVersion)
@@ -284,9 +287,9 @@ public func sortedEqual(_ expectedValue: BSONDocument?) -> Predicate<BSONDocumen
 /// Prints a message if a server version or topology requirement is not met and a test is skipped
 public func printSkipMessage(
     testName: String,
-    unmetRequirements: UnmetRequirements
+    unmetRequirement: UnmetRequirement
 ) {
-    switch unmetRequirements {
+    switch unmetRequirement {
     case let .minServerVersion(actual, required):
         print("Skipping test case \"\(testName)\": minimum required server " +
             "version \(required) not met by current server version \(actual)")

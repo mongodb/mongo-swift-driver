@@ -67,7 +67,7 @@ final class RetryableWritesTests: MongoSwiftTestCase {
 
             if let requirements = testFile.runOn {
                 guard try requirements.contains(where: {
-                    try setupClient.checkRequirements($0) == nil
+                    try setupClient.getUnmetRequirement($0) == nil
                 }) else {
                     fileLevelLog("Skipping tests from file \(fileName), deployment requirements not met.")
                     continue

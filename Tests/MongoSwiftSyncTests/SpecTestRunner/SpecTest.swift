@@ -198,7 +198,7 @@ extension SpecTestFile {
         let setupClient = try MongoClient.makeTestClient()
 
         if let requirements = self.runOn {
-            guard try requirements.contains(where: { try setupClient.checkRequirements($0) == nil }) else {
+            guard try requirements.contains(where: { try setupClient.getUnmetRequirement($0) == nil }) else {
                 fileLevelLog("Skipping tests from file \(self.name), deployment requirements not met.")
                 return
             }
