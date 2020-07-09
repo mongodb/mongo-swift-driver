@@ -70,7 +70,7 @@ public struct AggregateOptions: Codable {
 }
 
 /// An operation corresponding to an "aggregate" command on a collection.
-internal struct AggregateOperation<CollectionType: Codable>: Operation {
+internal struct AggregateOperation<CollectionType: Codable, OutputType: Codable>: Operation {
     private let collection: MongoCollection<CollectionType>
     private let pipeline: [BSONDocument]
     private let options: AggregateOptions?
@@ -81,7 +81,7 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
         self.options = options
     }
 
-    internal func execute(using connection: Connection, session: ClientSession?) throws -> MongoCursor<BSONDocument> {
+    internal func execute(using connection: Connection, session: ClientSession?) throws -> MongoCursor<OutputType> {
         let opts = try encodeOptions(options: self.options, session: session)
         let pipeline: BSONDocument = ["pipeline": .array(self.pipeline.map { .document($0) })]
 
@@ -106,7 +106,7 @@ internal struct AggregateOperation<CollectionType: Codable>: Operation {
 
         // since mongoc_collection_aggregate doesn't do any I/O, use forceIO to ensure this operation fails if we
         // can not successfully get a cursor from the server.
-        return try MongoCursor(
+        return try MongoCursor<OutputType>(
             stealing: result,
             connection: connection,
             client: self.collection._client,

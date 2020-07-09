@@ -88,7 +88,40 @@ extension MongoCollection {
         options: AggregateOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<MongoCursor<BSONDocument>> {
-        let operation = AggregateOperation(collection: self, pipeline: pipeline, options: options)
+        self.aggregate(pipeline, options: options, session: session, withOutputType: BSONDocument.self)
+    }
+
+    /**
+     * Runs an aggregation framework pipeline against this collection.
+     * Associates the specified `Codable` type `OutputType` with the returned `MongoCursor`
+     *
+     * - Parameters:
+     *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform
+     *   - options: Optional `AggregateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *   - withOutputType: the type that each resulting document of the output
+     *     of the aggregation operation will be decoded to
+     *
+     * - Warning:
+     *    If the returned cursor is alive when it goes out of scope, it will leak resources. To ensure the cursor
+     *    is dead before it leaves scope, invoke `MongoCursor.kill(...)` on it.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<MongoCursor>`over the resulting `OutputType`s
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
+     */
+    public func aggregate<OutputType: Codable>(
+        _ pipeline: [BSONDocument],
+        options: AggregateOptions? = nil,
+        session: ClientSession? = nil,
+        withOutputType _: OutputType.Type
+    ) -> EventLoopFuture<MongoCursor<OutputType>> {
+        let operation = AggregateOperation<T, OutputType>(collection: self, pipeline: pipeline, options: options)
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 

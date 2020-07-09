@@ -180,6 +180,8 @@ extension MongoCollectionTests {
         ("testInsertOne", testInsertOne),
         ("testInsertOneWithUnacknowledgedWriteConcern", testInsertOneWithUnacknowledgedWriteConcern),
         ("testAggregate", testAggregate),
+        ("testGenericAggregate", testGenericAggregate),
+        ("testGenericAggregateBadFormat", testGenericAggregateBadFormat),
         ("testDrop", testDrop),
         ("testInsertMany", testInsertMany),
         ("testInsertManyWithEmptyValues", testInsertManyWithEmptyValues),

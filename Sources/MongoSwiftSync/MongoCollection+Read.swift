@@ -68,8 +68,38 @@ extension MongoCollection {
         options: AggregateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCursor<BSONDocument> {
-        let asyncCursor = try self.asyncColl.aggregate(pipeline, options: options, session: session?.asyncSession)
-            .wait()
+        try self.aggregate(pipeline, options: options, session: session, withOutputType: BSONDocument.self)
+    }
+
+    /**
+     * Runs an aggregation framework pipeline against this collection.
+     * Associates the specified `Codable` type `OutputType` with the returned `MongoCursor`
+     *
+     * - Parameters:
+     *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform
+     *   - options: Optional `AggregateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *   - withOutputType: the type that each resulting document of the output
+     *     of the aggregation operation will be decoded to
+     * - Returns: A `MongoCursor` over the resulting `OutputType`s
+     *
+     * - Throws:
+     *   - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *   - `MongoError.LogicError` if the provided session is inactive.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     */
+    public func aggregate<OutputType: Codable>(
+        _ pipeline: [BSONDocument],
+        options: AggregateOptions? = nil,
+        session: ClientSession? = nil,
+        withOutputType _: OutputType.Type
+    ) throws -> MongoCursor<OutputType> {
+        let asyncCursor = try self.asyncColl.aggregate(
+            pipeline,
+            options: options,
+            session: session?.asyncSession,
+            withOutputType: OutputType.self
+        ).wait()
         return MongoCursor(wrapping: asyncCursor, client: self.client)
     }
 

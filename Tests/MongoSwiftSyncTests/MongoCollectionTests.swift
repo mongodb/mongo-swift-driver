@@ -104,6 +104,32 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             .to(equal([["cat": "dog"], ["cat": "cat"]] as [BSONDocument]))
     }
 
+    func testGenericAggregate() throws {
+        // Format that is incompatible with the format of the original documents,
+        // it is only compatible with the ones that come back from the aggregate
+        struct AggregationFormat: Codable, Equatable {
+            var bird: String
+        }
+        let result = try self.coll.aggregate(
+            [["$project": ["_id": 0, "bird": "$cat"]]],
+            withOutputType: AggregationFormat.self
+        ).all()
+        let expected = [AggregationFormat(bird: "dog"), AggregationFormat(bird: "cat")]
+        expect(result).to(equal(expected))
+    }
+
+    func testGenericAggregateBadFormat() throws {
+        // Format that is incompatible with the format of the original documents,
+        // and is incompatible with the what aggregate returns
+        struct AggregationFormat: Codable, Equatable {
+            var bird: String
+        }
+        expect(try self.coll.aggregate(
+            [["$project": ["_id": 0, "cat": 1]]],
+            withOutputType: AggregationFormat.self
+        ).all()).to(throwError(errorType: DecodingError.self))
+    }
+
     func testDrop() throws {
         let encoder = BSONEncoder()
 
