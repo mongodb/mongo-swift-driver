@@ -115,7 +115,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             withOutputType: AggregationFormat.self
         ).all()
         let expected = [AggregationFormat(bird: "dog"), AggregationFormat(bird: "cat")]
-        expect(result).to(equal(expected as [AggregationFormat]))
+        expect(result).to(equal(expected))
     }
 
     func testGenericAggregateBadFormat() throws {
