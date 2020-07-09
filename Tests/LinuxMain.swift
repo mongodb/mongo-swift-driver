@@ -99,6 +99,7 @@ extension ConnectionStringTests {
         ("testHeartbeatFrequencyMSWithMonitoring", testHeartbeatFrequencyMSWithMonitoring),
         ("testServerSelectionTimeoutMS", testServerSelectionTimeoutMS),
         ("testServerSelectionTimeoutMSWithCommand", testServerSelectionTimeoutMSWithCommand),
+        ("testLocalThresholdMSOption", testLocalThresholdMSOption),
     ]
 }
 

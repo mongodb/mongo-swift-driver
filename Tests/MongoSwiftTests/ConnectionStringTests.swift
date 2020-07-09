@@ -87,11 +87,13 @@ let shouldWarnButLibmongocErrors: [String: [String]] = [
         "Non-numeric localThresholdMS causes a warning",
         "Invalid retryWrites causes a warning",
         "Non-numeric serverSelectionTimeoutMS causes a warning",
-        // libmongoc actually does nothing when this value is too low. for consistency with the behavior when invalid
-        // values are provided for other known options, we upconvert it to an error.
-        "Too low serverSelectionTimeoutMS causes a warning",
         "Non-numeric socketTimeoutMS causes a warning",
-        "Invalid directConnection value"
+        "Invalid directConnection value",
+
+        // libmongoc actually does nothing when these values are too low. for consistency with the behavior when invalid
+        // values are provided for other known options, we upconvert these to an error.
+        "Too low serverSelectionTimeoutMS causes a warning",
+        "Too low localThresholdMS causes a warning"
     ],
     "concern-options.json": [
         "Non-numeric wTimeoutMS causes a warning",
@@ -400,5 +402,43 @@ final class ConnectionStringTests: MongoSwiftTestCase {
             let difference = end.timeIntervalSince1970 - start.timeIntervalSince1970
             expect(difference).to(beCloseTo(1.0, within: 0.2))
         }
+    }
+
+    func testLocalThresholdMSOption() throws {
+        // option is set correctly from options struct
+        let opts = MongoClientOptions(localThresholdMS: 100)
+        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts)
+        expect(connStr1.options?["localthresholdms"]?.int32Value).to(equal(100))
+
+        // option is parsed correctly from string
+        let connStr2 = try ConnectionString("mongodb://localhost:27017/?localThresholdMS=100")
+        expect(connStr2.options?["localthresholdms"]?.int32Value).to(equal(100))
+
+        // options struct overrides string
+        let connStr3 = try ConnectionString("mongodb://localhost:27017/?localThresholdMS=50", options: opts)
+        expect(connStr3.options?["localthresholdms"]?.int32Value).to(equal(100))
+
+        let tooSmall = -10
+        expect(try ConnectionString(
+            "mongodb://localhost:27017",
+            options: MongoClientOptions(localThresholdMS: tooSmall)
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        expect(try ConnectionString(
+            "mongodb://localhost:27017/?localThresholdMS=\(tooSmall)"
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        guard !MongoSwiftTestCase.is32Bit else {
+            print("Skipping remainder of test, requires 64-bit platform")
+            return
+        }
+
+        let tooLarge = Int(Int32.max) + 1
+        expect(try ConnectionString("mongodb://localhost:27017/?localThresholdMS=\(tooLarge)"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try ConnectionString(
+            "mongodb://localhost:27017",
+            options: MongoClientOptions(localThresholdMS: tooLarge)
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 }

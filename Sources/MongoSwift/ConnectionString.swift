@@ -54,6 +54,21 @@ internal class ConnectionString {
             }
         }
 
+        let invalidThresholdMsg = "Invalid localThresholdMS %d: must be between 0 and \(Int32.max)"
+        if let localThresholdMS = options?.localThresholdMS {
+            guard let value = Int32(exactly: localThresholdMS), value >= 0 else {
+                throw MongoError.InvalidArgumentError(message: String(format: invalidThresholdMsg, localThresholdMS))
+            }
+
+            guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_LOCALTHRESHOLDMS, value) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set localThresholdMS to \(value)")
+            }
+            // libmongoc does not validate an invalid value for localThresholdMS set via URI. if it was set that way and
+            // not overridden via options struct, validate it ourselves here.
+        } else if let uriValue = self.options?[MONGOC_URI_LOCALTHRESHOLDMS]?.int32Value, uriValue < 0 {
+            throw MongoError.InvalidArgumentError(message: String(format: invalidThresholdMsg, uriValue))
+        }
+
         if let maxPoolSize = options?.maxPoolSize {
             guard let value = Int32(exactly: maxPoolSize), value > 0 else {
                 throw MongoError.InvalidArgumentError(
