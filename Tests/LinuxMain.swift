@@ -97,6 +97,8 @@ extension ConnectionStringTests {
         ("testReplSetOption", testReplSetOption),
         ("testHeartbeatFrequencyMSOption", testHeartbeatFrequencyMSOption),
         ("testHeartbeatFrequencyMSWithMonitoring", testHeartbeatFrequencyMSWithMonitoring),
+        ("testServerSelectionTimeoutMS", testServerSelectionTimeoutMS),
+        ("testServerSelectionTimeoutMSWithCommand", testServerSelectionTimeoutMSWithCommand),
     ]
 }
 

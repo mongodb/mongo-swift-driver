@@ -87,6 +87,9 @@ let shouldWarnButLibmongocErrors: [String: [String]] = [
         "Non-numeric localThresholdMS causes a warning",
         "Invalid retryWrites causes a warning",
         "Non-numeric serverSelectionTimeoutMS causes a warning",
+        // libmongoc actually does nothing when this value is too low. for consistency with the behavior when invalid
+        // values are provided for other known options, we upconvert it to an error.
+        "Too low serverSelectionTimeoutMS causes a warning",
         "Non-numeric socketTimeoutMS causes a warning",
         "Invalid directConnection value"
     ],
@@ -346,5 +349,56 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
         let difference = lastStart.timeIntervalSince1970 - secondToLastSuccess.timeIntervalSince1970
         expect(difference).to(beCloseTo(2.0, within: 0.2))
+    }
+
+    func testServerSelectionTimeoutMS() throws {
+        // option is set correctly from options struct
+        let opts = MongoClientOptions(serverSelectionTimeoutMS: 10000)
+        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts)
+        expect(connStr1.options?["serverselectiontimeoutms"]?.int32Value).to(equal(10000))
+
+        // option is parsed correctly from string
+        let connStr2 = try ConnectionString("mongodb://localhost:27017/?serverSelectionTimeoutMS=10000")
+        expect(connStr2.options?["serverselectiontimeoutms"]?.int32Value).to(equal(10000))
+
+        // options struct overrides string
+        let connStr3 = try ConnectionString("mongodb://localhost:27017/?serverSelectionTimeoutMS=5000", options: opts)
+        expect(connStr3.options?["serverselectiontimeoutms"]?.int32Value).to(equal(10000))
+
+        let tooSmall = 0
+
+        expect(try ConnectionString(
+            "mongodb://localhost:27017",
+            options: MongoClientOptions(serverSelectionTimeoutMS: tooSmall)
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try ConnectionString(
+            "mongodb://localhost:27017/?serverSelectionTimeoutMS=\(tooSmall)"
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        guard !MongoSwiftTestCase.is32Bit else {
+            print("Skipping remainder of test, only supported on 64-bit platforms")
+            return
+        }
+
+        let tooLarge = Int(Int32.max) + 1
+        expect(try ConnectionString("mongodb://localhost:27017/?serverSelectionTimeoutMS=\(tooLarge)"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        expect(try ConnectionString(
+            "mongodb://localhost:27017",
+            options: MongoClientOptions(serverSelectionTimeoutMS: tooLarge)
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+    }
+
+    func testServerSelectionTimeoutMSWithCommand() throws {
+        let opts = MongoClientOptions(serverSelectionTimeoutMS: 1000)
+        try self.withTestClient("mongodb://localhost:27099", options: opts) { client in
+            let start = Date()
+            expect(try client.listDatabases().wait()).to(throwError(errorType: MongoError.ServerSelectionError.self))
+            let end = Date()
+
+            let difference = end.timeIntervalSince1970 - start.timeIntervalSince1970
+            expect(difference).to(beCloseTo(1.0, within: 0.2))
+        }
     }
 }
