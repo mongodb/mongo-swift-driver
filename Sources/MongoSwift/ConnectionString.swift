@@ -6,7 +6,6 @@ internal class ConnectionString {
     private let _uri: OpaquePointer
 
     /// Initializes a new `ConnectionString` with the provided options.
-    // swiftlint:disable:next cyclomatic_complexity
     internal init(_ connectionString: String, options: MongoClientOptions? = nil) throws {
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
@@ -14,44 +13,117 @@ internal class ConnectionString {
         }
         self._uri = uri
 
-        if let rc = options?.readConcern {
-            self.readConcern = rc
-        }
+        try self.applyOptions(options)
+    }
 
-        if let wc = options?.writeConcern {
-            self.writeConcern = wc
-        }
-
-        if let rp = options?.readPreference {
-            self.readPreference = rp
-        }
-
-        if let rw = options?.retryWrites {
-            mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYWRITES, rw)
-        }
-
-        if let rr = options?.retryReads {
-            mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYREADS, rr)
-        }
-
-        // Per SDAM spec: If the ``directConnection`` option is not specified, newly developed drivers MUST behave as
-        // if it was specified with the false value.
-        if let dc = options?.directConnection {
-            mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_DIRECTCONNECTION, dc)
-        } else if !self.hasOption("directConnection") {
-            mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_DIRECTCONNECTION, false)
+    // swiftlint:disable:next cyclomatic_complexity
+    private func applyOptions(_ options: MongoClientOptions?) throws {
+        if let appName = options?.appName {
+            guard mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_APPNAME, appName) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set appName to \(appName)")
+            }
         }
 
         if let credential = options?.credential {
             try self.setMongoCredential(credential)
         }
 
-        if let appName = options?.appName {
-            mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_APPNAME, appName)
+        // Per SDAM spec: If the ``directConnection`` option is not specified, newly developed drivers MUST behave as
+        // if it was specified with the false value.
+        if let dc = options?.directConnection {
+            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_DIRECTCONNECTION, dc) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set directConnection to \(dc)")
+            }
+        } else if !self.hasOption("directConnection") {
+            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_DIRECTCONNECTION, false) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set directConnection to false")
+            }
+        }
+
+        if let maxPoolSize = options?.maxPoolSize {
+            // libmongoc casts the value to a uint32_t
+            guard maxPoolSize > 0 && maxPoolSize <= UInt32.max else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Invalid maxPoolSize \(maxPoolSize): must be between 1 and \(UInt32.max)"
+                )
+            }
+            guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_MAXPOOLSIZE, Int32(maxPoolSize)) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set maxPoolSize to \(maxPoolSize)")
+            }
+        }
+
+        if let rc = options?.readConcern {
+            self.readConcern = rc
+        }
+
+        if let rp = options?.readPreference {
+            self.readPreference = rp
         }
 
         if let replicaSet = options?.replicaSet {
-            mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_REPLICASET, replicaSet)
+            guard mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_REPLICASET, replicaSet) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set replicaSet to \(replicaSet)")
+            }
+        }
+
+        if let rr = options?.retryReads {
+            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYREADS, rr) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set retryReads to \(rr)")
+            }
+        }
+
+        if let rw = options?.retryWrites {
+            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYWRITES, rw) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set retryWrites to \(rw)")
+            }
+        }
+
+        if let tls = options?.tls {
+            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_TLS, tls) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set tls to \(tls)")
+            }
+        }
+
+        if let invalidCerts = options?.tlsAllowInvalidCertificates {
+            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_TLSALLOWINVALIDCERTIFICATES, invalidCerts) else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Failed to set tlsAllowInvalidCertificates to \(invalidCerts)"
+                )
+            }
+        }
+
+        if let invalidHostnames = options?.tlsAllowInvalidHostnames {
+            guard mongoc_uri_set_option_as_bool(
+                self._uri,
+                MONGOC_URI_TLSALLOWINVALIDHOSTNAMES,
+                invalidHostnames
+            ) else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Failed to set tlsAllowInvalidHostnames to \(invalidHostnames)"
+                )
+            }
+        }
+
+        if let caFile = options?.tlsCAFile?.absoluteString {
+            guard mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_TLSCAFILE, caFile) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set tlsCAFile to \(caFile)")
+            }
+        }
+
+        if let certFile = options?.tlsCertificateKeyFile?.absoluteString {
+            guard mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_TLSCERTIFICATEKEYFILE, certFile) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set tlsCertificateKeyFile to \(certFile)")
+            }
+        }
+
+        if let password = options?.tlsCertificateKeyFilePassword {
+            guard mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_TLSCERTIFICATEKEYFILEPASSWORD, password) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set tlsCertificateKeyPassword")
+            }
+        }
+
+        if let wc = options?.writeConcern {
+            self.writeConcern = wc
         }
     }
 

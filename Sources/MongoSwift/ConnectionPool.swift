@@ -74,19 +74,8 @@ internal class ConnectionPool {
 
     internal static let PoolClosedError = MongoError.LogicError(message: "ConnectionPool was already closed")
 
-    /// Initializes the pool using the provided `ConnectionString` and options.
-    internal init(from connString: ConnectionString, options: MongoClientOptions?) throws {
-        // validate option before we bother creating pool, so we don't have to destroy the pool on error. destroying it
-        // would require calling the blocking method `mongoc_client_pool_destroy` from this initializer, which we don't
-        // want to do as it would block the event loop.
-        if let maxPoolSize = options?.maxPoolSize {
-            guard maxPoolSize > 0 && maxPoolSize <= UInt32.max else {
-                throw MongoError.InvalidArgumentError(
-                    message: "Invalid maxPoolSize \(maxPoolSize): must be between 1 and \(UInt32.max)"
-                )
-            }
-        }
-
+    /// Initializes the pool using the provided `ConnectionString`.
+    internal init(from connString: ConnectionString) throws {
         let pool: OpaquePointer = try connString.withMongocURI { uriPtr in
             guard let pool = mongoc_client_pool_new(uriPtr) else {
                 throw MongoError.InternalError(message: "Failed to initialize libmongoc client pool")
@@ -96,16 +85,8 @@ internal class ConnectionPool {
 
         self.state = .open(pool: pool)
 
-        if let maxPoolSize = options?.maxPoolSize {
-            mongoc_client_pool_max_size(pool, UInt32(maxPoolSize))
-        }
-
         guard mongoc_client_pool_set_error_api(pool, MONGOC_ERROR_API_VERSION_2) else {
             fatalError("Could not configure error handling on client pool")
-        }
-
-        if let options = options {
-            self.setTLSOptions(options)
         }
     }
 
@@ -204,55 +185,6 @@ internal class ConnectionPool {
         return try body(connection)
     }
 
-    // Sets TLS/SSL options that the user passes in through the client level. **This must only be called from
-    // the ConnectionPool initializer**.
-    private func setTLSOptions(_ options: MongoClientOptions) {
-        // return early so we don't set an empty options struct on the libmongoc pool. doing so will make libmongoc
-        // attempt to use TLS for connections.
-        guard options.tls == true ||
-            options.tlsAllowInvalidCertificates != nil ||
-            options.tlsAllowInvalidHostnames != nil ||
-            options.tlsCAFile != nil || options.tlsCertificateKeyFile != nil ||
-            options.tlsCertificateKeyFilePassword != nil else {
-            return
-        }
-
-        let keyFileStr = options.tlsCertificateKeyFile?.absoluteString.asCString
-        let passStr = options.tlsCertificateKeyFilePassword?.asCString
-        let caFileStr = options.tlsCAFile?.absoluteString.asCString
-        defer {
-            keyFileStr?.deallocate()
-            passStr?.deallocate()
-            caFileStr?.deallocate()
-        }
-
-        var opts = mongoc_ssl_opt_t()
-        if let keyFileStr = keyFileStr {
-            opts.pem_file = keyFileStr
-        }
-        if let passStr = passStr {
-            opts.pem_pwd = passStr
-        }
-        if let caFileStr = caFileStr {
-            opts.ca_file = caFileStr
-        }
-        if let weakCert = options.tlsAllowInvalidCertificates {
-            opts.weak_cert_validation = weakCert
-        }
-        if let invalidHosts = options.tlsAllowInvalidHostnames {
-            opts.allow_invalid_hostname = invalidHosts
-        }
-
-        // lock isn't needed as this is called before pool is in use.
-        switch self.state {
-        case let .open(pool):
-            mongoc_client_pool_set_ssl_opts(pool, &opts)
-        case .closing, .closed:
-            // if we get here, we must have called this method outside of `ConnectionPool.init`.
-            fatalError("ConnectionPool in unexpected state \(self.state) while setting TLS options")
-        }
-    }
-
     /// Selects a server according to the specified parameters and returns a description of a suitable server to use.
     /// Throws an error if a server cannot be selected. This method will start up SDAM in libmongoc if it hasn't been
     /// started already. This method may block.
@@ -304,20 +236,5 @@ internal class ConnectionPool {
             // unless we have a bug it's impossible that the pool is already closed.
             fatalError("ConnectionPool in unexpected state \(self.state) while setting APM callbacks")
         }
-    }
-}
-
-extension String {
-    /// Returns this String as a C string. This pointer *must* be deallocated when
-    /// you are done using it. Prefer to use `String.withCString` whenever possible.
-    /// taken from: https://gist.github.com/yossan/51019a1af9514831f50bb196b7180107
-    fileprivate var asCString: UnsafePointer<Int8> {
-        // + 1 for null terminator
-        let count = self.utf8.count + 1
-        let result = UnsafeMutablePointer<Int8>.allocate(capacity: count)
-        self.withCString { baseAddress in
-            result.initialize(from: baseAddress, count: count)
-        }
-        return UnsafePointer(result)
     }
 }

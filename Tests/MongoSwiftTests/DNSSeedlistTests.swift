@@ -47,12 +47,8 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
     // Note: the file txt-record-with-overridden-uri-option.json causes a mongoc warning. This is expected.
     // swiftlint:disable:next cyclomatic_complexity
     func testInitialDNSSeedlistDiscovery() throws {
-        guard MongoSwiftTestCase.ssl else {
-            print("Skipping test, requires SSL")
-            return
-        }
         guard MongoSwiftTestCase.topologyType == .replicaSetWithPrimary else {
-            print("Skipping test case because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            print("Skipping test because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
         }
 
@@ -61,21 +57,37 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             asType: DNSSeedlistTestCase.self
         )
         for (fileName, testCase) in tests {
-            let topologyWatcher = TopologyDescriptionWatcher()
-
-            // TODO: DRIVERS-796 or DRIVERS-990: unskip this test
+            // TODO: SWIFT-910: unskip this test
             guard fileName != "txt-record-with-overridden-uri-option.json" else {
-                return
+                print("Skipping test file \(fileName); see SWIFT-910")
+                continue
             }
+
+            // this particular test case requires SSL is disabled. see DRIVERS-1324.
+            let requiresTLS = fileName != "txt-record-with-overridden-ssl-option.json"
+
+            // TLS requirement for this test case is not met.
+            guard (requiresTLS && MongoSwiftTestCase.ssl) || (!requiresTLS && !MongoSwiftTestCase.ssl) else {
+                print("Skipping test file \(fileName); TLS requirement not met")
+                continue
+            }
+
+            print("Running test file \(fileName)...")
+
+            let topologyWatcher = TopologyDescriptionWatcher()
 
             // Enclose all of the potentially throwing code in `doTest`. Sometimes the expected errors come when
             // parsing the URI, and other times they are not until we try to select a server.
             func doTest() throws -> ConnectionString {
-                let opts = MongoClientOptions(
-                    tlsAllowInvalidCertificates: true,
-                    tlsCAFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
-                    tlsCertificateKeyFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
-                )
+                let opts: MongoClientOptions?
+                if requiresTLS {
+                    opts = MongoClientOptions(
+                        tlsAllowInvalidCertificates: true
+                    )
+                } else {
+                    opts = nil
+                }
+
                 return try self.withTestClient(testCase.uri, options: opts) { client in
                     client.addSDAMEventHandler(topologyWatcher)
                     // try selecting a server to trigger SDAM
