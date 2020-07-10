@@ -57,8 +57,9 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             asType: DNSSeedlistTestCase.self
         )
         for (fileName, testCase) in tests {
-            // TODO: DRIVERS-796 or DRIVERS-990: unskip this test
+            // TODO: SWIFT-910: unskip this test
             guard fileName != "txt-record-with-overridden-uri-option.json" else {
+                print("Skipping test file \(fileName); see SWIFT-910")
                 continue
             }
 
@@ -67,8 +68,11 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
             // TLS requirement for this test case is not met.
             guard (requiresTLS && MongoSwiftTestCase.ssl) || (!requiresTLS && !MongoSwiftTestCase.ssl) else {
+                print("Skipping test file \(fileName); TLS requirement not met")
                 continue
             }
+
+            print("Running test file \(fileName)...")
 
             let topologyWatcher = TopologyDescriptionWatcher()
 
@@ -78,9 +82,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                 let opts: MongoClientOptions?
                 if requiresTLS {
                     opts = MongoClientOptions(
-                        tlsAllowInvalidCertificates: true,
-                        tlsCAFile: URL(string: MongoSwiftTestCase.sslCAFilePath ?? ""),
-                        tlsCertificateKeyFile: URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
+                        tlsAllowInvalidCertificates: true
                     )
                 } else {
                     opts = nil
