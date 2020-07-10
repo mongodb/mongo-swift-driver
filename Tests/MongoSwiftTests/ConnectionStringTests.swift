@@ -262,4 +262,89 @@ final class ConnectionStringTests: MongoSwiftTestCase {
             expect(try client.listDatabases().wait()).to(throwError())
         }
     }
+
+    func testHeartbeatFrequencyMSOption() throws {
+        // option is set correctly from options struct
+        let opts = MongoClientOptions(heartbeatFrequencyMS: 50000)
+        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts)
+        expect(connStr1.options?["heartbeatfrequencyms"]?.int32Value).to(equal(50000))
+
+        // option is parsed correctly from string
+        let connStr2 = try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=50000")
+        expect(connStr2.options?["heartbeatfrequencyms"]?.int32Value).to(equal(50000))
+
+        // options struct overrides string
+        let connStr3 = try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=20000", options: opts)
+        expect(connStr3.options?["heartbeatfrequencyms"]?.int32Value).to(equal(50000))
+
+        let tooSmall = 10
+        expect(try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=\(tooSmall)"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        expect(try ConnectionString(
+            "mongodb://localhost:27017",
+            options: MongoClientOptions(heartbeatFrequencyMS: tooSmall)
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        guard !MongoSwiftTestCase.is32Bit else {
+            print("Skipping remainder of test, only supported on 64-bit platforms")
+            return
+        }
+
+        let tooLarge = Int(Int32.max) + 1
+        expect(try ConnectionString(
+            "mongodb://localhost:27017",
+            options: MongoClientOptions(heartbeatFrequencyMS: tooLarge)
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        expect(try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=\(tooLarge)"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+    }
+
+    fileprivate class HeartbeatWatcher: SDAMEventHandler {
+        fileprivate var started: [Date] = []
+        fileprivate var succeeded: [Date] = []
+
+        // listen for TopologyDescriptionChanged events and continually record the latest description we've seen.
+        fileprivate func handleSDAMEvent(_ event: SDAMEvent) {
+            switch event {
+            case .serverHeartbeatStarted:
+                self.started.append(Date())
+            case .serverHeartbeatSucceeded:
+                self.succeeded.append(Date())
+            default:
+                return
+            }
+        }
+
+        fileprivate init() {}
+    }
+
+    func testHeartbeatFrequencyMSWithMonitoring() throws {
+        guard MongoSwiftTestCase.topologyType == .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        let watcher = HeartbeatWatcher()
+
+        // verify that we can speed up the heartbeat frequency
+        try self.withTestClient(options: MongoClientOptions(heartbeatFrequencyMS: 2000)) { client in
+            client.addSDAMEventHandler(watcher)
+            _ = try client.listDatabases().wait()
+            sleep(5) // sleep to allow heartbeats to occur
+        }
+
+        // in case there's an uneven number of events (i.e. client was closed mid-heartbeat) drop any
+        // started events at the end with no corresponding succeeded event
+        let succeeded = watcher.succeeded
+        let started = watcher.started[0..<succeeded.endIndex]
+
+        // the last started time should be 2s after the second-to-last succeeded time.
+        let lastStart = started.last!
+        let secondToLastSuccess = succeeded[succeeded.count - 2]
+
+        let difference = lastStart.timeIntervalSince1970 - secondToLastSuccess.timeIntervalSince1970
+        expect(difference.rounded()).to(equal(2.0))
+    }
 }

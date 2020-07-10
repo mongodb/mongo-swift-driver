@@ -95,6 +95,8 @@ extension ConnectionStringTests {
         ("testConnectionString", testConnectionString),
         ("testAppNameOption", testAppNameOption),
         ("testReplSetOption", testReplSetOption),
+        ("testHeartbeatFrequencyMSOption", testHeartbeatFrequencyMSOption),
+        ("testHeartbeatFrequencyMSWithMonitoring", testHeartbeatFrequencyMSWithMonitoring),
     ]
 }
 

@@ -40,6 +40,22 @@ internal class ConnectionString {
             }
         }
 
+        if let heartbeatFrequencyMS = options?.heartbeatFrequencyMS {
+            guard heartbeatFrequencyMS >= 500 && heartbeatFrequencyMS <= Int32.max else {
+                throw MongoError.InvalidArgumentError(message: "localThresholdMS must be between 500 and \(Int32.max)")
+            }
+
+            guard mongoc_uri_set_option_as_int32(
+                self._uri,
+                MONGOC_URI_HEARTBEATFREQUENCYMS,
+                Int32(heartbeatFrequencyMS)
+            ) else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Failed to set heartbeatFrequencyMS to \(heartbeatFrequencyMS)"
+                )
+            }
+        }
+
         if let maxPoolSize = options?.maxPoolSize {
             // libmongoc casts the value to a uint32_t
             guard maxPoolSize > 0 && maxPoolSize <= UInt32.max else {
