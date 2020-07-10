@@ -28,7 +28,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
 
     /// Controls how often the driver checks the state of the MongoDB deployment. Specifies the interval (in
     /// milliseconds) between checks, counted from the end of the previous check until the beginning of the next one.
-    /// Defaults to 10 seconds (10,000 ms).
+    /// Defaults to 10 seconds (10,000 ms). Must be at least 500ms.
     public var heartbeatFrequencyMS: Int?
 
     /// The maximum number of connections that may be associated with a connection pool created by this client at a
