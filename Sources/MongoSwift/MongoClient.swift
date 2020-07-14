@@ -26,6 +26,11 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// hosts are specified in the connection string.
     public var directConnection: Bool?
 
+    /// Controls how often the driver checks the state of the MongoDB deployment. Specifies the interval (in
+    /// milliseconds) between checks, counted from the end of the previous check until the beginning of the next one.
+    /// Defaults to 10 seconds (10,000 ms). Must be at least 500ms.
+    public var heartbeatFrequencyMS: Int?
+
     /// The maximum number of connections that may be associated with a connection pool created by this client at a
     /// given time. This includes in-use and available connections. Defaults to 100.
     public var maxPoolSize: Int?
@@ -98,6 +103,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
         directConnection: Bool? = nil,
+        heartbeatFrequencyMS: Int? = nil,
         maxPoolSize: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
@@ -119,6 +125,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
         self.directConnection = directConnection
+        self.heartbeatFrequencyMS = heartbeatFrequencyMS
         self.maxPoolSize = maxPoolSize
         self.readConcern = readConcern
         self.readPreference = readPreference

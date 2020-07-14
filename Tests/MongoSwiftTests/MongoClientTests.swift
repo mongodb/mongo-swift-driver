@@ -29,7 +29,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         defer { elg.syncShutdownOrFail() }
 
-        let invalidSizes = [-1, 0, Int(UInt32.max) + 1]
+        let invalidSizes = [-1, 0, Int(Int32.max) + 1, Int(UInt32.max) + 1]
 
         for value in invalidSizes {
             let opts = MongoClientOptions(maxPoolSize: value)
