@@ -91,6 +91,21 @@ internal class ConnectionString {
             }
         }
 
+        let invalidSSTimeoutMsg = "Invalid serverSelectionTimeoutMS %d: must be between 1 and \(Int32.max)"
+        if let ssTimeout = options?.serverSelectionTimeoutMS {
+            guard let value = Int32(exactly: ssTimeout), value > 0 else {
+                throw MongoError.InvalidArgumentError(message: String(format: invalidSSTimeoutMsg, ssTimeout))
+            }
+
+            guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_SERVERSELECTIONTIMEOUTMS, value) else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Failed to set serverSelectionTimeoutMS to \(value)"
+                )
+            }
+        } else if let uriValue = self.options?[MONGOC_URI_SERVERSELECTIONTIMEOUTMS]?.int32Value, uriValue <= 0 {
+            throw MongoError.InvalidArgumentError(message: String(format: invalidSSTimeoutMsg, uriValue))
+        }
+
         if let tls = options?.tls {
             guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_TLS, tls) else {
                 throw MongoError.InvalidArgumentError(message: "Failed to set tls to \(tls)")

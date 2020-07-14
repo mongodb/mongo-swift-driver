@@ -50,6 +50,10 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Determines whether the client should retry supported write operations (on by default).
     public var retryWrites: Bool?
 
+    /// Specifies how long the driver should attempt to select a server for before throwing an error. Defaults to 30
+    /// seconds (30000 ms).
+    public var serverSelectionTimeoutMS: Int?
+
     /**
      * `MongoSwift.MongoClient` provides an asynchronous API by running all blocking operations off of their
      * originating threads in a thread pool. `MongoSwiftSync.MongoClient` is implemented as a wrapper of the async
@@ -110,6 +114,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         replicaSet: String? = nil,
         retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
+        serverSelectionTimeoutMS: Int? = nil,
         threadPoolSize: Int? = nil,
         tls: Bool? = nil,
         tlsAllowInvalidCertificates: Bool? = nil,
@@ -132,6 +137,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.replicaSet = replicaSet
         self.retryWrites = retryWrites
         self.retryReads = retryReads
+        self.serverSelectionTimeoutMS = serverSelectionTimeoutMS
         self.threadPoolSize = threadPoolSize
         self.tls = tls
         self.tlsAllowInvalidCertificates = tlsAllowInvalidCertificates
