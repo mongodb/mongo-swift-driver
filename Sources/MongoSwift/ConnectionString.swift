@@ -40,10 +40,10 @@ internal class ConnectionString {
             }
         }
 
-        if let heartbeatFrequencyMS = options?.heartbeatFrequencyMS {
-            guard let value = Int32(exactly: heartbeatFrequencyMS), value >= 500 else {
+        if let heartbeatFreqMS = options?.heartbeatFrequencyMS {
+            guard let value = Int32(exactly: heartbeatFreqMS), value >= 500 else {
                 throw MongoError.InvalidArgumentError(
-                    message: "heartbeatFrequencyMS must be between 500 and \(Int32.max)"
+                    message: "Invalid heartbeatFrequencyMS \(heartbeatFreqMS): must be between 500 and \(Int32.max)"
                 )
             }
 
