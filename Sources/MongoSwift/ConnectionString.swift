@@ -24,6 +24,34 @@ internal class ConnectionString {
             }
         }
 
+        if let compressors = options?.compressors {
+            // we should make sure there are no duplicates. this is the only supported compressor right now
+            // so checking for multiples of this is sufficient.
+            if compressors.filter({ $0.name == "zlib" }).count > 1 {
+                throw MongoError.InvalidArgumentError(message: "zlib compressor provided multiple times")
+            }
+
+            var names = ""
+            for compressor in compressors {
+                if !names.isEmpty {
+                    names += ","
+                }
+                names += compressor.name
+
+                if let level = compressor.zLibLevel {
+                    guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_ZLIBCOMPRESSIONLEVEL, level) else {
+                        throw MongoError.InvalidArgumentError(message:
+                            "Failed to set zLibCompressionLevel to \(level)"
+                        )
+                    }
+                }
+            }
+
+            guard mongoc_uri_set_compressors(self._uri, names) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set compressors to \(names)")
+            }
+        }
+
         if let credential = options?.credential {
             try self.setMongoCredential(credential)
         }

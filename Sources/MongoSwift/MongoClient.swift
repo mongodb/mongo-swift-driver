@@ -9,6 +9,11 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/#urioption.appName
     public var appName: String?
 
+    /// Specifies one or more compressors to use for network compression for communication between this client and
+    /// mongod/mongos instances. Currently, the driver only supports compression via zlib.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/#urioption.compressors
+    public var compressors: [Compressor]?
+
     /// Specifies authentication options for use with the client.
     public var credential: MongoCredential?
 
@@ -107,6 +112,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
         appName: String? = nil,
+        compressors: [Compressor]? = nil,
         credential: MongoCredential? = nil,
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
@@ -131,6 +137,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         writeConcern: WriteConcern? = nil
     ) {
         self.appName = appName
+        self.compressors = compressors
         self.credential = credential
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy

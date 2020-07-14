@@ -445,4 +445,28 @@ final class ConnectionStringTests: MongoSwiftTestCase {
     func testMinPoolSizeErrors() throws {
         expect(try ConnectionString("mongodb://localhost:27017/?minPoolSize=10")).to(throwError())
     }
+
+    func testCompressionOptions() throws {
+        // zlib level validation
+        expect(try Compressor.zlib(level: -2)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try Compressor.zlib(level: 10)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try Compressor.zlib(level: -1)).toNot(throwError())
+        expect(try Compressor.zlib(level: 9)).toNot(throwError())
+
+        // options are set correctly from options struct
+        var opts = MongoClientOptions()
+        opts.compressors = [.zlib]
+        var connStr = try ConnectionString("mongodb://localhost:27017", options: opts)
+        expect(connStr.compressors).to(equal(["zlib"]))
+
+        opts.compressors = [try .zlib(level: 6)]
+        connStr = try ConnectionString("mongodb://localhost:27017", options: opts)
+        expect(connStr.compressors).to(equal(["zlib"]))
+        expect(connStr.options?["zlibcompressionlevel"]?.int32Value).to(equal(6))
+
+        // duplicate compressors should error
+        opts.compressors = [.zlib, try .zlib(level: 1)]
+        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+    }
 }
