@@ -41,30 +41,27 @@ internal class ConnectionString {
         }
 
         if let heartbeatFrequencyMS = options?.heartbeatFrequencyMS {
-            guard heartbeatFrequencyMS >= 500 && heartbeatFrequencyMS <= Int32.max else {
-                throw MongoError.InvalidArgumentError(message: "localThresholdMS must be between 500 and \(Int32.max)")
+            guard let value = Int32(exactly: heartbeatFrequencyMS), value >= 500 else {
+                throw MongoError.InvalidArgumentError(
+                    message: "heartbeatFrequencyMS must be between 500 and \(Int32.max)"
+                )
             }
 
-            guard mongoc_uri_set_option_as_int32(
-                self._uri,
-                MONGOC_URI_HEARTBEATFREQUENCYMS,
-                Int32(heartbeatFrequencyMS)
-            ) else {
+            guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_HEARTBEATFREQUENCYMS, value) else {
                 throw MongoError.InvalidArgumentError(
-                    message: "Failed to set heartbeatFrequencyMS to \(heartbeatFrequencyMS)"
+                    message: "Failed to set heartbeatFrequencyMS to \(value)"
                 )
             }
         }
 
         if let maxPoolSize = options?.maxPoolSize {
-            // libmongoc casts the value to a uint32_t
-            guard maxPoolSize > 0 && maxPoolSize <= UInt32.max else {
+            guard let value = Int32(exactly: maxPoolSize), value > 0 else {
                 throw MongoError.InvalidArgumentError(
-                    message: "Invalid maxPoolSize \(maxPoolSize): must be between 1 and \(UInt32.max)"
+                    message: "Invalid maxPoolSize \(maxPoolSize): must be between 1 and \(Int32.max)"
                 )
             }
-            guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_MAXPOOLSIZE, Int32(maxPoolSize)) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set maxPoolSize to \(maxPoolSize)")
+            guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_MAXPOOLSIZE, value) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set maxPoolSize to \(value)")
             }
         }
 

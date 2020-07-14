@@ -345,6 +345,6 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         let secondToLastSuccess = succeeded[succeeded.count - 2]
 
         let difference = lastStart.timeIntervalSince1970 - secondToLastSuccess.timeIntervalSince1970
-        expect(difference.rounded()).to(equal(2.0))
+        expect(difference).to(beCloseTo(2.0, within: 0.01))
     }
 }
