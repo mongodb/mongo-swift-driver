@@ -441,4 +441,8 @@ final class ConnectionStringTests: MongoSwiftTestCase {
             options: MongoClientOptions(localThresholdMS: tooLarge)
         )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
+
+    func testMinPoolSizeErrors() throws {
+        expect(try ConnectionString("mongodb://localhost:27017/?minPoolSize=10")).to(throwError())
+    }
 }

@@ -80,6 +80,14 @@ internal class ConnectionString {
             }
         }
 
+        // the way libmongoc has implemented this option is not in line with the way users would expect a minPoolSize
+        // option to behave. throw an error if we detect it to prevent users from inadvertently using it.
+        // once we own our own connection pool we will implement this option correctly.
+        // see: http://mongoc.org/libmongoc/current/mongoc_client_pool_min_size.html
+        if self.hasOption(MONGOC_URI_MINPOOLSIZE) {
+            throw MongoError.InvalidArgumentError(message: "Unsupported connection string option minPoolSize")
+        }
+
         if let rc = options?.readConcern {
             self.readConcern = rc
         }
