@@ -464,9 +464,30 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(connStr.compressors).to(equal(["zlib"]))
         expect(connStr.options?["zlibcompressionlevel"]?.int32Value).to(equal(6))
 
+        // options parsed correctly from string
+        connStr = try ConnectionString("mongodb://localhost:27017/?compressors=zlib&zlibcompressionlevel=6")
+        expect(connStr.compressors).to(equal(["zlib"]))
+        expect(connStr.options?["zlibcompressionlevel"]?.int32Value).to(equal(6))
+
+        // options struct overrides string
+        opts.compressors = []
+        connStr = try ConnectionString("mongodb://localhost:27017/?compressors=zlib", options: opts)
+        expect(connStr.compressors).to(beEmpty())
+
+        opts.compressors = [try .zlib(level: 6)]
+        connStr = try ConnectionString(
+            "mongodb://localhost:27017/?compressors=zlib&zlibcompressionlevel=4",
+            options: opts
+        )
+        expect(connStr.compressors).to(equal(["zlib"]))
+        expect(connStr.options?["zlibcompressionlevel"]?.int32Value).to(equal(6))
+
         // duplicate compressors should error
         opts.compressors = [.zlib, try .zlib(level: 1)]
         expect(try ConnectionString("mongodb://localhost:27017", options: opts))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // unfortunately, we can't error on an unsupported compressor provided via URI. libmongoc will generate a
+        // warning but does not provide us access to the see the full specified list.
     }
 }

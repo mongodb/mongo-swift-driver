@@ -25,30 +25,34 @@ internal class ConnectionString {
         }
 
         if let compressors = options?.compressors {
-            // we should make sure there are no duplicates. this is the only supported compressor right now
-            // so checking for multiples of this is sufficient.
-            if compressors.filter({ $0.name == "zlib" }).count > 1 {
+            // user specified an empty array, so we should nil out any compressors set via connection string.
+            guard !compressors.isEmpty else {
+                guard mongoc_uri_set_compressors(self._uri, nil) else {
+                    throw MongoError.InvalidArgumentError(message: "Failed to set compressors to nil")
+                }
+                return
+            }
+
+            // otherwise, the only valid inputs are a length 1 array containing either zlib or zlib with a level.
+            let nonZlib = compressors.filter { $0.name != "zlib" }
+            guard nonZlib.isEmpty else {
+                throw MongoError.InvalidArgumentError(message: "Unsupported compressor \(nonZlib[0].name)")
+            }
+
+            guard compressors.count == 1 else {
                 throw MongoError.InvalidArgumentError(message: "zlib compressor provided multiple times")
             }
 
-            var names = ""
-            for compressor in compressors {
-                if !names.isEmpty {
-                    names += ","
-                }
-                names += compressor.name
-
-                if let level = compressor.zLibLevel {
-                    guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_ZLIBCOMPRESSIONLEVEL, level) else {
-                        throw MongoError.InvalidArgumentError(message:
-                            "Failed to set zLibCompressionLevel to \(level)"
-                        )
-                    }
-                }
+            guard mongoc_uri_set_compressors(self._uri, "zlib") else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set compressor to zlib")
             }
 
-            guard mongoc_uri_set_compressors(self._uri, names) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set compressors to \(names)")
+            if let level = compressors[0].zLibLevel {
+                guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_ZLIBCOMPRESSIONLEVEL, level) else {
+                    throw MongoError.InvalidArgumentError(message:
+                        "Failed to set zLibCompressionLevel to \(level)"
+                    )
+                }
             }
         }
 
