@@ -33,25 +33,24 @@ internal class ConnectionString {
                 return
             }
 
-            // otherwise, the only valid inputs are a length 1 array containing either zlib or zlib with a level.
-            let nonZlib = compressors.filter { $0.name != "zlib" }
-            guard nonZlib.isEmpty else {
-                throw MongoError.InvalidArgumentError(message: "Unsupported compressor \(nonZlib[0].name)")
-            }
-
+            // otherwise, the only valid inputs is a length 1 array containing either zlib or zlib with a level.
             guard compressors.count == 1 else {
                 throw MongoError.InvalidArgumentError(message: "zlib compressor provided multiple times")
             }
 
-            guard mongoc_uri_set_compressors(self._uri, "zlib") else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set compressor to zlib")
-            }
+            let compressor = compressors[0]
+            switch compressor._compressor {
+            case let .zlib(level):
+                guard mongoc_uri_set_compressors(self._uri, "zlib") else {
+                    throw MongoError.InvalidArgumentError(message: "Failed to set compressor to zlib")
+                }
 
-            if let level = compressors[0].zLibLevel {
-                guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_ZLIBCOMPRESSIONLEVEL, level) else {
-                    throw MongoError.InvalidArgumentError(message:
-                        "Failed to set zLibCompressionLevel to \(level)"
-                    )
+                if let level = level {
+                    guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_ZLIBCOMPRESSIONLEVEL, level) else {
+                        throw MongoError.InvalidArgumentError(message:
+                            "Failed to set zLibCompressionLevel to \(level)"
+                        )
+                    }
                 }
             }
         }
