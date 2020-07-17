@@ -1,7 +1,7 @@
 /// Specifies a library to use for network compression.
 public struct Compressor: CustomStringConvertible {
     internal enum _Compressor {
-        case zlib(level: Int32? = nil)
+        case zlib(level: Int32?)
     }
 
     /// The compressor to use.
@@ -13,7 +13,7 @@ public struct Compressor: CustomStringConvertible {
 
     /// Use zlib for data compression.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/glossary/#term-zlib
-    public static let zlib = Compressor(.zlib())
+    public static let zlib = Compressor(.zlib(level: nil))
 
     /// Use zlib for data compression, with the specified compression level.
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/#urioption.zlibCompressionLevel
