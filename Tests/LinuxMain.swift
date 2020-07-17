@@ -101,6 +101,7 @@ extension ConnectionStringTests {
         ("testServerSelectionTimeoutMSWithCommand", testServerSelectionTimeoutMSWithCommand),
         ("testLocalThresholdMSOption", testLocalThresholdMSOption),
         ("testMinPoolSizeErrors", testMinPoolSizeErrors),
+        ("testCompressionOptions", testCompressionOptions),
     ]
 }
 
