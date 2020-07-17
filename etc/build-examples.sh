@@ -2,7 +2,7 @@
 
 exit_code=0
 
-examples=("BugReport" "Docs" "KituraExample" "PerfectExample" "VaporExample")
+examples=("BugReport" "Docs" "KituraExample" "PerfectExample" "VaporExample" "Atlas")
 
 for example_project in ${examples[@]}; do
     echo "Building $example_project"
