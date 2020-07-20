@@ -32,7 +32,7 @@ func x509Example() throws {
         tlsCertificateKeyFile: URL(string: "/path/to/cert")
     )
     let client = try MongoClient(
-        "mongodb+srv://<yourhost>:27017/?retryWrites=true&w=majority",
+        "mongodb+srv://<host>/<dbname>?retryWrites=true&w=majority",
         using: elg,
         options: options
     )
