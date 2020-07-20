@@ -118,6 +118,11 @@ echo "RENAMING header files"
   $sed -i -e '/private/! s+include "mongoc-+include "CLibMongoC_mongoc-+' $MONGOC_PATH/mongoc-stream-gridfs-download-private.h
   $sed -i -e '/private/! s+include "mongoc-+include "CLibMongoC_mongoc-+' $MONGOC_PATH/mongoc-stream-gridfs-upload-private.h
 
+  # fix prelude define requirements, to work around xcode not supporting defines passed via SwiftPM
+  $sed -i -e 's+#error+// #error+' $CLIBMONGOC_INCLUDE_PATH/mongoc-prelude.h
+  $sed -i -e 's+#error+// #error+' $CLIBMONGOC_INCLUDE_PATH/bson-prelude.h
+  $sed -i -e 's+#error+// #error+' $CLIBMONGOC_INCLUDE_PATH/common-prelude.h
+
   pushd $CLIBMONGOC_INCLUDE_PATH
   find . -name "*.h" | $sed -e "s_./__" | xargs -I {} mv {} CLibMongoC_{}
   find . -name "*.h" | xargs $sed -i -e 's/include "bson/include "CLibMongoC_/' -e 's/include <CLibMongoC_\(.*\)>/include "CLibMongoC_\1"/'
