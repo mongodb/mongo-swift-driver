@@ -148,7 +148,7 @@ internal class ConnectionString {
         try credential.mechanismProperties?.withBSONPointer { mechanismPropertiesPtr in
             guard mongoc_uri_set_mechanism_properties(self._uri, mechanismPropertiesPtr) else {
                 let desc = String(describing: credential.mechanismProperties)
-                throw failedToSet(MONGOC_URI_AUTHMECHANISMPROPERTIES, to: desc)
+                throw self.failedToSet(MONGOC_URI_AUTHMECHANISMPROPERTIES, to: desc)
             }
         }
     }
