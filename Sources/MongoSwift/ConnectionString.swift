@@ -244,7 +244,7 @@ internal class ConnectionString {
             throw MongoError.InvalidArgumentError(message: String(format: invalidThresholdMsg, uriValue))
         }
 
-        let invalidSSTimeoutMsg = "Invalid serverSelectionTimeoutMS %d: must be between 1 and \(Int32.max)"
+        let invalidSSTimeoutMsg = "Invalid \(MONGOC_URI_SERVERSELECTIONTIMEOUTMS) %d: must be between 1 and \(Int32.max)"
         if let ssTimeout = options?.serverSelectionTimeoutMS {
             guard let value = Int32(exactly: ssTimeout), value > 0 else {
                 throw MongoError.InvalidArgumentError(message: String(format: invalidSSTimeoutMsg, ssTimeout))
