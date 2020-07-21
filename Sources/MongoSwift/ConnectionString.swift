@@ -16,16 +16,6 @@ internal class ConnectionString {
         try self.applyAndValidateOptions(options)
     }
 
-    /// Initializes a new connection string that wraps a copy of the provided URI. Does not destroy the input URI.
-    internal init(copying uri: OpaquePointer) {
-        self._uri = mongoc_uri_copy(uri)
-    }
-
-    /// Cleans up the underlying `mongoc_uri_t`.
-    deinit {
-        mongoc_uri_destroy(self._uri)
-    }
-
     private func applyAndValidateOptions(_ options: MongoClientOptions?) throws {
         try self.applyAndValidateAuthOptions(options)
         try self.applyAndValidateTLSOptions(options)
@@ -244,7 +234,8 @@ internal class ConnectionString {
             throw MongoError.InvalidArgumentError(message: String(format: invalidThresholdMsg, uriValue))
         }
 
-        let invalidSSTimeoutMsg = "Invalid \(MONGOC_URI_SERVERSELECTIONTIMEOUTMS) %d: must be between 1 and \(Int32.max)"
+        let invalidSSTimeoutMsg =
+            "Invalid \(MONGOC_URI_SERVERSELECTIONTIMEOUTMS) %d: must be between 1 and \(Int32.max)"
         if let ssTimeout = options?.serverSelectionTimeoutMS {
             guard let value = Int32(exactly: ssTimeout), value > 0 else {
                 throw MongoError.InvalidArgumentError(message: String(format: invalidSSTimeoutMsg, ssTimeout))
@@ -260,94 +251,14 @@ internal class ConnectionString {
         }
     }
 
-    /// Returns the credential configured on this URI. Will be empty if no options are set.
-    internal var credential: MongoCredential {
-        MongoCredential(
-            username: self.username,
-            password: self.password,
-            source: self.authSource,
-            mechanism: self.authMechanism,
-            mechanismProperties: self.authMechanismProperties
-        )
+    /// Initializes a new connection string that wraps a copy of the provided URI. Does not destroy the input URI.
+    internal init(copying uri: OpaquePointer) {
+        self._uri = mongoc_uri_copy(uri)
     }
 
-    internal var db: String? {
-        guard let db = mongoc_uri_get_database(self._uri) else {
-            return nil
-        }
-        return String(cString: db)
-    }
-
-    /// Returns a document containing all of the options provided after the ? of the URI.
-    internal var options: BSONDocument? {
-        guard let optsDoc = mongoc_uri_get_options(self._uri) else {
-            return nil
-        }
-        var copy = BSONDocument(copying: optsDoc)
-
-        if let authSource = self.authSource {
-            copy.authsource = .string(authSource)
-        }
-        if let authMechanism = self.authMechanism {
-            copy.authmechanism = .string(authMechanism.name)
-        }
-        if let authMechanismProperties = self.authMechanismProperties {
-            copy.authmechanismproperties = .document(authMechanismProperties)
-        }
-        if let parsedTagSets = self.readPreference.tagSets {
-            copy.readpreferencetags = .array(parsedTagSets.map { BSON.document($0) })
-        }
-        if let compressors = self.compressors {
-            copy.compressors = .array(compressors.map { .string($0) })
-        }
-        if let readConcern = self.readConcern.level {
-            copy.readconcernlevel = .string(readConcern)
-        }
-
-        return copy
-    }
-
-    /// Returns the host/port pairs specified in the connection string, or nil if this connection string's scheme is
-    /// “mongodb+srv://”.
-    internal var hosts: [ServerAddress]? {
-        guard let hostList = mongoc_uri_get_hosts(self._uri) else {
-            return nil
-        }
-
-        var hosts = [ServerAddress]()
-        var next = hostList
-
-        while true {
-            hosts.append(ServerAddress(next))
-
-            guard let nextPointer = next.pointee.next else {
-                break
-            }
-            next = UnsafePointer(nextPointer)
-        }
-
-        return hosts
-    }
-
-    internal var compressors: [String]? {
-        guard let compressors = mongoc_uri_get_compressors(self._uri) else {
-            return nil
-        }
-        return BSONDocument(copying: compressors).keys
-    }
-
-    internal var replicaSet: String? {
-        guard let rs = mongoc_uri_get_replica_set(self._uri) else {
-            return nil
-        }
-        return String(cString: rs)
-    }
-
-    internal var appName: String? {
-        guard let appName = mongoc_uri_get_option_as_utf8(self._uri, MONGOC_URI_APPNAME, nil) else {
-            return nil
-        }
-        return String(cString: appName)
+    /// Cleans up the underlying `mongoc_uri_t`.
+    deinit {
+        mongoc_uri_destroy(self._uri)
     }
 
     /// The `ReadConcern` for this connection string.
@@ -443,6 +354,96 @@ internal class ConnectionString {
                 }
             }
         }
+    }
+
+    /// Returns the credential configured on this URI. Will be empty if no options are set.
+    internal var credential: MongoCredential {
+        MongoCredential(
+            username: self.username,
+            password: self.password,
+            source: self.authSource,
+            mechanism: self.authMechanism,
+            mechanismProperties: self.authMechanismProperties
+        )
+    }
+
+    internal var db: String? {
+        guard let db = mongoc_uri_get_database(self._uri) else {
+            return nil
+        }
+        return String(cString: db)
+    }
+
+    /// Returns a document containing all of the options provided after the ? of the URI.
+    internal var options: BSONDocument? {
+        guard let optsDoc = mongoc_uri_get_options(self._uri) else {
+            return nil
+        }
+        var copy = BSONDocument(copying: optsDoc)
+
+        if let authSource = self.authSource {
+            copy.authsource = .string(authSource)
+        }
+        if let authMechanism = self.authMechanism {
+            copy.authmechanism = .string(authMechanism.name)
+        }
+        if let authMechanismProperties = self.authMechanismProperties {
+            copy.authmechanismproperties = .document(authMechanismProperties)
+        }
+        if let parsedTagSets = self.readPreference.tagSets {
+            copy.readpreferencetags = .array(parsedTagSets.map { BSON.document($0) })
+        }
+        if let compressors = self.compressors {
+            copy.compressors = .array(compressors.map { .string($0) })
+        }
+        if let readConcern = self.readConcern.level {
+            copy.readconcernlevel = .string(readConcern)
+        }
+
+        return copy
+    }
+
+    /// Returns the host/port pairs specified in the connection string, or nil if this connection string's scheme is
+    /// “mongodb+srv://”.
+    internal var hosts: [ServerAddress]? {
+        guard let hostList = mongoc_uri_get_hosts(self._uri) else {
+            return nil
+        }
+
+        var hosts = [ServerAddress]()
+        var next = hostList
+
+        while true {
+            hosts.append(ServerAddress(next))
+
+            guard let nextPointer = next.pointee.next else {
+                break
+            }
+            next = UnsafePointer(nextPointer)
+        }
+
+        return hosts
+    }
+
+    internal var compressors: [String]? {
+        guard let compressors = mongoc_uri_get_compressors(self._uri) else {
+            return nil
+        }
+        return BSONDocument(copying: compressors).keys
+    }
+
+    internal var replicaSet: String? {
+        guard let rs = mongoc_uri_get_replica_set(self._uri) else {
+            return nil
+        }
+        return String(cString: rs)
+    }
+
+    internal var appName: String? {
+        guard let appName = mongoc_uri_get_option_as_utf8(self._uri, MONGOC_URI_APPNAME, nil) else {
+            return nil
+        }
+        return String(cString: appName)
     }
 
     private func hasOption(_ option: String) -> Bool {
