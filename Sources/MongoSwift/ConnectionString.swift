@@ -13,22 +13,166 @@ internal class ConnectionString {
         }
         self._uri = uri
 
-        try self.applyOptions(options)
+        try self.applyAndValidateOptions(options)
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
-    private func applyOptions(_ options: MongoClientOptions?) throws {
+    private func applyAndValidateOptions(_ options: MongoClientOptions?) throws {
+        try self.applyAndValidateAuthOptions(options)
+        try self.applyAndValidateTLSOptions(options)
+        try self.applyAndValidateConnectionPoolOptions(options)
+        try self.applyAndValidateCompressionOptions(options)
+        try self.applyAndValidateSDAMOptions(options)
+        try self.applyAndValidateServerSelectionOptions(options)
+
         if let appName = options?.appName {
-            guard mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_APPNAME, appName) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set appName to \(appName)")
+            try self.setUTF8Option(MONGOC_URI_APPNAME, to: appName)
+        }
+
+        if let rc = options?.readConcern {
+            self.readConcern = rc
+        }
+
+        if let replicaSet = options?.replicaSet {
+            try self.setUTF8Option(MONGOC_URI_REPLICASET, to: replicaSet)
+        }
+
+        if let rr = options?.retryReads {
+            try self.setBoolOption(MONGOC_URI_RETRYREADS, to: rr)
+        }
+
+        if let rw = options?.retryWrites {
+            try self.setBoolOption(MONGOC_URI_RETRYWRITES, to: rw)
+        }
+
+        if let wc = options?.writeConcern {
+            self.writeConcern = wc
+        }
+    }
+
+    private func setBoolOption(_ name: String, to value: Bool) throws {
+        guard mongoc_uri_set_option_as_bool(self._uri, name, value) else {
+            throw self.failedToSet(name, to: value)
+        }
+    }
+
+    private func setUTF8Option(_ name: String, to value: String, redactInErrorMsg: Bool = false) throws {
+        guard mongoc_uri_set_option_as_utf8(self._uri, name, value) else {
+            throw self.failedToSet(name, to: value, redact: redactInErrorMsg)
+        }
+    }
+
+    private func setInt32Option(_ name: String, to value: Int32) throws {
+        guard mongoc_uri_set_option_as_int32(self._uri, name, value) else {
+            throw self.failedToSet(name, to: value)
+        }
+    }
+
+    /// Constructs a standardized error message about failing to set an option to a specified value. If redact=true the
+    /// value will be omitted from the message.
+    private func failedToSet(
+        _ option: String,
+        to value: CustomStringConvertible,
+        redact: Bool = false
+    ) -> MongoError.InvalidArgumentError {
+        let msg = redact ? "Failed to set \(option)" : "Failed to set \(option) to \(value)"
+        return MongoError.InvalidArgumentError(message: msg)
+    }
+
+    /// Sets and validates TLS-related on the underlying `mongoc_uri_t`.
+    private func applyAndValidateTLSOptions(_ options: MongoClientOptions?) throws {
+        if let tls = options?.tls {
+            try self.setBoolOption(MONGOC_URI_TLS, to: tls)
+        }
+
+        if let invalidCerts = options?.tlsAllowInvalidCertificates {
+            try self.setBoolOption(MONGOC_URI_TLSALLOWINVALIDCERTIFICATES, to: invalidCerts)
+        }
+
+        if let invalidHostnames = options?.tlsAllowInvalidHostnames {
+            try self.setBoolOption(MONGOC_URI_TLSALLOWINVALIDHOSTNAMES, to: invalidHostnames)
+        }
+
+        if let caFile = options?.tlsCAFile?.absoluteString {
+            try self.setUTF8Option(MONGOC_URI_TLSCAFILE, to: caFile)
+        }
+
+        if let certFile = options?.tlsCertificateKeyFile?.absoluteString {
+            try self.setUTF8Option(MONGOC_URI_TLSCERTIFICATEKEYFILE, to: certFile)
+        }
+
+        if let password = options?.tlsCertificateKeyFilePassword {
+            try self.setUTF8Option(MONGOC_URI_TLSCERTIFICATEKEYFILEPASSWORD, to: password, redactInErrorMsg: true)
+        }
+    }
+
+    /// Sets and validates authentication-related on the underlying `mongoc_uri_t`.
+    private func applyAndValidateAuthOptions(_ options: MongoClientOptions?) throws {
+        guard let credential = options?.credential else {
+            return
+        }
+
+        if let username = credential.username {
+            guard mongoc_uri_set_username(self._uri, username) else {
+                throw self.failedToSet("username", to: username)
             }
         }
 
+        if let password = credential.password {
+            guard mongoc_uri_set_password(self._uri, password) else {
+                throw MongoError.InvalidArgumentError(message: "Failed to set password")
+            }
+        }
+
+        if let authSource = credential.source {
+            guard mongoc_uri_set_auth_source(self._uri, authSource) else {
+                throw self.failedToSet(MONGOC_URI_AUTHSOURCE, to: authSource)
+            }
+        }
+
+        if let mechanism = credential.mechanism {
+            guard mongoc_uri_set_auth_mechanism(self._uri, mechanism.name) else {
+                throw self.failedToSet(MONGOC_URI_AUTHMECHANISM, to: mechanism)
+            }
+        }
+
+        try credential.mechanismProperties?.withBSONPointer { mechanismPropertiesPtr in
+            guard mongoc_uri_set_mechanism_properties(self._uri, mechanismPropertiesPtr) else {
+                let desc = String(describing: credential.mechanismProperties)
+                throw self.failedToSet(MONGOC_URI_AUTHMECHANISMPROPERTIES, to: desc)
+            }
+        }
+    }
+
+    /// Sets and validates connection pool-related on the underlying `mongoc_uri_t`.
+    private func applyAndValidateConnectionPoolOptions(_ options: MongoClientOptions?) throws {
+        if let maxPoolSize = options?.maxPoolSize {
+            guard let value = Int32(exactly: maxPoolSize), value > 0 else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Invalid maxPoolSize \(maxPoolSize): must be between 1 and \(Int32.max)"
+                )
+            }
+
+            try self.setInt32Option(MONGOC_URI_MAXPOOLSIZE, to: value)
+        }
+
+        // the way libmongoc has implemented this option is not in line with the way users would expect a minPoolSize
+        // option to behave. throw an error if we detect it to prevent users from inadvertently using it.
+        // once we own our own connection pool we will implement this option correctly.
+        // see: http://mongoc.org/libmongoc/current/mongoc_client_pool_min_size.html
+        if self.hasOption(MONGOC_URI_MINPOOLSIZE) {
+            throw MongoError.InvalidArgumentError(
+                message: "Unsupported connection string option \(MONGOC_URI_MINPOOLSIZE)"
+            )
+        }
+    }
+
+    /// Sets and validates compression-related on the underlying `mongoc_uri_t`.
+    private func applyAndValidateCompressionOptions(_ options: MongoClientOptions?) throws {
         if let compressors = options?.compressors {
             // user specified an empty array, so we should nil out any compressors set via connection string.
             guard !compressors.isEmpty else {
                 guard mongoc_uri_set_compressors(self._uri, nil) else {
-                    throw MongoError.InvalidArgumentError(message: "Failed to set compressors to nil")
+                    throw self.failedToSet("compressors", to: "nil")
                 }
                 return
             }
@@ -42,170 +186,68 @@ internal class ConnectionString {
             switch compressor._compressor {
             case let .zlib(level):
                 guard mongoc_uri_set_compressors(self._uri, "zlib") else {
-                    throw MongoError.InvalidArgumentError(message: "Failed to set compressor to zlib")
+                    throw self.failedToSet("compressor", to: "zlib")
                 }
 
                 if let level = level {
-                    guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_ZLIBCOMPRESSIONLEVEL, level) else {
-                        throw MongoError.InvalidArgumentError(message:
-                            "Failed to set zLibCompressionLevel to \(level)"
-                        )
-                    }
+                    try self.setInt32Option(MONGOC_URI_ZLIBCOMPRESSIONLEVEL, to: level)
                 }
             }
         }
+    }
 
-        if let credential = options?.credential {
-            try self.setMongoCredential(credential)
-        }
-
+    /// Sets and validates SDAM-related on the underlying `mongoc_uri_t`.
+    private func applyAndValidateSDAMOptions(_ options: MongoClientOptions?) throws {
         // Per SDAM spec: If the ``directConnection`` option is not specified, newly developed drivers MUST behave as
         // if it was specified with the false value.
         if let dc = options?.directConnection {
-            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_DIRECTCONNECTION, dc) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set directConnection to \(dc)")
-            }
-        } else if !self.hasOption("directConnection") {
-            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_DIRECTCONNECTION, false) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set directConnection to false")
-            }
+            try self.setBoolOption(MONGOC_URI_DIRECTCONNECTION, to: dc)
+        } else if !self.hasOption(MONGOC_URI_DIRECTCONNECTION) {
+            try self.setBoolOption(MONGOC_URI_DIRECTCONNECTION, to: false)
         }
 
         if let heartbeatFreqMS = options?.heartbeatFrequencyMS {
             guard let value = Int32(exactly: heartbeatFreqMS), value >= 500 else {
                 throw MongoError.InvalidArgumentError(
-                    message: "Invalid heartbeatFrequencyMS \(heartbeatFreqMS): must be between 500 and \(Int32.max)"
+                    message: "Invalid \(MONGOC_URI_HEARTBEATFREQUENCYMS) \(heartbeatFreqMS): " +
+                        "must be between 500 and \(Int32.max)"
                 )
             }
 
-            guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_HEARTBEATFREQUENCYMS, value) else {
-                throw MongoError.InvalidArgumentError(
-                    message: "Failed to set heartbeatFrequencyMS to \(value)"
-                )
-            }
+            try self.setInt32Option(MONGOC_URI_HEARTBEATFREQUENCYMS, to: value)
         }
+    }
 
-        let invalidThresholdMsg = "Invalid localThresholdMS %d: must be between 0 and \(Int32.max)"
+    /// Sets and validates server selection-related on the underlying `mongoc_uri_t`.
+    private func applyAndValidateServerSelectionOptions(_ options: MongoClientOptions?) throws {
+        let invalidThresholdMsg = "Invalid \(MONGOC_URI_LOCALTHRESHOLDMS) %d: must be between 0 and \(Int32.max)"
         if let localThresholdMS = options?.localThresholdMS {
             guard let value = Int32(exactly: localThresholdMS), value >= 0 else {
                 throw MongoError.InvalidArgumentError(message: String(format: invalidThresholdMsg, localThresholdMS))
             }
 
-            guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_LOCALTHRESHOLDMS, value) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set localThresholdMS to \(value)")
-            }
+            try self.setInt32Option(MONGOC_URI_LOCALTHRESHOLDMS, to: value)
+
             // libmongoc does not validate an invalid value for localThresholdMS set via URI. if it was set that way and
             // not overridden via options struct, validate it ourselves here.
         } else if let uriValue = self.options?[MONGOC_URI_LOCALTHRESHOLDMS]?.int32Value, uriValue < 0 {
             throw MongoError.InvalidArgumentError(message: String(format: invalidThresholdMsg, uriValue))
         }
 
-        if let maxPoolSize = options?.maxPoolSize {
-            guard let value = Int32(exactly: maxPoolSize), value > 0 else {
-                throw MongoError.InvalidArgumentError(
-                    message: "Invalid maxPoolSize \(maxPoolSize): must be between 1 and \(Int32.max)"
-                )
-            }
-            guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_MAXPOOLSIZE, value) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set maxPoolSize to \(value)")
-            }
-        }
-
-        // the way libmongoc has implemented this option is not in line with the way users would expect a minPoolSize
-        // option to behave. throw an error if we detect it to prevent users from inadvertently using it.
-        // once we own our own connection pool we will implement this option correctly.
-        // see: http://mongoc.org/libmongoc/current/mongoc_client_pool_min_size.html
-        if self.hasOption(MONGOC_URI_MINPOOLSIZE) {
-            throw MongoError.InvalidArgumentError(message: "Unsupported connection string option minPoolSize")
-        }
-
-        if let rc = options?.readConcern {
-            self.readConcern = rc
-        }
-
-        if let rp = options?.readPreference {
-            self.readPreference = rp
-        }
-
-        if let replicaSet = options?.replicaSet {
-            guard mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_REPLICASET, replicaSet) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set replicaSet to \(replicaSet)")
-            }
-        }
-
-        if let rr = options?.retryReads {
-            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYREADS, rr) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set retryReads to \(rr)")
-            }
-        }
-
-        if let rw = options?.retryWrites {
-            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_RETRYWRITES, rw) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set retryWrites to \(rw)")
-            }
-        }
-
-        let invalidSSTimeoutMsg = "Invalid serverSelectionTimeoutMS %d: must be between 1 and \(Int32.max)"
+        let invalidSSTimeoutMsg =
+            "Invalid \(MONGOC_URI_SERVERSELECTIONTIMEOUTMS) %d: must be between 1 and \(Int32.max)"
         if let ssTimeout = options?.serverSelectionTimeoutMS {
             guard let value = Int32(exactly: ssTimeout), value > 0 else {
                 throw MongoError.InvalidArgumentError(message: String(format: invalidSSTimeoutMsg, ssTimeout))
             }
 
-            guard mongoc_uri_set_option_as_int32(self._uri, MONGOC_URI_SERVERSELECTIONTIMEOUTMS, value) else {
-                throw MongoError.InvalidArgumentError(
-                    message: "Failed to set serverSelectionTimeoutMS to \(value)"
-                )
-            }
+            try self.setInt32Option(MONGOC_URI_SERVERSELECTIONTIMEOUTMS, to: value)
         } else if let uriValue = self.options?[MONGOC_URI_SERVERSELECTIONTIMEOUTMS]?.int32Value, uriValue <= 0 {
             throw MongoError.InvalidArgumentError(message: String(format: invalidSSTimeoutMsg, uriValue))
         }
 
-        if let tls = options?.tls {
-            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_TLS, tls) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set tls to \(tls)")
-            }
-        }
-
-        if let invalidCerts = options?.tlsAllowInvalidCertificates {
-            guard mongoc_uri_set_option_as_bool(self._uri, MONGOC_URI_TLSALLOWINVALIDCERTIFICATES, invalidCerts) else {
-                throw MongoError.InvalidArgumentError(
-                    message: "Failed to set tlsAllowInvalidCertificates to \(invalidCerts)"
-                )
-            }
-        }
-
-        if let invalidHostnames = options?.tlsAllowInvalidHostnames {
-            guard mongoc_uri_set_option_as_bool(
-                self._uri,
-                MONGOC_URI_TLSALLOWINVALIDHOSTNAMES,
-                invalidHostnames
-            ) else {
-                throw MongoError.InvalidArgumentError(
-                    message: "Failed to set tlsAllowInvalidHostnames to \(invalidHostnames)"
-                )
-            }
-        }
-
-        if let caFile = options?.tlsCAFile?.absoluteString {
-            guard mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_TLSCAFILE, caFile) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set tlsCAFile to \(caFile)")
-            }
-        }
-
-        if let certFile = options?.tlsCertificateKeyFile?.absoluteString {
-            guard mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_TLSCERTIFICATEKEYFILE, certFile) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set tlsCertificateKeyFile to \(certFile)")
-            }
-        }
-
-        if let password = options?.tlsCertificateKeyFilePassword {
-            guard mongoc_uri_set_option_as_utf8(self._uri, MONGOC_URI_TLSCERTIFICATEKEYFILEPASSWORD, password) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set tlsCertificateKeyPassword")
-            }
-        }
-
-        if let wc = options?.writeConcern {
-            self.writeConcern = wc
+        if let rp = options?.readPreference {
+            self.readPreference = rp
         }
     }
 
@@ -411,40 +453,5 @@ internal class ConnectionString {
     /// Executes the provided closure using a pointer to the underlying `mongoc_uri_t`.
     internal func withMongocURI<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
         try body(self._uri)
-    }
-
-    /// Sets credential properties in the URI string
-    internal func setMongoCredential(_ credential: MongoCredential) throws {
-        if let username = credential.username {
-            guard mongoc_uri_set_username(self._uri, username) else {
-                throw MongoError.InvalidArgumentError(message: "Cannot set username to \(username).")
-            }
-        }
-
-        if let password = credential.password {
-            guard mongoc_uri_set_password(self._uri, password) else {
-                throw MongoError.InvalidArgumentError(message: "Cannot set password.")
-            }
-        }
-
-        if let authSource = credential.source {
-            guard mongoc_uri_set_auth_source(self._uri, authSource) else {
-                throw MongoError.InvalidArgumentError(message: "Cannot set authSource to \(authSource).")
-            }
-        }
-
-        if let mechanism = credential.mechanism {
-            guard mongoc_uri_set_auth_mechanism(self._uri, mechanism.name) else {
-                throw MongoError.InvalidArgumentError(message: "Cannot set mechanism to \(mechanism)).")
-            }
-        }
-
-        try credential.mechanismProperties?.withBSONPointer { mechanismPropertiesPtr in
-            guard mongoc_uri_set_mechanism_properties(self._uri, mechanismPropertiesPtr) else {
-                throw MongoError.InvalidArgumentError(
-                    message: "Cannot set mechanismProperties to \(String(describing: credential.mechanismProperties))."
-                )
-            }
-        }
     }
 }
