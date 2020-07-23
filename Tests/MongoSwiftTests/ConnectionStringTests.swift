@@ -448,8 +448,19 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    func testMinPoolSizeErrors() throws {
-        expect(try ConnectionString("mongodb://localhost:27017/?minPoolSize=10")).to(throwError())
+    func testUnsupportedOptions() throws {
+        // options we know of but don't support yet should throw errors
+        expect(try ConnectionString("mongodb://localhost:27017/?minPoolSize=10"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try ConnectionString("mongodb://localhost:27017/?maxIdleTimeMS=10"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try ConnectionString("mongodb://localhost:27017/?waitQueueMultiple=10"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try ConnectionString("mongodb://localhost:27017/?waitQueueTimeoutMS=10"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // options we don't know of should be ignored
+        expect(try ConnectionString("mongodb://localhost:27017/?blah=10")).toNot(throwError())
     }
 
     func testCompressionOptions() throws {
@@ -495,5 +506,40 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
         // unfortunately, we can't error on an unsupported compressor provided via URI. libmongoc will generate a
         // warning but does not provide us access to the see the full specified list.
+    }
+
+    func testInvalidOptionsCombinations() throws {
+        // tlsInsecure and conflicting options
+        var opts = MongoClientOptions(tlsAllowInvalidCertificates: true, tlsInsecure: true)
+        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        opts = MongoClientOptions(tlsAllowInvalidHostnames: true, tlsInsecure: true)
+        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // one in URI, one in options struct
+        opts = MongoClientOptions(tlsAllowInvalidCertificates: true)
+        expect(try ConnectionString("mongodb://localhost:27017/?tlsInsecure=true", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        opts = MongoClientOptions(tlsAllowInvalidHostnames: true)
+        expect(try ConnectionString("mongodb://localhost:27017/?tlsInsecure=true", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        opts = MongoClientOptions(tlsInsecure: true)
+        expect(try ConnectionString("mongodb://localhost:27017/?tlsAllowInvalidHostnames=true", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try ConnectionString("mongodb://localhost:27017/?tlsAllowInvalidCertificates=true", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // directConnection cannot be used with SRV URIs
+        opts = MongoClientOptions(directConnection: true)
+        expect(try ConnectionString("mongodb+srv://test3.test.build.10gen.cc", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // directConnection=true cannot be used with multiple seeds
+        expect(try ConnectionString("mongodb://localhost:27017,localhost:27018", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 }

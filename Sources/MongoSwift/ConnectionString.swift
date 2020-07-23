@@ -96,21 +96,10 @@ internal class ConnectionString {
 
     /// Sets and validates TLS-related on the underlying `mongoc_uri_t`.
     private func applyAndValidateTLSOptions(_ options: MongoClientOptions?) throws {
-        // swiftlint:disable:previous cyclomatic_complexity
-
         if let tls = options?.tls {
-            // per URI options spec, we must raise an error if all instances of `tls` and `ssl` do not have the same
-            // value. libmongoc handles validation of the initial string and we don't support setting `ssl` via options
-            //  struct, so we only need to check the case where `ssl` is in the connection string and `tls` is in the
-            // options struct.
-            if let uriSSL = self.options?[MONGOC_URI_SSL]?.boolValue {
-                guard uriSSL == tls else {
-                    throw MongoError.InvalidArgumentError(
-                        message: "\(MONGOC_URI_SSL) and \(MONGOC_URI_TLS) options cannot both be specified with " +
-                            " different values: got \(MONGOC_URI_SSL)=\(uriSSL), \(MONGOC_URI_TLS)=\(tls)"
-                    )
-                }
-            }
+            // in parsing, libmongoc canonicalizes instances of "ssl" and replaces them with TLS. therefore, there is
+            // no possibility that our setting the TLS option here creates an invalid combination of conflicting values
+            // for the SSL and TLS options. if such a conflict is present in the input string libmongoc will error.
             try self.setBoolOption(MONGOC_URI_TLS, to: tls)
         }
 
@@ -266,6 +255,16 @@ internal class ConnectionString {
                     message: "\(MONGOC_URI_DIRECTCONNECTION)=true is incompatible with mongodb+srv connection strings"
                 )
             }
+
+            if let hosts = self.hosts {
+                guard !(dc && hosts.count > 1) else {
+                    throw MongoError.InvalidArgumentError(
+                        message: "\(MONGOC_URI_DIRECTCONNECTION)=true is incompatible with multiple seeds. " +
+                            "got seeds: \(hosts)"
+                    )
+                }
+            }
+
             try self.setBoolOption(MONGOC_URI_DIRECTCONNECTION, to: dc)
         } else if !self.hasOption(MONGOC_URI_DIRECTCONNECTION) {
             try self.setBoolOption(MONGOC_URI_DIRECTCONNECTION, to: false)
