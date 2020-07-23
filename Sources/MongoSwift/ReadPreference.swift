@@ -197,8 +197,8 @@ public struct ReadPreference: Equatable {
         if let maxStaleness = maxStalenessSeconds {
             guard maxStaleness >= MONGOC_SMALLEST_MAX_STALENESS_SECONDS else {
                 throw MongoError.InvalidArgumentError(
-                    message: "Expected maxStalenessSeconds to be >= " +
-                        " \(MONGOC_SMALLEST_MAX_STALENESS_SECONDS), \(maxStaleness) given"
+                    message: "Invalid \(MONGOC_URI_MAXSTALENESSSECONDS) \(maxStaleness): " +
+                        "must be at least \(MONGOC_SMALLEST_MAX_STALENESS_SECONDS)"
                 )
             }
         }

@@ -68,7 +68,10 @@ let shouldWarnButLibmongocErrors: [String: [String]] = [
     "single-threaded-options.json": ["Invalid serverSelectionTryOnce causes a warning"],
     "read-preference-options.json": [
         "Invalid readPreferenceTags causes a warning",
-        "Non-numeric maxStalenessSeconds causes a warning"
+        "Non-numeric maxStalenessSeconds causes a warning",
+        // libmongoc doesn't actually error when this is too lo but for consistency with other validation code
+        // we check for this value being too low and error if so.
+        "Too low maxStalenessSeconds causes a warning"
     ],
     "tls-options.json": [
         "Invalid tlsAllowInvalidCertificates causes a warning",
@@ -93,7 +96,9 @@ let shouldWarnButLibmongocErrors: [String: [String]] = [
         // libmongoc actually does nothing when these values are too low. for consistency with the behavior when invalid
         // values are provided for other known options, we upconvert these to an error.
         "Too low serverSelectionTimeoutMS causes a warning",
-        "Too low localThresholdMS causes a warning"
+        "Too low localThresholdMS causes a warning",
+        "Too low connectTimeoutMS causes a warning",
+        "Too low socketTimeoutMS causes a warning"
     ],
     "concern-options.json": [
         "Non-numeric wTimeoutMS causes a warning",
@@ -105,23 +110,24 @@ let shouldWarnButLibmongocErrors: [String: [String]] = [
         "Empty boolean option value are ignored"
     ]
 ]
-// libmongoc does not validate negative timeout values and will leave these values in the URI. Also see CDRIVER-3167.
-let shouldWarnButLibmongocAllows: [String: [String]] = [
-    "connection-pool-options.json": ["Too low maxIdleTimeMS causes a warning"],
-    "read-preference-options.json": ["Too low maxStalenessSeconds causes a warning"]
-]
 
 // tests we skip because we don't support the specified behavior.
 let skipUnsupported: [String: [String]] = [
+    // we don't support maxIdleTimeMS.
+    "connection-pool-options.json": [
+        "Too low maxIdleTimeMS causes a warning",
+        "Non-numeric maxIdleTimeMS causes a warning",
+        "Valid connection pool options are parsed correctly"
+    ],
+    // requires maxIdleTimeMS
+    "connection-options.json": [
+        "Valid connection and timeout options are parsed correctly"
+    ],
     "compression-options.json": ["Multiple compressors are parsed correctly"], // requires Snappy, see SWIFT-894
     "valid-db-with-dotted-name.json": ["*"] // libmongoc doesn't allow db names in dotted form in the URI
 ]
 
 func shouldSkip(file: String, test: String) -> Bool {
-    if let skipList = shouldWarnButLibmongocAllows[file], skipList.contains(test) {
-        return true
-    }
-
     if let skipList = skipUnsupported[file], skipList.contains(test) || skipList.contains("*") {
         return true
     }
