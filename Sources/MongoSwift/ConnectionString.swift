@@ -94,6 +94,17 @@ internal class ConnectionString {
         MongoError.InvalidArgumentError(message: "Unsupported connection string option \(name)")
     }
 
+    private func int32OutOfRangeError(
+        option: String,
+        value: CustomStringConvertible,
+        min: Int32,
+        max: Int32
+    ) -> MongoError.InvalidArgumentError {
+        MongoError.InvalidArgumentError(
+            message: "Invalid \(option) \(value): must be between \(min) and \(max)"
+        )
+    }
+
     /// Sets and validates TLS-related on the underlying `mongoc_uri_t`.
     private func applyAndValidateTLSOptions(_ options: MongoClientOptions?) throws {
         if let tls = options?.tls {
@@ -104,20 +115,20 @@ internal class ConnectionString {
         }
 
         if options?.tlsInsecure != nil || self.hasOption(MONGOC_URI_TLSINSECURE) {
-            let errString = "\(MONGOC_URI_TLSINSECURE) and %s options cannot both be specified"
+            let errString = "and \(MONGOC_URI_TLSINSECURE) options cannot both be specified"
 
             // per URI options spec, we must raise an error if `tlsInsecure` is provided along with either of
             // `tlsAllowInvalidCertificates` or `tlsAllowInvalidHostnames`. if such a combination is provided in the
             // input connection string, libmongoc will error.
             if options?.tlsAllowInvalidCertificates != nil || self.hasOption(MONGOC_URI_TLSALLOWINVALIDCERTIFICATES) {
                 throw MongoError.InvalidArgumentError(
-                    message: String(format: errString, MONGOC_URI_TLSALLOWINVALIDCERTIFICATES)
+                    message: "\(MONGOC_URI_TLSALLOWINVALIDCERTIFICATES) \(errString)"
                 )
             }
 
             if options?.tlsAllowInvalidHostnames != nil || self.hasOption(MONGOC_URI_TLSALLOWINVALIDHOSTNAMES) {
                 throw MongoError.InvalidArgumentError(
-                    message: String(format: errString, MONGOC_URI_TLSALLOWINVALIDHOSTNAMES)
+                    message: "\(MONGOC_URI_TLSALLOWINVALIDHOSTNAMES) \(errString)"
                 )
             }
         }
@@ -189,9 +200,7 @@ internal class ConnectionString {
     private func applyAndValidateConnectionPoolOptions(_ options: MongoClientOptions?) throws {
         if let maxPoolSize = options?.maxPoolSize {
             guard let value = Int32(exactly: maxPoolSize), value > 0 else {
-                throw MongoError.InvalidArgumentError(
-                    message: "Invalid \(MONGOC_URI_MAXPOOLSIZE) \(maxPoolSize): must be between 1 and \(Int32.max)"
-                )
+                throw self.int32OutOfRangeError(option: MONGOC_URI_MAXPOOLSIZE, value: maxPoolSize, min: 1, max: Int32.max)
             }
 
             try self.setInt32Option(MONGOC_URI_MAXPOOLSIZE, to: value)
@@ -272,9 +281,11 @@ internal class ConnectionString {
 
         if let heartbeatFreqMS = options?.heartbeatFrequencyMS {
             guard let value = Int32(exactly: heartbeatFreqMS), value >= 500 else {
-                throw MongoError.InvalidArgumentError(
-                    message: "Invalid \(MONGOC_URI_HEARTBEATFREQUENCYMS) \(heartbeatFreqMS): " +
-                        "must be between 500 and \(Int32.max)"
+                throw self.int32OutOfRangeError(
+                    option: MONGOC_URI_HEARTBEATFREQUENCYMS,
+                    value: heartbeatFreqMS,
+                    min: 500,
+                    max: Int32.max
                 )
             }
 
@@ -284,10 +295,14 @@ internal class ConnectionString {
 
     /// Sets and validates server selection-related on the underlying `mongoc_uri_t`.
     private func applyAndValidateServerSelectionOptions(_ options: MongoClientOptions?) throws {
-        let invalidThresholdMsg = "Invalid \(MONGOC_URI_LOCALTHRESHOLDMS) %d: must be between 0 and \(Int32.max)"
         if let localThresholdMS = options?.localThresholdMS {
             guard let value = Int32(exactly: localThresholdMS), value >= 0 else {
-                throw MongoError.InvalidArgumentError(message: String(format: invalidThresholdMsg, localThresholdMS))
+                throw self.int32OutOfRangeError(
+                    option: MONGOC_URI_LOCALTHRESHOLDMS,
+                    value: localThresholdMS,
+                    min: 0,
+                    max: Int32.max
+                )
             }
 
             try self.setInt32Option(MONGOC_URI_LOCALTHRESHOLDMS, to: value)
@@ -295,19 +310,32 @@ internal class ConnectionString {
             // libmongoc does not validate an invalid value for localThresholdMS set via URI. if it was set that way and
             // not overridden via options struct, validate it ourselves here.
         } else if let uriValue = self.options?[MONGOC_URI_LOCALTHRESHOLDMS]?.int32Value, uriValue < 0 {
-            throw MongoError.InvalidArgumentError(message: String(format: invalidThresholdMsg, uriValue))
+            throw self.int32OutOfRangeError(
+                option: MONGOC_URI_LOCALTHRESHOLDMS,
+                value: uriValue,
+                min: 0,
+                max: Int32.max
+            )
         }
 
-        let invalidSSTimeoutMsg =
-            "Invalid \(MONGOC_URI_SERVERSELECTIONTIMEOUTMS) %d: must be between 1 and \(Int32.max)"
         if let ssTimeout = options?.serverSelectionTimeoutMS {
             guard let value = Int32(exactly: ssTimeout), value > 0 else {
-                throw MongoError.InvalidArgumentError(message: String(format: invalidSSTimeoutMsg, ssTimeout))
+                throw self.int32OutOfRangeError(
+                    option: MONGOC_URI_SERVERSELECTIONTIMEOUTMS,
+                    value: ssTimeout,
+                    min: 1,
+                    max: Int32.max
+                )
             }
 
             try self.setInt32Option(MONGOC_URI_SERVERSELECTIONTIMEOUTMS, to: value)
         } else if let uriValue = self.options?[MONGOC_URI_SERVERSELECTIONTIMEOUTMS]?.int32Value, uriValue <= 0 {
-            throw MongoError.InvalidArgumentError(message: String(format: invalidSSTimeoutMsg, uriValue))
+            throw self.int32OutOfRangeError(
+                option: MONGOC_URI_SERVERSELECTIONTIMEOUTMS,
+                value: uriValue,
+                min: 1,
+                max: Int32.max
+            )
         }
 
         if let rp = options?.readPreference {
