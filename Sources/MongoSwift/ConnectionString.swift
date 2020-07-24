@@ -200,7 +200,12 @@ internal class ConnectionString {
     private func applyAndValidateConnectionPoolOptions(_ options: MongoClientOptions?) throws {
         if let maxPoolSize = options?.maxPoolSize {
             guard let value = Int32(exactly: maxPoolSize), value > 0 else {
-                throw self.int32OutOfRangeError(option: MONGOC_URI_MAXPOOLSIZE, value: maxPoolSize, min: 1, max: Int32.max)
+                throw self.int32OutOfRangeError(
+                    option: MONGOC_URI_MAXPOOLSIZE,
+                    value: maxPoolSize,
+                    min: 1,
+                    max: Int32.max
+                )
             }
 
             try self.setInt32Option(MONGOC_URI_MAXPOOLSIZE, to: value)
