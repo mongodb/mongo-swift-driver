@@ -96,6 +96,12 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Specifies the password to de-crypt the `tlsCertificateKeyFile`.
     public var tlsCertificateKeyFilePassword: String?
 
+    /// When specified, TLS constraints will be relaxed as much as possible. Currently, setting this option to `true`
+    /// is equivalent to setting both `tlsAllowInvalidCertificates` and `tlsAllowInvalidHostnames` to `true`.
+    /// It is an error to specify both this option and either of `tlsAllowInvalidCertificates` or
+    /// `tlsAllowInvalidHostnames`, either via this options struct, connection string, or a combination of both.
+    public var tlsInsecure: Bool?
+
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
     /// databases or collections that derive from it.
     public var uuidCodingStrategy: UUIDCodingStrategy?
@@ -133,6 +139,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         tlsCAFile: URL? = nil,
         tlsCertificateKeyFile: URL? = nil,
         tlsCertificateKeyFilePassword: String? = nil,
+        tlsInsecure: Bool? = nil,
         uuidCodingStrategy: UUIDCodingStrategy? = nil,
         writeConcern: WriteConcern? = nil
     ) {
@@ -158,6 +165,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.tlsCAFile = tlsCAFile
         self.tlsCertificateKeyFile = tlsCertificateKeyFile
         self.tlsCertificateKeyFilePassword = tlsCertificateKeyFilePassword
+        self.tlsInsecure = tlsInsecure
         self.uuidCodingStrategy = uuidCodingStrategy
         self.writeConcern = writeConcern
     }

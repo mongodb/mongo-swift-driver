@@ -68,7 +68,10 @@ let shouldWarnButLibmongocErrors: [String: [String]] = [
     "single-threaded-options.json": ["Invalid serverSelectionTryOnce causes a warning"],
     "read-preference-options.json": [
         "Invalid readPreferenceTags causes a warning",
-        "Non-numeric maxStalenessSeconds causes a warning"
+        "Non-numeric maxStalenessSeconds causes a warning",
+        // libmongoc doesn't actually error when this is too lo but for consistency with other validation code
+        // we check for this value being too low and error if so.
+        "Too low maxStalenessSeconds causes a warning"
     ],
     "tls-options.json": [
         "Invalid tlsAllowInvalidCertificates causes a warning",
@@ -93,7 +96,9 @@ let shouldWarnButLibmongocErrors: [String: [String]] = [
         // libmongoc actually does nothing when these values are too low. for consistency with the behavior when invalid
         // values are provided for other known options, we upconvert these to an error.
         "Too low serverSelectionTimeoutMS causes a warning",
-        "Too low localThresholdMS causes a warning"
+        "Too low localThresholdMS causes a warning",
+        "Too low connectTimeoutMS causes a warning",
+        "Too low socketTimeoutMS causes a warning"
     ],
     "concern-options.json": [
         "Non-numeric wTimeoutMS causes a warning",
@@ -105,23 +110,24 @@ let shouldWarnButLibmongocErrors: [String: [String]] = [
         "Empty boolean option value are ignored"
     ]
 ]
-// libmongoc does not validate negative timeout values and will leave these values in the URI. Also see CDRIVER-3167.
-let shouldWarnButLibmongocAllows: [String: [String]] = [
-    "connection-pool-options.json": ["Too low maxIdleTimeMS causes a warning"],
-    "read-preference-options.json": ["Too low maxStalenessSeconds causes a warning"]
-]
 
 // tests we skip because we don't support the specified behavior.
 let skipUnsupported: [String: [String]] = [
+    // we don't support maxIdleTimeMS.
+    "connection-pool-options.json": [
+        "Too low maxIdleTimeMS causes a warning",
+        "Non-numeric maxIdleTimeMS causes a warning",
+        "Valid connection pool options are parsed correctly"
+    ],
+    // requires maxIdleTimeMS
+    "connection-options.json": [
+        "Valid connection and timeout options are parsed correctly"
+    ],
     "compression-options.json": ["Multiple compressors are parsed correctly"], // requires Snappy, see SWIFT-894
     "valid-db-with-dotted-name.json": ["*"] // libmongoc doesn't allow db names in dotted form in the URI
 ]
 
 func shouldSkip(file: String, test: String) -> Bool {
-    if let skipList = shouldWarnButLibmongocAllows[file], skipList.contains(test) {
-        return true
-    }
-
     if let skipList = skipUnsupported[file], skipList.contains(test) || skipList.contains("*") {
         return true
     }
@@ -442,8 +448,19 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    func testMinPoolSizeErrors() throws {
-        expect(try ConnectionString("mongodb://localhost:27017/?minPoolSize=10")).to(throwError())
+    func testUnsupportedOptions() throws {
+        // options we know of but don't support yet should throw errors
+        expect(try ConnectionString("mongodb://localhost:27017/?minPoolSize=10"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try ConnectionString("mongodb://localhost:27017/?maxIdleTimeMS=10"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try ConnectionString("mongodb://localhost:27017/?waitQueueMultiple=10"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try ConnectionString("mongodb://localhost:27017/?waitQueueTimeoutMS=10"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // options we don't know of should be ignored
+        expect(try ConnectionString("mongodb://localhost:27017/?blah=10")).toNot(throwError())
     }
 
     func testCompressionOptions() throws {
@@ -489,5 +506,40 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
         // unfortunately, we can't error on an unsupported compressor provided via URI. libmongoc will generate a
         // warning but does not provide us access to the see the full specified list.
+    }
+
+    func testInvalidOptionsCombinations() throws {
+        // tlsInsecure and conflicting options
+        var opts = MongoClientOptions(tlsAllowInvalidCertificates: true, tlsInsecure: true)
+        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        opts = MongoClientOptions(tlsAllowInvalidHostnames: true, tlsInsecure: true)
+        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // one in URI, one in options struct
+        opts = MongoClientOptions(tlsAllowInvalidCertificates: true)
+        expect(try ConnectionString("mongodb://localhost:27017/?tlsInsecure=true", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        opts = MongoClientOptions(tlsAllowInvalidHostnames: true)
+        expect(try ConnectionString("mongodb://localhost:27017/?tlsInsecure=true", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        opts = MongoClientOptions(tlsInsecure: true)
+        expect(try ConnectionString("mongodb://localhost:27017/?tlsAllowInvalidHostnames=true", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try ConnectionString("mongodb://localhost:27017/?tlsAllowInvalidCertificates=true", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // directConnection cannot be used with SRV URIs
+        opts = MongoClientOptions(directConnection: true)
+        expect(try ConnectionString("mongodb+srv://test3.test.build.10gen.cc", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // directConnection=true cannot be used with multiple seeds
+        expect(try ConnectionString("mongodb://localhost:27017,localhost:27018", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 }
