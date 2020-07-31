@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-#if !defined(MONGOC_INSIDE) && !defined(MONGOC_COMPILATION)
-#error "Only <mongoc/mongoc.h> can be included directly."
-#endif
-
-
 #ifndef MONGOC_CONFIG_H
 #define MONGOC_CONFIG_H
 
@@ -32,7 +27,7 @@
 #define MONGOC_CC "/usr/bin/cc"
 
 /* Defines introduced by `Package.swift` */
-#ifdef MONGO_SWIFT_OS_DARWIN
+#ifdef __APPLE__
 #  define MONGOC_ENABLE_SSL_SECURE_TRANSPORT 1
 #  define MONGOC_ENABLE_CRYPTO_COMMON_CRYPTO 1
 #  define MONGOC_ENABLE_CRYPTO_LIBCRYPTO 0
@@ -44,11 +39,11 @@
 #  define MONGOC_ENABLE_SSL_SECURE_TRANSPORT 0
 #  define MONGOC_ENABLE_CRYPTO_LIBCRYPTO 1
 #  define MONGOC_ENABLE_SSL_OPENSSL 1
-#  define MONGOC_HAVE_ASN1_STRING_GET0_DATA 1
-#endif
-
-#if MONGOC_ENABLE_SSL_OPENSSL && OPENSSL_VERSION_NUMBER < 0x10100000L
-#  define MONGOC_HAVE_ASN1_STRING_GET0_DATA 0
+#  if OPENSSL_VERSION_NUMBER < 0x10100000L
+#    define MONGOC_HAVE_ASN1_STRING_GET0_DATA 0 
+#  else
+#    define MONGOC_HAVE_ASN1_STRING_GET0_DATA 1 
+#  endif
 #endif
 
 /*
