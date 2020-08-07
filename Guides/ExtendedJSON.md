@@ -1,12 +1,24 @@
 # JSON Interoperability Guide
 It is often useful to convert data that was retrieved from MongoDB to JSON, either for producing a human readable 
 version of it or for serving it up via a REST API. [BSON](bsonspec.org) (the format that MongoDB uses to store data) 
-supports more types than JSON does, which means JSON alone can't represent BSON data losslessy. To solve this issue, 
-you can convert your data to [Extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/), 
+supports more types than JSON does though, which means JSON alone can't represent BSON data losslessly. To solve this issue, you can convert your data to [Extended JSON](https://docs.mongodb.com/manual/reference/mongodb-extended-json/), 
 which is a standard format of JSON used by the various drivers to represent BSON data in JSON that includes extra 
 information indicating the BSON type of a given value. If preserving the type information isn't required, 
 then Foundation's `JSONEncoder` and `JSONDecoder` can be used to convert the data to regular JSON, though not all 
 BSON types currently support working with them (e.g. `BSONBinary`).
+
+## Extended JSON
+
+As mentioned above, Extended JSON is a form of JSON that preserves type information. There are two forms of extended JSON, and the form used determines how much extra type information is included in the JSON format for a given type.
+
+The two formats of extended JSON are as follows:
+- _Relaxed Extended JSON_ - A string format based on the JSON standard that describes BSON documents. 
+Relaxed Extended JSON emphasizes readability and interoperability at the expense of type preservation.
+   -  example: `{"d": 5.5}`
+- _Canonical Extended JSON_ - A string format based on the JSON standard that describes BSON documents. 
+Canonical Extended JSON emphasizes type preservation at the expense of readability and interoperability.
+    - example: `{"d": {"$numberDouble": 5.5}}`
+
 
 Here we can see the same data: a key, `"i"` with the value `1` represented in BSON, and two forms of Extended JSON
 ```
@@ -19,16 +31,6 @@ Here we can see the same data: a key, `"i"` with the value `1` represented in BS
 // Canonical Extended JSON
 {"i": {"$numberInt":"1"}}
 ```
-
-### Relaxed and Canonical Extended JSON
-
-- _Relaxed Extended JSON_ - A string format based on the JSON standard that describes BSON documents. 
-Relaxed Extended JSON emphasizes readability and interoperability at the expense of type preservation.
-   -  example: `{"d": 5.5}`
-- _Canonical Extended JSON_ - A string format based on the JSON standard that describes BSON documents. 
-Canonical Extended JSON emphasizes type preservation at the expense of readability and interoperability.
-    - example: `{"d": {"$numberDouble": 5.5}}`
-
 To see how all of the BSON types are represented in Canonical and Relaxed Extended JSON Format, see the documentation
 [here](https://docs.mongodb.com/manual/reference/mongodb-extended-json/#bson-data-types-and-associated-representations). 
 
@@ -51,7 +53,7 @@ let bobExtJSON = try encoder.encode(Person(name: "Bob", age: 25)) // "{\"name\":
 let joe = try decoder.decode(Person.self, from: "{\"name\":\"Joe\",\"age\":34}}".data(using: .utf8)!)
 ```
 
-The `ExtendedJOSNEncoder` produces relaxed Extended JSON by default, but can be configured to produce canonical.
+The `ExtendedJSONEncoder` produces relaxed Extended JSON by default, but can be configured to produce canonical.
 ```swift
 let bob = Person(name: "Bob", age: 25)
 let encoder = ExtendedJSONEncoder()
@@ -69,11 +71,11 @@ let relaxedExtJSON = "{\"name\":\"Bob\",\"age\":25}}"
 let relaxedDecoded = try decoder.decode(Person.self, from: relaxedExtJSON.data(using: .utf8)!) // bob
 ```
 
-### Vapor
-By default, Vapor uses `JSONEncoder` and `JSONDecoder` for encoding and decoding it's `Content` to and from JSON.
+### Using Extended JSON with Vapor
+By default, [Vapor](https://docs.vapor.codes/4.0/) uses `JSONEncoder` and `JSONDecoder` for encoding and decoding its [`Content`](https://docs.vapor.codes/4.0/content/) to and from JSON.
 If you are interested in using the `ExtendedJSONEncoder` and `ExtendedJSONDecoder` in your 
-[Vapor](https://docs.vapor.codes/4.0/) app instead, you can set them as the default encoder and decoder and thereby allow your 
-application to serialize and deserialize data to/from ExtendedJSON, rather than the default plain JSON. 
+Vapor app instead, you can set them as the default encoder and decoder and thereby allow your 
+application to serialize and deserialize data to/from Extended JSON, rather than the default plain JSON. 
 This is recommended because not all BSON types currently support working with `JSONEncoder` and `JSONDecoder` and 
 also so that you can take advantage of the added type information.
 From the [Vapor Documentation](https://docs.vapor.codes/4.0/content/#override-defaults): 
@@ -115,3 +117,13 @@ extension ExtendedJSONDecoder: ContentDecoder {
 To see a some example Vapor Apps, check out
 [Examples/VaporExample](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/VaporExample) or 
 [Examples/ComplexVaporExample](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/ComplexVaporExample).
+
+## Using `JSONEncoder` and `JSONDecoder` with BSON Types
+
+Currently, some BSON types (e.g. `BSONBinary`) do not support working with encoders and decoders other than those introduced in `swift-bson`, meaning Foundation's `JSONEncoder` and `JSONDecoder` will throw errors when encoding to or decoding from such types. There are plans to add general `Codable` support for all BSON types in the future, though. For now, only `ObjectID` and `BSONDocument` (with only elements that have such support) will work with these and other encoder/decoder pairs. If type information is not required in the output JSON and only types that include a general `Codable` conformance are included in your data, you can use `JSONEncoder` and `JSONDecoder` to produce and ingest JSON data.
+
+``` swift
+let doc: Document = ["x": ObjectID(), "date": Date(), "y": 3.5]
+try JSONEncoder().encode(doc) // "{\"x\": <hexstring>, \"date\": <seconds since reference date>, \"y\": 3.5}"
+```
+
