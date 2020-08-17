@@ -60,7 +60,7 @@ let encoder = ExtendedJSONEncoder()
 encoder.mode = .canonical
 let canonicalEncoded = try encoder.encode(bob) // "{\"name\":\"Bob\",\"age\":{\"$numberInt\":\"25\"}}"
 ```
-The `ExtendedJSONDecoder` accepts either format, or a mix of both
+The `ExtendedJSONDecoder` accepts either format, or a mix of both:
 ```swift
 let decoder = ExtendedJSONDecoder()
 
