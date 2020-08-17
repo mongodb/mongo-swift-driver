@@ -114,7 +114,7 @@ extension ExtendedJSONDecoder: ContentDecoder {
 }
  ```
 
-To see a some example Vapor Apps, check out
+To see some example Vapor apps using the driver, check out
 [Examples/VaporExample](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/VaporExample) or 
 [Examples/ComplexVaporExample](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/ComplexVaporExample).
 
@@ -126,4 +126,3 @@ Currently, some BSON types (e.g. `BSONBinary`) do not support working with encod
 let foo = Foo(x: BSONObjectID(), date: Date(), y: 3.5)
 try JSONEncoder().encode(foo) // "{\"x\":<hexstring>,\"date\":<seconds since reference date>,\"y\":3.5}"
 ```
-
