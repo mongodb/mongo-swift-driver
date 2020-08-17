@@ -120,10 +120,10 @@ To see a some example Vapor Apps, check out
 
 ## Using `JSONEncoder` and `JSONDecoder` with BSON Types
 
-Currently, some BSON types (e.g. `BSONBinary`) do not support working with encoders and decoders other than those introduced in `swift-bson`, meaning Foundation's `JSONEncoder` and `JSONDecoder` will throw errors when encoding to or decoding from such types. There are plans to add general `Codable` support for all BSON types in the future, though. For now, only `ObjectID` and `BSONDocument` (with only elements that have such support) will work with these and other encoder/decoder pairs. If type information is not required in the output JSON and only types that include a general `Codable` conformance are included in your data, you can use `JSONEncoder` and `JSONDecoder` to produce and ingest JSON data.
+Currently, some BSON types (e.g. `BSONBinary`) do not support working with encoders and decoders other than those introduced in `swift-bson`, meaning Foundation's `JSONEncoder` and `JSONDecoder` will throw errors when encoding or decoding such types. There are plans to add general `Codable` support for all BSON types in the future, though. For now, only `BSONObjectID` and any BSON types defined in Foundation or the standard library (e.g. `Date` or `Int32`) will work with other encoder/decoder pairs. If type information is not required in the output JSON and only types that include a general `Codable` conformance are included in your data, you can use `JSONEncoder` and `JSONDecoder` to produce and ingest JSON data.
 
 ``` swift
-let doc: Document = ["x": ObjectID(), "date": Date(), "y": 3.5]
-try JSONEncoder().encode(doc) // "{\"x\": <hexstring>, \"date\": <seconds since reference date>, \"y\": 3.5}"
+let foo = Foo(x: ObjectID(), date: Date(), y: 3.5)
+try JSONEncoder().encode(foo) // "{\"x\":<hexstring>,\"date\":<seconds since reference date>,\"y\":3.5}"
 ```
 
