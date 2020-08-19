@@ -50,6 +50,13 @@ public struct ResumeToken: Codable, Equatable {
     }
 }
 
+// TODO: SWIFT-981: Remove this.
+/// The key we use for storing a change stream's namespace in it's `userInfo`. This allows types
+/// using the decoder e.g. `ChangeStreamEvent` to access the namespace even if it is not present in the raw
+/// document the server returns. Ok to force unwrap as initialization never fails.
+// swiftlint:disable:next force_unwrapping
+internal let changeStreamNamespaceKey = CodingUserInfoKey(rawValue: "namespace")!
+
 // sourcery: skipSyncExport
 /// A MongoDB change stream.
 /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/
@@ -87,6 +94,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
         stealing changeStreamPtr: OpaquePointer,
         connection: Connection,
         client: MongoClient,
+        namespace: MongoNamespace,
         session: ClientSession?,
         decoder: BSONDecoder,
         options: ChangeStreamOptions?
@@ -99,7 +107,8 @@ public class ChangeStream<T: Codable>: CursorProtocol {
             type: .tailableAwait
         )
         self.client = client
-        self.decoder = decoder
+        self.decoder = BSONDecoder(copies: decoder, options: nil)
+        self.decoder.userInfo[changeStreamNamespaceKey] = namespace
 
         // TODO: SWIFT-519 - Starting 4.2, update resumeToken to startAfter (if set).
         // startAfter takes precedence over resumeAfter.

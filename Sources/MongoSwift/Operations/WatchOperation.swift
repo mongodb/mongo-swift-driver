@@ -40,11 +40,14 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
                 let changeStreamPtr: OpaquePointer
                 let client: MongoClient
                 let decoder: BSONDecoder
+                let namespace: MongoNamespace
 
                 switch self.target {
                 case let .client(c):
                     client = c
                     decoder = c.decoder
+                    // workaround for the need for a namespace as described in SWIFT-981.
+                    namespace = MongoNamespace(db: "", collection: nil)
                     changeStreamPtr = connection.withMongocConnection { connPtr in
                         mongoc_client_watch(connPtr, pipelinePtr, optsPtr)
                     }
@@ -52,12 +55,14 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
                 case let .database(db):
                     client = db._client
                     decoder = db.decoder
+                    namespace = db.namespace
                     changeStreamPtr = db.withMongocDatabase(from: connection) { dbPtr in
                         mongoc_database_watch(dbPtr, pipelinePtr, optsPtr)
                     }
                 case let .collection(coll):
                     client = coll._client
                     decoder = coll.decoder
+                    namespace = coll.namespace
                     changeStreamPtr = coll.withMongocCollection(from: connection) { collPtr in
                         mongoc_collection_watch(collPtr, pipelinePtr, optsPtr)
                     }
@@ -67,6 +72,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
                     stealing: changeStreamPtr,
                     connection: connection,
                     client: client,
+                    namespace: namespace,
                     session: session,
                     decoder: decoder,
                     options: self.options

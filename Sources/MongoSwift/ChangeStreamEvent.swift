@@ -46,6 +46,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     /// - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#resume-a-change-stream
     public let _id: ResumeToken
 
+    // TODO: SWIFT-981: Make this field optional.
     /// A document containing the database and collection names in which this change happened.
     public let ns: MongoNamespace
 
@@ -73,4 +74,29 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
      * point after the update occurred. If the document was deleted since the updated happened, it will be nil.
      */
     public let fullDocument: T?
+
+    private enum CodingKeys: String, CodingKey {
+        case operationType, _id, ns, documentKey, updateDescription, fullDocument
+    }
+
+    // Custom decode method to work around the fact that `invalidate` events do not have an `ns` field in the raw
+    // document. TODO SWIFT-981: Remove this.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.operationType = try container.decode(OperationType.self, forKey: .operationType)
+        self._id = try container.decode(ResumeToken.self, forKey: ._id)
+
+        do {
+            self.ns = try container.decode(MongoNamespace.self, forKey: .ns)
+        } catch {
+            guard let ns = decoder.userInfo[changeStreamNamespaceKey] as? MongoNamespace else {
+                throw error
+            }
+            self.ns = ns
+        }
+
+        self.documentKey = try container.decodeIfPresent(BSONDocument.self, forKey: .documentKey)
+        self.updateDescription = try container.decodeIfPresent(UpdateDescription.self, forKey: .updateDescription)
+        self.fullDocument = try container.decodeIfPresent(T.self, forKey: .fullDocument)
+    }
 }
