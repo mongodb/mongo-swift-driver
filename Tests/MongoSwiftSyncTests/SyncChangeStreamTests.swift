@@ -1151,7 +1151,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        // invalidated changestream on a collection
+        // invalidated change stream on a collection
         try self.withTestNamespace { _, _, collection in
             let stream = try collection.watch()
 
