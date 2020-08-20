@@ -63,7 +63,7 @@ public struct MongoDatabase {
     internal let _client: MongoClient
 
     /// The namespace for this database.
-    private let namespace: MongoNamespace
+    internal let namespace: MongoNamespace
 
     /// Encoder used by this database for BSON conversions. This encoder's options are inherited by collections derived
     /// from this database.

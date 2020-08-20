@@ -368,6 +368,8 @@ extension SyncChangeStreamTests {
         ("testChangeStreamWithFullDocumentType", testChangeStreamWithFullDocumentType),
         ("testChangeStreamOnACollectionWithCodableType", testChangeStreamOnACollectionWithCodableType),
         ("testChangeStreamLazySequence", testChangeStreamLazySequence),
+        ("testDecodingInvalidateEventsOnCollection", testDecodingInvalidateEventsOnCollection),
+        ("testDecodingInvalidateEventsOnDatabase", testDecodingInvalidateEventsOnDatabase),
     ]
 }
 
