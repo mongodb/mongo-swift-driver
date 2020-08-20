@@ -1141,18 +1141,19 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         }
     }
 
-    /// Test that we properly manually populate the `ns` field of `ChangeStreamEvent`s for invalidate events.
-    func testDecodingInvalidateEvents() throws {
-        let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(
-            TestRequirement(acceptableTopologies: [.replicaSet, .sharded])
-        )
-        guard unmetRequirement == nil else {
-            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
-            return
-        }
-
+    /// Test that we properly manually populate the `ns` field of `ChangeStreamEvent`s for invalidate events on
+    /// collections.
+    func testDecodingInvalidateEventsOnCollection() throws {
         // invalidated change stream on a collection
-        try self.withTestNamespace { _, _, collection in
+        try self.withTestNamespace { client, _, collection in
+            let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(
+                TestRequirement(acceptableTopologies: [.replicaSet, .sharded])
+            )
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
             let stream = try collection.watch()
 
             // insert to create the collection
@@ -1162,19 +1163,31 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
 
             // drop the collection to generate an invalidate event
             try collection.drop()
-            let drop = try stream.next()?.get()
-            expect(drop?.operationType).to(equal(.drop))
+
+            // as of 4.0.1, the server first emits a drop event and then an invalidate event.
+            // on 3.6, there is only an invalidate event.
+            if try client.serverVersion() >= ServerVersion(major: 4, minor: 0, patch: 1) {
+                let drop = try stream.next()?.get()
+                expect(drop?.operationType).to(equal(.drop))
+            }
 
             let invalidate = try stream.next()?.get()
             expect(invalidate?.operationType).to(equal(.invalidate))
             expect(invalidate?.ns).to(equal(collection.namespace))
         }
+    }
 
+    /// Test that we properly manually populate the `ns` field of `ChangeStreamEvent`s for invalidate events on
+    /// databases.
+    func testDecodingInvalidateEventsOnDatabase() throws {
         // invalidated change stream on a DB
         try self.withTestNamespace { client, db, collection in
             // DB change streams are supported as of 4.0
             let unmetRequirement = try client.getUnmetRequirement(
-                TestRequirement(minServerVersion: ServerVersion(major: 4, minor: 0))
+                TestRequirement(
+                    minServerVersion: ServerVersion(major: 4, minor: 0),
+                    acceptableTopologies: [.replicaSet, .sharded]
+                )
             )
             guard unmetRequirement == nil else {
                 printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)

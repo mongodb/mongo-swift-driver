@@ -1,4 +1,4 @@
-// Generated using Sourcery 0.16.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 0.18.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 
@@ -368,7 +368,8 @@ extension SyncChangeStreamTests {
         ("testChangeStreamWithFullDocumentType", testChangeStreamWithFullDocumentType),
         ("testChangeStreamOnACollectionWithCodableType", testChangeStreamOnACollectionWithCodableType),
         ("testChangeStreamLazySequence", testChangeStreamLazySequence),
-        ("testDecodingInvalidateEvents", testDecodingInvalidateEvents),
+        ("testDecodingInvalidateEventsOnCollection", testDecodingInvalidateEventsOnCollection),
+        ("testDecodingInvalidateEventsOnDatabase", testDecodingInvalidateEventsOnDatabase),
     ]
 }
 
