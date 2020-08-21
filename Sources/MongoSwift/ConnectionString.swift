@@ -4,6 +4,8 @@ import CLibMongoC
 internal class ConnectionString {
     /// Pointer to the underlying `mongoc_uri_t`.
     private let _uri: OpaquePointer
+    /// Tracks whether we have already destroyed the above pointer.
+    private var destroyedPtr = false
 
     /// Initializes a new `ConnectionString` with the provided options.
     internal init(_ connectionString: String, options: MongoClientOptions? = nil) throws {
@@ -13,7 +15,16 @@ internal class ConnectionString {
         }
         self._uri = uri
 
-        try self.applyAndValidateOptions(options)
+        // Due to SR-13355, deinit does not get called if we throw here. If we encounter an error, we need to manually
+        // clean up the pointer. We use a variable to track whether we already destroyed it so that, in the event the
+        // bug is fixed and `deinit` starts being called, we don't start calling `mongoc_uri_destroy` twice.
+        do {
+            try self.applyAndValidateOptions(options)
+        } catch {
+            mongoc_uri_destroy(self._uri)
+            self.destroyedPtr = true
+            throw error
+        }
     }
 
     private func applyAndValidateOptions(_ options: MongoClientOptions?) throws {
@@ -361,7 +372,9 @@ internal class ConnectionString {
 
     /// Cleans up the underlying `mongoc_uri_t`.
     deinit {
-        mongoc_uri_destroy(self._uri)
+        if !self.destroyedPtr {
+            mongoc_uri_destroy(self._uri)
+        }
     }
 
     private var usesDNSSeedlistFormat: Bool {
