@@ -8,6 +8,8 @@ private final class MongocInitializer {
 
     private init() {
         mongoc_init()
+        mongoc_log_set_handler(handleMongocLogMessage, nil)
+        mongoc_structured_log_set_handler(handleMongocStructuredLogMessage, nil)
         mongoc_handshake_data_append("MongoSwift", MongoSwiftVersionString, nil)
     }
 }
