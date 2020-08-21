@@ -5,6 +5,8 @@ internal class ConnectionString {
     /// Pointer to the underlying `mongoc_uri_t`.
     private let _uri: OpaquePointer
 
+    private var destroyedPtr = false
+
     /// Initializes a new `ConnectionString` with the provided options.
     internal init(_ connectionString: String, options: MongoClientOptions? = nil) throws {
         var error = bson_error_t()
@@ -13,7 +15,14 @@ internal class ConnectionString {
         }
         self._uri = uri
 
-        try self.applyAndValidateOptions(options)
+        do {
+            try self.applyAndValidateOptions(options)
+        } catch {
+            mongoc_uri_destroy(self._uri)
+            self.destroyedPtr = true
+            throw error
+        }
+         
     }
 
     private func applyAndValidateOptions(_ options: MongoClientOptions?) throws {
@@ -361,7 +370,9 @@ internal class ConnectionString {
 
     /// Cleans up the underlying `mongoc_uri_t`.
     deinit {
-        mongoc_uri_destroy(self._uri)
+        if !self.destroyedPtr {
+            mongoc_uri_destroy(self._uri)
+        }
     }
 
     private var usesDNSSeedlistFormat: Bool {
