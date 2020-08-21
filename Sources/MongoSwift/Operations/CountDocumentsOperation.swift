@@ -70,7 +70,14 @@ internal struct CountDocumentsOperation<T: Codable>: Operation {
                 try withOptionalBSONPointer(to: opts) { optsPtr in
                     try ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
                         try withStackAllocatedMutableBSONPointer { replyPtr in
-                            let count = mongoc_collection_count_documents(collPtr, filterPtr, optsPtr, rpPtr, replyPtr, &error)
+                            let count = mongoc_collection_count_documents(
+                                collPtr,
+                                filterPtr,
+                                optsPtr,
+                                rpPtr,
+                                replyPtr,
+                                &error
+                            )
                             guard count != -1 else {
                                 throw extractMongoError(error: error, reply: BSONDocument(copying: replyPtr))
                             }
