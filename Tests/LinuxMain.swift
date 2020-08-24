@@ -263,6 +263,8 @@ extension MongoCursorTests {
         ("testKill", testKill),
         ("testKillTailable", testKillTailable),
         ("testLazySequence", testLazySequence),
+        ("testCursorTerminatesOnError", testCursorTerminatesOnError),
+        ("testCursorClosedError", testCursorClosedError),
     ]
 }
 
