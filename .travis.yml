@@ -50,7 +50,7 @@ install:
 before_script:
   - MONGODIR=${PWD}/mongodb-${MONGODB_VERSION}
   - mkdir ${MONGODIR}/data
-  - ${MONGODIR}/bin/mongod --dbpath ${MONGODIR}/data --logpath ${MONGODIR}/mongodb.log --fork --setParameter enableTestCommands=1
+  - ${MONGODIR}/bin/mongod --dbpath ${MONGODIR}/data --logpath ${MONGODIR}/mongodb.log --fork
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make test-pretty; fi

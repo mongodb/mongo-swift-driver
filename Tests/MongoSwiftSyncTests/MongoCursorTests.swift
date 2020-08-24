@@ -241,7 +241,12 @@ final class MongoCursorTests: MongoSwiftTestCase {
     }
 
     func testCursorTerminatesOnError() throws {
-        try self.withTestNamespace { _, _, coll in
+        try self.withTestNamespace { client, _, coll in
+            guard try client.supportsFailCommand() else {
+                printSkipMessage(testName: self.name, reason: "failCommand not supported")
+                return
+            }
+
             try coll.insertOne([:])
             try coll.insertOne([:])
 
