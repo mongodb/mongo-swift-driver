@@ -98,6 +98,13 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
         /// Indicates that the cursor is still open. Stores a `MongocCursorWrapper`, along with the source
         /// connection, and possibly session to ensure they are kept alive as long as the cursor is.
         case open(cursor: CursorKind, connection: Connection, session: ClientSession?)
+
+        /// Indicates the cursor last returned an error from `next`. `nil` will be returned if
+        /// `next` is called again, and the cursor will be moved to `closed` state.
+        case error
+
+        /// Indicates the cursor has completed iteration, either by exhausting its results or by returning
+        /// an error and then `nil`.
         case closed
     }
 
@@ -186,13 +193,13 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
 
         guard mongocCursor.next(outPtr: out) else {
             if let error = self.getMongocError() {
-                self.close()
+                self.close(fromError: true)
                 throw error
             }
 
             // if we've reached the end of the cursor, close it.
             if !self.type.isTailable || !mongocCursor.more() {
-                self.close()
+                self.close(fromError: false)
             }
 
             return nil
@@ -209,12 +216,17 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     /// Close this cursor
     ///
     /// This method should only be called while the lock is held.
-    private func close() {
+    private func close(fromError: Bool) {
         guard case let .open(mongocCursor, _, _) = self.state else {
             return
         }
         mongocCursor.destroy()
-        self.state = .closed
+
+        if fromError {
+            self.state = .error
+        } else {
+            self.state = .closed
+        }
     }
 
     /// This initializer is blocking and should only be run via the executor.
@@ -232,7 +244,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
 
         // If there was an error constructing the cursor, throw it.
         if let error = self.getMongocError() {
-            self.close()
+            self.close(fromError: true)
             throw error
         }
 
@@ -265,7 +277,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
         switch self.state {
         case .open:
             return true
-        case .closed:
+        case .closed, .error:
             return false
         }
     }
@@ -275,7 +287,11 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
     internal func next() throws -> BSONDocument? {
         try self.lock.withLock {
             guard self._isAlive else {
-                throw ClosedCursorError
+                guard case .error = self.state else {
+                    throw ClosedCursorError
+                }
+                self.state = .closed
+                return nil
             }
 
             if case let .cached(result) = self.cached.clear() {
@@ -339,7 +355,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
         self.isClosing.store(true)
         self.lock.withLock {
             self.cached = .none
-            self.close()
+            self.close(fromError: false)
         }
         self.isClosing.store(false)
     }

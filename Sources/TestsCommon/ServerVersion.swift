@@ -2,6 +2,9 @@ import Foundation
 
 /// A struct representing a server version.
 public struct ServerVersion: Comparable, Decodable, CustomStringConvertible {
+    public static let mongodFailCommandSupport = ServerVersion(major: 4, minor: 0)
+    public static let mongosFailCommandSupport = ServerVersion(major: 4, minor: 1, patch: 5)
+
     let major: Int
     let minor: Int
     let patch: Int

@@ -129,6 +129,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
             expect(try cursor.next().wait()).to(throwError(expectedError))
             // cursor should be closed now that it errored
             expect(try cursor.isAlive().wait()).to(beFalse())
+            expect(try cursor.next().wait()).to(beNil())
 
             // iterating dead cursor should error
             expect(try cursor.next().wait()).to(throwError(errorType: MongoError.LogicError.self))

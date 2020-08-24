@@ -158,6 +158,17 @@ public struct TestRequirement: Decodable {
     private let maxServerVersion: ServerVersion?
     private let topology: [TestTopologyConfiguration]?
 
+    public static let failCommandSupport: [TestRequirement] = [
+        TestRequirement(
+            minServerVersion: ServerVersion.mongodFailCommandSupport,
+            acceptableTopologies: [.single, .replicaSet]
+        ),
+        TestRequirement(
+            minServerVersion: ServerVersion.mongosFailCommandSupport,
+            acceptableTopologies: [.sharded]
+        )
+    ]
+
     public init(
         minServerVersion: ServerVersion? = nil,
         maxServerVersion: ServerVersion? = nil,
@@ -284,23 +295,25 @@ public func sortedEqual(_ expectedValue: BSONDocument?) -> Predicate<BSONDocumen
     }
 }
 
+public func printSkipMessage(testName: String, reason: String) {
+    print("Skipping test case \"\(testName)\": \(reason)")
+}
+
 /// Prints a message if a server version or topology requirement is not met and a test is skipped
 public func printSkipMessage(
     testName: String,
     unmetRequirement: UnmetRequirement
 ) {
+    let reason: String
     switch unmetRequirement {
     case let .minServerVersion(actual, required):
-        print("Skipping test case \"\(testName)\": minimum required server " +
-            "version \(required) not met by current server version \(actual)")
-
+        reason = "minimum required server version \(required) not met by current server version \(actual)"
     case let .maxServerVersion(actual, required):
-        print("Skipping test case \"\(testName)\": maximum required server " +
-            "version \(required) not met by current server version \(actual)")
-
+        reason = "maximum required server version \(required) not met by current server version \(actual)"
     case let .topology(actual, required):
-        print("Skipping \(testName) due to unsupported topology type \(actual), supported topologies are: \(required)")
+        reason = "unsupported topology type \(actual), supported topologies are: \(required)"
     }
+    printSkipMessage(testName: testName, reason: reason)
 }
 
 public func unsupportedTopologyMessage(

@@ -106,6 +106,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(try cursor.next()?.get()).to(throwError(expectedError))
             // cursor should be closed now that it errored
             expect(cursor.isAlive()).to(beFalse())
+            expect(cursor.next()).to(beNil())
 
             // iterating dead cursor should error
             expect(try cursor.next()?.get()).to(throwError(errorType: MongoError.LogicError.self))
@@ -236,6 +237,47 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(cursor.isAlive()).to(beTrue())
             cursor.kill()
             expect(cursor.isAlive()).to(beFalse())
+        }
+    }
+
+    func testCursorTerminatesOnError() throws {
+        try self.withTestNamespace { client, _, coll in
+            guard try client.supportsFailCommand() else {
+                printSkipMessage(testName: self.name, reason: "failCommand not supported")
+                return
+            }
+
+            try coll.insertOne([:])
+            try coll.insertOne([:])
+
+            let cursor = try coll.find([:], options: FindOptions(batchSize: 1))
+
+            let fp = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 10)
+            try fp.enable()
+            defer { fp.disable() }
+
+            var count = 0
+            for result in cursor {
+                expect(count).to(beLessThan(2))
+                if count >= 2 {
+                    break
+                }
+                // getmore should return error
+                if count == 1 {
+                    expect(try result.get()).to(throwError())
+                    if result.isSuccess { break }
+                }
+                count += 1
+            }
+        }
+    }
+
+    func testCursorClosedError() throws {
+        try self.withTestNamespace { _, _, coll in
+            let cursor = try coll.find([:], options: FindOptions(batchSize: 1))
+
+            for _ in cursor {}
+            expect(try cursor.next()?.get()).to(throwError(errorType: MongoError.LogicError.self))
         }
     }
 }

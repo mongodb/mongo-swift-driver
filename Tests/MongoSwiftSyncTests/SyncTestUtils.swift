@@ -71,6 +71,12 @@ extension MongoClient {
         return testRequirement.getUnmetRequirement(givenCurrent: serverVersion, topologyType)
     }
 
+    internal func meetsAnyRequirement(in requirements: [TestRequirement]) throws -> Bool {
+        try requirements.contains {
+            try self.getUnmetRequirement($0) == nil
+        }
+    }
+
     /// Get the max wire version of the primary.
     internal func maxWireVersion() throws -> Int {
         let options = RunCommandOptions(readPreference: .primary)
@@ -114,13 +120,7 @@ extension MongoClient {
     }
 
     internal func supportsFailCommand() throws -> Bool {
-        let version = try self.serverVersion()
-        switch MongoSwiftTestCase.topologyType {
-        case .sharded:
-            return version >= ServerVersion(major: 4, minor: 1, patch: 5)
-        default:
-            return version >= ServerVersion(major: 4, minor: 0)
-        }
+        try self.meetsAnyRequirement(in: TestRequirement.failCommandSupport)
     }
 }
 
