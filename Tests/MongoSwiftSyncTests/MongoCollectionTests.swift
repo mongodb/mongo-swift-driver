@@ -550,4 +550,17 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try collection.drop()).toNot(throwError())
         expect(try collection.dropIndex("ljasdfjlkasdjf")).toNot(throwError())
     }
+
+    func testFindOneKillsCursor() throws {
+        struct Blah: Codable {
+            let ljadsflkjasdf: String // won't be present in result doc
+        }
+        try self.withTestNamespace { _, db, coll in
+            try coll.insertOne([:])
+
+            let codableColl = db.collection(coll.name, withType: Blah.self)
+            _ = try? codableColl.findOne([:])
+            // if the underlying cursor is leaked, this will crash in debug mode
+        }
+    }
 }
