@@ -2,7 +2,6 @@ import Foundation
 
 /// `BSONDecoder` facilitates the decoding of BSON into semantic `Decodable` types.
 public class BSONDecoder {
-    @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
     internal static var iso8601Formatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = .withInternetDateTime
@@ -28,7 +27,6 @@ public class BSONDecoder {
         case deferredToDate
 
         /// Decode `Date`s stored as ISO8601 formatted strings.
-        @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
         case iso8601
 
         /// Decode `Date`s stored as strings parsable by the given formatter.

@@ -24,7 +24,6 @@ public class BSONEncoder {
         case secondsSince1970
 
         /// Encode the `Date` as an ISO-8601-formatted string (in RFC 339 format).
-        @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
         case iso8601
 
         /// Encode the `Date` as a string formatted by the given formatter.

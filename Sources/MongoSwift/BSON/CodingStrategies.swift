@@ -61,7 +61,6 @@ public enum DateCodingStrategy: RawRepresentable {
     case secondsSince1970
 
     /// Encode/decode the `Date` to/from an ISO-8601-formatted string (in RFC 339 format).
-    @available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
     case iso8601
 
     /// Encode/decode the `Date` to/from a string formatted by the given formatter.
