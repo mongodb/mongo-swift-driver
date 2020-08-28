@@ -121,7 +121,7 @@ Note: we have included the client `connectionString` parameter for clarity, but 
 ```swift
 let doc: BSONDocument = ["_id": 100, "a": 1, "b": 2, "c": 3]
 collection.insertOne(doc).whenSuccess { result in
-    print(result?.insertedId ?? "") // prints `.int64(100)`
+    print(result?.insertedID ?? "") // prints `.int64(100)`
 }
 ```
 
@@ -129,7 +129,7 @@ collection.insertOne(doc).whenSuccess { result in
 ```swift
 let doc: BSONDocument = ["_id": 100, "a": 1, "b": 2, "c": 3]
 let result = try collection.insertOne(doc)
-print(result?.insertedId ?? "") // prints `.int64(100)`
+print(result?.insertedID ?? "") // prints `.int64(100)`
 ```
 
 ### Find Documents
