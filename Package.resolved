@@ -12,10 +12,10 @@
       },
       {
         "package": "swift-bson",
-        "repositoryURL": "https://github.com/patrickfreed/swift-bson",
+        "repositoryURL": "https://github.com/mongodb/swift-bson",
         "state": {
-          "branch": "target-rename",
-          "revision": "7a140cad599134323c67418d19a61577d837e9a4",
+          "branch": "master",
+          "revision": "b8d953ae93951e7bee6cde4f7cc6774211378982",
           "version": null
         }
       },
