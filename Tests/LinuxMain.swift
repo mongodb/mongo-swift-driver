@@ -426,6 +426,7 @@ XCTMain([
     testCase(AsyncMongoCursorTests.allTests),
     testCase(AuthTests.allTests),
     testCase(BSONCorpusTests.allTests),
+    testCase(BSONPointerUtilsTests.allTests),
     testCase(BSONValueTests.allTests),
     testCase(ChangeStreamSpecTests.allTests),
     testCase(ChangeStreamTests.allTests),
