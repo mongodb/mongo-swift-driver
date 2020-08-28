@@ -31,10 +31,10 @@ extension Data {
 
 struct DocElem {
     let key: String
-    let value: SwiftBSON
+    let value: SwiftBSONValue
 }
 
-enum SwiftBSON {
+enum SwiftBSONValue {
     case document([DocElem])
     case other(BSON)
 }

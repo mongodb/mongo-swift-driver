@@ -331,12 +331,19 @@ public final class ClientSession {
             throw ClientSession.SessionInactiveError
         }
 
-        var error = bson_error_t()
-        try doc.withMutableBSONPointer { docPtr in
-            guard mongoc_client_session_append(session, docPtr, &error) else {
-                throw extractMongoError(error: error)
-            }
+        guard let bson = bson_new() else {
+            fatalError("failed to allocate bson_t")
         }
+        defer { bson_destroy(bson) }
+
+        var error = bson_error_t()
+        guard mongoc_client_session_append(session, bson, &error) else {
+            throw extractMongoError(error: error)
+        }
+
+        let sessionDoc = BSONDocument(copying: bson)
+        // key that libmongoc uses to store the client session id in options documents
+        doc["sessionId"] = sessionDoc["sessionId"]
     }
 
     /**
