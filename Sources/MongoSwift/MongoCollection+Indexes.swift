@@ -17,7 +17,7 @@ public struct IndexModel: Codable {
 
     /// Gets the default name for this index.
     internal var defaultName: String {
-        self.keys.map { k, v in "\(k)_\(v.bsonValue)" }.joined(separator: "_")
+        self.keys.map { k, v in "\(k)_\(v.toInt()?.description ?? "invalid")" }.joined(separator: "_")
     }
 
     // Encode own data as well as nested options data

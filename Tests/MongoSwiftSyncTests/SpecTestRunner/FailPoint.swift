@@ -70,7 +70,22 @@ internal struct FailPoint: Decodable {
     }
 
     public init(from decoder: Decoder) throws {
-        self.failPoint = try BSONDocument(from: decoder)
+        let container = try decoder.singleValueContainer()
+        let unordered = try container.decode(BSONDocument.self)
+        guard let command = unordered["configureFailPoint"] else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "fail point \(unordered) did not contain \"configureFailPoint\" command"
+            )
+        }
+        var ordered: BSONDocument = ["configureFailPoint": command]
+        for (k, v) in unordered {
+            guard k != "configureFailPoint" else {
+                continue
+            }
+            ordered[k] = v
+        }
+        self.failPoint = ordered
     }
 
     internal func enable(

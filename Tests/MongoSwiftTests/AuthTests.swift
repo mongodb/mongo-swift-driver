@@ -37,7 +37,22 @@ final class AuthTests: MongoSwiftTestCase {
                 }
 
                 let connString = try ConnectionString(testCase.uri)
-                expect(connString.credential).to(equal(testCase.credential), description: testCase.description)
+                if var credential = testCase.credential {
+                    var connStringCredential = connString.credential
+                    expect(connStringCredential).toNot(beNil(), description: testCase.description)
+
+                    if credential.mechanismProperties != nil {
+                        // Can't guarantee mechanismProperties was decoded from JSON in a particular order,
+                        // so we compare it separately without considering order.
+                        expect(connStringCredential.mechanismProperties)
+                            .to(sortedEqual(credential.mechanismProperties), description: testCase.description)
+                        credential.mechanismProperties = nil
+                        connStringCredential.mechanismProperties = nil
+                    }
+
+                    // compare rest of non-document options normally
+                    expect(connStringCredential).to(equal(credential), description: testCase.description)
+                }
             }
         }
     }

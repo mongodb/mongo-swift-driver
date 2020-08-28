@@ -45,19 +45,21 @@ enum TestOperationResult: Decodable, Equatable, Matchable {
     }
 
     public init(from decoder: Decoder) throws {
-        if let insertOneResult = try? InsertOneResult(from: decoder) {
+        let container = try decoder.singleValueContainer()
+
+        if let insertOneResult = try? container.decode(InsertOneResult.self) {
             self = .bulkWrite(insertOneResult.bulkResultValue)
-        } else if let updateResult = try? UpdateResult(from: decoder), updateResult.upsertedID != nil {
+        } else if let updateResult = try? container.decode(UpdateResult.self), updateResult.upsertedID != nil {
             self = .bulkWrite(updateResult.bulkResultValue)
-        } else if let bulkWriteResult = try? BulkWriteResult(from: decoder) {
+        } else if let bulkWriteResult = try? container.decode(BulkWriteResult.self) {
             self = .bulkWrite(bulkWriteResult)
-        } else if let int = try? Int(from: decoder) {
+        } else if let int = try? container.decode(Int.self) {
             self = .int(int)
-        } else if let array = try? [BSON](from: decoder) {
+        } else if let array = try? container.decode([BSON].self) {
             self = .array(array)
-        } else if let error = try? ErrorResult(from: decoder) {
+        } else if let error = try? container.decode(ErrorResult.self) {
             self = .error(error)
-        } else if let doc = try? BSONDocument(from: decoder) {
+        } else if let doc = try? container.decode(BSONDocument.self) {
             self = .document(doc)
         } else {
             throw DecodingError.valueNotFound(

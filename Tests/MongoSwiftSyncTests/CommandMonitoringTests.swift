@@ -159,15 +159,15 @@ private struct CMTest: Decodable {
             _ = try? collection.insertMany(documents, options: options)
 
         case "insertOne":
-            let document: BSONDocument = try self.op.args.get("document")
+            let document = self.op.args["document"]!.documentValue!
             _ = try? collection.insertOne(document)
 
         case "updateMany":
-            let update: BSONDocument = try self.op.args.get("update")
+            let update = self.op.args["update"]!.documentValue!
             _ = try? collection.updateMany(filter: filter, update: update)
 
         case "updateOne":
-            let update: BSONDocument = try self.op.args.get("update")
+            let update = self.op.args["update"]!.documentValue!
             let options = UpdateOptions(upsert: self.op.args["upsert"]?.boolValue)
             _ = try? collection.updateOne(filter: filter, update: update, options: options)
 

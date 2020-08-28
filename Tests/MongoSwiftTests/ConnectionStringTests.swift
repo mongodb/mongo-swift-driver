@@ -174,8 +174,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
                 // Assert that options match, if present
                 for (key, value) in testCase.options ?? BSONDocument() {
-                    expect(parsedOptions[key.lowercased()])
-                        .to(equal(value), description: "Value for key \(key) doesn't match")
+                    expect(parsedOptions[key.lowercased()]).to(sortedEqual(value))
                 }
 
                 // Assert that hosts match, if present

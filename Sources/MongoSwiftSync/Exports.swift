@@ -2,6 +2,9 @@
 // DO NOT EDIT
 
 
+// Re-export the BSON library
+@_exported import SwiftBSON
+
 // Re-export various types from MongoSwift that are also used in the API for MongoSwiftSync. We start out with all of
 // the types in MongoSwift, and then filter out types that are not public, that are explicitly annotated with
 // "skipSyncExport" (this is used to mark types that are async-specific) and types whose definitions are nested within
@@ -9,23 +12,7 @@
 // available under their parents' namespaces, just as they are in the async module.
 
 @_exported import struct MongoSwift.AggregateOptions
-@_exported import enum MongoSwift.BSON
-@_exported import struct MongoSwift.BSONBinary
-@_exported import struct MongoSwift.BSONCode
-@_exported import struct MongoSwift.BSONCodeWithScope
 @_exported import struct MongoSwift.BSONCoderOptions
-@_exported import struct MongoSwift.BSONDBPointer
-@_exported import struct MongoSwift.BSONDecimal128
-@_exported import class MongoSwift.BSONDecoder
-@_exported import struct MongoSwift.BSONDocument
-@_exported import class MongoSwift.BSONDocumentIterator
-@_exported import class MongoSwift.BSONEncoder
-@_exported import enum MongoSwift.BSONError
-@_exported import struct MongoSwift.BSONObjectID
-@_exported import struct MongoSwift.BSONRegularExpression
-@_exported import struct MongoSwift.BSONSymbol
-@_exported import struct MongoSwift.BSONTimestamp
-@_exported import enum MongoSwift.BSONType
 @_exported import struct MongoSwift.BulkWriteOptions
 @_exported import struct MongoSwift.BulkWriteResult
 @_exported import struct MongoSwift.ChangeStreamEvent
@@ -106,7 +93,6 @@
 @_exported import enum MongoSwift.WriteModel
 
 // Protocols are not included in the types list, so we list them separately here.
-@_exported import protocol MongoSwift.BSONErrorProtocol
 @_exported import protocol MongoSwift.CodingStrategyProvider
 @_exported import protocol MongoSwift.CommandEventHandler
 @_exported import protocol MongoSwift.MongoErrorProtocol

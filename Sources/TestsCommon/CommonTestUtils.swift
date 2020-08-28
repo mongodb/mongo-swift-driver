@@ -265,41 +265,36 @@ public struct TestRequirement: Decodable {
     }
 }
 
-extension BSONDocument {
+public protocol SortedEquatable {
+    func sortedEquals(_ other: Self) -> Bool
+}
+
+extension BSONDocument: SortedEquatable {
     public func sortedEquals(_ other: BSONDocument) -> Bool {
-        let keys = self.keys.sorted()
-        let otherKeys = other.keys.sorted()
-
-        // first compare keys, because rearrangeDoc will discard any that don't exist in `expected`
-        expect(keys).to(equal(otherKeys))
-
-        let rearranged = rearrangeDoc(other, toLookLike: self)
-        return self == rearranged
-    }
-
-    /**
-     * Allows retrieving and strongly typing a value at the same time. This means you can avoid
-     * having to cast and unwrap values from the `Document` when you know what type they will be.
-     * For example:
-     * ```
-     *  let d: Document = ["x": 1]
-     *  let x: Int = try d.get("x")
-     *  ```
-     *
-     *  - Parameters:
-     *      - key: The key under which the value you are looking up is stored
-     *      - `T`: Any type conforming to the `BSONValue` protocol
-     *  - Returns: The value stored under key, as type `T`
-     *  - Throws:
-     *    - `MongoError.InternalError` if the value cannot be cast to type `T` or is not in the `Document`, or an
-     *      unexpected error occurs while decoding the `BSONValue`.
-     *
-     */
-    public func get<T: BSONValue>(_ key: String) throws -> T {
-        guard let value = try self.getValue(for: key)?.bsonValue as? T else {
-            throw MongoError.InternalError(message: "Could not cast value for key \(key) to type \(T.self)")
+        guard self.buffer.readableBytes == other.buffer.readableBytes else {
+            return false
         }
-        return value
+        for (k, v) in self {
+            guard let otherValue = other[k], v.sortedEquals(otherValue) else {
+                return false
+            }
+        }
+        return true
+    }
+}
+
+extension BSON: SortedEquatable {
+    public func sortedEquals(_ other: BSON) -> Bool {
+        switch (self, other) {
+        case let (.document(selfDoc), .document(otherDoc)):
+            return selfDoc.sortedEquals(otherDoc)
+        case let (.array(selfArr), .array(otherArr)):
+            return selfArr.elementsEqual(otherArr) {
+                $0.sortedEquals($1)
+            }
+        default:
+            return self == other
+        }
     }
 }
 
@@ -338,7 +333,7 @@ public func cleanEqual(_ expectedValue: String?) -> Predicate<String> {
 
 // Adds a custom "sortedEqual" predicate that compares two `Document`s and returns true if they
 // have the same key/value pairs in them
-public func sortedEqual(_ expectedValue: BSONDocument?) -> Predicate<BSONDocument> {
+public func sortedEqual<T: SortedEquatable>(_ expectedValue: T?) -> Predicate<T> {
     Predicate.define("sortedEqual <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
 

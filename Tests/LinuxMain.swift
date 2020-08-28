@@ -25,28 +25,11 @@ extension AuthTests {
     ]
 }
 
-extension BSONCorpusTests {
-    static var allTests = [
-        ("testBSONCorpus", testBSONCorpus),
-    ]
-}
-
 extension BSONPointerUtilsTests {
     static var allTests = [
         ("testWithBSONPointer", testWithBSONPointer),
         ("testBSONPointerInitializer", testBSONPointerInitializer),
-    ]
-}
-
-extension BSONValueTests {
-    static var allTests = [
-        ("testInvalidDecimal128", testInvalidDecimal128),
-        ("testUUIDBytes", testUUIDBytes),
-        ("testBSONEquatable", testBSONEquatable),
-        ("testObjectIDRoundTrip", testObjectIDRoundTrip),
-        ("testObjectIDJSONCodable", testObjectIDJSONCodable),
-        ("testBSONNumber", testBSONNumber),
-        ("testBSONBinarySubtype", testBSONBinarySubtype),
+        ("testInitializeBSONObjectIDFromMongoCObjectID", testInitializeBSONObjectIDFromMongoCObjectID),
     ]
 }
 
@@ -70,23 +53,6 @@ extension ClientSessionTests {
     static var allTests = [
         ("testSession", testSession),
         ("testWithSession", testWithSession),
-    ]
-}
-
-extension CodecTests {
-    static var allTests = [
-        ("testStructs", testStructs),
-        ("testOptionals", testOptionals),
-        ("testEncodingNonBSONNumbers", testEncodingNonBSONNumbers),
-        ("testDecodingNonBSONNumbers", testDecodingNonBSONNumbers),
-        ("testBSONNumbers", testBSONNumbers),
-        ("testBSONValues", testBSONValues),
-        ("testDecodeScalars", testDecodeScalars),
-        ("testDocumentIsCodable", testDocumentIsCodable),
-        ("testEncodeArray", testEncodeArray),
-        ("testBSONIsBSONCodable", testBSONIsBSONCodable),
-        ("testIncorrectEncodeFunction", testIncorrectEncodeFunction),
-        ("testOptionsEncoding", testOptionsEncoding),
     ]
 }
 
@@ -123,58 +89,6 @@ extension CrudTests {
 extension DNSSeedlistTests {
     static var allTests = [
         ("testInitialDNSSeedlistDiscovery", testInitialDNSSeedlistDiscovery),
-    ]
-}
-
-extension DocumentTests {
-    static var allTests = [
-        ("testDocument", testDocument),
-        ("testDocumentDynamicMemberLookup", testDocumentDynamicMemberLookup),
-        ("testEquatable", testEquatable),
-        ("testRawBSON", testRawBSON),
-        ("testCopyOnWriteBehavior", testCopyOnWriteBehavior),
-        ("testIntEncodesAsInt32OrInt64", testIntEncodesAsInt32OrInt64),
-        ("testMerge", testMerge),
-        ("testNilInNestedArray", testNilInNestedArray),
-        ("testOverwritable", testOverwritable),
-        ("testNonOverwritable", testNonOverwritable),
-        ("testReplaceValueWithNewType", testReplaceValueWithNewType),
-        ("testReplaceValueWithNil", testReplaceValueWithNil),
-        ("testReplaceValueNoop", testReplaceValueNoop),
-        ("testDocumentDictionarySimilarity", testDocumentDictionarySimilarity),
-        ("testDefaultSubscript", testDefaultSubscript),
-        ("testMultibyteCharacterStrings", testMultibyteCharacterStrings),
-        ("testUUIDEncodingStrategies", testUUIDEncodingStrategies),
-        ("testUUIDDecodingStrategies", testUUIDDecodingStrategies),
-        ("testDateEncodingStrategies", testDateEncodingStrategies),
-        ("testDateDecodingStrategies", testDateDecodingStrategies),
-        ("testDataCodingStrategies", testDataCodingStrategies),
-        ("testIntegerLiteral", testIntegerLiteral),
-        ("testInvalidBSON", testInvalidBSON),
-    ]
-}
-
-extension Document_CollectionTests {
-    static var allTests = [
-        ("testIndexLogic", testIndexLogic),
-        ("testMutators", testMutators),
-        ("testPrefixSuffix", testPrefixSuffix),
-        ("testIndexSubscript", testIndexSubscript),
-    ]
-}
-
-extension Document_SequenceTests {
-    static var allTests = [
-        ("testIterator", testIterator),
-        ("testMapFilter", testMapFilter),
-        ("testDropFirst", testDropFirst),
-        ("testDropLast", testDropLast),
-        ("testDropPredicate", testDropPredicate),
-        ("testPrefixLength", testPrefixLength),
-        ("testPrefixPredicate", testPrefixPredicate),
-        ("testSuffix", testSuffix),
-        ("testSplit", testSplit),
-        ("testIsEmpty", testIsEmpty),
     ]
 }
 
@@ -456,20 +370,14 @@ extension WriteConcernTests {
 XCTMain([
     testCase(AsyncMongoCursorTests.allTests),
     testCase(AuthTests.allTests),
-    testCase(BSONCorpusTests.allTests),
     testCase(BSONPointerUtilsTests.allTests),
-    testCase(BSONValueTests.allTests),
     testCase(ChangeStreamSpecTests.allTests),
     testCase(ChangeStreamTests.allTests),
     testCase(ClientSessionTests.allTests),
-    testCase(CodecTests.allTests),
     testCase(CommandMonitoringTests.allTests),
     testCase(ConnectionStringTests.allTests),
     testCase(CrudTests.allTests),
     testCase(DNSSeedlistTests.allTests),
-    testCase(DocumentTests.allTests),
-    testCase(Document_CollectionTests.allTests),
-    testCase(Document_SequenceTests.allTests),
     testCase(EventLoopBoundMongoClientTests.allTests),
     testCase(MongoClientTests.allTests),
     testCase(MongoCollectionTests.allTests),
