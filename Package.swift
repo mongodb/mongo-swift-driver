@@ -11,10 +11,11 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "8.0.0")),
-        .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.15.0"))
+        .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.15.0")),
+        .package(url: "https://github.com/patrickfreed/swift-bson", .branch("target-rename"))
     ],
     targets: [
-        .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers"]),
+        .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON",]),
         .target(name: "MongoSwiftSync", dependencies: ["MongoSwift", "NIO"]),
         .target(name: "AtlasConnectivity", dependencies: ["MongoSwiftSync"]),
         .target(name: "TestsCommon", dependencies: ["MongoSwift", "Nimble"]),

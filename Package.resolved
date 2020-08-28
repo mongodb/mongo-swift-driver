@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "swift-bson",
+        "repositoryURL": "https://github.com/patrickfreed/swift-bson",
+        "state": {
+          "branch": "target-rename",
+          "revision": "7a140cad599134323c67418d19a61577d837e9a4",
+          "version": null
+        }
+      },
+      {
         "package": "swift-nio",
         "repositoryURL": "https://github.com/apple/swift-nio",
         "state": {

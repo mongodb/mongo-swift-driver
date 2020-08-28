@@ -31,6 +31,13 @@ extension BSONCorpusTests {
     ]
 }
 
+extension BSONPointerUtilsTests {
+    static var allTests = [
+        ("testWithBSONPointer", testWithBSONPointer),
+        ("testBSONPointerInitializer", testBSONPointerInitializer),
+    ]
+}
+
 extension BSONValueTests {
     static var allTests = [
         ("testInvalidDecimal128", testInvalidDecimal128),
