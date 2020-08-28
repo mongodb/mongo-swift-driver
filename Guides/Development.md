@@ -19,7 +19,10 @@
 * [Sourcery](https://github.com/krzysztofzablocki/Sourcery/#installation): the tool we use for code generation.
 
 ## The code
-You should clone this repository, as well as the [MongoDB Driver specifications](https://github.com/mongodb/specifications).
+You should clone:
+- [The driver repository](https://github.com/mongodb/mongo-swift-driver)
+- [The BSON library repository](https://github.com/mongodb/swift-bson)
+- [The MongoDB Driver specifications](https://github.com/mongodb/specifications)
 
 ## Building
 ### From the Command line
@@ -150,6 +153,7 @@ You can use the same batching approach as above to respond to review comments. O
 
 ### MongoDB and Drivers
 * [MongoSwift docs](https://mongodb.github.io/mongo-swift-driver/)
+* [BSON docs](https://mongodb.github.io/swift-bson)
 * [libmongoc docs](http://mongoc.org/libmongoc/current/index.html)
 * [libbson docs](http://mongoc.org/libbson/current/index.html)
 * [MongoDB docs](https://docs.mongodb.com/)
