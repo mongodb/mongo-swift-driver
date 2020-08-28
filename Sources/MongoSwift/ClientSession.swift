@@ -342,7 +342,8 @@ public final class ClientSession {
         }
 
         let sessionDoc = BSONDocument(copying: bson)
-        doc["lsid"] = sessionDoc["lsid"]
+        // key that libmongoc uses to store the client session id in options documents
+        doc["sessionId"] = sessionDoc["sessionId"]
     }
 
     /**
