@@ -151,7 +151,7 @@ do {
     if let result = bwe.result {
         print("Result: ")
         print("nInserted: \(result.insertedCount)")
-        print("InsertedIds: \(result.insertedIds)")
+        print("InsertedIds: \(result.insertedIDs)")
     }
 } catch { ... }
 ```
