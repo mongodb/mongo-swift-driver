@@ -47,10 +47,11 @@ mongoc_server_description_cleanup (mongoc_server_description_t *sd)
    bson_destroy (&sd->arbiters);
    bson_destroy (&sd->tags);
    bson_destroy (&sd->compressors);
+   bson_destroy (&sd->topology_version);
 }
 
-/* Reset fields inside this sd, but keep same id, host information, and RTT,
-   and leave ismaster in empty inited state */
+/* Reset fields inside this sd, but keep same id, host information, RTT,
+   generation, topology version, and leave ismaster in empty inited state */
 void
 mongoc_server_description_reset (mongoc_server_description_t *sd)
 {
@@ -119,7 +120,7 @@ mongoc_server_description_init (mongoc_server_description_t *sd,
 
    sd->id = id;
    sd->type = MONGOC_SERVER_UNKNOWN;
-   sd->round_trip_time_msec = -1;
+   sd->round_trip_time_msec = MONGOC_RTT_UNSET;
 
    if (!_mongoc_host_list_from_string (&sd->host, address)) {
       MONGOC_WARNING ("Failed to parse uri for %s", address);
@@ -133,6 +134,7 @@ mongoc_server_description_init (mongoc_server_description_t *sd,
    bson_init (&sd->arbiters);
    bson_init (&sd->tags);
    bson_init (&sd->compressors);
+   bson_init (&sd->topology_version);
 
    mongoc_server_description_reset (sd);
 
@@ -455,13 +457,18 @@ mongoc_server_description_set_election_id (
  * Side effects:
  *       None.
  *
+ * If rtt_msec is MONGOC_RTT_UNSET, the value is not updated.
+ *
  *-------------------------------------------------------------------------
  */
 void
 mongoc_server_description_update_rtt (mongoc_server_description_t *server,
                                       int64_t rtt_msec)
 {
-   if (server->round_trip_time_msec == -1) {
+   if (rtt_msec == MONGOC_RTT_UNSET) {
+      return;
+   }
+   if (server->round_trip_time_msec == MONGOC_RTT_UNSET) {
       server->round_trip_time_msec = rtt_msec;
    } else {
       server->round_trip_time_msec = (int64_t) (
@@ -485,7 +492,7 @@ _mongoc_server_description_set_error (mongoc_server_description_t *sd,
 
    /* Server Discovery and Monitoring Spec: if the server type changes from a
     * known type to Unknown its RTT is set to null. */
-   sd->round_trip_time_msec = -1;
+   sd->round_trip_time_msec = MONGOC_RTT_UNSET;
 }
 
 
@@ -528,8 +535,14 @@ mongoc_server_description_handle_ismaster (mongoc_server_description_t *sd,
    }
 
    bson_destroy (&sd->last_is_master);
-   bson_copy_to (ismaster_response, &sd->last_is_master);
+   bson_init (&sd->last_is_master);
+   bson_copy_to_excluding_noinit (
+      ismaster_response, &sd->last_is_master, "speculativeAuthenticate", NULL);
    sd->has_is_master = true;
+
+   /* Only reinitialize the topology version if we have an ismaster response.
+    * Resetting a server description should not effect the topology version. */
+   bson_reinit (&sd->topology_version);
 
    BSON_ASSERT (bson_iter_init (&iter, &sd->last_is_master));
 
@@ -541,6 +554,9 @@ mongoc_server_description_handle_ismaster (mongoc_server_description_t *sd,
              * domain will be overwritten. */
             (void) _mongoc_cmd_check_ok (
                ismaster_response, MONGOC_ERROR_API_VERSION_2, &sd->error);
+            /* TODO CDRIVER-3696: this is an existing bug. If this is handling
+             * an ismaster reply that is NOT from a handshake, this should not
+             * be considered an auth error. */
             /* ismaster response returned ok: 0. According to auth spec: "If the
              * isMaster of the MongoDB Handshake fails with an error, drivers
              * MUST treat this an authentication error." */
@@ -587,9 +603,13 @@ mongoc_server_description_handle_ismaster (mongoc_server_description_t *sd,
             goto failure;
          sd->max_wire_version = bson_iter_int32 (&iter);
       } else if (strcmp ("msg", bson_iter_key (&iter)) == 0) {
+         const char *msg;
          if (!BSON_ITER_HOLDS_UTF8 (&iter))
             goto failure;
-         is_shard = !!bson_iter_utf8 (&iter, NULL);
+         msg = bson_iter_utf8 (&iter, NULL);
+         if (msg && 0 == strcmp (msg, "isdbgrid")) {
+            is_shard = true;
+         }
       } else if (strcmp ("setName", bson_iter_key (&iter)) == 0) {
          if (!BSON_ITER_HOLDS_UTF8 (&iter))
             goto failure;
@@ -652,14 +672,24 @@ mongoc_server_description_handle_ismaster (mongoc_server_description_t *sd,
          }
 
          sd->last_write_date_ms = bson_iter_date_time (&child);
-      } else if (strcmp ("idleWritePeriodMillis", bson_iter_key (&iter)) == 0) {
-         sd->last_write_date_ms = bson_iter_as_int64 (&iter);
       } else if (strcmp ("compression", bson_iter_key (&iter)) == 0) {
          if (!BSON_ITER_HOLDS_ARRAY (&iter))
             goto failure;
          bson_iter_array (&iter, &len, &bytes);
          bson_destroy (&sd->compressors);
          BSON_ASSERT (bson_init_static (&sd->compressors, bytes, len));
+      } else if (strcmp ("topologyVersion", bson_iter_key (&iter)) == 0) {
+         bson_t incoming_topology_version;
+
+         if (!BSON_ITER_HOLDS_DOCUMENT (&iter)) {
+            goto failure;
+         }
+
+         bson_iter_document (&iter, &len, &bytes);
+         bson_init_static (&incoming_topology_version, bytes, len);
+         mongoc_server_description_set_topology_version (
+            sd, &incoming_topology_version);
+         bson_destroy (&incoming_topology_version);
       }
    }
 
@@ -696,7 +726,7 @@ mongoc_server_description_handle_ismaster (mongoc_server_description_t *sd,
 
 failure:
    sd->type = MONGOC_SERVER_UNKNOWN;
-   sd->round_trip_time_msec = -1;
+   sd->round_trip_time_msec = MONGOC_RTT_UNSET;
 
    EXIT;
 }
@@ -725,7 +755,7 @@ mongoc_server_description_new_copy (
    copy->id = description->id;
    copy->opened = description->opened;
    memcpy (&copy->host, &description->host, sizeof (copy->host));
-   copy->round_trip_time_msec = -1;
+   copy->round_trip_time_msec = MONGOC_RTT_UNSET;
 
    copy->connection_address = copy->host.host_and_port;
    bson_init (&copy->last_is_master);
@@ -734,6 +764,7 @@ mongoc_server_description_new_copy (
    bson_init (&copy->arbiters);
    bson_init (&copy->tags);
    bson_init (&copy->compressors);
+   bson_copy_to (&description->topology_version, &copy->topology_version);
 
    if (description->has_is_master) {
       /* calls mongoc_server_description_reset */
@@ -748,6 +779,8 @@ mongoc_server_description_new_copy (
 
    /* Preserve the error */
    memcpy (&copy->error, &description->error, sizeof copy->error);
+
+   copy->generation = description->generation;
    return copy;
 }
 
@@ -1004,4 +1037,170 @@ mongoc_server_description_compressor_id (
    }
 
    return -1;
+}
+
+/* Returns true if either or both is NULL. out is 1 if exactly one NULL, 0 if
+ * both NULL */
+typedef int (*strcmp_fn) (const char *, const char *);
+
+static int
+_nullable_cmp (const char *a, const char *b, strcmp_fn cmp_fn)
+{
+   if (!a && b) {
+      return 1;
+   }
+
+   if (a && !b) {
+      return 1;
+   }
+
+   if (!a && !b) {
+      return 0;
+   }
+
+   /* Both not NULL. */
+   return cmp_fn (a, b);
+}
+static int
+_nullable_strcasecmp (const char *a, const char *b)
+{
+   return _nullable_cmp (a, b, strcasecmp);
+}
+
+static int
+_nullable_strcmp (const char *a, const char *b)
+{
+   return _nullable_cmp (a, b, strcmp);
+}
+
+bool
+_mongoc_server_description_equal (mongoc_server_description_t *sd1,
+                                  mongoc_server_description_t *sd2)
+{
+   if (sd1->type != sd2->type) {
+      return false;
+   }
+
+   if (sd1->min_wire_version != sd2->min_wire_version) {
+      return false;
+   }
+
+   if (sd1->max_wire_version != sd2->max_wire_version) {
+      return false;
+   }
+
+   if (0 != _nullable_strcasecmp (sd1->me, sd2->me)) {
+      return false;
+   }
+
+   /* CDRIVER-3527: The hosts/passives/arbiters checks should really be a set
+    * comparison of case insensitive hostnames. */
+   if (!bson_equal (&sd1->hosts, &sd2->hosts)) {
+      return false;
+   }
+
+   if (!bson_equal (&sd1->passives, &sd2->passives)) {
+      return false;
+   }
+
+   if (!bson_equal (&sd1->arbiters, &sd2->arbiters)) {
+      return false;
+   }
+
+   if (!bson_equal (&sd1->tags, &sd2->tags)) {
+      return false;
+   }
+
+   if (0 != _nullable_strcmp (sd1->set_name, sd2->set_name)) {
+      return false;
+   }
+
+   if (sd1->set_version != sd2->set_version) {
+      return false;
+   }
+
+   if (!bson_oid_equal (&sd1->election_id, &sd2->election_id)) {
+      return false;
+   }
+
+   if (0 != _nullable_strcasecmp (sd1->current_primary, sd2->current_primary)) {
+      return false;
+   }
+
+   if (sd1->session_timeout_minutes != sd2->session_timeout_minutes) {
+      return false;
+   }
+
+   if (0 != memcmp (&sd1->error, &sd2->error, sizeof (bson_error_t))) {
+      return false;
+   }
+
+   if (!bson_equal (&sd1->topology_version, &sd2->topology_version)) {
+      return false;
+   }
+
+   return true;
+}
+
+int
+mongoc_server_description_topology_version_cmp (const bson_t *tv1,
+                                                const bson_t *tv2)
+{
+   const bson_oid_t *pid1;
+   const bson_oid_t *pid2;
+   int64_t counter1;
+   int64_t counter2;
+   bson_iter_t iter;
+
+   BSON_ASSERT (tv1);
+   BSON_ASSERT (tv2);
+
+   if (bson_empty (tv1) || bson_empty (tv2)) {
+      return -1;
+   }
+
+   if (!bson_iter_init_find (&iter, tv1, "processId") ||
+       !BSON_ITER_HOLDS_OID (&iter)) {
+      return -1;
+   }
+   pid1 = bson_iter_oid (&iter);
+
+   if (!bson_iter_init_find (&iter, tv2, "processId") ||
+       !BSON_ITER_HOLDS_OID (&iter)) {
+      return -1;
+   }
+   pid2 = bson_iter_oid (&iter);
+
+   if (0 != bson_oid_compare (pid1, pid2)) {
+      /* Assume greater. */
+      return -1;
+   }
+
+   if (!bson_iter_init_find (&iter, tv1, "counter") ||
+       !BSON_ITER_HOLDS_INT (&iter)) {
+      return -1;
+   }
+   counter1 = bson_iter_as_int64 (&iter);
+
+   if (!bson_iter_init_find (&iter, tv2, "counter") ||
+       !BSON_ITER_HOLDS_INT (&iter)) {
+      return -1;
+   }
+   counter2 = bson_iter_as_int64 (&iter);
+
+   if (counter1 < counter2) {
+      return -1;
+   } else if (counter1 > counter2) {
+      return 1;
+   }
+   return 0;
+}
+
+void
+mongoc_server_description_set_topology_version (mongoc_server_description_t *sd,
+                                                const bson_t *tv)
+{
+   BSON_ASSERT (tv);
+   bson_destroy (&sd->topology_version);
+   bson_copy_to (tv, &sd->topology_version);
 }

@@ -46,15 +46,19 @@ typedef struct _mongoc_insert_many_opts_t {
    bson_t extra;
 } mongoc_insert_many_opts_t;
 
-typedef struct _mongoc_delete_one_opts_t {
+typedef struct _mongoc_delete_opts_t {
    mongoc_crud_opts_t crud;
    bson_t collation;
+   bson_value_t hint;
+} mongoc_delete_opts_t;
+
+typedef struct _mongoc_delete_one_opts_t {
+   mongoc_delete_opts_t delete;
    bson_t extra;
 } mongoc_delete_one_opts_t;
 
 typedef struct _mongoc_delete_many_opts_t {
-   mongoc_crud_opts_t crud;
-   bson_t collation;
+   mongoc_delete_opts_t delete;
    bson_t extra;
 } mongoc_delete_many_opts_t;
 
@@ -115,6 +119,7 @@ typedef struct _mongoc_bulk_replace_one_opts_t {
 
 typedef struct _mongoc_bulk_remove_opts_t {
    bson_t collation;
+   bson_value_t hint;
    int32_t limit;
 } mongoc_bulk_remove_opts_t;
 
@@ -182,6 +187,14 @@ typedef struct _mongoc_aggregate_opts_t {
    bool batchSize_is_set;
    bson_t extra;
 } mongoc_aggregate_opts_t;
+
+typedef struct _mongoc_find_and_modify_appended_opts_t {
+   mongoc_write_concern_t *writeConcern;
+   bool write_concern_owned;
+   mongoc_client_session_t *client_session;
+   bson_value_t hint;
+   bson_t extra;
+} mongoc_find_and_modify_appended_opts_t;
 
 bool
 _mongoc_insert_one_opts_parse (
@@ -382,5 +395,15 @@ _mongoc_aggregate_opts_parse (
 
 void
 _mongoc_aggregate_opts_cleanup (mongoc_aggregate_opts_t *mongoc_aggregate_opts);
+
+bool
+_mongoc_find_and_modify_appended_opts_parse (
+   mongoc_client_t *client,
+   const bson_t *opts,
+   mongoc_find_and_modify_appended_opts_t *mongoc_find_and_modify_appended_opts,
+   bson_error_t *error);
+
+void
+_mongoc_find_and_modify_appended_opts_cleanup (mongoc_find_and_modify_appended_opts_t *mongoc_find_and_modify_appended_opts);
 
 #endif /* MONGOC_OPTS_H */

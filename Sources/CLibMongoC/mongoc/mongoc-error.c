@@ -19,6 +19,7 @@
 #include "CLibMongoC_mongoc-error.h"
 #include "mongoc-error-private.h"
 #include "mongoc-rpc-private.h"
+#include "mongoc-client-private.h"
 
 bool
 mongoc_error_has_label (const bson_t *reply, const char *label)
@@ -39,7 +40,110 @@ mongoc_error_has_label (const bson_t *reply, const char *label)
       }
    }
 
+   if (!bson_iter_init_find (&iter, reply, "writeConcernError")) {
+      return false;
+   }
+
+   BSON_ASSERT (bson_iter_recurse (&iter, &iter));
+
+   if (bson_iter_find (&iter, "errorLabels") &&
+       bson_iter_recurse (&iter, &error_labels)) {
+      while (bson_iter_next (&error_labels)) {
+         if (BSON_ITER_HOLDS_UTF8 (&error_labels) &&
+             !strcmp (bson_iter_utf8 (&error_labels, NULL), label)) {
+            return true;
+         }
+      }
+   }
+
    return false;
+}
+
+static bool
+_mongoc_error_is_server (bson_error_t *error)
+{
+   if (!error) {
+      return false;
+   }
+
+   return error->domain == MONGOC_ERROR_SERVER ||
+          error->domain == MONGOC_ERROR_WRITE_CONCERN;
+}
+
+static bool
+_mongoc_write_error_is_retryable (bson_error_t *error)
+{
+   if (!_mongoc_error_is_server (error)) {
+      return false;
+   }
+
+   switch (error->code) {
+   case MONGOC_SERVER_ERR_HOSTUNREACHABLE:
+   case MONGOC_SERVER_ERR_HOSTNOTFOUND:
+   case MONGOC_SERVER_ERR_NETWORKTIMEOUT:
+   case MONGOC_SERVER_ERR_SHUTDOWNINPROGRESS:
+   case MONGOC_SERVER_ERR_PRIMARYSTEPPEDDOWN:
+   case MONGOC_SERVER_ERR_EXCEEDEDTIMELIMIT:
+   case MONGOC_SERVER_ERR_SOCKETEXCEPTION:
+   case MONGOC_SERVER_ERR_NOTMASTER:
+   case MONGOC_SERVER_ERR_INTERRUPTEDATSHUTDOWN:
+   case MONGOC_SERVER_ERR_INTERRUPTEDDUETOREPLSTATECHANGE:
+   case MONGOC_SERVER_ERR_NOTMASTERNOSLAVEOK:
+   case MONGOC_SERVER_ERR_NOTMASTERORSECONDARY:
+      return true;
+   default:
+      return false;
+   }
+}
+
+static void
+_mongoc_write_error_append_retryable_label (bson_t *reply)
+{
+   bson_t reply_local = BSON_INITIALIZER;
+
+   if (!reply) {
+      bson_destroy (&reply_local);
+      return;
+   }
+
+   bson_copy_to_excluding_noinit (reply, &reply_local, "errorLabels", NULL);
+   _mongoc_error_copy_labels_and_upsert (
+      reply, &reply_local, RETRYABLE_WRITE_ERROR);
+
+   bson_destroy (reply);
+   bson_steal (reply, &reply_local);
+}
+
+void
+_mongoc_write_error_handle_labels (bool cmd_ret,
+                                   const bson_error_t *cmd_err,
+                                   bson_t *reply,
+                                   int32_t server_max_wire_version)
+{
+   bson_error_t error;
+
+   /* check for a client error. */
+   if (!cmd_ret && _mongoc_error_is_network (cmd_err)) {
+      /* Retryable writes spec: When the driver encounters a network error
+       * communicating with any server version that supports retryable
+       * writes, it MUST add a RetryableWriteError label to that error. */
+      _mongoc_write_error_append_retryable_label (reply);
+      return;
+   }
+
+   if (server_max_wire_version >= WIRE_VERSION_RETRYABLE_WRITE_ERROR_LABEL) {
+      return;
+   }
+
+   /* check for a server error. */
+   if (_mongoc_cmd_check_ok_no_wce (
+          reply, MONGOC_ERROR_API_VERSION_2, &error)) {
+      return;
+   }
+
+   if (_mongoc_write_error_is_retryable (&error)) {
+      _mongoc_write_error_append_retryable_label (reply);
+   }
 }
 
 
@@ -67,7 +171,7 @@ _mongoc_read_error_get_type (bool cmd_ret,
    bson_error_t error;
 
    /* check for a client error. */
-   if (!cmd_ret && cmd_err && cmd_err->domain == MONGOC_ERROR_STREAM) {
+   if (!cmd_ret && cmd_err && _mongoc_error_is_network (cmd_err)) {
       /* Retryable reads spec: "considered retryable if [...] any network
        * exception (e.g. socket timeout or error) */
       return MONGOC_READ_ERR_RETRY;
@@ -80,17 +184,17 @@ _mongoc_read_error_get_type (bool cmd_ret,
    }
 
    switch (error.code) {
-   case 11600: /* InterruptedAtShutdown */
-   case 11602: /* InterruptedDueToReplStateChange */
-   case 10107: /* NotMaster */
-   case 13435: /* NotMasterNoSlaveOk */
-   case 13436: /* NotMasterOrSecondary */
-   case 189:   /* PrimarySteppedDown */
-   case 91:    /* ShutdownInProgress */
-   case 7:     /* HostNotFound */
-   case 6:     /* HostUnreachable */
-   case 89:    /* NetworkTimeout */
-   case 9001:  /* SocketException */
+   case MONGOC_SERVER_ERR_INTERRUPTEDATSHUTDOWN:
+   case MONGOC_SERVER_ERR_INTERRUPTEDDUETOREPLSTATECHANGE:
+   case MONGOC_SERVER_ERR_NOTMASTER:
+   case MONGOC_SERVER_ERR_NOTMASTERNOSLAVEOK:
+   case MONGOC_SERVER_ERR_NOTMASTERORSECONDARY:
+   case MONGOC_SERVER_ERR_PRIMARYSTEPPEDDOWN:
+   case MONGOC_SERVER_ERR_SHUTDOWNINPROGRESS:
+   case MONGOC_SERVER_ERR_HOSTNOTFOUND:
+   case MONGOC_SERVER_ERR_HOSTUNREACHABLE:
+   case MONGOC_SERVER_ERR_NETWORKTIMEOUT:
+   case MONGOC_SERVER_ERR_SOCKETEXCEPTION:
       return MONGOC_READ_ERR_RETRY;
    default:
       if (strstr (error.message, "not master") ||
@@ -99,4 +203,118 @@ _mongoc_read_error_get_type (bool cmd_ret,
       }
       return MONGOC_READ_ERR_OTHER;
    }
+}
+
+void
+_mongoc_error_copy_labels_and_upsert (const bson_t *src,
+                                      bson_t *dst,
+                                      char *label)
+{
+   bson_iter_t iter;
+   bson_iter_t src_label;
+   bson_t dst_labels;
+   char str[16];
+   uint32_t i = 0;
+   const char *key;
+
+   BSON_APPEND_ARRAY_BEGIN (dst, "errorLabels", &dst_labels);
+   BSON_APPEND_UTF8 (&dst_labels, "0", label);
+
+   /* append any other errorLabels already in "src" */
+   if (bson_iter_init_find (&iter, src, "errorLabels") &&
+       bson_iter_recurse (&iter, &src_label)) {
+      while (bson_iter_next (&src_label) && BSON_ITER_HOLDS_UTF8 (&src_label)) {
+         if (strcmp (bson_iter_utf8 (&src_label, NULL), label) != 0) {
+            i++;
+            bson_uint32_to_string (i, &key, str, sizeof str);
+            BSON_APPEND_UTF8 (
+               &dst_labels, key, bson_iter_utf8 (&src_label, NULL));
+         }
+      }
+   }
+
+   bson_append_array_end (dst, &dst_labels);
+}
+
+/* Defined in SDAM spec under "Application Errors".
+ * @error should have been obtained from a command reply, e.g. with
+ * _mongoc_cmd_check_ok.
+ */
+bool
+_mongoc_error_is_shutdown (bson_error_t *error)
+{
+   if (!_mongoc_error_is_server (error)) {
+      return false;
+   }
+   switch (error->code) {
+   case 11600: /* InterruptedAtShutdown */
+   case 91:    /* ShutdownInProgress */
+      return true;
+   default:
+      return false;
+   }
+}
+
+bool
+_mongoc_error_is_not_master (bson_error_t *error)
+{
+   if (!_mongoc_error_is_server (error)) {
+      return false;
+   }
+
+   if (_mongoc_error_is_recovering (error)) {
+      return false;
+   }
+   switch (error->code) {
+   case MONGOC_SERVER_ERR_NOTMASTER:
+   case MONGOC_SERVER_ERR_NOTMASTERNOSLAVEOK:
+      return true;
+   default:
+      return NULL != strstr (error->message, "not master");
+   }
+}
+
+bool
+_mongoc_error_is_recovering (bson_error_t *error)
+{
+   if (!_mongoc_error_is_server (error)) {
+      return false;
+   }
+   switch (error->code) {
+   case MONGOC_SERVER_ERR_INTERRUPTEDATSHUTDOWN:
+   case MONGOC_SERVER_ERR_INTERRUPTEDDUETOREPLSTATECHANGE:
+   case MONGOC_SERVER_ERR_NOTMASTERORSECONDARY:
+   case MONGOC_SERVER_ERR_PRIMARYSTEPPEDDOWN:
+   case MONGOC_SERVER_ERR_SHUTDOWNINPROGRESS:
+      return true;
+   default:
+      return NULL != strstr (error->message, "not master or secondary") ||
+             NULL != strstr (error->message, "node is recovering");
+   }
+}
+
+/* Assumes @error was parsed as an API V2 error. */
+bool
+_mongoc_error_is_state_change (bson_error_t *error)
+{
+   return _mongoc_error_is_recovering (error) ||
+          _mongoc_error_is_not_master (error);
+}
+
+bool
+_mongoc_error_is_network (const bson_error_t *error)
+{
+   if (!error) {
+      return false;
+   }
+   if (error->domain == MONGOC_ERROR_STREAM) {
+      return true;
+   }
+
+   if (error->domain == MONGOC_ERROR_PROTOCOL &&
+       error->code == MONGOC_ERROR_PROTOCOL_INVALID_REPLY) {
+      return true;
+   }
+
+   return false;
 }

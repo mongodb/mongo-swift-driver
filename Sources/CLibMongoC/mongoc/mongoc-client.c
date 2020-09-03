@@ -69,9 +69,6 @@
 #include "mongoc-opts-private.h"
 #endif
 
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-#include <inttypes.h>
-#endif
 
 #undef MONGOC_LOG_DOMAIN
 #define MONGOC_LOG_DOMAIN "client"
@@ -108,37 +105,40 @@ _mongoc_client_killcursors_command (mongoc_cluster_t *cluster,
 
 typedef bool (*mongoc_rr_callback_t) (const char *service,
                                       PDNS_RECORD pdns,
-                                      mongoc_uri_t *uri,
                                       mongoc_rr_data_t *rr_data,
                                       bson_error_t *error);
 
 static bool
 srv_callback (const char *service,
               PDNS_RECORD pdns,
-              mongoc_uri_t *uri,
               mongoc_rr_data_t *rr_data,
               bson_error_t *error)
 {
+   mongoc_host_list_t new_host;
+
    if (rr_data && rr_data->hosts) {
       _mongoc_host_list_remove_host (
          &(rr_data->hosts), pdns->Data.SRV.pNameTarget, pdns->Data.SRV.wPort);
    }
 
-   return mongoc_uri_upsert_host (
-      uri, pdns->Data.SRV.pNameTarget, pdns->Data.SRV.wPort, error);
+   if (!_mongoc_host_list_from_hostport_with_err (
+          &new_host, pdns->Data.SRV.pNameTarget, pdns->Data.SRV.wPort, error)) {
+      return false;
+   }
+   _mongoc_host_list_upsert (&rr_data->hosts, &new_host);
+
+   return true;
 }
 
 /* rr_data is unused, but here to match srv_callback signature */
 static bool
 txt_callback (const char *service,
               PDNS_RECORD pdns,
-              mongoc_uri_t *uri,
               mongoc_rr_data_t *rr_data,
               bson_error_t *error)
 {
    DWORD i;
    bson_string_t *txt;
-   bool r;
 
    txt = bson_string_new (NULL);
 
@@ -146,10 +146,10 @@ txt_callback (const char *service,
       bson_string_append (txt, pdns->Data.TXT.pStringArray[i]);
    }
 
-   r = mongoc_uri_parse_options (uri, txt->str, true /* from_dns */, error);
+   rr_data->txt_record_opts = bson_strdup (txt->str);
    bson_string_free (txt, true);
 
-   return r;
+   return true;
 }
 
 /*
@@ -158,19 +158,21 @@ txt_callback (const char *service,
  * _mongoc_get_rr_dnsapi --
  *
  *       Fetch SRV or TXT resource records using the Windows DNS API and
- *       update @uri.
+ *       put results in @rr_data.
  *
  * Returns:
  *       Success or failure.
  *
  *       For an SRV lookup, returns false if there is any error.
  *
- *       For TXT lookup, ignores any error fetching the resource record, but
- *       returns false if the resource record is found and there is an error
- *       reading its contents as URI options.
+ *       For TXT lookup, ignores any error fetching the resource record and
+ *       always returns true.
  *
  * Side effects:
  *       @error is set if there is a failure.
+ *       @rr_data->hosts may be set if querying SRV. Caller must destroy.
+ *       @rr_data->txt_record_opts may be set if querying TXT. Caller must
+ *       free.
  *
  *--------------------------------------------------------------------------
  */
@@ -178,7 +180,6 @@ txt_callback (const char *service,
 static bool
 _mongoc_get_rr_dnsapi (const char *service,
                        mongoc_rr_type_t rr_type,
-                       mongoc_uri_t *uri,
                        mongoc_rr_data_t *rr_data,
                        bson_error_t *error)
 {
@@ -241,7 +242,6 @@ _mongoc_get_rr_dnsapi (const char *service,
       DNS_ERROR ("No %s records for \"%s\"", rr_type_name, service);
    }
 
-   dns_success = true;
    i = 0;
 
    do {
@@ -261,7 +261,7 @@ _mongoc_get_rr_dnsapi (const char *service,
             }
          }
 
-         if (!callback (service, pdns, uri, rr_data, error)) {
+         if (!callback (service, pdns, rr_data, error)) {
             callback_success = false;
             GOTO (done);
          }
@@ -272,9 +272,12 @@ _mongoc_get_rr_dnsapi (const char *service,
       pdns = pdns->pNext;
    } while (pdns);
 
-   if (rr_data) {
-      rr_data->count = i;
+
+   rr_data->count = i;
+   if (i == 0) {
+      DNS_ERROR ("No matching %s records for \"%s\"", rr_type_name, service);
    }
+   dns_success = true;
 
 done:
    if (pdns) {
@@ -293,7 +296,6 @@ done:
 typedef bool (*mongoc_rr_callback_t) (const char *service,
                                       ns_msg *ns_answer,
                                       ns_rr *rr,
-                                      mongoc_uri_t *uri,
                                       mongoc_rr_data_t *rr_data,
                                       bson_error_t *error);
 
@@ -301,7 +303,6 @@ static bool
 srv_callback (const char *service,
               ns_msg *ns_answer,
               ns_rr *rr,
-              mongoc_uri_t *uri,
               mongoc_rr_data_t *rr_data,
               bson_error_t *error)
 {
@@ -310,6 +311,7 @@ srv_callback (const char *service,
    uint16_t port;
    int size;
    bool ret = false;
+   mongoc_host_list_t new_host;
 
    data = ns_rr_rdata (*rr);
    /* memcpy the network endian port before converting to host endian. we cannot
@@ -329,21 +331,20 @@ srv_callback (const char *service,
                  strerror (h_errno));
    }
 
-   if (rr_data && rr_data->hosts) {
-      _mongoc_host_list_remove_host (&(rr_data->hosts), name, port);
+   if (!_mongoc_host_list_from_hostport_with_err (
+          &new_host, name, port, error)) {
+      GOTO (done);
    }
-   ret = mongoc_uri_upsert_host (uri, name, port, error);
-
+   _mongoc_host_list_upsert (&rr_data->hosts, &new_host);
+   ret = true;
 done:
    return ret;
 }
 
-/* rr_data is unused, but here to match srv_callback signature */
 static bool
 txt_callback (const char *service,
               ns_msg *ns_answer,
               ns_rr *rr,
-              mongoc_uri_t *uri,
               mongoc_rr_data_t *rr_data,
               bson_error_t *error)
 {
@@ -352,7 +353,7 @@ txt_callback (const char *service,
    bson_string_t *txt;
    uint16_t pos, total;
    uint8_t len;
-   bool r = false;
+   bool ret = false;
 
    total = (uint16_t) ns_rr_rdlen (*rr);
    if (total < 1 || total > 255) {
@@ -373,11 +374,12 @@ txt_callback (const char *service,
       pos += len;
    }
 
-   r = mongoc_uri_parse_options (uri, txt->str, true /* from_dns */, error);
+   rr_data->txt_record_opts = bson_strdup (txt->str);
    bson_string_free (txt, true);
+   ret = true;
 
 done:
-   return r;
+   return ret;
 }
 
 /*
@@ -385,19 +387,22 @@ done:
  *
  * _mongoc_get_rr_search --
  *
- *       Fetch SRV or TXT resource records using libresolv and update @uri.
+ *       Fetch SRV or TXT resource records using libresolv and put results in
+ *       @rr_data.
  *
  * Returns:
  *       Success or failure.
  *
  *       For an SRV lookup, returns false if there is any error.
  *
- *       For TXT lookup, ignores any error fetching the resource record, but
- *       returns false if the resource record is found and there is an error
- *       reading its contents as URI options.
+ *       For TXT lookup, ignores any error fetching the resource record and
+ *       always returns true.
  *
  * Side effects:
  *       @error is set if there is a failure.
+ *       @rr_data->hosts may be set if querying SRV. Caller must destroy.
+ *       @rr_data->txt_record_opts may be set if querying TXT. Caller must
+ *       free.
  *
  *--------------------------------------------------------------------------
  */
@@ -405,7 +410,6 @@ done:
 static bool
 _mongoc_get_rr_search (const char *service,
                        mongoc_rr_type_t rr_type,
-                       mongoc_uri_t *uri,
                        mongoc_rr_data_t *rr_data,
                        bson_error_t *error)
 {
@@ -424,6 +428,7 @@ _mongoc_get_rr_search (const char *service,
    ns_rr resource_record;
    bool dns_success;
    bool callback_success = true;
+   int num_matching_records;
 
    ENTRY;
 
@@ -480,18 +485,9 @@ _mongoc_get_rr_search (const char *service,
       DNS_ERROR ("No %s records for \"%s\"", rr_type_name, service);
    }
 
-   if (rr_data) {
-      rr_data->count = n;
-   }
-
+   rr_data->count = n;
+   num_matching_records = 0;
    for (i = 0; i < n; i++) {
-      if (i > 0 && rr_type == MONGOC_RR_TXT) {
-         /* Initial DNS Seedlist Discovery Spec: a client "MUST raise an error
-          * when multiple TXT records are encountered". */
-         callback_success = false;
-         DNS_ERROR ("Multiple TXT records for \"%s\"", service);
-      }
-
       if (ns_parserr (&ns_answer, ns_s_an, i, &resource_record)) {
          DNS_ERROR ("Invalid record %d of %s answer for \"%s\": \"%s\"",
                     i,
@@ -499,6 +495,27 @@ _mongoc_get_rr_search (const char *service,
                     service,
                     strerror (h_errno));
       }
+
+      /* Skip records that don't match the ones we requested. CDRIVER-3628 shows
+       * that we can receive records that were not requested. */
+      if (rr_type == MONGOC_RR_TXT) {
+         if (ns_rr_type (resource_record) != ns_t_txt) {
+            continue;
+         }
+      } else if (rr_type == MONGOC_RR_SRV) {
+         if (ns_rr_type (resource_record) != ns_t_srv) {
+            continue;
+         }
+      }
+
+      if (num_matching_records > 0 && rr_type == MONGOC_RR_TXT) {
+         /* Initial DNS Seedlist Discovery Spec: a client "MUST raise an error
+          * when multiple TXT records are encountered". */
+         callback_success = false;
+         DNS_ERROR ("Multiple TXT records for \"%s\"", service);
+      }
+
+      num_matching_records++;
 
       if (rr_data) {
          uint32_t ttl;
@@ -509,11 +526,14 @@ _mongoc_get_rr_search (const char *service,
          }
       }
 
-      if (!callback (
-             service, &ns_answer, &resource_record, uri, rr_data, error)) {
+      if (!callback (service, &ns_answer, &resource_record, rr_data, error)) {
          callback_success = false;
          GOTO (done);
       }
+   }
+
+   if (num_matching_records == 0) {
+      DNS_ERROR ("No matching %s records for \"%s\"", rr_type_name, service);
    }
 
    dns_success = true;
@@ -538,14 +558,22 @@ done:
  *
  * _mongoc_client_get_rr --
  *
- *       Fetch an SRV or TXT resource record and update @uri. See RFCs 1464
- *       and 2782, and MongoDB's Initial DNS Seedlist Discovery Spec.
+ *       Fetch an SRV or TXT resource record and update put results in
+ *       @rr_data.
+ *
+ *       See RFCs 1464 and 2782, MongoDB's "Initial DNS Seedlist Discovery"
+ *       spec, and MongoDB's "Polling SRV Records for Mongos Discovery"
+ *       spec.
  *
  * Returns:
  *       Success or failure.
  *
  * Side effects:
- *       @error is set if there is a failure.
+ *       @error is set if there is a failure. Errors fetching TXT are
+ *       ignored.
+ *       @rr_data->hosts may be set if querying SRV. Caller must destroy.
+ *       @rr_data->txt_record_opts may be set if querying TXT. Caller must
+ *       free.
  *
  *--------------------------------------------------------------------------
  */
@@ -553,14 +581,13 @@ done:
 bool
 _mongoc_client_get_rr (const char *service,
                        mongoc_rr_type_t rr_type,
-                       mongoc_uri_t *uri,
                        mongoc_rr_data_t *rr_data,
                        bson_error_t *error)
 {
 #ifdef MONGOC_HAVE_DNSAPI
-   return _mongoc_get_rr_dnsapi (service, rr_type, uri, rr_data, error);
+   return _mongoc_get_rr_dnsapi (service, rr_type, rr_data, error);
 #elif (defined(MONGOC_HAVE_RES_NSEARCH) || defined(MONGOC_HAVE_RES_SEARCH))
-   return _mongoc_get_rr_search (service, rr_type, uri, rr_data, error);
+   return _mongoc_get_rr_search (service, rr_type, rr_data, error);
 #else
    bson_set_error (error,
                    MONGOC_ERROR_STREAM,
@@ -617,10 +644,12 @@ mongoc_client_connect_tcp (int32_t connecttimeoutms,
    hints.ai_flags = 0;
    hints.ai_protocol = 0;
 
+   TRACE ("DNS lookup for %s", host->host);
    s = getaddrinfo (host->host, portstr, &hints, &result);
 
    if (s != 0) {
       mongoc_counter_dns_failure_inc ();
+      TRACE ("Failed to resolve %s", host->host);
       bson_set_error (error,
                       MONGOC_ERROR_STREAM,
                       MONGOC_ERROR_STREAM_NAME_RESOLUTION,
@@ -737,49 +766,26 @@ mongoc_client_connect_unix (const mongoc_host_list_t *host, bson_error_t *error)
 #endif
 }
 
-
-/*
- *--------------------------------------------------------------------------
- *
- * mongoc_client_default_stream_initiator --
- *
- *       A mongoc_stream_initiator_t that will handle the various type
- *       of supported sockets by MongoDB including TCP and UNIX.
- *
- *       Language binding authors may want to implement an alternate
- *       version of this method to use their native stream format.
- *
- * Returns:
- *       A mongoc_stream_t if successful; otherwise NULL and @error is set.
- *
- * Side effects:
- *       @error is set if return value is NULL.
- *
- *--------------------------------------------------------------------------
- */
-
 mongoc_stream_t *
-mongoc_client_default_stream_initiator (const mongoc_uri_t *uri,
-                                        const mongoc_host_list_t *host,
-                                        void *user_data,
-                                        bson_error_t *error)
+mongoc_client_connect (bool buffered,
+                       bool use_ssl,
+                       void *ssl_opts_void,
+                       const mongoc_uri_t *uri,
+                       const mongoc_host_list_t *host,
+                       bson_error_t *error)
 {
    mongoc_stream_t *base_stream = NULL;
    int32_t connecttimeoutms;
-#ifdef MONGOC_ENABLE_SSL
-   mongoc_client_t *client = (mongoc_client_t *) user_data;
-   const char *mechanism;
-#endif
 
    BSON_ASSERT (uri);
    BSON_ASSERT (host);
 
 #ifndef MONGOC_ENABLE_SSL
-   if (mongoc_uri_get_tls (uri)) {
+   if (ssl_opts_void || mongoc_uri_get_tls (uri)) {
       bson_set_error (error,
                       MONGOC_ERROR_CLIENT,
                       MONGOC_ERROR_CLIENT_NO_ACCEPTABLE_PEER,
-                      "SSL is not enabled in this build of mongo-c-driver.");
+                      "TLS is not enabled in this build of mongo-c-driver.");
       return NULL;
    }
 #endif
@@ -809,14 +815,17 @@ mongoc_client_default_stream_initiator (const mongoc_uri_t *uri,
 
 #ifdef MONGOC_ENABLE_SSL
    if (base_stream) {
+      mongoc_ssl_opt_t *ssl_opts;
+      const char *mechanism;
+
+      ssl_opts = (mongoc_ssl_opt_t *) ssl_opts_void;
       mechanism = mongoc_uri_get_auth_mechanism (uri);
 
-      if (client->use_ssl ||
-          (mechanism && (0 == strcmp (mechanism, "MONGODB-X509")))) {
+      if (use_ssl || (mechanism && (0 == strcmp (mechanism, "MONGODB-X509")))) {
          mongoc_stream_t *original = base_stream;
 
          base_stream = mongoc_stream_tls_new_with_hostname (
-            base_stream, host->host, &client->ssl_opts, true);
+            base_stream, host->host, ssl_opts, true);
 
          if (!base_stream) {
             mongoc_stream_destroy (original);
@@ -836,9 +845,54 @@ mongoc_client_default_stream_initiator (const mongoc_uri_t *uri,
    }
 #endif
 
-   return base_stream ? mongoc_stream_buffered_new (base_stream, 1024) : NULL;
+   if (!base_stream) {
+      return NULL;
+   }
+   if (buffered) {
+      return mongoc_stream_buffered_new (base_stream, 1024);
+   }
+   return base_stream;
 }
 
+/*
+ *--------------------------------------------------------------------------
+ *
+ * mongoc_client_default_stream_initiator --
+ *
+ *       A mongoc_stream_initiator_t that will handle the various type
+ *       of supported sockets by MongoDB including TCP and UNIX.
+ *
+ *       Language binding authors may want to implement an alternate
+ *       version of this method to use their native stream format.
+ *
+ * Returns:
+ *       A mongoc_stream_t if successful; otherwise NULL and @error is set.
+ *
+ * Side effects:
+ *       @error is set if return value is NULL.
+ *
+ *--------------------------------------------------------------------------
+ */
+
+mongoc_stream_t *
+mongoc_client_default_stream_initiator (const mongoc_uri_t *uri,
+                                        const mongoc_host_list_t *host,
+                                        void *user_data,
+                                        bson_error_t *error)
+{
+   void *ssl_opts_void = NULL;
+   bool use_ssl = false;
+#ifdef MONGOC_ENABLE_SSL
+   mongoc_client_t *client = (mongoc_client_t *) user_data;
+
+   use_ssl = client->use_ssl;
+   ssl_opts_void = (void *) &client->ssl_opts;
+
+#endif
+
+   return mongoc_client_connect (
+      true, use_ssl, ssl_opts_void, uri, host, error);
+}
 
 /*
  *--------------------------------------------------------------------------
@@ -903,13 +957,8 @@ _mongoc_client_recv (mongoc_client_t *client,
    BSON_ASSERT (buffer);
    BSON_ASSERT (server_stream);
 
-   if (!mongoc_cluster_try_recv (
-          &client->cluster, rpc, buffer, server_stream, error)) {
-      mongoc_topology_invalidate_server (
-         client->topology, server_stream->sd->id, error);
-      return false;
-   }
-   return true;
+   return mongoc_cluster_try_recv (
+      &client->cluster, rpc, buffer, server_stream, error);
 }
 
 
@@ -978,6 +1027,21 @@ mongoc_client_new (const char *uri_string)
  */
 
 #ifdef MONGOC_ENABLE_SSL
+/* Only called internally. Caller must ensure opts->internal is valid. */
+void
+_mongoc_client_set_internal_tls_opts (mongoc_client_t *client,
+                                      _mongoc_internal_tls_opts_t *internal)
+{
+   if (!client->use_ssl) {
+      return;
+   }
+   client->ssl_opts.internal =
+      bson_malloc (sizeof (_mongoc_internal_tls_opts_t));
+   memcpy (client->ssl_opts.internal,
+           internal,
+           sizeof (_mongoc_internal_tls_opts_t));
+}
+
 void
 mongoc_client_set_ssl_opts (mongoc_client_t *client,
                             const mongoc_ssl_opt_t *opts)
@@ -985,10 +1049,12 @@ mongoc_client_set_ssl_opts (mongoc_client_t *client,
    BSON_ASSERT (client);
    BSON_ASSERT (opts);
 
-   _mongoc_ssl_opts_cleanup (&client->ssl_opts);
+   _mongoc_ssl_opts_cleanup (&client->ssl_opts,
+                             false /* don't free internal opts */);
 
    client->use_ssl = true;
-   _mongoc_ssl_opts_copy_to (opts, &client->ssl_opts);
+   _mongoc_ssl_opts_copy_to (
+      opts, &client->ssl_opts, false /* don't overwrite internal opts */);
 
    if (client->topology->single_threaded) {
       mongoc_topology_scanner_set_ssl_opts (client->topology->scanner,
@@ -1094,10 +1160,12 @@ _mongoc_client_new_from_uri (mongoc_topology_t *topology)
    client->use_ssl = false;
    if (mongoc_uri_get_tls (client->uri)) {
       mongoc_ssl_opt_t ssl_opt = {0};
+      _mongoc_internal_tls_opts_t internal_tls_opts = {0};
 
-      _mongoc_ssl_opts_from_uri (&ssl_opt, client->uri);
+      _mongoc_ssl_opts_from_uri (&ssl_opt, &internal_tls_opts, client->uri);
       /* sets use_ssl = true */
       mongoc_client_set_ssl_opts (client, &ssl_opt);
+      _mongoc_client_set_internal_tls_opts (client, &internal_tls_opts);
    }
 #endif
 
@@ -1140,7 +1208,7 @@ mongoc_client_destroy (mongoc_client_t *client)
       mongoc_set_destroy (client->client_sessions);
 
 #ifdef MONGOC_ENABLE_SSL
-      _mongoc_ssl_opts_cleanup (&client->ssl_opts);
+      _mongoc_ssl_opts_cleanup (&client->ssl_opts, true);
 #endif
 
       bson_free (client);
@@ -1564,7 +1632,7 @@ mongoc_client_command (mongoc_client_t *client,
                        const bson_t *fields,
                        const mongoc_read_prefs_t *read_prefs)
 {
-   char ns[MONGOC_NAMESPACE_MAX];
+   char *ns = NULL;
    mongoc_cursor_t *cursor;
 
    BSON_ASSERT (client);
@@ -1575,13 +1643,14 @@ mongoc_client_command (mongoc_client_t *client,
     * Allow a caller to provide a fully qualified namespace
     */
    if (NULL == strstr (db_name, "$cmd")) {
-      bson_snprintf (ns, sizeof ns, "%s.$cmd", db_name);
+      ns = bson_strdup_printf ("%s.$cmd", db_name);
       db_name = ns;
    }
 
    cursor =
       _mongoc_cursor_cmd_deprecated_new (client, db_name, query, read_prefs);
 
+   bson_free (ns);
    return cursor;
 }
 
@@ -1614,6 +1683,9 @@ retry:
    ret = mongoc_cluster_run_command_monitored (
       &client->cluster, &parts->assembled, reply, error);
 
+   _mongoc_write_error_handle_labels (
+      ret, error, reply, server_stream->sd->max_wire_version);
+
    if (is_retryable) {
       _mongoc_write_error_update_if_unsupported_storage_engine (
          ret, error, reply);
@@ -1624,8 +1696,7 @@ retry:
     * server does not support retryable writes, fall through and allow the
     * original error to be reported. */
    if (is_retryable &&
-       _mongoc_write_error_get_type (ret, error, reply) ==
-          MONGOC_WRITE_ERR_RETRY) {
+       _mongoc_write_error_get_type (reply) == MONGOC_WRITE_ERR_RETRY) {
       bson_error_t ignored_error;
 
       /* each write command may be retried at most once */
@@ -2947,8 +3018,15 @@ _mongoc_client_end_sessions (mongoc_client_t *client)
             }
          }
 
-         bson_destroy (&cmd);
          mongoc_cmd_parts_cleanup (&parts);
+
+         if (!mongoc_cluster_stream_valid (cluster, stream)) {
+            /* The stream was invalidated as a result of a network error, so we
+             * stop sending commands. */
+            break;
+         }
+
+         bson_destroy (&cmd);
       }
 
       bson_destroy (&cmd);

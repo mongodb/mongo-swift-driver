@@ -116,6 +116,7 @@ mongoc_cmd_parts_append_opts (mongoc_cmd_parts_t *parts,
    uint32_t len;
    const uint8_t *data;
    bson_t read_concern;
+   const char *to_append;
 
    ENTRY;
 
@@ -184,7 +185,13 @@ mongoc_cmd_parts_append_opts (mongoc_cmd_parts_t *parts,
          continue;
       }
 
-      if (!bson_append_iter (&parts->extra, bson_iter_key (iter), -1, iter)) {
+      to_append = bson_iter_key (iter);
+      if (!bson_append_iter (&parts->extra, to_append, -1, iter)) {
+         bson_set_error (error,
+                         MONGOC_ERROR_COMMAND,
+                         MONGOC_ERROR_COMMAND_INVALID_ARG,
+                         "Failed to append \"%s\" to create command.",
+                         to_append);
          RETURN (false);
       }
    }
@@ -400,10 +407,12 @@ _mongoc_cmd_parts_add_read_prefs (bson_t *query,
    const char *mode_str;
    const bson_t *tags;
    int64_t stale;
+   const bson_t *hedge;
 
    mode_str = _mongoc_read_mode_as_str (mongoc_read_prefs_get_mode (prefs));
    tags = mongoc_read_prefs_get_tags (prefs);
    stale = mongoc_read_prefs_get_max_staleness_seconds (prefs);
+   hedge = mongoc_read_prefs_get_hedge (prefs);
 
    bson_append_document_begin (query, "$readPreference", 15, &child);
    bson_append_utf8 (&child, "mode", 4, mode_str, -1);
@@ -413,6 +422,10 @@ _mongoc_cmd_parts_add_read_prefs (bson_t *query,
 
    if (stale != MONGOC_NO_MAX_STALENESS) {
       bson_append_int64 (&child, "maxStalenessSeconds", 19, stale);
+   }
+
+   if (!bson_empty0 (hedge)) {
+      bson_append_document (&child, "hedge", 5, hedge);
    }
 
    bson_append_document_end (query, &child);
@@ -440,6 +453,8 @@ _mongoc_cmd_parts_assemble_mongos (mongoc_cmd_parts_t *parts,
 {
    mongoc_read_mode_t mode;
    const bson_t *tags = NULL;
+   int64_t max_staleness_seconds = MONGOC_NO_MAX_STALENESS;
+   const bson_t *hedge = NULL;
    bool add_read_prefs = false;
    bson_t query;
    bson_iter_t dollar_query;
@@ -451,7 +466,11 @@ _mongoc_cmd_parts_assemble_mongos (mongoc_cmd_parts_t *parts,
 
    mode = mongoc_read_prefs_get_mode (parts->read_prefs);
    if (parts->read_prefs) {
+      max_staleness_seconds =
+         mongoc_read_prefs_get_max_staleness_seconds (parts->read_prefs);
+
       tags = mongoc_read_prefs_get_tags (parts->read_prefs);
+      hedge = mongoc_read_prefs_get_hedge (parts->read_prefs);
    }
 
    /* Server Selection Spec says:
@@ -467,8 +486,9 @@ _mongoc_cmd_parts_assemble_mongos (mongoc_cmd_parts_t *parts,
     *
     * For mode 'secondaryPreferred', drivers MUST set the slaveOK wire protocol
     *   flag. If the read preference contains a non-empty tag_sets parameter,
-    *   drivers MUST use $readPreference; otherwise, drivers MUST NOT use
-    *   $readPreference
+    *   maxStalenessSeconds is a positive integer, or the hedge parameter is
+    *   non-empty, drivers MUST use $readPreference; otherwise, drivers MUST NOT
+    *   use $readPreference
     *
     * For mode 'nearest', drivers MUST set the slaveOK wire protocol flag and
     *   MUST also use $readPreference
@@ -477,7 +497,8 @@ _mongoc_cmd_parts_assemble_mongos (mongoc_cmd_parts_t *parts,
    case MONGOC_READ_PRIMARY:
       break;
    case MONGOC_READ_SECONDARY_PREFERRED:
-      if (!bson_empty0 (tags)) {
+      if (!bson_empty0 (tags) || max_staleness_seconds > 0 ||
+          !bson_empty0 (hedge)) {
          add_read_prefs = true;
       }
       parts->assembled.query_flags |= MONGOC_QUERY_SLAVE_OK;
@@ -786,7 +807,7 @@ _is_retryable_read (const mongoc_cmd_parts_t *parts,
 
 bool
 mongoc_cmd_parts_assemble (mongoc_cmd_parts_t *parts,
-                           const mongoc_server_stream_t *server_stream,
+                           mongoc_server_stream_t *server_stream,
                            bson_error_t *error)
 {
    mongoc_server_description_type_t server_type;
@@ -952,12 +973,14 @@ mongoc_cmd_parts_assemble (mongoc_cmd_parts_t *parts,
 
       if (!is_get_more) {
          if (cs) {
+            _mongoc_cmd_parts_ensure_copied (parts);
             _mongoc_client_session_append_read_concern (
                cs,
                &parts->read_concern_document,
                parts->is_read_command,
                &parts->assembled_body);
          } else if (!bson_empty (&parts->read_concern_document)) {
+            _mongoc_cmd_parts_ensure_copied (parts);
             bson_append_document (&parts->assembled_body,
                                   "readConcern",
                                   11,
@@ -970,6 +993,7 @@ mongoc_cmd_parts_assemble (mongoc_cmd_parts_t *parts,
          _mongoc_cmd_parts_add_write_concern (parts);
       }
 
+      _mongoc_cmd_parts_ensure_copied (parts);
       if (!_mongoc_client_session_append_txn (
              cs, &parts->assembled_body, error)) {
          GOTO (done);

@@ -82,6 +82,9 @@
 
 BSON_BEGIN_DECLS
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
 #ifdef _MSC_VER
 #ifndef __cplusplus
 /* benign redefinition of type */

@@ -42,6 +42,8 @@ struct _mongoc_crud_opts_t;
  * for context. */
 #define BSON_OBJECT_ALLOWANCE (16 * 1024)
 
+#define RETRYABLE_WRITE_ERROR "RetryableWriteError"
+
 struct _mongoc_bulk_write_flags_t {
    bool ordered;
    bool bypass_document_validation;
@@ -49,6 +51,7 @@ struct _mongoc_bulk_write_flags_t {
    bool has_multi_write;
    bool has_array_filters;
    bool has_update_hint;
+   bool has_delete_hint;
 };
 
 
@@ -215,9 +218,7 @@ void
 _append_array_from_command (mongoc_write_command_t *command, bson_t *bson);
 
 mongoc_write_err_type_t
-_mongoc_write_error_get_type (bool cmd_ret,
-                              const bson_error_t *cmd_err,
-                              const bson_t *reply);
+_mongoc_write_error_get_type (bson_t *reply);
 
 bool
 _mongoc_write_error_update_if_unsupported_storage_engine (bool cmd_ret,

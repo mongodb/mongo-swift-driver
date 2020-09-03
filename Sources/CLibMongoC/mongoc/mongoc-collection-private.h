@@ -28,10 +28,10 @@ BSON_BEGIN_DECLS
 
 struct _mongoc_collection_t {
    mongoc_client_t *client;
-   char ns[128];
+   char *ns;
    uint32_t nslen;
-   char db[128];
-   char collection[128];
+   char *db;
+   char *collection;
    uint32_t collectionlen;
    mongoc_read_prefs_t *read_prefs;
    mongoc_read_concern_t *read_concern;
@@ -47,6 +47,12 @@ _mongoc_collection_new (mongoc_client_t *client,
                         const mongoc_read_prefs_t *read_prefs,
                         const mongoc_read_concern_t *read_concern,
                         const mongoc_write_concern_t *write_concern);
+
+bool
+_mongoc_collection_create_index_if_not_exists (mongoc_collection_t *collection,
+                                               const bson_t *keys,
+                                               const bson_t *opts,
+                                               bson_error_t *error);
 
 BSON_END_DECLS
 

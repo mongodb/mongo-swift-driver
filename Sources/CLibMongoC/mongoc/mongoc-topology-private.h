@@ -40,14 +40,20 @@
 typedef enum {
    MONGOC_TOPOLOGY_SCANNER_OFF,
    MONGOC_TOPOLOGY_SCANNER_BG_RUNNING,
-   MONGOC_TOPOLOGY_SCANNER_SHUTTING_DOWN,
-   MONGOC_TOPOLOGY_SCANNER_SINGLE_THREADED,
+   MONGOC_TOPOLOGY_SCANNER_SHUTTING_DOWN
 } mongoc_topology_scanner_state_t;
 
+struct _mongoc_background_monitor_t;
 struct _mongoc_client_pool_t;
 
 typedef struct _mongoc_topology_t {
    mongoc_topology_description_t description;
+   /* topology->uri is initialized as a copy of the client/pool's URI.
+    * For a "mongodb+srv://" URI, topology->uri is then updated in
+    * mongoc_topology_new() after initial seedlist discovery.
+    * Afterwards, it remains read-only and may be read outside of the topology
+    * mutex.
+    */
    mongoc_uri_t *uri;
    mongoc_topology_scanner_t *scanner;
    bool server_selection_try_once;
@@ -61,16 +67,16 @@ typedef struct _mongoc_topology_t {
 
    /* Minimum of SRV record TTLs, but no lower than 60 seconds.
     * May be zero for non-SRV/non-MongoS topology. */
-   int64_t rescanSRVIntervalMS;
-   int64_t last_srv_scan;
+   int64_t srv_polling_rescan_interval_ms;
+   int64_t srv_polling_last_scan_ms;
+   /* For multi-threaded, srv polling occurs in a separate thread. */
+   bson_thread_t srv_polling_thread;
+   mongoc_cond_t srv_polling_cond;
 
    bson_mutex_t mutex;
    mongoc_cond_t cond_client;
-   mongoc_cond_t cond_server;
-   bson_thread_t thread;
-
    mongoc_topology_scanner_state_t scanner_state;
-   bool scan_requested;
+
    bool single_threaded;
    bool stale;
 
@@ -92,6 +98,11 @@ typedef struct _mongoc_topology_t {
    char *mongocryptd_spawn_path;
    bson_t *mongocryptd_spawn_args;
 #endif
+
+   /* For background monitoring. */
+   mongoc_set_t *server_monitors;
+   mongoc_set_t *rtt_monitors;
+   bson_mutex_t apm_mutex;
 } mongoc_topology_t;
 
 mongoc_topology_t *
@@ -135,6 +146,12 @@ _mongoc_topology_host_by_id (mongoc_topology_t *topology,
                              uint32_t id,
                              bson_error_t *error);
 
+/* TODO: Try to remove this function when CDRIVER-3654 is complete.
+ * It is only called when an application thread needs to mark a server Unknown.
+ * But an application error is also tied to other behavior, and should also
+ * consider the connection generation. This logic is captured in
+ * _mongoc_topology_handle_app_error. This should not be called directly
+ */
 void
 mongoc_topology_invalidate_server (mongoc_topology_t *topology,
                                    uint32_t id,
@@ -153,12 +170,6 @@ mongoc_topology_server_timestamp (mongoc_topology_t *topology, uint32_t id);
 
 mongoc_topology_description_type_t
 _mongoc_topology_get_type (mongoc_topology_t *topology);
-
-bool
-_mongoc_topology_start_background_scanner (mongoc_topology_t *topology);
-
-void
-_mongoc_topology_background_thread_stop (mongoc_topology_t *topology);
 
 bool
 _mongoc_topology_set_appname (mongoc_topology_t *topology, const char *appname);
@@ -191,4 +202,27 @@ _mongoc_topology_request_scan (mongoc_topology_t *topology);
 
 void
 _mongoc_topology_bypass_cooldown (mongoc_topology_t *topology);
+
+typedef enum {
+   MONGOC_SDAM_APP_ERROR_COMMAND,
+   MONGOC_SDAM_APP_ERROR_NETWORK,
+   MONGOC_SDAM_APP_ERROR_TIMEOUT
+} _mongoc_sdam_app_error_type_t;
+
+bool
+_mongoc_topology_handle_app_error (mongoc_topology_t *topology,
+                                   uint32_t server_id,
+                                   bool handshake_complete,
+                                   _mongoc_sdam_app_error_type_t type,
+                                   const bson_t *reply,
+                                   const bson_error_t *why,
+                                   uint32_t max_wire_version,
+                                   uint32_t generation);
+
+void
+_mongoc_topology_clear_connection_pool (mongoc_topology_t *topology,
+                                        uint32_t server_id);
+
+void
+mongoc_topology_rescan_srv (mongoc_topology_t *topology);
 #endif

@@ -50,7 +50,7 @@ _mongoc_rand_simple (unsigned int *seed)
 
    err = rand_s (&ret);
    if (0 != err) {
-      MONGOC_ERROR ("rand_s failed: %");
+      MONGOC_ERROR ("rand_s failed: %s", strerror(err));
    }
 
    return (int) ret;
@@ -68,9 +68,10 @@ _mongoc_hex_md5 (const char *input)
    char digest_str[33];
    int i;
 
-   _bson_md5_init (&md5);
-   _bson_md5_append (&md5, (const uint8_t *) input, (uint32_t) strlen (input));
-   _bson_md5_finish (&md5, digest);
+   COMMON_PREFIX (_bson_md5_init (&md5));
+   COMMON_PREFIX (_bson_md5_append (
+      &md5, (const uint8_t *) input, (uint32_t) strlen (input)));
+   COMMON_PREFIX (_bson_md5_finish (&md5, digest));
 
    for (i = 0; i < sizeof digest; i++) {
       bson_snprintf (&digest_str[i * 2], 3, "%02x", digest[i]);
@@ -174,8 +175,8 @@ _mongoc_lookup_bool (const bson_t *bson, const char *key, bool default_value)
    return bson_iter_as_bool (&child);
 }
 
-void
-_mongoc_get_db_name (const char *ns, char *db /* OUT */)
+char *
+_mongoc_get_db_name (const char *ns)
 {
    size_t dblen;
    const char *dot;
@@ -185,10 +186,10 @@ _mongoc_get_db_name (const char *ns, char *db /* OUT */)
    dot = strstr (ns, ".");
 
    if (dot) {
-      dblen = BSON_MIN (dot - ns + 1, MONGOC_NAMESPACE_MAX);
-      bson_strncpy (db, ns, dblen);
+      dblen = dot - ns;
+      return bson_strndup (ns, dblen);
    } else {
-      bson_strncpy (db, ns, MONGOC_NAMESPACE_MAX);
+      return bson_strdup (ns);
    }
 }
 
@@ -569,4 +570,27 @@ _mongoc_document_is_pipeline (const bson_t *document)
 
    /* should return false when the document is empty */
    return i != 0;
+}
+
+char *
+_mongoc_getenv (const char *name)
+{
+#ifdef _MSC_VER
+   char buf[1024];
+   size_t buflen;
+
+   if ((0 == getenv_s (&buflen, buf, sizeof buf, name)) && buflen) {
+      return bson_strdup (buf);
+   } else {
+      return NULL;
+   }
+#else
+
+   if (getenv (name) && strlen (getenv (name))) {
+      return bson_strdup (getenv (name));
+   } else {
+      return NULL;
+   }
+
+#endif
 }

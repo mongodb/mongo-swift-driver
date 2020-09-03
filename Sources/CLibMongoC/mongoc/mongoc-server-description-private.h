@@ -42,6 +42,8 @@
 /* represent a server or topology with no replica set config version */
 #define MONGOC_NO_SET_VERSION -1
 
+#define MONGOC_RTT_UNSET -1
+
 typedef enum {
    MONGOC_SERVER_UNKNOWN,
    MONGOC_SERVER_STANDALONE,
@@ -63,6 +65,10 @@ struct _mongoc_server_description_t {
    bson_t last_is_master;
    bool has_is_master;
    const char *connection_address;
+   /* SDAM dictates storing me/hosts/passives/arbiters after being "normalized
+    * to lower-case" Instead, they are stored in the casing they are received,
+    * but compared case insensitively. This should be addressed in CDRIVER-3527.
+    */
    const char *me;
 
    /* whether an APM server-opened callback has been fired before */
@@ -79,6 +85,8 @@ struct _mongoc_server_description_t {
    int32_t max_write_batch_size;
    int64_t session_timeout_minutes;
 
+   /* hosts, passives, and arbiters are stored as a BSON array, but compared
+    * case insensitively. This should be improved in CDRIVER-3527. */
    bson_t hosts;
    bson_t passives;
    bson_t arbiters;
@@ -90,6 +98,18 @@ struct _mongoc_server_description_t {
    int64_t last_write_date_ms;
 
    bson_t compressors;
+   bson_t topology_version;
+   /*
+   The generation is incremented every time connections to this server should be
+   invalidated.
+   This happens when:
+   1. a monitor receives a network error
+   2. an app thread receives any network error before completing a handshake
+   3. an app thread receives a non-timeout network error after the handshake
+   4. an app thread receives a "not master" or "node is recovering" error from a
+   pre-4.2 server.
+   */
+   uint32_t generation;
 };
 
 void
@@ -146,5 +166,19 @@ mongoc_server_description_filter_tags (
    mongoc_server_description_t **descriptions,
    size_t description_len,
    const mongoc_read_prefs_t *read_prefs);
+
+/* Compares server descriptions following the "Server Description Equality"
+ * rules. Not all fields are considered. */
+bool
+_mongoc_server_description_equal (mongoc_server_description_t *sd1,
+                                  mongoc_server_description_t *sd2);
+
+int
+mongoc_server_description_topology_version_cmp (const bson_t *tv1,
+                                                const bson_t *tv2);
+
+void
+mongoc_server_description_set_topology_version (mongoc_server_description_t *sd,
+                                                const bson_t *tv);
 
 #endif

@@ -24,9 +24,6 @@
 #include "mongoc-opts-private.h"
 #include "mongoc-write-command-private.h"
 
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-#include <inttypes.h>
-#endif
 
 /*
  * This is the implementation of both write commands and bulk write commands.
@@ -151,6 +148,7 @@ _mongoc_bulk_operation_remove_with_opts (
    bson_t opts;
    bool has_collation;
    bool ret = false;
+   bool has_delete_hint;
 
    ENTRY;
 
@@ -177,11 +175,17 @@ _mongoc_bulk_operation_remove_with_opts (
       bson_append_document (&opts, "collation", 9, &remove_opts->collation);
    }
 
+   has_delete_hint = !!(remove_opts->hint.value_type);
+   if (has_delete_hint) {
+      bson_append_value (&opts, "hint", 4, &remove_opts->hint);
+   }
+
    if (bulk->commands.len) {
       last = &_mongoc_array_index (
          &bulk->commands, mongoc_write_command_t, bulk->commands.len - 1);
       if (last->type == MONGOC_WRITE_COMMAND_DELETE) {
          last->flags.has_collation |= has_collation;
+         last->flags.has_delete_hint |= has_delete_hint;
          last->flags.has_multi_write |= (remove_opts->limit == 0);
          _mongoc_write_command_delete_append (last, selector, &opts);
          ret = true;
@@ -193,6 +197,7 @@ _mongoc_bulk_operation_remove_with_opts (
       &command, selector, NULL, &opts, bulk->flags, bulk->operation_id);
 
    command.flags.has_collation = has_collation;
+   command.flags.has_delete_hint = has_delete_hint;
    command.flags.has_multi_write = (remove_opts->limit == 0);
 
    _mongoc_array_append_val (&bulk->commands, command);
@@ -435,6 +440,7 @@ _mongoc_bulk_operation_update_append (
       last = &_mongoc_array_index (
          &bulk->commands, mongoc_write_command_t, bulk->commands.len - 1);
       if (last->type == MONGOC_WRITE_COMMAND_UPDATE) {
+         last->flags.has_array_filters |= has_array_filters;
          last->flags.has_collation |= has_collation;
          last->flags.has_update_hint |= has_update_hint;
          last->flags.has_multi_write |= update_opts->multi;

@@ -38,10 +38,7 @@
 #include "mongoc-write-command-private.h"
 #include "mongoc-opts-private.h"
 #include "mongoc-write-command-private.h"
-
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-#include <inttypes.h>
-#endif
+#include "mongoc-error-private.h"
 
 #undef MONGOC_LOG_DOMAIN
 #define MONGOC_LOG_DOMAIN "collection"
@@ -175,9 +172,9 @@ _mongoc_collection_new (mongoc_client_t *client,
 
    ENTRY;
 
-   BSON_ASSERT (client);
-   BSON_ASSERT (db);
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (client);
+   BSON_ASSERT_PARAM (db);
+   BSON_ASSERT_PARAM (collection);
 
    col = (mongoc_collection_t *) bson_malloc0 (sizeof *col);
    col->client = client;
@@ -189,9 +186,9 @@ _mongoc_collection_new (mongoc_client_t *client,
    col->read_prefs = read_prefs ? mongoc_read_prefs_copy (read_prefs)
                                 : mongoc_read_prefs_new (MONGOC_READ_PRIMARY);
 
-   bson_snprintf (col->ns, sizeof col->ns, "%s.%s", db, collection);
-   bson_snprintf (col->db, sizeof col->db, "%s", db);
-   bson_snprintf (col->collection, sizeof col->collection, "%s", collection);
+   col->ns = bson_strdup_printf ("%s.%s", db, collection);
+   col->db = bson_strdup (db);
+   col->collection = bson_strdup (collection);
 
    col->collectionlen = (uint32_t) strlen (col->collection);
    col->nslen = (uint32_t) strlen (col->ns);
@@ -245,6 +242,9 @@ mongoc_collection_destroy (mongoc_collection_t *collection) /* IN */
       collection->write_concern = NULL;
    }
 
+   bson_free (collection->collection);
+   bson_free (collection->db);
+   bson_free (collection->ns);
    bson_free (collection);
 
    EXIT;
@@ -273,7 +273,7 @@ mongoc_collection_copy (mongoc_collection_t *collection) /* IN */
 {
    ENTRY;
 
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    RETURN (_mongoc_collection_new (collection->client,
                                    collection->db,
@@ -364,8 +364,8 @@ mongoc_collection_find (mongoc_collection_t *collection,       /* IN */
    bson_t opts;
    bool slave_ok;
    mongoc_cursor_t *cursor;
-   BSON_ASSERT (collection);
-   BSON_ASSERT (query);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (query);
 
    bson_clear (&collection->gle);
 
@@ -442,8 +442,8 @@ mongoc_collection_find_with_opts (mongoc_collection_t *collection,
                                   const bson_t *opts,
                                   const mongoc_read_prefs_t *read_prefs)
 {
-   BSON_ASSERT (collection);
-   BSON_ASSERT (filter);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (filter);
 
    bson_clear (&collection->gle);
 
@@ -496,11 +496,11 @@ mongoc_collection_command (mongoc_collection_t *collection,
                            const bson_t *fields,
                            const mongoc_read_prefs_t *read_prefs)
 {
-   char ns[MONGOC_NAMESPACE_MAX];
+   char *ns;
    mongoc_cursor_t *cursor;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (query);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (query);
 
    if (!read_prefs) {
       read_prefs = collection->read_prefs;
@@ -509,9 +509,9 @@ mongoc_collection_command (mongoc_collection_t *collection,
    bson_clear (&collection->gle);
 
    if (NULL == strstr (collection->collection, "$cmd")) {
-      bson_snprintf (ns, sizeof ns, "%s.$cmd", collection->db);
+      ns = bson_strdup_printf ("%s.$cmd", collection->db);
    } else {
-      bson_snprintf (ns, sizeof ns, "%s", collection->db);
+      ns = bson_strdup (collection->db);
    }
 
    /* Server Selection Spec: "The generic command method has a default read
@@ -524,6 +524,7 @@ mongoc_collection_command (mongoc_collection_t *collection,
    /* flags, skip, limit, batch_size, fields are unused */
    cursor = _mongoc_cursor_cmd_deprecated_new (
       collection->client, ns, query, read_prefs);
+   bson_free (ns);
    return cursor;
 }
 
@@ -536,7 +537,7 @@ mongoc_collection_read_command_with_opts (mongoc_collection_t *collection,
                                           bson_t *reply,
                                           bson_error_t *error)
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    return _mongoc_client_command_with_opts (collection->client,
                                             collection->db,
@@ -560,7 +561,7 @@ mongoc_collection_write_command_with_opts (mongoc_collection_t *collection,
                                            bson_t *reply,
                                            bson_error_t *error)
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    return _mongoc_client_command_with_opts (collection->client,
                                             collection->db,
@@ -586,7 +587,7 @@ mongoc_collection_read_write_command_with_opts (
    bson_t *reply,
    bson_error_t *error)
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    return _mongoc_client_command_with_opts (collection->client,
                                             collection->db,
@@ -611,7 +612,7 @@ mongoc_collection_command_with_opts (mongoc_collection_t *collection,
                                      bson_t *reply,
                                      bson_error_t *error)
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    /* Server Selection Spec: "The generic command method has a default read
     * preference of mode 'primary'. The generic command method MUST ignore any
@@ -641,8 +642,8 @@ mongoc_collection_command_simple (mongoc_collection_t *collection,
                                   bson_t *reply,
                                   bson_error_t *error)
 {
-   BSON_ASSERT (collection);
-   BSON_ASSERT (command);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (command);
 
    bson_clear (&collection->gle);
 
@@ -746,7 +747,7 @@ mongoc_collection_count_with_opts (
 
    ENTRY;
 
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    bson_append_utf8 (
       &cmd, "count", 5, collection->collection, collection->collectionlen);
@@ -807,7 +808,15 @@ mongoc_collection_estimated_document_count (
 
    ENTRY;
 
-   BSON_ASSERT (coll);
+   BSON_ASSERT_PARAM (coll);
+
+   if (opts && bson_has_field (opts, "sessionId")) {
+      bson_set_error (error,
+                      MONGOC_ERROR_COMMAND,
+                      MONGOC_ERROR_COMMAND_INVALID_ARG,
+                      "Collection count must not specify explicit session");
+      GOTO (done);
+   }
 
    reply_ptr = reply ? reply : &reply_local;
    bson_append_utf8 (&cmd, "count", 5, coll->collection, coll->collectionlen);
@@ -831,6 +840,7 @@ mongoc_collection_estimated_document_count (
       }
    }
 
+done:
    if (!reply) {
       bson_destroy (&reply_local);
    }
@@ -926,8 +936,8 @@ mongoc_collection_count_documents (mongoc_collection_t *coll,
 
    ENTRY;
 
-   BSON_ASSERT (coll);
-   BSON_ASSERT (filter);
+   BSON_ASSERT_PARAM (coll);
+   BSON_ASSERT_PARAM (filter);
 
    _make_aggregate_for_count (coll, filter, opts, &aggregate_cmd);
    bson_init (&aggregate_opts);
@@ -1008,7 +1018,7 @@ mongoc_collection_drop_with_opts (mongoc_collection_t *collection,
    bool ret;
    bson_t cmd;
 
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    bson_init (&cmd);
    bson_append_utf8 (
@@ -1067,8 +1077,8 @@ mongoc_collection_drop_index_with_opts (mongoc_collection_t *collection,
    bool ret;
    bson_t cmd;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (index_name);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (index_name);
 
    bson_init (&cmd);
    bson_append_utf8 (&cmd,
@@ -1104,7 +1114,7 @@ mongoc_collection_keys_to_index_string (const bson_t *keys)
    bson_type_t type;
    int i = 0;
 
-   BSON_ASSERT (keys);
+   BSON_ASSERT_PARAM (keys);
 
    if (!bson_iter_init (&iter, keys)) {
       return NULL;
@@ -1160,6 +1170,150 @@ mongoc_collection_create_index (mongoc_collection_t *collection,
    return ret;
 }
 
+static bool
+_mongoc_collection_index_keys_equal (const bson_t *expected,
+                                     const bson_t *actual)
+{
+   bson_iter_t iter_expected;
+   bson_iter_t iter_actual;
+
+   bson_iter_init (&iter_expected, expected);
+   bson_iter_init (&iter_actual, actual);
+
+   while (bson_iter_next (&iter_expected)) {
+      /* If the key document has fewer items than expected, indexes are unequal
+       */
+      if (!bson_iter_next (&iter_actual)) {
+         return false;
+      }
+
+      /* If key order does not match, indexes are unequal */
+      if (strcmp (bson_iter_key (&iter_expected),
+                  bson_iter_key (&iter_actual)) != 0) {
+         return false;
+      }
+
+      if (BSON_ITER_HOLDS_NUMBER (&iter_expected) &&
+          BSON_ITER_HOLDS_NUMBER (&iter_actual)) {
+         if (bson_iter_as_int64 (&iter_expected) !=
+             bson_iter_as_int64 (&iter_actual)) {
+            return false;
+         }
+      } else if (BSON_ITER_HOLDS_UTF8 (&iter_expected) &&
+                 BSON_ITER_HOLDS_UTF8 (&iter_actual)) {
+         if (strcmp (bson_iter_utf8 (&iter_expected, NULL),
+                     bson_iter_utf8 (&iter_actual, NULL)) != 0) {
+            return false;
+         }
+      } else {
+         return false;
+      }
+   }
+
+   /* If our expected document is exhausted, make sure there are no extra keys
+    * in the actual key document */
+   if (bson_iter_next (&iter_actual)) {
+      return false;
+   }
+
+   return true;
+}
+
+bool
+_mongoc_collection_create_index_if_not_exists (mongoc_collection_t *collection,
+                                               const bson_t *keys,
+                                               const bson_t *opts,
+                                               bson_error_t *error)
+{
+   mongoc_cursor_t *cursor;
+   bool index_exists;
+   bool r = false;
+   const bson_t *doc;
+   bson_iter_t iter;
+   bson_t inner_doc;
+   uint32_t data_len;
+   const uint8_t *data;
+   bson_t index;
+   bson_t command;
+
+   BSON_ASSERT (collection);
+   BSON_ASSERT (keys);
+
+   cursor = mongoc_collection_find_indexes_with_opts (collection, NULL);
+
+   index_exists = false;
+
+   while (mongoc_cursor_next (cursor, &doc) && !index_exists) {
+      r = bson_iter_init_find (&iter, doc, "key");
+      if (!r) {
+         continue;
+      }
+
+      bson_iter_document (&iter, &data_len, &data);
+      bson_init_static (&inner_doc, data, data_len);
+
+      if (_mongoc_collection_index_keys_equal (keys, &inner_doc)) {
+         index_exists = true;
+      }
+
+      bson_destroy (&inner_doc);
+   }
+
+   if (mongoc_cursor_error (cursor, error)) {
+      mongoc_cursor_destroy (cursor);
+      return false;
+   }
+
+   mongoc_cursor_destroy (cursor);
+
+   if (index_exists) {
+      return true;
+   }
+
+   if (opts) {
+      bson_copy_to (opts, &index);
+   } else {
+      bson_init (&index);
+   }
+
+   BSON_APPEND_DOCUMENT (&index, "key", keys);
+
+   if (!bson_has_field (&index, "name")) {
+      char *alloc_name = mongoc_collection_keys_to_index_string (keys);
+
+      if (!alloc_name) {
+         bson_set_error (
+            error,
+            MONGOC_ERROR_BSON,
+            MONGOC_ERROR_BSON_INVALID,
+            "Cannot generate index name from invalid `keys` argument");
+         GOTO (done);
+      }
+
+      BSON_APPEND_UTF8 (&index, "name", alloc_name);
+
+      bson_free (alloc_name);
+   }
+
+   bson_init (&command);
+   BCON_APPEND (&command,
+                "createIndexes",
+                BCON_UTF8 (mongoc_collection_get_name (collection)),
+                "indexes",
+                "[",
+                BCON_DOCUMENT (&index),
+                "]");
+
+   r = mongoc_collection_write_command_with_opts (
+      collection, &command, NULL, NULL, error);
+
+done:
+   bson_destroy (&index);
+   bson_destroy (&command);
+
+   return r;
+}
+
 bool
 mongoc_collection_create_index_with_opts (mongoc_collection_t *collection,
                                           const bson_t *keys,
@@ -1190,8 +1344,8 @@ mongoc_collection_create_index_with_opts (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (keys);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (keys);
 
    def_opt = mongoc_index_opt_get_default ();
    opt = opt ? opt : def_opt;
@@ -1418,7 +1572,7 @@ mongoc_collection_find_indexes_with_opts (mongoc_collection_t *collection,
    bson_t child;
    bson_error_t error;
 
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    bson_append_utf8 (&cmd,
                      "listIndexes",
@@ -1494,8 +1648,8 @@ mongoc_collection_insert_bulk (mongoc_collection_t *collection,
    uint32_t i;
    bool ret;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (documents);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (documents);
 
    if (!write_concern) {
       write_concern = collection->write_concern;
@@ -1617,8 +1771,8 @@ mongoc_collection_insert_one (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (document);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (document);
 
    _mongoc_bson_init_if_set (reply);
 
@@ -1703,8 +1857,8 @@ mongoc_collection_insert_many (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (documents);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (documents);
 
    _mongoc_bson_init_if_set (reply);
 
@@ -1797,9 +1951,9 @@ mongoc_collection_update (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (selector);
-   BSON_ASSERT (update);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (selector);
+   BSON_ASSERT_PARAM (update);
 
    bson_clear (&collection->gle);
 
@@ -1877,9 +2031,9 @@ _mongoc_collection_update_or_replace (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (selector);
-   BSON_ASSERT (update);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (selector);
+   BSON_ASSERT_PARAM (update);
 
    if (update_opts->upsert) {
       bson_append_bool (extra, "upsert", 6, true);
@@ -2014,8 +2168,8 @@ mongoc_collection_update_one (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (update);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (update);
 
    if (!_mongoc_update_one_opts_parse (
           collection->client, opts, &update_one_opts, error)) {
@@ -2060,8 +2214,8 @@ mongoc_collection_update_many (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (update);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (update);
 
    if (!_mongoc_update_many_opts_parse (
           collection->client, opts, &update_many_opts, error)) {
@@ -2106,8 +2260,8 @@ mongoc_collection_replace_one (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (replacement);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (replacement);
 
    if (!_mongoc_replace_one_opts_parse (
           collection->client, opts, &replace_one_opts, error)) {
@@ -2169,8 +2323,8 @@ mongoc_collection_save (mongoc_collection_t *collection,
    bool ret;
    bson_t selector;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (document);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (document);
 
    BEGIN_IGNORE_DEPRECATIONS
    if (!bson_iter_init_find (&iter, document, "_id")) {
@@ -2256,8 +2410,8 @@ mongoc_collection_remove (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (selector);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (selector);
 
    bson_clear (&collection->gle);
 
@@ -2317,9 +2471,8 @@ static bool
 _mongoc_delete_one_or_many (mongoc_collection_t *collection,
                             bool multi,
                             const bson_t *selector,
-                            mongoc_crud_opts_t *crud,
+                            mongoc_delete_opts_t *delete_opts,
                             const bson_t *cmd_opts,
-                            const bson_t *collation,
                             bson_t *opts,
                             bson_t *reply,
                             bson_error_t *error)
@@ -2330,15 +2483,19 @@ _mongoc_delete_one_or_many (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (selector);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (selector);
    BSON_ASSERT (bson_empty0 (reply));
 
    _mongoc_write_result_init (&result);
    bson_append_int32 (opts, "limit", 5, multi ? 0 : 1);
 
-   if (!bson_empty (collation)) {
-      bson_append_document (opts, "collation", 9, collation);
+   if (!bson_empty (&delete_opts->collation)) {
+      bson_append_document (opts, "collation", 9, &delete_opts->collation);
+   }
+
+   if (delete_opts->hint.value_type) {
+      bson_append_value (opts, "hint", 4, &delete_opts->hint);
    }
 
    _mongoc_write_command_init_delete_idl (
@@ -2349,17 +2506,20 @@ _mongoc_delete_one_or_many (mongoc_collection_t *collection,
       ++collection->client->cluster.operation_id);
 
    command.flags.has_multi_write = multi;
-   if (!bson_empty (collation)) {
+   if (!bson_empty (&delete_opts->collation)) {
       command.flags.has_collation = true;
+   }
+   if (delete_opts->hint.value_type) {
+      command.flags.has_delete_hint = true;
    }
 
    _mongoc_collection_write_command_execute_idl (
-      &command, collection, crud, &result);
+      &command, collection, &delete_opts->crud, &result);
 
    /* set field described in CRUD spec for the DeleteResult */
    ret = MONGOC_WRITE_RESULT_COMPLETE (&result,
                                        collection->client->error_api_version,
-                                       crud->writeConcern,
+                                       delete_opts->crud.writeConcern,
                                        /* no error domain override */
                                        (mongoc_error_domain_t) 0,
                                        reply,
@@ -2386,8 +2546,8 @@ mongoc_collection_delete_one (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (selector);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (selector);
 
    _mongoc_bson_init_if_set (reply);
    if (!_mongoc_delete_one_opts_parse (
@@ -2398,9 +2558,8 @@ mongoc_collection_delete_one (mongoc_collection_t *collection,
    ret = _mongoc_delete_one_or_many (collection,
                                      false /* multi */,
                                      selector,
-                                     &delete_one_opts.crud,
+                                     &delete_one_opts.delete,
                                      &delete_one_opts.extra,
-                                     &delete_one_opts.collation,
                                      &limit,
                                      reply,
                                      error);
@@ -2425,8 +2584,8 @@ mongoc_collection_delete_many (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (selector);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (selector);
 
    _mongoc_bson_init_if_set (reply);
    if (!_mongoc_delete_many_opts_parse (
@@ -2437,9 +2596,8 @@ mongoc_collection_delete_many (mongoc_collection_t *collection,
    ret = _mongoc_delete_one_or_many (collection,
                                      true /* multi */,
                                      selector,
-                                     &delete_many_opts.crud,
+                                     &delete_many_opts.delete,
                                      &delete_many_opts.extra,
-                                     &delete_many_opts.collation,
                                      &limit,
                                      reply,
                                      error);
@@ -2471,7 +2629,7 @@ done:
 const mongoc_read_prefs_t *
 mongoc_collection_get_read_prefs (const mongoc_collection_t *collection)
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
    return collection->read_prefs;
 }
 
@@ -2496,7 +2654,7 @@ void
 mongoc_collection_set_read_prefs (mongoc_collection_t *collection,
                                   const mongoc_read_prefs_t *read_prefs)
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    if (collection->read_prefs) {
       mongoc_read_prefs_destroy (collection->read_prefs);
@@ -2528,7 +2686,7 @@ mongoc_collection_set_read_prefs (mongoc_collection_t *collection,
 const mongoc_read_concern_t *
 mongoc_collection_get_read_concern (const mongoc_collection_t *collection)
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    return collection->read_concern;
 }
@@ -2554,7 +2712,7 @@ void
 mongoc_collection_set_read_concern (mongoc_collection_t *collection,
                                     const mongoc_read_concern_t *read_concern)
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    if (collection->read_concern) {
       mongoc_read_concern_destroy (collection->read_concern);
@@ -2586,7 +2744,7 @@ mongoc_collection_set_read_concern (mongoc_collection_t *collection,
 const mongoc_write_concern_t *
 mongoc_collection_get_write_concern (const mongoc_collection_t *collection)
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    return collection->write_concern;
 }
@@ -2612,7 +2770,7 @@ void
 mongoc_collection_set_write_concern (
    mongoc_collection_t *collection, const mongoc_write_concern_t *write_concern)
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    if (collection->write_concern) {
       mongoc_write_concern_destroy (collection->write_concern);
@@ -2644,7 +2802,7 @@ mongoc_collection_set_write_concern (
 const char *
 mongoc_collection_get_name (mongoc_collection_t *collection)
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    return collection->collection;
 }
@@ -2673,7 +2831,7 @@ const bson_t *
 mongoc_collection_get_last_error (
    const mongoc_collection_t *collection) /* IN */
 {
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    return collection->gle;
 }
@@ -2718,7 +2876,7 @@ mongoc_collection_validate (mongoc_collection_t *collection, /* IN */
    bool ret = false;
    bool reply_initialized = false;
 
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    if (options && bson_iter_init_find (&iter, options, "full") &&
        !BSON_ITER_HOLDS_BOOL (&iter)) {
@@ -2794,11 +2952,11 @@ mongoc_collection_rename_with_opts (mongoc_collection_t *collection,
                                     bson_error_t *error)
 {
    bson_t cmd = BSON_INITIALIZER;
-   char newns[MONGOC_NAMESPACE_MAX + 1];
+   char *newns;
    bool ret;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (new_name);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (new_name);
 
    if (strchr (new_name, '$')) {
       bson_set_error (error,
@@ -2809,8 +2967,8 @@ mongoc_collection_rename_with_opts (mongoc_collection_t *collection,
       return false;
    }
 
-   bson_snprintf (
-      newns, sizeof newns, "%s.%s", new_db ? new_db : collection->db, new_name);
+   newns =
+      bson_strdup_printf ("%s.%s", new_db ? new_db : collection->db, new_name);
 
    BSON_APPEND_UTF8 (&cmd, "renameCollection", collection->ns);
    BSON_APPEND_UTF8 (&cmd, "to", newns);
@@ -2834,21 +2992,20 @@ mongoc_collection_rename_with_opts (mongoc_collection_t *collection,
 
    if (ret) {
       if (new_db) {
-         bson_snprintf (collection->db, sizeof collection->db, "%s", new_db);
+         bson_free (collection->db);
+         collection->db = bson_strdup (new_db);
       }
 
-      bson_snprintf (
-         collection->collection, sizeof collection->collection, "%s", new_name);
+      bson_free (collection->collection);
+      collection->collection = bson_strdup (new_name);
       collection->collectionlen = (int) strlen (collection->collection);
 
-      bson_snprintf (collection->ns,
-                     sizeof collection->ns,
-                     "%s.%s",
-                     collection->db,
-                     new_name);
+      bson_free (collection->ns);
+      collection->ns = bson_strdup_printf ("%s.%s", collection->db, new_name);
       collection->nslen = (int) strlen (collection->ns);
    }
 
+   bson_free (newns);
    bson_destroy (&cmd);
 
    return ret;
@@ -2887,7 +3044,7 @@ mongoc_collection_stats (mongoc_collection_t *collection,
    bson_t cmd = BSON_INITIALIZER;
    bool ret;
 
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    if (options && bson_iter_init_find (&iter, options, "scale") &&
        !BSON_ITER_HOLDS_INT32 (&iter)) {
@@ -2957,7 +3114,7 @@ mongoc_collection_create_bulk_operation_with_opts (
    mongoc_bulk_operation_t *bulk;
    bson_error_t err = {0};
 
-   BSON_ASSERT (collection);
+   BSON_ASSERT_PARAM (collection);
 
    (void) _mongoc_bulk_opts_parse (collection->client, opts, &bulk_opts, &err);
    if (!_mongoc_client_session_in_txn (bulk_opts.client_session)) {
@@ -3018,24 +3175,26 @@ mongoc_collection_find_and_modify_with_opts (
    bson_error_t *error)
 {
    mongoc_cluster_t *cluster;
-   mongoc_client_session_t *cs = NULL;
    mongoc_cmd_parts_t parts;
    bool is_retryable;
    bson_iter_t iter;
    bson_iter_t inner;
    const char *name;
+   bson_t ss_reply;
    bson_t reply_local;
    bson_t *reply_ptr;
    bool ret = false;
    bson_t command = BSON_INITIALIZER;
    mongoc_server_stream_t *server_stream = NULL;
    mongoc_server_stream_t *retry_server_stream = NULL;
+   mongoc_find_and_modify_appended_opts_t appended_opts;
+   mongoc_write_concern_t *write_concern = NULL;
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (query);
-   BSON_ASSERT (opts);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (query);
+   BSON_ASSERT_PARAM (opts);
 
    reply_ptr = reply ? reply : &reply_local;
    cluster = &collection->client->cluster;
@@ -3045,25 +3204,22 @@ mongoc_collection_find_and_modify_with_opts (
    parts.is_read_command = true;
    parts.is_write_command = true;
 
-   /* we need a session to fetch a stream to call cmd_parts_append_opts
-    * below, which parses the session from opts->extra *again*
-    */
-   if (bson_iter_init_find (&iter, &opts->extra, "sessionId")) {
-      if (!_mongoc_client_session_from_iter (
-             collection->client, &iter, &cs, error)) {
-         bson_init (reply_ptr);
-         GOTO (done);
-      }
-   }
+   bson_init (reply_ptr);
 
-   server_stream =
-      mongoc_cluster_stream_for_writes (cluster, cs, reply_ptr, error);
-
-   if (!server_stream) {
+   if (!_mongoc_find_and_modify_appended_opts_parse (
+          cluster->client, &opts->extra, &appended_opts, error)) {
       GOTO (done);
    }
 
-   bson_init (reply_ptr);
+   server_stream = mongoc_cluster_stream_for_writes (
+      cluster, appended_opts.client_session, &ss_reply, error);
+
+   if (!server_stream) {
+      bson_concat (reply_ptr, &ss_reply);
+      bson_destroy (&ss_reply);
+      GOTO (done);
+   }
+
    name = mongoc_collection_get_name (collection);
    BSON_APPEND_UTF8 (&command, "findAndModify", name);
    BSON_APPEND_DOCUMENT (&command, "query", query);
@@ -3106,26 +3262,29 @@ mongoc_collection_find_and_modify_with_opts (
       BSON_APPEND_INT32 (&command, "maxTimeMS", opts->max_time_ms);
    }
 
-   if (bson_iter_init (&iter, &opts->extra)) {
-      bool ok = mongoc_cmd_parts_append_opts (
-         &parts, &iter, server_stream->sd->max_wire_version, error);
-      if (!ok) {
+   /* Some options set via mongoc_find_and_modify_opts_append were parsed. Set
+    * them on the command parts. */
+   if (appended_opts.client_session) {
+      mongoc_cmd_parts_set_session (&parts, appended_opts.client_session);
+   }
+
+   if (appended_opts.writeConcern) {
+      if (_mongoc_client_session_in_txn (parts.assembled.session)) {
+         bson_set_error (error,
+                         MONGOC_ERROR_COMMAND,
+                         MONGOC_ERROR_COMMAND_INVALID_ARG,
+                         "Cannot set write concern after starting transaction");
          GOTO (done);
       }
+
+      write_concern = appended_opts.writeConcern;
    }
 
-   if (_mongoc_client_session_in_txn (parts.assembled.session) &&
-       !bson_empty (&parts.write_concern_document)) {
-      bson_set_error (error,
-                      MONGOC_ERROR_COMMAND,
-                      MONGOC_ERROR_COMMAND_INVALID_ARG,
-                      "Cannot set write concern after starting transaction");
-      GOTO (done);
-   }
-
-   if (!bson_has_field (&opts->extra, "writeConcern")) {
+   if (!write_concern) {
       if (server_stream->sd->max_wire_version >=
-          WIRE_VERSION_FAM_WRITE_CONCERN) {
+             WIRE_VERSION_FAM_WRITE_CONCERN &&
+          (mongoc_write_concern_is_acknowledged (collection->write_concern) ||
+           !_mongoc_client_session_in_txn (parts.assembled.session))) {
          if (!mongoc_write_concern_is_valid (collection->write_concern)) {
             bson_set_error (error,
                             MONGOC_ERROR_COMMAND,
@@ -3134,16 +3293,43 @@ mongoc_collection_find_and_modify_with_opts (
             GOTO (done);
          }
 
-         if (mongoc_write_concern_is_acknowledged (collection->write_concern)) {
-            if (!mongoc_cmd_parts_set_write_concern (
-                   &parts,
-                   collection->write_concern,
-                   server_stream->sd->max_wire_version,
-                   error)) {
-               GOTO (done);
-            }
-         }
+         write_concern = collection->write_concern;
       }
+   }
+
+   if (appended_opts.hint.value_type) {
+      int max_wire_version =
+         mongoc_write_concern_is_acknowledged (write_concern)
+            ? WIRE_VERSION_FIND_AND_MODIFY_HINT_SERVER_SIDE_ERROR
+            : WIRE_VERSION_FIND_AND_MODIFY_HINT;
+
+      if (server_stream->sd->max_wire_version < max_wire_version) {
+         bson_set_error (
+            error,
+            MONGOC_ERROR_COMMAND,
+            MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION,
+            "selected server does not support hint on findAndModify");
+         GOTO (done);
+      }
+
+      bson_append_value (&parts.extra, "hint", 4, &appended_opts.hint);
+   }
+
+   /* Append any remaining unparsed options set via
+    * mongoc_find_and_modify_opts_append to the command part. */
+   if (bson_iter_init (&iter, &appended_opts.extra)) {
+      bool ok = mongoc_cmd_parts_append_opts (
+         &parts, &iter, server_stream->sd->max_wire_version, error);
+      if (!ok) {
+         GOTO (done);
+      }
+   }
+
+   /* An empty write concern amounts to a no-op, so there's no need to guard
+    * against it. */
+   if (!mongoc_cmd_parts_set_write_concern (
+          &parts, write_concern, server_stream->sd->max_wire_version, error)) {
+      GOTO (done);
    }
 
    parts.assembled.operation_id = ++cluster->operation_id;
@@ -3168,6 +3354,11 @@ retry:
    ret = mongoc_cluster_run_command_monitored (
       cluster, &parts.assembled, reply_ptr, error);
 
+   if (parts.is_retryable_write) {
+      _mongoc_write_error_handle_labels (
+         ret, error, reply_ptr, server_stream->sd->max_wire_version);
+   }
+
    if (is_retryable) {
       _mongoc_write_error_update_if_unsupported_storage_engine (
          ret, error, reply_ptr);
@@ -3178,8 +3369,7 @@ retry:
     * server does not support retryable writes, fall through and allow the
     * original error to be reported. */
    if (is_retryable &&
-       _mongoc_write_error_get_type (ret, error, reply_ptr) ==
-          MONGOC_WRITE_ERR_RETRY) {
+       _mongoc_write_error_get_type (reply_ptr) == MONGOC_WRITE_ERR_RETRY) {
       bson_error_t ignored_error;
 
       /* each write command may be retried at most once */
@@ -3203,7 +3393,7 @@ retry:
       BSON_ASSERT (bson_iter_recurse (&iter, &inner));
       while (bson_iter_next (&inner)) {
          if (BSON_ITER_IS_KEY (&inner, "code")) {
-            code = bson_iter_int32 (&inner);
+            code = (uint32_t) bson_iter_as_int64 (&inner);
          } else if (BSON_ITER_IS_KEY (&inner, "errmsg")) {
             errmsg = bson_iter_utf8 (&inner, NULL);
          }
@@ -3225,6 +3415,7 @@ done:
    if (&reply_local == reply_ptr) {
       bson_destroy (&reply_local);
    }
+   _mongoc_find_and_modify_appended_opts_cleanup (&appended_opts);
    RETURN (ret);
 }
 
@@ -3278,8 +3469,8 @@ mongoc_collection_find_and_modify (mongoc_collection_t *collection,
 
    ENTRY;
 
-   BSON_ASSERT (collection);
-   BSON_ASSERT (query);
+   BSON_ASSERT_PARAM (collection);
+   BSON_ASSERT_PARAM (query);
    BSON_ASSERT (update || _remove);
 
 

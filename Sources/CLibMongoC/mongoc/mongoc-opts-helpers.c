@@ -20,10 +20,6 @@
 #include "mongoc-util-private.h"
 #include "mongoc-read-concern-private.h"
 
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-#include <inttypes.h>
-#endif
-
 #define BSON_ERR(...)                                                       \
    do {                                                                     \
       bson_set_error (                                                      \
