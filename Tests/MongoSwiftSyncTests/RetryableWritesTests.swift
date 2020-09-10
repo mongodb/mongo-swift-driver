@@ -1,4 +1,5 @@
 import Foundation
+@testable import struct MongoSwift.MongoClientOptions
 import MongoSwiftSync
 import Nimble
 import TestsCommon
@@ -78,8 +79,10 @@ final class RetryableWritesTests: MongoSwiftTestCase {
             for var test in testFile.tests {
                 print("Executing test: \(test.description)")
 
-                let clientOptions = test.clientOptions ??
-                    MongoClientOptions(heartbeatFrequencyMS: 500, retryWrites: true)
+                var clientOptions = test.clientOptions ?? MongoClientOptions()
+                clientOptions.minHeartbeatFrequencyMS = 50
+                clientOptions.heartbeatFrequencyMS = 50
+                clientOptions.retryWrites = true
                 let client = try MongoClient.makeTestClient(options: clientOptions)
                 let db = client.db(Self.testDatabase)
                 let collection = db.collection(self.getCollectionName(suffix: test.description))
