@@ -480,7 +480,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             let getMoreFailpoint = FailPoint.failCommand(
                 failCommands: ["getMore", "aggregate"],
                 mode: .times(2),
-                errorCode: 10107
+                errorCode: 10107,
+                errorLabels: ["ResumableChangeStreamError"]
             )
             try getMoreFailpoint.enable()
             defer { getMoreFailpoint.disable() }
