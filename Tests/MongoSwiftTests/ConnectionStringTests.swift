@@ -104,10 +104,6 @@ let shouldWarnButLibmongocErrors: [String: [String]] = [
         "Non-numeric wTimeoutMS causes a warning",
         "Too low wTimeoutMS causes a warning",
         "Invalid journal causes a warning"
-    ],
-    "valid-warnings.json": [
-        "Empty integer option values are ignored",
-        "Empty boolean option value are ignored"
     ]
 ]
 
@@ -346,16 +342,15 @@ final class ConnectionStringTests: MongoSwiftTestCase {
             sleep(5) // sleep to allow heartbeats to occur
         }
 
-        // in case there's an uneven number of events (i.e. client was closed mid-heartbeat) drop any
-        // started events at the end with no corresponding succeeded event
         let succeeded = watcher.succeeded
-        let started = watcher.started[0..<succeeded.endIndex]
 
-        // the last started time should be 2s after the second-to-last succeeded time.
-        let lastStart = started.last!
+        // the last success time should be roughly 2s after the second-to-last succeeded time.
+        // we can't use started events here because streamable monitor checks begin immediately after previous
+        // ones succeed. They only fire success events every heartbeatFrequencyMS though.
+        let lastSuccess = succeeded.last!
         let secondToLastSuccess = succeeded[succeeded.count - 2]
 
-        let difference = lastStart.timeIntervalSince1970 - secondToLastSuccess.timeIntervalSince1970
+        let difference = lastSuccess.timeIntervalSince1970 - secondToLastSuccess.timeIntervalSince1970
         expect(difference).to(beCloseTo(2.0, within: 0.2))
     }
 
