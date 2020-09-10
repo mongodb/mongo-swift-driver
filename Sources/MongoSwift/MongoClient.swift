@@ -36,6 +36,9 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Defaults to 10 seconds (10,000 ms). Must be at least 500ms.
     public var heartbeatFrequencyMS: Int?
 
+    /// An alternative lower bound for heartbeatFrequencyMS, used for speeding up tests (default 500ms).
+    internal var minHeartbeatFrequencyMS: Int?
+
     /// The size (in milliseconds) of the permitted latency window beyond the fastest round-trip time amongst all
     /// servers. By default, only servers within 15ms of the fastest round-trip time receive queries.
     public var localThresholdMS: Int?
@@ -152,6 +155,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.heartbeatFrequencyMS = heartbeatFrequencyMS
         self.localThresholdMS = localThresholdMS
         self.maxPoolSize = maxPoolSize
+        self.minHeartbeatFrequencyMS = nil
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.replicaSet = replicaSet

@@ -134,7 +134,7 @@ echo "RENAMING header files"
 
 # Here we would apply any number of larger patches that don't fit into a single sed line.
 # echo "PATCHING libmongoc"
-# git apply ${ETC_DIR}/somepatch.diff
+git apply ${ETC_DIR}/lower-minheartbeatfrequencyms.diff
 
 # Clang modules are build by a conventional structure with an `include` folder for public
 # includes, and an umbrella header used as the primary entry point. As part of the vendoring

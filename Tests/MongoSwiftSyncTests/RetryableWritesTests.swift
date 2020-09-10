@@ -78,7 +78,8 @@ final class RetryableWritesTests: MongoSwiftTestCase {
             for var test in testFile.tests {
                 print("Executing test: \(test.description)")
 
-                let clientOptions = test.clientOptions ?? MongoClientOptions(retryWrites: true)
+                let clientOptions = test.clientOptions ??
+                    MongoClientOptions(heartbeatFrequencyMS: 500, retryWrites: true)
                 let client = try MongoClient.makeTestClient(options: clientOptions)
                 let db = client.db(Self.testDatabase)
                 let collection = db.collection(self.getCollectionName(suffix: test.description))

@@ -1,6 +1,7 @@
 import Foundation
 @testable import struct MongoSwift.ReadPreference
 import MongoSwiftSync
+@testable import struct MongoSwiftSync.MongoClientOptions
 import Nimble
 import TestsCommon
 import XCTest
@@ -290,8 +291,15 @@ extension SpecTest {
         print("Executing test: \(self.description)")
 
         let connectionString = MongoSwiftTestCase.getConnectionString(singleMongos: self.useMultipleMongoses != true)
+
+        // We need to lower heartbeat frequency to speed up tests on 4.4+ since failpoints don't trigger proper
+        // topology updates when using streamable ismaster. See CDRIVER-3793 for more information.
+        var options = self.clientOptions ?? MongoClientOptions()
+        options.minHeartbeatFrequencyMS = 50
+        options.heartbeatFrequencyMS = 50
+
         let client = try MongoClient.makeTestClient(
-            connectionString, options: self.clientOptions
+            connectionString, options: options
         )
         let monitor = client.addCommandMonitor()
 
