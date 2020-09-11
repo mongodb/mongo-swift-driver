@@ -376,6 +376,25 @@ extension MongoError.CommandError {
     }
 }
 
+extension MongoLabeledError {
+    /// Returns whether this error or an error type contained by this error has the provided error label.
+    public func hasErrorLabel(_ label: String) -> Bool {
+        if self.errorLabels?.contains(label) == true {
+            return true
+        }
+
+        switch self {
+        case let bulk as MongoError.BulkWriteError:
+            return bulk.writeConcernFailure?.errorLabels?.contains(label) ??
+                (bulk.otherError as? MongoLabeledError)?.hasErrorLabel(label) == true
+        case let write as MongoError.WriteError:
+            return write.errorLabels?.contains(label) ?? write.writeConcernFailure?.errorLabels?.contains(label) == true
+        default:
+            return false
+        }
+    }
+}
+
 extension CollectionSpecificationInfo {
     public static func new(readOnly: Bool, uuid: UUID? = nil) -> CollectionSpecificationInfo {
         CollectionSpecificationInfo(readOnly: readOnly, uuid: uuid)

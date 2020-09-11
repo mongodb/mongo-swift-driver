@@ -235,7 +235,7 @@ struct ErrorResult: Equatable, Decodable {
                 return
             }
             for label in errorLabelsContain {
-                expect(labeledError.errorLabels).to(contain(label), description: description)
+                expect(labeledError.hasErrorLabel(label)).to(beTrue(), description: description)
             }
         }
 
