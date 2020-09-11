@@ -5,3 +5,4 @@ disabled_rules:
   - nesting
   - explicit_acl
   - missing_docs
+  - cyclomatic_complexity
