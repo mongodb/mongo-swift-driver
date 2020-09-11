@@ -103,7 +103,7 @@ public final class ClientSession {
         /// A transaction has been started, but no operation has been sent to the server.
         case starting
         /// A transaction is in progress.
-        case inProgress
+        case inProgress = "in_progress"
         /// The transaction was committed.
         case committed
         /// The transaction was aborted.

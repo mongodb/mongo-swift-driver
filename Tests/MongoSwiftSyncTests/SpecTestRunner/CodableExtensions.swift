@@ -64,7 +64,21 @@ extension TransactionOptions: Decodable {
     }
 }
 
-extension ReadPreference.Mode: Decodable {}
+extension ReadPreference.Mode: Decodable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        var string = try container.decode(String.self)
+        // spec tests capitalize first letter of mode, so need to account for that.
+        string = string.prefix(1).lowercased() + string.dropFirst()
+        guard let mode = Self(rawValue: string) else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "can't parse ReadPreference mode from \(string)"
+            )
+        }
+        self = mode
+    }
+}
 
 extension ReadPreference: Decodable {
     private enum CodingKeys: String, CodingKey {
@@ -72,21 +86,26 @@ extension ReadPreference: Decodable {
     }
 
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let mode = try container.decode(Mode.self, forKey: .mode)
-        self.init(mode)
+        if let container = try? decoder.container(keyedBy: CodingKeys.self) {
+            let mode = try container.decode(Mode.self, forKey: .mode)
+            self.init(mode)
+        } else { // sometimes the spec tests only specify the mode as a string
+            let container = try decoder.singleValueContainer()
+            let mode = try container.decode(ReadPreference.Mode.self)
+            self.init(mode)
+        }
     }
 }
 
 extension MongoClientOptions: Decodable {
     private enum CodingKeys: String, CodingKey {
-        case retryReads, retryWrites, w, readConcernLevel, mode = "readPreference"
+        case retryReads, retryWrites, w, readConcernLevel, readPreference
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let readConcern = try? ReadConcern.other(container.decode(String.self, forKey: .readConcernLevel))
-        let readPreference = try? ReadPreference(container.decode(ReadPreference.Mode.self, forKey: .mode))
+        let readPreference = try container.decodeIfPresent(ReadPreference.self, forKey: .readPreference)
         let retryReads = try container.decodeIfPresent(Bool.self, forKey: .retryReads)
         let retryWrites = try container.decodeIfPresent(Bool.self, forKey: .retryWrites)
         let writeConcern = try? WriteConcern(w: container.decode(WriteConcern.W.self, forKey: .w))
