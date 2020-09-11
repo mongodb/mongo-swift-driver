@@ -76,15 +76,15 @@ open class MongoSwiftTestCase: XCTestCase {
     /// Generates a unique collection name of the format "<Test Suite>_<Test Name>_<suffix>". If no suffix is provided,
     /// the last underscore is omitted.
     ///
-    /// For compatibility with older servers, this name will be truncated to fit in 120 characters.
-    /// The truncation will ensure the entire suffix can fit at the end.
+    /// For compatibility with older servers, this name will be truncated so the entire namespace fits in 120
+    /// characters. The truncation will ensure the suffix can fit at the end.
     public func getCollectionName(suffix: String? = nil) -> String {
-        var name = self.name.replacingOccurrences(of: "[\\[\\]-]", with: "", options: [.regularExpression])
-        name = name.replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
+        let name = self.name.replacingOccurrences(of: "[\\[\\]-]", with: "", options: [.regularExpression])
+        let maxLen = 120 - Self.testDatabase.count - 1
         if let suf = suffix {
-            return name.prefix(120 - (suf.count + 1)) + "_" + suf
+            return name.prefix(maxLen - (suf.count + 1)) + "_" + suf
         } else {
-            return String(name.prefix(120))
+            return name.prefix(maxLen).replacingOccurrences(of: "[ \\+\\$]", with: "_", options: [.regularExpression])
         }
     }
 
