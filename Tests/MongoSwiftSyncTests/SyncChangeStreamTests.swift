@@ -407,7 +407,12 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
                 }
 
                 // notMaster error
-                let failPoint = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 10107)
+                let failPoint = FailPoint.failCommand(
+                    failCommands: ["getMore"],
+                    mode: .times(1),
+                    errorCode: 10107,
+                    errorLabels: ["ResumableChangeStreamError"]
+                )
                 try failPoint.enable()
                 defer { failPoint.disable() }
 
