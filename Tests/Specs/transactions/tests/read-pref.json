@@ -58,7 +58,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "secondary"
+              "mode": "Secondary"
             }
           },
           "arguments": {
@@ -85,7 +85,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "secondary"
+              "mode": "Secondary"
             }
           },
           "arguments": {
@@ -112,7 +112,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "secondary"
+              "mode": "Secondary"
             }
           },
           "arguments": {
@@ -174,7 +174,7 @@
           "arguments": {
             "options": {
               "readPreference": {
-                "mode": "primary"
+                "mode": "Primary"
               }
             }
           }
@@ -213,7 +213,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "secondary"
+              "mode": "Secondary"
             }
           },
           "arguments": {
@@ -240,7 +240,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "secondary"
+              "mode": "Secondary"
             }
           },
           "arguments": {
@@ -267,7 +267,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "secondary"
+              "mode": "Secondary"
             }
           },
           "arguments": {
@@ -329,7 +329,7 @@
           "arguments": {
             "options": {
               "readPreference": {
-                "mode": "secondary"
+                "mode": "Secondary"
               }
             }
           }
@@ -368,7 +368,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "primary"
+              "mode": "Primary"
             }
           },
           "arguments": {
@@ -393,7 +393,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "primary"
+              "mode": "Primary"
             }
           },
           "arguments": {
@@ -409,7 +409,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "primary"
+              "mode": "Primary"
             }
           },
           "arguments": {
@@ -447,7 +447,7 @@
           "arguments": {
             "options": {
               "readPreference": {
-                "mode": "primaryPreferred"
+                "mode": "PrimaryPreferred"
               }
             }
           }
@@ -486,7 +486,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "primary"
+              "mode": "Primary"
             }
           },
           "arguments": {
@@ -511,7 +511,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "primary"
+              "mode": "Primary"
             }
           },
           "arguments": {
@@ -527,7 +527,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "primary"
+              "mode": "Primary"
             }
           },
           "arguments": {
@@ -565,7 +565,7 @@
           "arguments": {
             "options": {
               "readPreference": {
-                "mode": "nearest"
+                "mode": "Nearest"
               }
             }
           }
@@ -604,7 +604,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "primary"
+              "mode": "Primary"
             }
           },
           "arguments": {
@@ -629,7 +629,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "primary"
+              "mode": "Primary"
             }
           },
           "arguments": {
@@ -645,7 +645,7 @@
           "object": "collection",
           "collectionOptions": {
             "readPreference": {
-              "mode": "primary"
+              "mode": "Primary"
             }
           },
           "arguments": {
@@ -683,7 +683,7 @@
           "arguments": {
             "options": {
               "readPreference": {
-                "mode": "secondary"
+                "mode": "Secondary"
               }
             }
           }

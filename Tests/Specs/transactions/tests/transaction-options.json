@@ -1198,7 +1198,7 @@
         "session0": {
           "defaultTransactionOptions": {
             "readPreference": {
-              "mode": "secondary"
+              "mode": "Secondary"
             }
           }
         }
@@ -1300,7 +1300,7 @@
         "session0": {
           "defaultTransactionOptions": {
             "readPreference": {
-              "mode": "primary"
+              "mode": "Primary"
             }
           }
         }
@@ -1312,7 +1312,7 @@
           "arguments": {
             "options": {
               "readPreference": {
-                "mode": "secondary"
+                "mode": "Secondary"
               }
             }
           }

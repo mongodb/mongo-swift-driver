@@ -85,7 +85,7 @@
           "object": "testRunner",
           "arguments": {
             "session": "session0",
-            "state": "inProgress"
+            "state": "in_progress"
           }
         }
       ]
