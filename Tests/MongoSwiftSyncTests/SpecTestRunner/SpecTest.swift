@@ -295,8 +295,11 @@ extension SpecTest {
         // We need to lower heartbeat frequency to speed up tests on 4.4+ since failpoints don't trigger proper
         // topology updates when using streamable ismaster. See CDRIVER-3793 for more information.
         var options = self.clientOptions ?? MongoClientOptions()
-        options.minHeartbeatFrequencyMS = 50
-        options.heartbeatFrequencyMS = 50
+
+        if options.heartbeatFrequencyMS == nil {
+            options.minHeartbeatFrequencyMS = 50
+            options.heartbeatFrequencyMS = 50
+        }
 
         let client = try MongoClient.makeTestClient(
             connectionString, options: options
