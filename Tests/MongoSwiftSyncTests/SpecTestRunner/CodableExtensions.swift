@@ -99,7 +99,7 @@ extension ReadPreference: Decodable {
 
 extension MongoClientOptions: Decodable {
     private enum CodingKeys: String, CodingKey {
-        case retryReads, retryWrites, w, readConcernLevel, readPreference
+        case retryReads, retryWrites, w, readConcernLevel, readPreference, heartbeatFrequencyMS
     }
 
     public init(from decoder: Decoder) throws {
@@ -109,7 +109,9 @@ extension MongoClientOptions: Decodable {
         let retryReads = try container.decodeIfPresent(Bool.self, forKey: .retryReads)
         let retryWrites = try container.decodeIfPresent(Bool.self, forKey: .retryWrites)
         let writeConcern = try? WriteConcern(w: container.decode(WriteConcern.W.self, forKey: .w))
+        let heartbeatFrequencyMS = try container.decodeIfPresent(Int.self, forKey: .heartbeatFrequencyMS)
         self.init(
+            heartbeatFrequencyMS: heartbeatFrequencyMS,
             readConcern: readConcern,
             readPreference: readPreference,
             retryReads: retryReads,

@@ -114,10 +114,6 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Specifies a WriteConcern to use for the client.
     public var writeConcern: WriteConcern?
 
-    private enum CodingKeys: CodingKey {
-        case retryWrites, retryReads, readConcern, writeConcern
-    }
-
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
         appName: String? = nil,
