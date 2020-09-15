@@ -113,7 +113,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             // "You MUST verify that the set of ServerDescriptions in the client's TopologyDescription eventually
             // matches the list of hosts."
             expect(topologyWatcher.lastTopologyDescription?.servers.map { $0.address })
-                .toEventually(equal(testCase.hosts))
+                .toEventually(equal(testCase.hosts), timeout: 5)
 
             // "You MUST verify that each of the values of the Connection String Options under options match the
             // Client's parsed value for that option."
