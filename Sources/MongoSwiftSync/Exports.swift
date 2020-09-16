@@ -30,7 +30,6 @@
 @_exported import struct MongoSwift.BulkWriteResult
 @_exported import struct MongoSwift.ChangeStreamEvent
 @_exported import struct MongoSwift.ChangeStreamOptions
-@_exported import class MongoSwift.ClientSession
 @_exported import struct MongoSwift.ClientSessionOptions
 @_exported import struct MongoSwift.CollectionSpecification
 @_exported import struct MongoSwift.CollectionSpecificationInfo

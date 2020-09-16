@@ -2,6 +2,7 @@ import CLibMongoC
 import Foundation
 import NIO
 
+// sourcery: skipSyncExport
 /**
  * A MongoDB client session.
  * This class represents a logical session used for ordering sequential operations.
