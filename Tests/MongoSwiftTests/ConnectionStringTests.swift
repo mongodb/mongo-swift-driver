@@ -248,7 +248,10 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
         var connStrWithoutRS = testConnStr
         connStrWithoutRS.removeSubstring("replicaSet=\(rsName)")
-        print("without rs: \(connStrWithoutRS)")
+        // need to delete the extra & in case replicaSet was first
+        connStrWithoutRS = connStrWithoutRS.replacingOccurrences(of: "?&", with: "?")
+        // need to delete exta & in case replicaSet was between two options
+        connStrWithoutRS = connStrWithoutRS.replacingOccurrences(of: "&&", with: "&")
 
         // setting actual name via options struct only should succeed in connecting
         opts.replicaSet = rsName
