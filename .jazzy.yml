@@ -1,0 +1,174 @@
+author: Matt Broadstone, Kaitlin Mahar, and Patrick Freed
+author_url: https://github.com/mongodb/mongo-swift-driver
+github_url: https://github.com/mongodb/mongo-swift-driver
+theme: fullwidth
+swift_build_tool: spm
+readme: "docs/README.md"
+documentation: "Guides/*.md"
+
+custom_categories:
+  - name: General Guides
+    children:
+      - Development
+      - Multithreaded-Usage
+      - BSON-Guide
+
+  - name: Core Types
+    children:
+      - MongoClient
+      - MongoClientOptions
+      - MongoDatabase
+      - MongoDatabaseOptions
+      - MongoCollection
+      - MongoCollectionOptions
+
+  - name: BSON Types
+    children:
+      - BSON
+      - BSONType
+      - BSONBinary
+      - BSONCode
+      - BSONCodeWithScope
+      - BSONDBPointer
+      - BSONDecimal128
+      - BSONDocument
+      - BSONObjectID
+      - BSONRegularExpression
+      - BSONSymbol
+      - BSONTimestamp
+
+  - name: Replica Set & Sharded Cluster-Related Settings
+    children:
+      - ReadConcern
+      - ReadPreference
+      - WriteConcern
+
+  - name: Authentication & TLS
+    children:
+      - TLS-Guide
+      - MongoCredential
+
+  - name: Reading Data
+    children:
+      - CountDocumentsOptions
+      - DistinctOptions
+      - EstimatedDocumentCountOptions
+      - FindOneOptions
+      - FindOptions
+      - AggregateOptions
+      - IndexHint
+
+  - name: Cursors
+    children:
+      - MongoCursor
+      - MongoCursorType
+
+  - name: Writing Data
+    children:
+      - InsertOneOptions
+      - InsertOneResult
+      - InsertManyOptions
+      - InsertManyResult
+      - ReplaceOptions
+      - UpdateOptions
+      - UpdateResult
+      - DeleteOptions
+      - DeleteResult
+      - FindOneAndDeleteOptions
+      - FindOneAndReplaceOptions
+      - FindOneAndUpdateOptions
+      - ReturnDocument
+
+  - name: Bulk Writes
+    children:
+      - BulkWriteOptions
+      - BulkWriteResult
+      - WriteModel
+      - UpdateModelOptions
+      - DeleteModelOptions
+      - ReplaceOneModelOptions
+
+  - name: Errors
+    children:
+      - Error-Handling-Guide
+      - MongoErrorProtocol
+      - MongoLabeledError
+      - MongoRuntimeError
+      - MongoServerError
+      - MongoUserError
+      - MongoError
+      - BSONError
+      - BSONErrorProtocol
+
+  - name: Encoding and Decoding BSON
+    children:
+      - BSONEncoder
+      - BSONDecoder
+      - DataCodingStrategy
+      - DateCodingStrategy
+      - UUIDCodingStrategy
+      - CodingStrategyProvider
+      - BSONCoderOptions
+
+  - name: Change Streams
+    children:
+      - Change-Streams-Guide
+      - ChangeStream
+      - ChangeStreamEvent
+      - ChangeStreamOptions
+      - OperationType
+      - ResumeToken
+      - FullDocument
+      - UpdateDescription
+
+  - name: Index Management
+    children:
+      - IndexModel
+      - IndexOptions
+      - CreateIndexOptions
+      - DropIndexOptions
+
+  - name: Database/Collection Management
+    children:
+      - DatabaseSpecification
+      - ListDatabasesOptions
+      - DropDatabaseOptions
+      - CollectionSpecification
+      - CollectionSpecificationInfo
+      - ListCollectionsOptions
+      - CollectionType
+      - CreateCollectionOptions
+      - DropCollectionOptions
+      
+  - name: Sessions & Transactions
+    children:
+      - Transactions-Guide
+      - ClientSession
+      - ClientSessionOptions
+      - TransactionOptions
+  
+  - name: Command Monitoring
+    children:
+      - CommandEvent
+      - CommandEventHandler
+      - CommandStartedEvent
+      - CommandSucceededEvent
+      - CommandFailedEvent
+  
+  - name: Server Discovery and Monitoring (SDAM) Monitoring
+    children:
+      - SDAMEvent
+      - SDAMEventHandler
+      - ServerOpeningEvent
+      - ServerClosedEvent
+      - ServerAddress
+      - ServerDescription
+      - ServerDescriptionChangedEvent
+      - ServerHeartbeatStartedEvent
+      - ServerHeartbeatFailedEvent
+      - ServerHeartbeatSucceededEvent
+      - TopologyOpeningEvent
+      - TopologyClosedEvent
+      - TopologyDescriptionChangedEvent
+      - TopologyDescription
+
