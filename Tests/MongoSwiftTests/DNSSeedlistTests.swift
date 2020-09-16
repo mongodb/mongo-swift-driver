@@ -84,24 +84,25 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             }
             do {
                 try self.withTestClient(testCase.uri, options: opts) { client in
-                    guard testCase.error != true else {
-                        XCTFail("Expected error for test case \(testCase.comment ?? ""), got none")
-                        return
-                    }
-
                     client.addSDAMEventHandler(topologyWatcher)
 
                     // try selecting a server to trigger SDAM
                     _ = try client.connectionPool.selectServer(forWrites: false)
 
+                    // get resolved connection string after SDAM has been started.
+                    let connStr = try client.connectionPool.getConnectionString()
+
+                    guard testCase.error != true else {
+                        XCTFail("Expected error for test case \(testCase.comment ?? ""), got none")
+                        return
+                    }
+
                     // "You MUST verify that the set of ServerDescriptions in the client's TopologyDescription
                     // eventually matches the list of hosts."
-                    // This needs to be done before the client leaves scope to ensure the background threads
-                    // keep running.
+                    // This needs to be done before the client leaves scope to ensure the SDAM machinery
+                    // keeps running.
                     expect(topologyWatcher.lastTopologyDescription?.servers.map { $0.address })
                         .toEventually(equal(testCase.hosts), timeout: 5)
-
-                    let connStr = try client.connectionPool.getConnectionString()
 
                     // "You MUST verify that each of the values of the Connection String Options under options match the
                     // Client's parsed value for that option."
