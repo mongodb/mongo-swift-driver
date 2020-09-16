@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Multithreaded-Usage  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+    <script src="js/lunr.min.js" defer></script>
+    <script src="js/typeahead.jquery.js" defer></script>
+    <script src="js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+
+    <a title="Multithreaded-Usage  Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="index.html">
+          MongoSwiftSync 1.0.0 Docs
+        </a>
+         (100% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/mongodb/mongo-swift-driver">
+            <img class="header-icon" src="img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
+            <img class="header-icon" src="img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="index.html">MongoSwiftSync Reference</a>
+      <img class="carat" src="img/carat.png" />
+      Multithreaded-Usage  Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Guides.html">Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="bson.html">BSON</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="change-streams.html">Change-Streams</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="development.html">Development</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="error-handling.html">Error-Handling</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="multithreaded-usage.html">Multithreaded-Usage</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="transactions.html">Transactions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ChangeStream.html">ChangeStream</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ClientSession.html">ClientSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoCursor.html">MongoCursor</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content top-matter">
+            
+            <h1 id='using-mongoswift-in-mulithreaded-applications' class='heading'>Using MongoSwift in Mulithreaded Applications</h1>
+<h2 id='threadsafe-types' class='heading'>Threadsafe Types</h2>
+
+<p>As of MongoSwift 0.2.0, the following types are safe to use across threads:</p>
+
+<ul>
+<li><code><a href="Classes/MongoClient.html">MongoClient</a></code></li>
+<li><code><a href="Structs/MongoDatabase.html">MongoDatabase</a></code></li>
+<li><code><a href="Structs/MongoCollection.html">MongoCollection</a></code></li>
+</ul>
+
+<p><em>We make no guarantees about the safety of using any other type across threads.</em></p>
+<h2 id='best-practices' class='heading'>Best Practices</h2>
+
+<p>Each <code><a href="Classes/MongoClient.html">MongoClient</a></code> is backed by a pool of server connections. Any time a client or one of its child objects (a <code><a href="Structs/MongoDatabase.html">MongoDatabase</a></code> or <code><a href="Structs/MongoCollection.html">MongoCollection</a></code>) makes a request to the database (a <code>find</code>, <code>insertOne</code>, etc.) a connection will be retrieved from the pool, used to execute the operation, and then returned to the pool when it is finished.</p>
+
+<p>Each <code><a href="Classes/MongoClient.html">MongoClient</a></code> uses its own background thread to monitor the MongoDB topology you are connected to.</p>
+
+<p><strong>In order to share the connection pool across threads and minimize the number of background monitoring threads, we recommend sharing <code><a href="Classes/MongoClient.html">MongoClient</a></code>s across threads.</strong></p>
+<h2 id='usage-with-server-side-swift-frameworks' class='heading'>Usage With Server-side Swift Frameworks</h2>
+
+<p>See the <a href="https://github.com/mongodb/mongo-swift-driver/tree/master/Examples"><code>Examples/</code></a> directory in the driver GitHub repository for examples of how to integrate the driver in multithreaded frameworks.</p>
+
+          </div>
+        </section>
+
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>

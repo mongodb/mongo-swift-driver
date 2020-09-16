@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>MongoDatabase Structure Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+    <script src="../js/lunr.min.js" defer></script>
+    <script src="../js/typeahead.jquery.js" defer></script>
+    <script src="../js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+    <a name="//apple_ref/swift/Struct/MongoDatabase" class="dashAnchor"></a>
+
+    <a title="MongoDatabase Structure Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="../index.html">
+          MongoSwiftSync 1.0.0 Docs
+        </a>
+         (100% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="../search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/mongodb/mongo-swift-driver">
+            <img class="header-icon" src="../img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
+            <img class="header-icon" src="../img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="../index.html">MongoSwiftSync Reference</a>
+      <img class="carat" src="../img/carat.png" />
+      MongoDatabase Structure Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Guides.html">Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../bson.html">BSON</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../change-streams.html">Change-Streams</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../development.html">Development</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../error-handling.html">Error-Handling</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../multithreaded-usage.html">Multithreaded-Usage</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../transactions.html">Transactions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ChangeStream.html">ChangeStream</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClientSession.html">ClientSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MongoCursor.html">MongoCursor</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content top-matter">
+            <h1>MongoDatabase</h1>
+              <div class="declaration">
+                <div class="language">
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">MongoDatabase</span></code></pre>
+
+                </div>
+              </div>
+            <p>A MongoDB Database.</p>
+
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-content">
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV7encoder0aB011BSONEncoderCvp"></a>
+                    <a name="//apple_ref/swift/Property/encoder" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV7encoder0aB011BSONEncoderCvp">encoder</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Encoder used by this database for BSON conversions. This encoder&rsquo;s options are inherited by collections derived
+from this database.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">encoder</span><span class="p">:</span> <span class="kt">BSONEncoder</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L7">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV7decoder0aB011BSONDecoderCvp"></a>
+                    <a name="//apple_ref/swift/Property/decoder" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV7decoder0aB011BSONDecoderCvp">decoder</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Decoder whose options are inherited by collections derived from this database.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">decoder</span><span class="p">:</span> <span class="kt">BSONDecoder</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L10">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV4nameSSvp"></a>
+                    <a name="//apple_ref/swift/Property/name" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV4nameSSvp">name</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The name of this database.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L13">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV11readConcern0aB004ReadF0VSgvp"></a>
+                    <a name="//apple_ref/swift/Property/readConcern" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV11readConcern0aB004ReadF0VSgvp">readConcern</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The <code>ReadConcern</code> set on this database, or <code>nil</code> if one is not set.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readConcern</span><span class="p">:</span> <span class="kt">ReadConcern</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L16">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV14readPreference0aB004ReadF0Vvp"></a>
+                    <a name="//apple_ref/swift/Property/readPreference" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV14readPreference0aB004ReadF0Vvp">readPreference</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The <code>ReadPreference</code> set on this database</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt">ReadPreference</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L19">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV12writeConcern0aB005WriteF0VSgvp"></a>
+                    <a name="//apple_ref/swift/Property/writeConcern" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV12writeConcern0aB005WriteF0VSgvp">writeConcern</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The <code>WriteConcern</code> set on this database, or <code>nil</code> if one is not set.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="kt">WriteConcern</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L22">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV4drop7options7sessiony0aB004DropD7OptionsVSg_AA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/drop(options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV4drop7options7sessiony0aB004DropD7OptionsVSg_AA13ClientSessionCSgtKF">drop(options:<wbr>session:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Drops this database.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>MongoError.CommandError</code> if an error occurs that prevents the command from executing.</li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">drop</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt">DropDatabaseOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L46-L48">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV10collection_7optionsAA0A10CollectionVy0aB012BSONDocumentVGSS_AH0aG7OptionsVSgtF"></a>
+                    <a name="//apple_ref/swift/Method/collection(_:options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV10collection_7optionsAA0A10CollectionVy0aB012BSONDocumentVGSS_AH0aG7OptionsVSgtF">collection(_:<wbr>options:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Access a collection within this database. If an option is not specified in the <code>MongoCollectionOptions</code> param,
+ the collection will inherit the value from the parent database or the default if the db&rsquo;s option is not set.
+ To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
+ specified in the options param (e.g. ReadConcern.serverDefault, not nil).</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">collection</span><span class="p">(</span><span class="n">_</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">MongoCollectionOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/MongoCollection.html">MongoCollection</a></span><span class="o">&lt;</span><span class="kt">BSONDocument</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>name</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the name of the collection to get</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>options to set on the returned collection</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>the requested <code><a href="../Structs/MongoCollection.html">MongoCollection&lt;Document&gt;</a></code></p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L62-L64">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV10collection_8withType7optionsAA0A10CollectionVyxGSS_xm0aB00aI7OptionsVSgtSeRzSERzlF"></a>
+                    <a name="//apple_ref/swift/Method/collection(_:withType:options:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV10collection_8withType7optionsAA0A10CollectionVyxGSS_xm0aB00aI7OptionsVSgtSeRzSERzlF">collection(_:<wbr>withType:<wbr>options:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Access a collection within this database, and associates the specified <code>Codable</code> type <code>T</code> with the
+ returned <code><a href="../Structs/MongoCollection.html">MongoCollection</a></code>. This association only exists in the context of this particular
+ <code><a href="../Structs/MongoCollection.html">MongoCollection</a></code> instance. If an option is not specified in the <code>MongoCollectionOptions</code> param, the
+ collection will inherit the value from the parent database or the default if the db&rsquo;s option is not set.
+ To override an option inherited from the db (e.g. a read concern) with the default value, it must be explicitly
+ specified in the options param (e.g. ReadConcern.serverDefault, not nil).</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">collection</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">:</span> <span class="kt">Codable</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+    <span class="n">withType</span> <span class="nv">_</span><span class="p">:</span> <span class="kt">T</span><span class="o">.</span><span class="k">Type</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">MongoCollectionOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/MongoCollection.html">MongoCollection</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>name</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>the name of the collection to get</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>options to set on the returned collection</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>the requested <code><a href="../Structs/MongoCollection.html">MongoCollection&lt;T&gt;</a></code></p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L80-L87">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV16createCollection_7options7sessionAA0aF0Vy0aB012BSONDocumentVGSS_AI06CreateF7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/createCollection(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV16createCollection_7options7sessionAA0aF0Vy0aB012BSONDocumentVGSS_AI06CreateF7OptionsVSgAA13ClientSessionCSgtKF">createCollection(_:<wbr>options:<wbr>session:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates a collection in this database with the specified options.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>MongoError.CommandError</code> if an error occurs that prevents the command from executing.</li>
+<li><code>MongoError.InvalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>MongoError.LogicError</code> if the provided session is inactive.</li>
+<li><code>EncodingError</code> if an error occurs while encoding the options to BSON.</li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">createCollection</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">CreateCollectionOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/MongoCollection.html">MongoCollection</a></span><span class="o">&lt;</span><span class="kt">BSONDocument</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>name</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>a <code>String</code>, the name of the collection to create</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code>CreateCollectionOptions</code> to use for the collection</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>session</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Classes/ClientSession.html">ClientSession</a></code> to use when executing this command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>the newly created <code><a href="../Structs/MongoCollection.html">MongoCollection&lt;Document&gt;</a></code></p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L105-L111">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV16createCollection_8withType7options7sessionAA0aF0VyxGSS_xm0aB006CreateF7OptionsVSgAA13ClientSessionCSgtKSeRzSERzlF"></a>
+                    <a name="//apple_ref/swift/Method/createCollection(_:withType:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV16createCollection_8withType7options7sessionAA0aF0VyxGSS_xm0aB006CreateF7OptionsVSgAA13ClientSessionCSgtKSeRzSERzlF">createCollection(_:<wbr>withType:<wbr>options:<wbr>session:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates a collection in this database with the specified options, and associates the
+ specified <code>Codable</code> type <code>T</code> with the returned <code><a href="../Structs/MongoCollection.html">MongoCollection</a></code>. This association only
+ exists in the context of this particular <code><a href="../Structs/MongoCollection.html">MongoCollection</a></code> instance.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>MongoError.CommandError</code> if an error occurs that prevents the command from executing.</li>
+<li><code>MongoError.InvalidArgumentError</code> if the options passed in form an invalid combination.</li>
+<li><code>MongoError.LogicError</code> if the provided session is inactive.</li>
+<li><code>EncodingError</code> if an error occurs while encoding the options to BSON.</li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">createCollection</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">:</span> <span class="kt">Codable</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+    <span class="n">withType</span> <span class="nv">type</span><span class="p">:</span> <span class="kt">T</span><span class="o">.</span><span class="k">Type</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">CreateCollectionOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/MongoCollection.html">MongoCollection</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>name</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>a <code>String</code>, the name of the collection to create</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code>CreateCollectionOptions</code> to use for the collection</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>session</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Classes/ClientSession.html">ClientSession</a></code> to use when executing this command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>the newly created <code><a href="../Structs/MongoCollection.html">MongoCollection&lt;T&gt;</a></code></p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L132-L146">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV15listCollections_7options7sessionAA0A6CursorCy0aB023CollectionSpecificationVGAI12BSONDocumentVSg_AI04ListF7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/listCollections(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV15listCollections_7options7sessionAA0A6CursorCy0aB023CollectionSpecificationVGAI12BSONDocumentVSg_AI04ListF7OptionsVSgAA13ClientSessionCSgtKF">listCollections(_:<wbr>options:<wbr>session:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Lists all the collections in this database.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>MongoError.InvalidArgumentError</code> if the options passed are an invalid combination.</li>
+<li><code>MongoError.LogicError</code> if the provided session is inactive.</li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">listCollections</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt">BSONDocument</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">ListCollectionsOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/MongoCursor.html">MongoCursor</a></span><span class="o">&lt;</span><span class="kt">CollectionSpecification</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>filter</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>a <code>Document</code>, optional criteria to filter results by</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code>ListCollectionsOptions</code> to use when executing this command</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>session</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Classes/ClientSession.html">ClientSession</a></code> to use when executing this command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>a <code><a href="../Classes/MongoCursor.html">MongoCursor</a></code> over an array of <code>CollectionSpecification</code>s</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L162-L170">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV04listA11Collections_7options7sessionSayAA0A10CollectionVy0aB012BSONDocumentVGGAKSg_AI04ListF7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/listMongoCollections(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV04listA11Collections_7options7sessionSayAA0A10CollectionVy0aB012BSONDocumentVGGAKSg_AI04ListF7OptionsVSgAA13ClientSessionCSgtKF">listMongoCollections(_:<wbr>options:<wbr>session:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Gets a list of <code><a href="../Structs/MongoCollection.html">MongoCollection</a></code>s in this database.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>MongoError.InvalidArgumentError</code> if the options passed are an invalid combination.</li>
+<li><code>MongoError.LogicError</code> if the provided session is inactive.</li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">listMongoCollections</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt">BSONDocument</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">ListCollectionsOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt"><a href="../Structs/MongoCollection.html">MongoCollection</a></span><span class="o">&lt;</span><span class="kt">BSONDocument</span><span class="o">&gt;</span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>filter</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>a <code>Document</code>, optional criteria to filter results by</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code>ListCollectionsOptions</code> to use when executing this command</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>session</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Classes/ClientSession.html">ClientSession</a></code> to use when executing this command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>An array of <code><a href="../Structs/MongoCollection.html">MongoCollection</a></code>s that match the provided filter.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L186-L194">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV19listCollectionNames_7options7sessionSaySSG0aB012BSONDocumentVSg_AH22ListCollectionsOptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/listCollectionNames(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV19listCollectionNames_7options7sessionSaySSG0aB012BSONDocumentVSg_AH22ListCollectionsOptionsVSgAA13ClientSessionCSgtKF">listCollectionNames(_:<wbr>options:<wbr>session:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Gets a list of names of collections in this database.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>MongoError.InvalidArgumentError</code> if the options passed are an invalid combination.</li>
+<li><code>MongoError.LogicError</code> if the provided session is inactive.</li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">listCollectionNames</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">filter</span><span class="p">:</span> <span class="kt">BSONDocument</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">ListCollectionsOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">String</span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>filter</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>a <code>Document</code>, optional criteria to filter results by</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code>ListCollectionsOptions</code> to use when executing this command</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>session</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Classes/ClientSession.html">ClientSession</a></code> to use when executing this command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code>[String]</code> containing names of collections that match the provided filter.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L210-L216">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV10runCommand_7options7session0aB012BSONDocumentVAI_AG03RunF7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/runCommand(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV10runCommand_7options7session0aB012BSONDocumentVAI_AG03RunF7OptionsVSgAA13ClientSessionCSgtKF">runCommand(_:<wbr>options:<wbr>session:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Issues a MongoDB command against this database.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>MongoError.InvalidArgumentError</code> if <code>requests</code> is empty.</li>
+<li><code>MongoError.LogicError</code> if the provided session is inactive.</li>
+<li><code>MongoError.WriteError</code> if any error occurs while the command was performing a write.</li>
+<li><code>MongoError.CommandError</code> if an error occurs that prevents the command from being performed.</li>
+<li><code>EncodingError</code> if an error occurs while encoding the options to BSON.</li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">runCommand</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">command</span><span class="p">:</span> <span class="kt">BSONDocument</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">RunCommandOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">BSONDocument</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>command</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>a <code>Document</code> containing the command to issue against the database</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code>RunCommandOptions</code> to use when executing this command</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>session</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional <code><a href="../Classes/ClientSession.html">ClientSession</a></code> to use when executing this command</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>a <code>Document</code> containing the server response for the command</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L236-L242">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV5watch_7options7sessionAA12ChangeStreamCy0aB00hI5EventVyAI12BSONDocumentVGGSayAMG_AI0hI7OptionsVSgAA13ClientSessionCSgtKF"></a>
+                    <a name="//apple_ref/swift/Method/watch(_:options:session:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV5watch_7options7sessionAA12ChangeStreamCy0aB00hI5EventVyAI12BSONDocumentVGGSayAMG_AI0hI7OptionsVSgAA13ClientSessionCSgtKF">watch(_:<wbr>options:<wbr>session:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Starts a <code><a href="../Classes/ChangeStream.html">ChangeStream</a></code> on a database. Excludes system collections.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>MongoError.CommandError</code> if an error occurs on the server while creating the change stream.</li>
+<li><code>MongoError.InvalidArgumentError</code> if the options passed formed an invalid combination.</li>
+<li><code>MongoError.InvalidArgumentError</code> if the <code>_id</code> field is projected out of the change stream documents by the
+pipeline.</li>
+</ul>
+
+</div><div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <p>SeeAlso:</p>
+
+<ul>
+<li><a href="https://docs.mongodb.com/manual/changeStreams/">https://docs.mongodb.com/manual/changeStreams/</a></li>
+<li><a href="https://docs.mongodb.com/manual/meta/aggregation-quick-reference/">https://docs.mongodb.com/manual/meta/aggregation-quick-reference/</a></li>
+<li><a href="https://docs.mongodb.com/manual/reference/system-collections/">https://docs.mongodb.com/manual/reference/system-collections/</a></li>
+</ul>
+
+</div><div class="aside aside-note">
+    <p class="aside-title">Note</p>
+    <p>Supported in MongoDB version 4.0+ only.</p>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">watch</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">pipeline</span><span class="p">:</span> <span class="p">[</span><span class="kt">BSONDocument</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">ChangeStreamOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/ChangeStream.html">ChangeStream</a></span><span class="o">&lt;</span><span class="kt">ChangeStreamEvent</span><span class="o">&lt;</span><span class="kt">BSONDocument</span><span class="o">&gt;&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>pipeline</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An array of aggregation pipeline stages to apply to the events returned by the change stream.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>ChangeStreamOptions</code> to use when constructing the change stream.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>session</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code><a href="../Classes/ClientSession.html">ClientSession</a></code> to use with this change stream.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code><a href="../Classes/ChangeStream.html">ChangeStream</a></code> on all collections in a database.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L267-L278">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV5watch_7options7session20withFullDocumentTypeAA12ChangeStreamCy0aB00lM5EventVyxGGSayAJ12BSONDocumentVG_AJ0lM7OptionsVSgAA13ClientSessionCSgxmtKSeRzSERzlF"></a>
+                    <a name="//apple_ref/swift/Method/watch(_:options:session:withFullDocumentType:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV5watch_7options7session20withFullDocumentTypeAA12ChangeStreamCy0aB00lM5EventVyxGGSayAJ12BSONDocumentVG_AJ0lM7OptionsVSgAA13ClientSessionCSgxmtKSeRzSERzlF">watch(_:<wbr>options:<wbr>session:<wbr>withFullDocumentType:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Starts a <code><a href="../Classes/ChangeStream.html">ChangeStream</a></code> on a database. Excludes system collections.
+ Associates the specified <code>Codable</code> type <code>T</code> with the <code>fullDocument</code> field in the <code>ChangeStreamEvent</code>s emitted
+ by the returned <code><a href="../Classes/ChangeStream.html">ChangeStream</a></code>.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>MongoError.CommandError</code> if an error occurs on the server while creating the change stream.</li>
+<li><code>MongoError.InvalidArgumentError</code> if the options passed formed an invalid combination.</li>
+<li><code>MongoError.InvalidArgumentError</code> if the <code>_id</code> field is projected out of the change stream documents by the
+pipeline.</li>
+</ul>
+
+</div><div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <p>SeeAlso:</p>
+
+<ul>
+<li><a href="https://docs.mongodb.com/manual/changeStreams/">https://docs.mongodb.com/manual/changeStreams/</a></li>
+<li><a href="https://docs.mongodb.com/manual/meta/aggregation-quick-reference/">https://docs.mongodb.com/manual/meta/aggregation-quick-reference/</a></li>
+<li><a href="https://docs.mongodb.com/manual/reference/system-collections/">https://docs.mongodb.com/manual/reference/system-collections/</a></li>
+</ul>
+
+</div><div class="aside aside-note">
+    <p class="aside-title">Note</p>
+    <p>Supported in MongoDB version 4.0+ only.</p>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">watch</span><span class="o">&lt;</span><span class="kt">FullDocType</span><span class="p">:</span> <span class="kt">Codable</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">pipeline</span><span class="p">:</span> <span class="p">[</span><span class="kt">BSONDocument</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">ChangeStreamOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="n">withFullDocumentType</span> <span class="nv">_</span><span class="p">:</span> <span class="kt">FullDocType</span><span class="o">.</span><span class="k">Type</span>
+<span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/ChangeStream.html">ChangeStream</a></span><span class="o">&lt;</span><span class="kt">ChangeStreamEvent</span><span class="o">&lt;</span><span class="kt">FullDocType</span><span class="o">&gt;&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>pipeline</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An array of aggregation pipeline stages to apply to the events returned by the change stream.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>ChangeStreamOptions</code> to use when constructing the change stream.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>session</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code><a href="../Classes/ClientSession.html">ClientSession</a></code> to use with this change stream.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>withFullDocumentType</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The type that the <code>fullDocument</code> field of the emitted <code>ChangeStreamEvent</code>s will be
+                   decoded to.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code><a href="../Classes/ChangeStream.html">ChangeStream</a></code> on all collections in a database.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L307-L319">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:14MongoSwiftSync0A8DatabaseV5watch_7options7session13withEventTypeAA12ChangeStreamCyxGSay0aB012BSONDocumentVG_AK0kL7OptionsVSgAA13ClientSessionCSgxmtKSeRzSERzlF"></a>
+                    <a name="//apple_ref/swift/Method/watch(_:options:session:withEventType:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:14MongoSwiftSync0A8DatabaseV5watch_7options7session13withEventTypeAA12ChangeStreamCyxGSay0aB012BSONDocumentVG_AK0kL7OptionsVSgAA13ClientSessionCSgxmtKSeRzSERzlF">watch(_:<wbr>options:<wbr>session:<wbr>withEventType:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Starts a <code><a href="../Classes/ChangeStream.html">ChangeStream</a></code> on a database. Excludes system collections.
+ Associates the specified <code>Codable</code> type <code>T</code> with the returned <code><a href="../Classes/ChangeStream.html">ChangeStream</a></code>.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <p>Throws:</p>
+
+<ul>
+<li><code>MongoError.CommandError</code> if an error occurs on the server while creating the change stream.</li>
+<li><code>MongoError.InvalidArgumentError</code> if the options passed formed an invalid combination.</li>
+<li><code>MongoError.InvalidArgumentError</code> if the <code>_id</code> field is projected out of the change stream documents by the
+pipeline.</li>
+</ul>
+
+</div><div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <p>SeeAlso:</p>
+
+<ul>
+<li><a href="https://docs.mongodb.com/manual/changeStreams/">https://docs.mongodb.com/manual/changeStreams/</a></li>
+<li><a href="https://docs.mongodb.com/manual/meta/aggregation-quick-reference/">https://docs.mongodb.com/manual/meta/aggregation-quick-reference/</a></li>
+<li><a href="https://docs.mongodb.com/manual/reference/system-collections/">https://docs.mongodb.com/manual/reference/system-collections/</a></li>
+</ul>
+
+</div><div class="aside aside-note">
+    <p class="aside-title">Note</p>
+    <p>Supported in MongoDB version 4.0+ only.</p>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">watch</span><span class="o">&lt;</span><span class="kt">EventType</span><span class="p">:</span> <span class="kt">Codable</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="n">_</span> <span class="nv">pipeline</span><span class="p">:</span> <span class="p">[</span><span class="kt">BSONDocument</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">ChangeStreamOptions</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">session</span><span class="p">:</span> <span class="kt"><a href="../Classes/ClientSession.html">ClientSession</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="n">withEventType</span> <span class="nv">_</span><span class="p">:</span> <span class="kt">EventType</span><span class="o">.</span><span class="k">Type</span>
+<span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/ChangeStream.html">ChangeStream</a></span><span class="o">&lt;</span><span class="kt">EventType</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>pipeline</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An array of aggregation pipeline stages to apply to the events returned by the change stream.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>options</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>ChangeStreamOptions</code> to use when constructing the <code><a href="../Classes/ChangeStream.html">ChangeStream</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>session</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code><a href="../Classes/ClientSession.html">ClientSession</a></code> to use with this change stream.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>withEventType</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The type that the entire change stream response will be decoded to and that will be returned
+            when iterating through the change stream.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code><a href="../Classes/ChangeStream.html">ChangeStream</a></code> on all collections in a database.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.0/Sources/MongoSwiftSync/MongoDatabase.swift#L347-L360">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>

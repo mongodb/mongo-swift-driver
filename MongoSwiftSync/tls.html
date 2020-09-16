@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>TLS  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+    <script src="js/lunr.min.js" defer></script>
+    <script src="js/typeahead.jquery.js" defer></script>
+    <script src="js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+
+    <a title="TLS  Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="index.html">
+          MongoSwiftSync 1.0.0 Docs
+        </a>
+         (100% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/mongodb/mongo-swift-driver">
+            <img class="header-icon" src="img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
+            <img class="header-icon" src="img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="index.html">MongoSwiftSync Reference</a>
+      <img class="carat" src="img/carat.png" />
+      TLS  Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Guides.html">Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="bson.html">BSON</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="change-streams.html">Change-Streams</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="development.html">Development</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="error-handling.html">Error-Handling</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="multithreaded-usage.html">Multithreaded-Usage</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="transactions.html">Transactions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ChangeStream.html">ChangeStream</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ClientSession.html">ClientSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoCursor.html">MongoCursor</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content top-matter">
+            
+            <h1 id='swift-driver-tls-ssl-guide' class='heading'>Swift Driver TLS/SSL Guide</h1>
+
+<p>This guide covers the installation requirements and configuration options for connecting to MongoDB over TLS/SSL in the driver. See the <a href="https://docs.mongodb.com/manual/tutorial/configure-ssl/">server documentation</a> to configure MongoDB to use TLS/SSL.</p>
+<h2 id='dependencies' class='heading'>Dependencies</h2>
+
+<p>The driver relies on the the TLS/SSL library installed on your system for making secure connections to the database. </p>
+
+<ul>
+<li>On macOS, the driver depends on SecureTransport, the native TLS library for macOS, so no additional installation is required.</li>
+<li>On Linux, the driver depends on OpenSSL, which is usually bundled with your OS but may require specific installation. The driver also supports LibreSSL through the use of OpenSSL compatibility checks.</li>
+</ul>
+<h3 id='ensuring-tls-1-1' class='heading'>Ensuring TLS 1.1+</h3>
+
+<p>Industry best practices recommend, and some regulations require, the use of TLS 1.1 or newer. Though no application changes are required for the driver to make use of the newest protocols, some operating systems or versions may not provide a TLS library version new enough to support them.</p>
+<h4 id='on-linux' class='heading'>&hellip;on Linux</h4>
+
+<p>Users of Linux or other non-macOS Unix can check their OpenSSL version like this:</p>
+<pre class="highlight plaintext"><code>$ openssl version
+</code></pre>
+
+<p>If the version number is less than 1.0.1, support for TLS 1.1 or newer is not available. Contact your operating system vendor for a solution, upgrade to a newer distribution, or manually upgrade your installation of OpenSSL.</p>
+<h4 id='on-macos' class='heading'>&hellip;on macOS</h4>
+
+<p>macOS 10.13 (High Sierra) and newer support TLS 1.1+.</p>
+<h2 id='basic-configuration' class='heading'>Basic Configuration</h2>
+
+<p>To require that connections to MongoDB made by the driver use TLS/SSL, specify <code>tls: true</code> in the <code>MongoClientOptions</code> passed to a <code><a href="Classes/MongoClient.html">MongoClient</a></code>&lsquo;s initializer:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="s">"mongodb://example.com"</span><span class="p">,</span> <span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">MongoClientOptions</span><span class="p">(</span><span class="nv">tls</span><span class="p">:</span> <span class="kc">true</span><span class="p">))</span>
+</code></pre>
+
+<p>Alternatively, <code>tls=true</code> can be specified in the <a href="https://docs.mongodb.com/manual/reference/connection-string/">MongoDB Connection String</a> passed to the initializer:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="s">"mongodb://example.com/?tls=true"</span><span class="p">,</span> <span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
+</code></pre>
+
+<p><strong>Note:</strong> Specifying any <code>tls</code>-prefixed option in the connection string or <code>MongoClientOptions</code> will require all connections made by the driver to use TLS/SSL.</p>
+<h2 id='specifying-a-ca-file' class='heading'>Specifying a CA File</h2>
+
+<p>The driver can be configured to use a specific set of CA certificates. This is most often used with &ldquo;self-signed&rdquo; server certificates. </p>
+
+<p>A path to a file with either a single or bundle of certificate authorities to be considered trusted when making a TLS connection can be specified via the <code>tlsCAFile</code> option on <code>MongoClientOptions</code>:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="s">"mongodb://example.com"</span><span class="p">,</span> <span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">MongoClientOptions</span><span class="p">(</span><span class="nv">tlsCAFile</span><span class="p">:</span> <span class="kt">URL</span><span class="p">(</span><span class="nv">string</span><span class="p">:</span> <span class="s">"/path/to/ca.pem"</span><span class="p">)))</span>
+</code></pre>
+
+<p>Alternatively, the path can be specified via the <code>tlsCAFile</code> option in the <a href="https://docs.mongodb.com/manual/reference/connection-string/">MongoDB Connection String</a> passed to the client&rsquo;s initializer:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">caFile</span> <span class="o">=</span> <span class="s">"/path/to/ca.pem"</span><span class="o">.</span><span class="nf">addingPercentEncoding</span><span class="p">(</span><span class="nv">withAllowedCharacters</span><span class="p">:</span> <span class="o">.</span><span class="n">urlHostAllowed</span><span class="p">)</span><span class="o">!</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="s">"mongodb://example.com/?tlsCAFile=</span><span class="se">\(</span><span class="n">caFile</span><span class="se">)</span><span class="s">"</span><span class="p">,</span> <span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
+</code></pre>
+<h2 id='specifying-a-client-certificate-or-private-key-file' class='heading'>Specifying a Client Certificate or Private Key File</h2>
+
+<p>The driver can be configured to present the client certificate file or the client private key file via the <code>tlsCertificateKeyFile</code> option on <code>MongoClientOptions</code>:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="s">"mongodb://example.com"</span><span class="p">,</span> <span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">MongoClientOptions</span><span class="p">(</span><span class="nv">tlsCertificateKeyFile</span><span class="p">:</span> <span class="kt">URL</span><span class="p">(</span><span class="nv">string</span><span class="p">:</span> <span class="s">"/path/to/cert.pem"</span><span class="p">)))</span>
+</code></pre>
+
+<p>If the private key is password protected, a password can be supplied via <code>tlsCertificateKeyFilePassword</code> on <code>MongoClientOptions</code>:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span>
+    <span class="s">"mongodb://example.com"</span><span class="p">,</span>
+    <span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">MongoClientOptions</span><span class="p">(</span><span class="nv">tlsCertificateKeyFile</span><span class="p">:</span> <span class="kt">URL</span><span class="p">(</span><span class="nv">string</span><span class="p">:</span> <span class="s">"/path/to/cert.pem"</span><span class="p">),</span> <span class="nv">tlsCertificateKeyFilePassword</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">password</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="p">)</span>
+</code></pre>
+
+<p>Alternatively, these options can be set via the <code>tlsCertificateKeyFile</code> and <code>tlsCertificateKeyFilePassword</code> options in the <a href="https://docs.mongodb.com/manual/reference/connection-string/">MongoDB Connection String</a> passed into the initializer:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">certificatePath</span> <span class="o">=</span> <span class="s">"/path/to/cert.pem"</span><span class="o">.</span><span class="nf">addingPercentEncoding</span><span class="p">(</span><span class="nv">withAllowedCharacters</span><span class="p">:</span> <span class="o">.</span><span class="n">urlHostAllowed</span><span class="p">)</span><span class="o">!</span>
+<span class="k">let</span> <span class="nv">password</span> <span class="o">=</span> <span class="s">"not a secure password"</span><span class="o">.</span><span class="nf">addingPercentEncoding</span><span class="p">(</span><span class="nv">withAllowedCharacters</span><span class="p">:</span> <span class="o">.</span><span class="n">urlHostAllowed</span><span class="p">)</span><span class="o">!</span>
+<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span>
+    <span class="s">"mongodb://example.com/?tlsCertificateKeyFile=</span><span class="se">\(</span><span class="n">certificatePath</span><span class="se">)</span><span class="s">&amp;tlsCertificateKeyFilePassword=</span><span class="se">\(</span><span class="n">password</span><span class="se">)</span><span class="s">"</span><span class="p">,</span>
+    <span class="nv">using</span><span class="p">:</span> <span class="n">elg</span>
+<span class="p">)</span>
+</code></pre>
+
+<p><strong>Note</strong>: In both cases, if both a client certificate and a client private key are needed, the files should be concatenated into a single file which is specified by <code>tlsCertificateKeyFile</code>.</p>
+
+          </div>
+        </section>
+
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>

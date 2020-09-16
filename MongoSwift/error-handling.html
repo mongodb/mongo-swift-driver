@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Error-Handling  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+    <script src="js/lunr.min.js" defer></script>
+    <script src="js/typeahead.jquery.js" defer></script>
+    <script src="js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+
+    <a title="Error-Handling  Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="index.html">
+          MongoSwift 1.0.0 Docs
+        </a>
+         (99% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/mongodb/mongo-swift-driver">
+            <img class="header-icon" src="img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwift%2Fdocsets%2FMongoSwift.xml">
+            <img class="header-icon" src="img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="index.html">MongoSwift Reference</a>
+      <img class="carat" src="img/carat.png" />
+      Error-Handling  Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Guides.html">Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="bson.html">BSON</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="change-streams.html">Change-Streams</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="development.html">Development</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="error-handling.html">Error-Handling</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="multithreaded-usage.html">Multithreaded-Usage</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="transactions.html">Transactions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONDecoder.html">BSONDecoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONDecoder/DateDecodingStrategy.html">– DateDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONDecoder/UUIDDecodingStrategy.html">– UUIDDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONDecoder/DataDecodingStrategy.html">– DataDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONDocumentIterator.html">BSONDocumentIterator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONEncoder.html">BSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONEncoder/DateEncodingStrategy.html">– DateEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONEncoder/UUIDEncodingStrategy.html">– UUIDEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONEncoder/DataEncodingStrategy.html">– DataEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ChangeStream.html">ChangeStream</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ClientSession.html">ClientSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoCursor.html">MongoCursor</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSON.html">BSON</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError.html">BSONError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/DocumentTooLargeError.html">– DocumentTooLargeError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONType.html">BSONType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/CollectionType.html">CollectionType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/CommandEvent.html">CommandEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/DataCodingStrategy.html">DataCodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/DateCodingStrategy.html">DateCodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/IndexHint.html">IndexHint</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoCursorType.html">MongoCursorType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError.html">MongoError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/CommandError.html">– CommandError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/WriteError.html">– WriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/BulkWriteError.html">– BulkWriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/ConnectionError.html">– ConnectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/AuthenticationError.html">– AuthenticationError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/CompatibilityError.html">– CompatibilityError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/ServerSelectionError.html">– ServerSelectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/WriteFailure.html">– WriteFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/WriteConcernFailure.html">– WriteConcernFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/BulkWriteFailure.html">– BulkWriteFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/OperationType.html">OperationType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/ReturnDocument.html">ReturnDocument</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/SDAMEvent.html">SDAMEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/UUIDCodingStrategy.html">UUIDCodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/WriteModel.html">WriteModel</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Functions.html">Functions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Functions.html#/s:10MongoSwift07cleanupaB0yyF">cleanupMongoSwift()</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift17BSONErrorProtocolP">BSONErrorProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/CommandEventHandler.html">CommandEventHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift0A13ErrorProtocolP">MongoErrorProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/MongoLabeledError.html">MongoLabeledError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift0A12RuntimeErrorP">MongoRuntimeError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift0A11ServerErrorP">MongoServerError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols.html#/s:10MongoSwift0A9UserErrorP">MongoUserError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/SDAMEventHandler.html">SDAMEventHandler</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/AggregateOptions.html">AggregateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONBinary.html">BSONBinary</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONBinary/Subtype.html">– Subtype</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONCode.html">BSONCode</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONCodeWithScope.html">BSONCodeWithScope</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONCoderOptions.html">BSONCoderOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONDBPointer.html">BSONDBPointer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONDecimal128.html">BSONDecimal128</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONDocument.html">BSONDocument</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONObjectID.html">BSONObjectID</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONRegularExpression.html">BSONRegularExpression</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONSymbol.html">BSONSymbol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONTimestamp.html">BSONTimestamp</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BulkWriteOptions.html">BulkWriteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BulkWriteResult.html">BulkWriteResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ChangeStreamEvent.html">ChangeStreamEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ChangeStreamOptions.html">ChangeStreamOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ClientSessionOptions.html">ClientSessionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CollectionSpecification.html">CollectionSpecification</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CollectionSpecificationInfo.html">CollectionSpecificationInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CommandFailedEvent.html">CommandFailedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CommandStartedEvent.html">CommandStartedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CommandSucceededEvent.html">CommandSucceededEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CountDocumentsOptions.html">CountDocumentsOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CreateCollectionOptions.html">CreateCollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CreateIndexOptions.html">CreateIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DatabaseSpecification.html">DatabaseSpecification</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DeleteModelOptions.html">DeleteModelOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DeleteOptions.html">DeleteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DeleteResult.html">DeleteResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DistinctOptions.html">DistinctOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DropCollectionOptions.html">DropCollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DropDatabaseOptions.html">DropDatabaseOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DropIndexOptions.html">DropIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/EstimatedDocumentCountOptions.html">EstimatedDocumentCountOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FindOneAndDeleteOptions.html">FindOneAndDeleteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FindOneAndReplaceOptions.html">FindOneAndReplaceOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FindOneAndUpdateOptions.html">FindOneAndUpdateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FindOneOptions.html">FindOneOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FindOptions.html">FindOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FullDocument.html">FullDocument</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/IndexModel.html">IndexModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/IndexOptions.html">IndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/InsertManyResult.html">InsertManyResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/InsertOneOptions.html">InsertOneOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/InsertOneResult.html">InsertOneResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoClientOptions.html">MongoClientOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCollectionOptions.html">MongoCollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCredential.html">MongoCredential</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCredential/Mechanism.html">– Mechanism</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoDatabaseOptions.html">MongoDatabaseOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoNamespace.html">MongoNamespace</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReadConcern.html">ReadConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReadPreference/Mode.html">– Mode</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReplaceOneModelOptions.html">ReplaceOneModelOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReplaceOptions.html">ReplaceOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ResumeToken.html">ResumeToken</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/RunCommandOptions.html">RunCommandOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerAddress.html">ServerAddress</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerClosedEvent.html">ServerClosedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerDescription.html">ServerDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerDescription/ServerType.html">– ServerType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerDescriptionChangedEvent.html">ServerDescriptionChangedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerHeartbeatFailedEvent.html">ServerHeartbeatFailedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerHeartbeatStartedEvent.html">ServerHeartbeatStartedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerHeartbeatSucceededEvent.html">ServerHeartbeatSucceededEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TopologyClosedEvent.html">TopologyClosedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TopologyDescription.html">TopologyDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TopologyDescription/TopologyType.html">– TopologyType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TopologyDescriptionChangedEvent.html">TopologyDescriptionChangedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TransactionOptions.html">TransactionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/UpdateDescription.html">UpdateDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/UpdateModelOptions.html">UpdateModelOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/UpdateOptions.html">UpdateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/UpdateResult.html">UpdateResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/WriteConcern.html">WriteConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/WriteConcern/W.html">– W</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Typealiases.html">Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Typealiases.html#/s:10MongoSwift17InsertManyOptionsa">InsertManyOptions</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content top-matter">
+            
+            <h1 id='swift-driver-error-handling-guide' class='heading'>Swift Driver Error Handling Guide</h1>
+<h2 id='index' class='heading'>Index</h2>
+
+<ul>
+<li><a href="#error-types">Error Types</a>
+
+<ul>
+<li><a href="#server-errors">Server Errors</a></li>
+<li><a href="#user-errors">User Errors</a></li>
+<li><a href="#runtime-errors">Runtime Errors</a></li>
+<li><a href="#error-labels">Error Labels</a></li>
+<li><a href="#encoding-decoding-errors">Encoding/Decoding Errors</a></li>
+</ul></li>
+<li><a href="#the-code">Examples</a>
+
+<ul>
+<li><a href="#handling-any-error-thrown-by-the-driver">All Errors</a></li>
+<li><a href="#handling-a-commanderror">CommandError</a></li>
+<li><a href="#handling-a-writeerror">WriteError</a></li>
+<li><a href="#handling-a-bulkwriteerror">BulkWriteError</a></li>
+</ul></li>
+<li><a href="#see-also">See Also</a></li>
+</ul>
+<h2 id='error-types' class='heading'>Error Types</h2>
+
+<p>The driver uses errors to communicate that an operation failed, an assumption wasn&rsquo;t met, or that the user did something incorrectly. Applications that use the driver can in turn catch these errors and respond appropriately without crashing or resulting in an otherwise inconsistent state. To correctly model the different sources of errors, the driver defines three separate categories of errors (<code><a href="Protocols.html#/s:10MongoSwift0A11ServerErrorP">MongoServerError</a></code>, <code><a href="Protocols.html#/s:10MongoSwift0A9UserErrorP">MongoUserError</a></code>, <code><a href="Protocols.html#/s:10MongoSwift0A12RuntimeErrorP">MongoRuntimeError</a></code>), each of which are protocols that inherit from the <code><a href="Protocols.html#/s:10MongoSwift0A13ErrorProtocolP">MongoErrorProtocol</a></code> protocol. These protocols are defined in <code>MongoError.swift</code>, and the structs that conform to them are outlined here. The documentation for every public function that throws lists some of the errors that could possibly be thrown and the reasons they might be. The errors listed there are not comprehensive but will generally cover the most common cases.</p>
+<h3 id='server-errors' class='heading'>Server Errors</h3>
+
+<p>Server errors correspond to failures that occur in the database itself and are returned to the driver via some response to a command. Each error that conforms to <code>ServerError</code> contains at least one error code representing what went wrong on the server.</p>
+
+<p>For an enumeration of the possible server error codes, <a href="https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml">see this list</a>.</p>
+
+<p>The possible errors that conform to <code><a href="Protocols.html#/s:10MongoSwift0A11ServerErrorP">MongoServerError</a></code> are as follows:</p>
+
+<ul>
+<li><code><a href="Enums/MongoError/CommandError.html">MongoError.CommandError</a></code>:
+
+<ul>
+<li>Thrown when commands experience errors server side that prevent execution.</li>
+<li>Example command failures include failure to parse, operation aborted by the user, and unexpected errors during execution.</li>
+</ul></li>
+<li><code><a href="Enums/MongoError/WriteError.html">MongoError.WriteError</a></code>
+
+<ul>
+<li>Thrown when a single write command fails on the server (e.g. insertOne, updateOne, updateMany).</li>
+</ul></li>
+<li><code><a href="Enums/MongoError/BulkWriteError.html">MongoError.BulkWriteError</a></code>
+
+<ul>
+<li>Thrown when the server returns errors as part of an executed bulk write.</li>
+<li>If WriteConcernFailure is populated, writeErrors may not be.</li>
+<li><strong>Note:</strong> <code>InsertMany</code> throws a <code><a href="Enums/MongoError/BulkWriteError.html">MongoError.BulkWriteError</a></code>, <em>not</em> a <code><a href="Enums/MongoError/WriteError.html">MongoError.WriteError</a></code>.</li>
+</ul></li>
+</ul>
+<h3 id='user-errors' class='heading'>User Errors</h3>
+
+<p>User applications can sometimes cause errors by using the driver incorrectly (e.g. by passing invalid argument combinations). This category of error covers those cases.</p>
+
+<p>The possible errors that conform to <code><a href="Protocols.html#/s:10MongoSwift0A9UserErrorP">MongoUserError</a></code> are as follows:</p>
+
+<ul>
+<li><code><a href="Enums/MongoError/LogicError.html">MongoError.LogicError</a></code>
+
+<ul>
+<li>Thrown when the user uses the driver incorrectly (e.g. advancing a dead cursor).</li>
+</ul></li>
+<li><code><a href="Enums/MongoError/InvalidArgumentError.html">MongoError.InvalidArgumentError</a></code>
+
+<ul>
+<li>Thrown when user passes invalid arguments to some driver function.</li>
+</ul></li>
+</ul>
+<h3 id='runtime-errors' class='heading'>Runtime Errors</h3>
+
+<p>The driver may experience errors that happen at runtime unexpectedly. These errors don&rsquo;t fit neatly into the categories of occurring only server-side or only as part of the user&rsquo;s fault, so they are represented by their own set of cases.</p>
+
+<p>The <code><a href="Protocols.html#/s:10MongoSwift0A12RuntimeErrorP">MongoRuntimeError</a></code> cases are as follows:</p>
+
+<ul>
+<li><code><a href="Enums/MongoError/InternalError.html">MongoError.InternalError</a></code>
+
+<ul>
+<li>Thrown when something is null when it shouldn&rsquo;t be, the driver has an internal failure, or MongoSwift cannot understand a server response.</li>
+<li>This is generally indicative of a bug somewhere in the driver stack or a system related failure (e.g. a memory allocation failure). If you experience an error that you think is the result of a bug, please file a bug report on GitHub or our Jira project.</li>
+</ul></li>
+<li><code><a href="Enums/MongoError/ConnectionError.html">MongoError.ConnectionError</a></code>
+
+<ul>
+<li>Thrown during any connection establishment / socket related errors.</li>
+<li>This error also conforms to <code>LabeledError</code>.</li>
+</ul></li>
+<li><code><a href="Enums/MongoError/AuthenticationError.html">MongoError.AuthenticationError</a></code>
+
+<ul>
+<li>Thrown when the driver is not authorized to perform a requested command (e.g. due to invalid credentials)</li>
+</ul></li>
+<li><code><a href="Enums/MongoError/ServerSelectionError.html">MongoError.ServerSelectionError</a></code>
+
+<ul>
+<li>Thrown when the driver was unable to select a server for an operation (e.g. due to a timeout or unsatisfiable read preference)</li>
+</ul><div class="aside aside-see">
+    <p class="aside-title">See</p>
+    See <a href="https://docs.mongodb.com/manual/core/read-preference-mechanics/">the official MongoDB documentation</a> for more information.
+
+</div></li>
+</ul>
+<h3 id='error-labels' class='heading'>Error Labels</h3>
+
+<p>Some types of errors may contain more specific information describing the context in which they occured. Such errors conform to the <code><a href="Protocols/MongoLabeledError.html">MongoLabeledError</a></code> protocol, and the extra information is conveyed through the <code>errorLabels</code> property. Specifically, any server error or connection related error may contain labels.</p>
+
+<p>The following error labels are currently defined. Future versions of MongoDB may introduce new labels:</p>
+
+<ul>
+<li><code>TransientTransactionError</code>:
+
+<ul>
+<li>Within a multi-document transaction, certain errors can leave the transaction in an unknown or aborted state. These include write conflicts, primary stepdowns, and network errors. In response, the application should abort the transaction and try the same sequence of operations again in a new transaction.</li>
+</ul></li>
+<li><code>UnknownTransactionCommitResult</code>:
+
+<ul>
+<li>When <code>commitTransaction()</code> encounters a network error or certain server errors, it is not known whether the transaction was committed. Applications should attempt to commit the transaction again until (i) the commit succeeds, (ii) the commit fails with an error <em>not</em> labeled <code>UnknownTransactionCommitResult</code>, or (iii) the application chooses to give up.</li>
+</ul></li>
+</ul>
+<h3 id='encoding-decoding-errors' class='heading'>Encoding/Decoding Errors</h3>
+
+<p>As part of the driver, <code><a href="Classes/BSONEncoder.html">BSONEncoder</a></code> and <code><a href="Classes/BSONDecoder.html">BSONDecoder</a></code> are implemented according to the <code>Encoder</code> and <code>Decoder</code> protocols <a href="https://developer.apple.com/documentation/foundation/archives_and_serialization/encoding_and_decoding_custom_types">defined in Apple&rsquo;s Foundation</a>. User applications can use them to seamlessly convert between their Swift data structures and the BSON documents stored in the database. While this functionality is part of the public API, the driver itself also makes heavy use of it internally. During any encoding or decoding operations, errors can occur that prevent the data from being written to or read from BSON. In these cases, the driver throws an <code>EncodingError</code> or <code>DecodingError</code> as appropriate. These error types are not unique to MongoSwift and are commonly used by other encoder implementations, such as Foundation&rsquo;s <code>JSONEncoder</code>, so they do not conform to the <code><a href="Protocols.html#/s:10MongoSwift0A13ErrorProtocolP">MongoErrorProtocol</a></code> protocol or any of the other error protocols defined in the driver.</p>
+
+<p>See the official documentation for both <a href="https://developer.apple.com/documentation/swift/encodingerror"><code>EncodingErrors</code></a> and <a href="https://developer.apple.com/documentation/swift/decodingerror"><code>DecodingErrors</code></a> for more information.</p>
+<h3 id='bson-errors' class='heading'>BSON Errors</h3>
+
+<p>The BSON library has its own subset of errors that communicate issues when constructing or using BSON.
+BSON Errors can be found in <a href="Sources/MongoSwift/BSON/BSONError.swift">Sources/MongoSwift/BSON/BSONError.swift</a> and are as follows:</p>
+
+<ul>
+<li><code><a href="Enums/BSONError/InvalidArgumentError.html">BSONError.InvalidArgumentError</a></code> - This error is thrown when a BSON type is being incorrectly constructed.</li>
+<li><code><a href="Enums/BSONError/InternalError.html">BSONError.InternalError</a></code> - This error is thrown when there is an issue that is a result of system failure (e.g, allocation issue).</li>
+<li><code><a href="Enums/BSONError/LogicError.html">BSONError.LogicError</a></code> - This error is thrown when there is an unexpected usage of the the API.</li>
+<li><code><a href="Enums/BSONError/DocumentTooLargeError.html">BSONError.DocumentTooLargeError</a></code> - This error is thrown when the document exceeds the maximum encoding size of 16MB.</li>
+</ul>
+<h2 id='examples' class='heading'>Examples</h2>
+<h3 id='handling-any-error-thrown-by-the-driver' class='heading'>Handling any error thrown by the driver</h3>
+<pre class="highlight swift"><code><span class="k">do</span> <span class="p">{</span>
+    <span class="c1">// something involving the driver</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">error</span> <span class="k">as</span> <span class="kt">MongoErrorProtocol</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"Driver error!"</span><span class="p">)</span>
+    <span class="k">switch</span> <span class="n">error</span><span class="o">.</span><span class="k">self</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="k">let</span> <span class="nv">runtimeError</span> <span class="k">as</span> <span class="kt">MongoRuntimeError</span><span class="p">:</span>
+        <span class="c1">// handle RuntimeError</span>
+    <span class="k">case</span> <span class="k">let</span> <span class="nv">serverError</span> <span class="k">as</span> <span class="kt">MongoServerError</span><span class="p">:</span>
+        <span class="c1">// handle ServerError</span>
+    <span class="k">case</span> <span class="k">let</span> <span class="nv">userError</span> <span class="k">as</span> <span class="kt">MongoUserError</span><span class="p">:</span>
+        <span class="c1">// handle UserError</span>
+    <span class="k">default</span><span class="p">:</span>
+        <span class="c1">// should never get here</span>
+    <span class="p">}</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">error</span> <span class="k">as</span> <span class="kt">DecodingError</span> <span class="p">{</span>
+    <span class="c1">// handle DecodingError</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">error</span> <span class="k">as</span> <span class="kt">EncodingError</span> <span class="p">{</span>
+    <span class="c1">// handle EncodingError</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+</code></pre>
+<h3 id='handling-a-commanderror' class='heading'>Handling a CommandError</h3>
+<pre class="highlight swift"><code><span class="k">do</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="n">db</span><span class="o">.</span><span class="nf">runCommand</span><span class="p">([</span><span class="s">"asdfasdf"</span><span class="p">:</span> <span class="s">"sadfsadfasdf"</span><span class="p">])</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">commandError</span> <span class="k">as</span> <span class="kt">MongoError</span><span class="o">.</span><span class="kt">CommandError</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"Command failed: code: </span><span class="se">\(</span><span class="n">commandError</span><span class="o">.</span><span class="n">code</span><span class="se">)</span><span class="s"> message: </span><span class="se">\(</span><span class="n">commandError</span><span class="o">.</span><span class="n">message</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+</code></pre>
+
+<p>Output:</p>
+<pre class="highlight plaintext"><code>Command failed: code: 59 message: no such command: 'asdfasdf'
+</code></pre>
+<h3 id='handling-a-writeerror' class='heading'>Handling a WriteError</h3>
+<pre class="highlight swift"><code><span class="c1">// if you want to ignore duplicate key errors</span>
+<span class="k">do</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">try</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">writeError</span> <span class="k">as</span> <span class="kt">MongoError</span><span class="o">.</span><span class="kt">WriteError</span> <span class="k">where</span> <span class="n">writeError</span><span class="o">.</span><span class="n">writeFailure</span><span class="p">?</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="mi">11000</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"duplicate key error: </span><span class="se">\(</span><span class="mi">1</span><span class="se">)</span><span class="s"> </span><span class="se">\(</span><span class="n">writeError</span><span class="o">.</span><span class="n">writeFailure</span><span class="p">?</span><span class="o">.</span><span class="n">message</span> <span class="p">??</span> <span class="s">""</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+
+<p>Output:</p>
+<pre class="highlight plaintext"><code>duplicate key error: 1 E11000 duplicate key error collection: mydb.mycoll1 index: _id_ dup key: { : 1 }
+</code></pre>
+<h3 id='handling-a-bulkwriteerror' class='heading'>Handling a BulkWriteError</h3>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">docs</span><span class="p">:</span> <span class="p">[</span><span class="kt">Document</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">]]</span>
+<span class="k">do</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">try</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertMany</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">bwe</span> <span class="k">as</span> <span class="kt">MongoError</span><span class="o">.</span><span class="kt">BulkWriteError</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">let</span> <span class="nv">writeErrors</span> <span class="o">=</span> <span class="n">bwe</span><span class="o">.</span><span class="n">writeFailures</span> <span class="p">{</span>
+        <span class="n">writeErrors</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">err</span> <span class="k">in</span> <span class="nf">print</span><span class="p">(</span><span class="s">"Write Error inserting </span><span class="se">\(</span><span class="n">docs</span><span class="p">[</span><span class="n">err</span><span class="o">.</span><span class="n">index</span><span class="p">]</span><span class="se">)</span><span class="s">, code: </span><span class="se">\(</span><span class="n">err</span><span class="o">.</span><span class="n">code</span><span class="se">)</span><span class="s">, message: </span><span class="se">\(</span><span class="n">err</span><span class="o">.</span><span class="n">message</span><span class="se">)</span><span class="s">"</span><span class="p">)</span> <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="n">bwe</span><span class="o">.</span><span class="n">result</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Result: "</span><span class="p">)</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"nInserted: </span><span class="se">\(</span><span class="n">result</span><span class="o">.</span><span class="n">insertedCount</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"InsertedIds: </span><span class="se">\(</span><span class="n">result</span><span class="o">.</span><span class="n">insertedIds</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+</code></pre>
+
+<p>Output:</p>
+<pre class="highlight plaintext"><code>Write Error inserting { "_id" : 1 }, code: 11000, message: E11000 duplicate key error collection: mydb.mycoll1 index: _id_ dup key: { : 1 }
+Result:
+nInserted: 1
+InsertedIds: [0: 2]
+</code></pre>
+<h3 id='handling-a-bsonerror' class='heading'>Handling a BSONError</h3>
+<pre class="highlight swift"><code><span class="k">var</span> <span class="nv">string</span> <span class="o">=</span> <span class="s">"+1..23e8"</span>
+<span class="k">do</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">try</span> <span class="kt">BSONDecimal128</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">bsonError</span> <span class="k">as</span> <span class="kt">BSONError</span><span class="o">.</span><span class="kt">InvalidArgumentError</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">bsonError</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+
+<p>Output:</p>
+<pre class="highlight plaintext"><code>Invalid Decimal128 string +1..23e8
+</code></pre>
+<h2 id='see-also' class='heading'>See Also</h2>
+
+<ul>
+<li><a href="https://docs.swift.org/swift-book/LanguageGuide/ErrorHandling.html">Error handling in Swift</a></li>
+<li><a href="https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.err">List of server error codes</a></li>
+<li><a href="https://github.com/mongodb/specifications/blob/master/source/crud/crud.rst#error-handling">CRUD Spec error definitions</a></li>
+<li><a href="https://developer.apple.com/documentation/swift/encodingerror">EncodingError documentation</a></li>
+<li><a href="https://developer.apple.com/documentation/swift/decodingerror">DecodingError documentation</a></li>
+</ul>
+
+          </div>
+        </section>
+
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2020 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2020-06-07)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>
