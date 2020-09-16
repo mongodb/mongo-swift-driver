@@ -76,70 +76,65 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
             let topologyWatcher = TopologyDescriptionWatcher()
 
-            // Enclose all of the potentially throwing code in `doTest`. Sometimes the expected errors come when
-            // parsing the URI, and other times they are not until we try to select a server.
-            func doTest() throws -> ConnectionString {
-                let opts: MongoClientOptions?
-                if requiresTLS {
-                    opts = MongoClientOptions(
-                        tlsAllowInvalidCertificates: true
-                    )
-                } else {
-                    opts = nil
-                }
+            let opts: MongoClientOptions?
+            if requiresTLS {
+                opts = MongoClientOptions(tlsAllowInvalidCertificates: true)
+            } else {
+                opts = nil
+            }
+            do {
+                try self.withTestClient(testCase.uri, options: opts) { client in
+                    guard testCase.error != true else {
+                        XCTFail("Expected error for test case \(testCase.comment ?? ""), got none")
+                        return
+                    }
 
-                return try self.withTestClient(testCase.uri, options: opts) { client in
                     client.addSDAMEventHandler(topologyWatcher)
+
                     // try selecting a server to trigger SDAM
                     _ = try client.connectionPool.selectServer(forWrites: false)
-                    return try client.connectionPool.getConnectionString()
+
+                    // "You MUST verify that the set of ServerDescriptions in the client's TopologyDescription
+                    // eventually matches the list of hosts."
+                    // This needs to be done before the client leaves scope to ensure the background threads
+                    // keep running.
+                    expect(topologyWatcher.lastTopologyDescription?.servers.map { $0.address })
+                        .toEventually(equal(testCase.hosts), timeout: 5)
+
+                    let connStr = try client.connectionPool.getConnectionString()
+
+                    // "You MUST verify that each of the values of the Connection String Options under options match the
+                    // Client's parsed value for that option."
+                    let connStrOptions = connStr.options ?? [:]
+                    for (k, v) in Array(testCase.options ?? [:]) + Array(testCase.parsedOptions ?? [:]) {
+                        switch k {
+                        // the test files still use SSL, but libmongoc uses TLS
+                        case "ssl":
+                            expect(connStrOptions["tls"]).to(equal(v))
+                        // these values are not returned as part of the options doc
+                        case "authSource", "auth_database":
+                            expect(connStr.authSource).to(equal(v.stringValue))
+                        case "user":
+                            expect(connStr.username).to(equal(v.stringValue))
+                        case "password":
+                            expect(connStr.password).to(equal(v.stringValue))
+                        case "db":
+                            expect(connStr.db).to(equal(v.stringValue))
+                        default:
+                            // there are some case inconsistencies between the tests and libmongoc
+                            expect(connStrOptions[k.lowercased()]).to(equal(v))
+                        }
+                    }
+
+                    // Note: we skip this assertion: "You SHOULD verify that the client's initial seed list matches the
+                    // list of seeds." mongoc doesn't make this assertion in their test runner either.
                 }
-            }
-
-            // "You MUST verify that an error has been thrown if error is present."
-            if testCase.error == true {
-                expect(try doTest()).to(throwError(), description: testCase.comment ?? "")
-                continue
-            }
-
-            let connStr: ConnectionString
-            do {
-                connStr = try doTest()
-            } catch {
+            } catch where testCase.error != true {
                 XCTFail("Expected no error for test case \(testCase.comment ?? ""), got \(error)")
                 continue
+            } catch {
+                continue
             }
-
-            // "You MUST verify that the set of ServerDescriptions in the client's TopologyDescription eventually
-            // matches the list of hosts."
-            expect(topologyWatcher.lastTopologyDescription?.servers.map { $0.address })
-                .toEventually(equal(testCase.hosts), timeout: 5)
-
-            // "You MUST verify that each of the values of the Connection String Options under options match the
-            // Client's parsed value for that option."
-            let connStrOptions = connStr.options ?? [:]
-            for (k, v) in Array(testCase.options ?? [:]) + Array(testCase.parsedOptions ?? [:]) {
-                switch k {
-                // the test files still use SSL, but libmongoc uses TLS
-                case "ssl":
-                    expect(connStrOptions["tls"]).to(equal(v))
-                // these values are not returned as part of the options doc
-                case "authSource", "auth_database":
-                    expect(connStr.authSource).to(equal(v.stringValue))
-                case "user":
-                    expect(connStr.username).to(equal(v.stringValue))
-                case "password":
-                    expect(connStr.password).to(equal(v.stringValue))
-                case "db":
-                    expect(connStr.db).to(equal(v.stringValue))
-                default:
-                    // there are some case inconsistencies between the tests and libmongoc
-                    expect(connStrOptions[k.lowercased()]).to(equal(v))
-                }
-            }
-
-            // Note: we skip this assertion: "You SHOULD verify that the client's initial seed list matches the
-            // list of seeds." mongoc doesn't make this assertion in their test runner either.
         }
     }
 }
