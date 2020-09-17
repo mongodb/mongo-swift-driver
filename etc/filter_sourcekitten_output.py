@@ -28,11 +28,10 @@ for swift_file in original_data:
     # key.substructure is an array with one element per symbol in the file.
     for symbol in swift_file[file_name]['key.substructure']:
         symbol_name = symbol['key.name']
-        # the symbol name for cleanupMongoSwift() 
         if symbol_name in reexported_symbols:
             filtered_symbols.append(symbol)
 
-    # make a copy of the file, which we will update with our filtered data.
+    # make a copy of the file and update it with our filtered data.
     filtered_file = swift_file
     filtered_file[file_name]['key.substructure'] = filtered_symbols
 
