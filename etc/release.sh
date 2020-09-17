@@ -14,7 +14,6 @@ sourcery --sources Sources/MongoSwift --templates Sources/MongoSwift/MongoSwiftV
 ./etc/generate-docs.sh ${1}
 
 # commit changes
-git add docs/
 git add Sources/MongoSwift/MongoSwiftVersion.swift
 git commit -m "${1}"
 
