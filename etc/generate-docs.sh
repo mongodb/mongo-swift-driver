@@ -23,7 +23,7 @@ jazzy_args=(--clean
             --module-version "${version}")
 
 # Generate MongoSwift docs
-args=("${jazzy_args[@]}"  --output "docs/MongoSwift" --module "MongoSwift" --config ".jazzy.yml" 
+args=("${jazzy_args[@]}"  --output "docs-temp/MongoSwift" --module "MongoSwift" --config ".jazzy.yml" 
         --root-url "https://mongodb.github.io/mongo-swift-driver/docs/MongoSwift/")
 jazzy "${args[@]}"
 
@@ -35,7 +35,7 @@ python3 etc/filter_sourcekitten_output.py
 
 sourcekitten doc --spm --module-name MongoSwiftSync > mongoswiftsync-docs.json
 
-args=("${jazzy_args[@]}"  --output "docs/MongoSwiftSync" --module "MongoSwiftSync" --config ".jazzy.yml" 
+args=("${jazzy_args[@]}"  --output "docs-temp/MongoSwiftSync" --module "MongoSwiftSync" --config ".jazzy.yml" 
         --sourcekitten-sourcefile mongoswift-filtered.json,mongoswiftsync-docs.json
         --root-url "https://mongodb.github.io/mongo-swift-driver/docs/MongoSwiftSync/")
 jazzy "${args[@]}"
@@ -43,3 +43,20 @@ jazzy "${args[@]}"
 rm mongoswift-docs.json
 rm mongoswift-filtered.json
 rm mongoswiftsync-docs.json
+
+git checkout gh-pages
+
+rm -rf docs/*
+cp -r docs-temp/* docs/
+rm -rf docs-temp
+
+#git add docs/
+
+echo '<html><head><meta http-equiv="refresh" content="0; url=MongoSwift/index.html" /></head></html>' > docs/index.html
+#git add docs/index.html
+
+# git commit -m "${version} docs"
+# git push
+
+# # go back to wherever we started
+# git checkout -
