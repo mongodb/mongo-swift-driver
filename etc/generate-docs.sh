@@ -50,13 +50,12 @@ rm -rf docs/*
 cp -r docs-temp/* docs/
 rm -rf docs-temp
 
-#git add docs/
-
 echo '<html><head><meta http-equiv="refresh" content="0; url=MongoSwift/index.html" /></head></html>' > docs/index.html
-#git add docs/index.html
 
-# git commit -m "${version} docs"
-# git push
+git add docs/
 
-# # go back to wherever we started
-# git checkout -
+git commit -m "${version} docs"
+git push
+
+# go back to wherever we started
+git checkout -
