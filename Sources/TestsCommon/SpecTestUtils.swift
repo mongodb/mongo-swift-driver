@@ -1,6 +1,6 @@
 import Foundation
 @testable import MongoSwift
-@testable import MongoSwiftSync
+import NIO
 import XCTest
 
 extension MongoSwiftTestCase {
@@ -27,15 +27,16 @@ extension BSONDocument {
     }
 }
 
-extension MongoSwiftSync.MongoDatabase {
+extension MongoDatabase {
     @discardableResult
     public func runCommand(
         _ command: BSONDocument,
         on server: ServerAddress,
         options: RunCommandOptions? = nil,
-        session: MongoSwiftSync.ClientSession? = nil
-    ) throws -> BSONDocument {
-        try self.asyncDB.runCommand(command, on: server, options: options, session: session?.asyncSession).wait()
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<BSONDocument> {
+        let operation = RunCommandOperation(database: self, command: command, options: options, serverAddress: server)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 }
 
