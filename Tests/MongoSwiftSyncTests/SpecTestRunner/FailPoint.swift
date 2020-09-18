@@ -100,7 +100,12 @@ internal struct FailPoint: Decodable {
             } else {
                 try clientToUse.db("admin").runCommand(command)
             }
-        } catch {}
+        } catch _ as MongoError.ServerSelectionError {
+            // this often means the server that the failpoint was set against was marked as unknown
+            // due to the failpoint firing, so we just ignore
+        } catch {
+            print("Failed to disable failpoint: \(error)")
+        }
     }
 
     /// Enum representing the options for the "mode" field of a `configureFailPoint` command.
