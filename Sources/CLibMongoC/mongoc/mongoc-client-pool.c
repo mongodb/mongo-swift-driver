@@ -504,3 +504,10 @@ mongoc_client_pool_enable_auto_encryption (mongoc_client_pool_t *pool,
    return _mongoc_cse_client_pool_enable_auto_encryption (
       pool->topology, opts, error);
 }
+
+void
+mongoc_client_pool_set_min_heartbeat_frequency_msec (mongoc_client_pool_t *pool,
+                                                     uint64_t freq_msec)
+{
+    pool-> topology-> min_heartbeat_frequency_msec = freq_msec;
+}

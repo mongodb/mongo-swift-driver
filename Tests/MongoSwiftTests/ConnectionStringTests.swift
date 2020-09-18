@@ -287,7 +287,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         let connStr3 = try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=20000", options: opts)
         expect(connStr3.options?["heartbeatfrequencyms"]?.int32Value).to(equal(50000))
 
-        let tooSmall = 10
+        let tooSmall = 60
         expect(try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=\(tooSmall)"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
 

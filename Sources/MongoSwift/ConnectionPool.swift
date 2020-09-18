@@ -88,6 +88,10 @@ internal class ConnectionPool {
         guard mongoc_client_pool_set_error_api(pool, MONGOC_ERROR_API_VERSION_2) else {
             fatalError("Could not configure error handling on client pool")
         }
+
+        // We always set min_heartbeat_frequency because the hard-coded default in the vendored mongoc
+        // was lowered to 50. Setting it here brings it to whatever was specified, or 500 if it wasn't.
+        mongoc_client_pool_set_min_heartbeat_frequency_msec(pool, UInt64(connString.minHeartbeatFrequencyMS));
     }
 
     deinit {

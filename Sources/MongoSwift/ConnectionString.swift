@@ -9,7 +9,7 @@ internal class ConnectionString {
 
     /// Minimum possible value for a heartbeatFrequencyMS specified via the URI or options.
     /// This may be overridden in the tests via an internal option on `MongoClientOptions`.
-    private var minHeartbeatFrequencyMS: Int32 = 500
+    internal var minHeartbeatFrequencyMS: Int32 = 500
 
     /// Initializes a new `ConnectionString` with the provided options.
     internal init(_ connectionString: String, options: MongoClientOptions? = nil) throws {
