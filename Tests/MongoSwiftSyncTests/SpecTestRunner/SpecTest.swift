@@ -200,7 +200,10 @@ extension SpecTestFile {
         // setup client needs to be able to talk to all mongoses for targetedFailPoint and for
         // the distinct workaround.
         let connString = MongoSwiftTestCase.getConnectionString(singleMongos: false).toString()
-        let setupClient = try MongoClient.makeTestClient(connString)
+        var setupClientOptions = MongoClientOptions()
+        setupClientOptions.minHeartbeatFrequencyMS = 50
+        setupClientOptions.heartbeatFrequencyMS = 50
+        let setupClient = try MongoClient.makeTestClient(connString, options: setupClientOptions)
 
         if let requirements = self.runOn {
             guard try requirements.contains(where: { try setupClient.getUnmetRequirement($0) == nil }) else {
