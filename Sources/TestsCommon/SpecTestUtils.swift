@@ -1,5 +1,6 @@
 import Foundation
-import MongoSwift
+@testable import MongoSwift
+@testable import MongoSwiftSync
 import XCTest
 
 extension MongoSwiftTestCase {
@@ -23,6 +24,18 @@ extension BSONDocument {
     public init(fromJSONFile file: URL) throws {
         let jsonString = try String(contentsOf: file, encoding: .utf8)
         try self.init(fromJSON: jsonString)
+    }
+}
+
+extension MongoSwiftSync.MongoDatabase {
+    @discardableResult
+    public func runCommand(
+        _ command: BSONDocument,
+        on server: ServerAddress,
+        options: RunCommandOptions? = nil,
+        session: MongoSwiftSync.ClientSession? = nil
+    ) throws -> BSONDocument {
+        try self.asyncDB.runCommand(command, on: server, options: options, session: session?.asyncSession).wait()
     }
 }
 

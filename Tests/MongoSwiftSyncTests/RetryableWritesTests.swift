@@ -29,6 +29,7 @@ private struct RetryableWritesTest: Decodable, FailPointConfigured {
     let failPoint: FailPoint?
 
     var activeFailPoint: FailPoint?
+    var targetedHost: ServerAddress?
 }
 
 /// Struct representing a single retryable-writes spec test JSON file.
@@ -92,9 +93,9 @@ final class RetryableWritesTests: MongoSwiftTestCase {
                 }
 
                 if let failPoint = test.failPoint {
-                    try test.activateFailPoint(failPoint)
+                    try test.activateFailPoint(failPoint, using: setupClient)
                 }
-                defer { test.disableActiveFailPoint() }
+                defer { test.disableActiveFailPoint(using: setupClient) }
 
                 var result: TestOperationResult?
                 var seenError: Error?
@@ -128,7 +129,7 @@ final class RetryableWritesTests: MongoSwiftTestCase {
                 }
 
                 let verifyColl = db.collection(test.outcome.collection.name ?? collection.name)
-                let foundDocs = try Array(verifyColl.find().all())
+                let foundDocs = try verifyColl.find().all()
                 expect(foundDocs.count).to(equal(test.outcome.collection.data.count))
                 zip(foundDocs, test.outcome.collection.data).forEach {
                     expect($0).to(sortedEqual($1), description: test.description)

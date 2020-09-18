@@ -244,9 +244,9 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
 
         let testConnStr = MongoSwiftTestCase.getConnectionString()
-        let rsName = try ConnectionString(testConnStr).replicaSet!
+        let rsName = testConnStr.replicaSet!
 
-        var connStrWithoutRS = testConnStr
+        var connStrWithoutRS = testConnStr.toString()
         connStrWithoutRS.removeSubstring("replicaSet=\(rsName)")
         // need to delete the extra & in case replicaSet was first
         connStrWithoutRS = connStrWithoutRS.replacingOccurrences(of: "?&", with: "?")
@@ -261,14 +261,14 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
         // setting actual name via both client options and URI should succeed in connecting
         opts.replicaSet = rsName
-        try self.withTestClient(testConnStr, options: opts) { client in
+        try self.withTestClient(testConnStr.toString(), options: opts) { client in
             expect(try client.listDatabases().wait()).toNot(throwError())
         }
 
         // setting to an incorrect repl set name via client options should fail to connect
         // speed up server selection timeout to fail faster
         opts.replicaSet! += "xyz"
-        try self.withTestClient(testConnStr + "&serverSelectionTimeoutMS=1000", options: opts) { client in
+        try self.withTestClient(testConnStr.toString() + "&serverSelectionTimeoutMS=1000", options: opts) { client in
             expect(try client.listDatabases().wait()).to(throwError())
         }
     }

@@ -14,6 +14,10 @@ public struct RunCommandOptions: Encodable {
     /// that writes.
     public var writeConcern: WriteConcern?
 
+    /// Opaque value representing a server to run the command on.
+    /// For usage in tests only.
+    internal var serverId: Int?
+
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
         readConcern: ReadConcern? = nil,
@@ -23,10 +27,11 @@ public struct RunCommandOptions: Encodable {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.writeConcern = writeConcern
+        self.serverId = nil
     }
 
     private enum CodingKeys: String, CodingKey {
-        case readConcern, writeConcern
+        case readConcern, writeConcern, serverId
     }
 }
 
@@ -35,15 +40,53 @@ internal struct RunCommandOperation: Operation {
     private let database: MongoDatabase
     private let command: BSONDocument
     private let options: RunCommandOptions?
+    private let serverAddress: ServerAddress?
 
-    internal init(database: MongoDatabase, command: BSONDocument, options: RunCommandOptions?) {
+    internal init(
+        database: MongoDatabase,
+        command: BSONDocument,
+        options: RunCommandOptions?,
+        serverAddress: ServerAddress? = nil
+    ) {
         self.database = database
         self.command = command
         self.options = options
+        self.serverAddress = serverAddress
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> BSONDocument {
-        let opts = try encodeOptions(options: self.options, session: session)
+        let serverId: Int? = try self.serverAddress.map { address in
+            let id: Int? = connection.withMongocConnection { connection in
+                var numServers = 0
+                let sds = mongoc_client_get_server_descriptions(connection, &numServers)
+                defer { mongoc_server_descriptions_destroy_all(sds, numServers) }
+
+                guard numServers > 0 else {
+                    return nil
+                }
+
+                let buffer = UnsafeBufferPointer(start: sds, count: numServers)
+                // the buffer is documented as always containing non-nil pointers (if non-empty).
+                // swiftlint:disable:next force_unwrapping
+                let servers = Array(buffer).map { ServerDescription($0!) }
+                return servers.first { $0.address == address }?.serverId
+            }
+
+            guard let out = id else {
+                throw MongoError.ServerSelectionError(message: "No known host with address \(address)")
+            }
+
+            return out
+        }
+
+        var options = self.options
+        if let id = serverId {
+            options = options ?? RunCommandOptions()
+            options?.serverId = id
+        }
+
+        let opts = try encodeOptions(options: options, session: session)
+
         return try self.database.withMongocDatabase(from: connection) { dbPtr in
             try ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
                 try runMongocCommandWithReply(

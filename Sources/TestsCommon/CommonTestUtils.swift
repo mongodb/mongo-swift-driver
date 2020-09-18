@@ -1,3 +1,4 @@
+import CLibMongoC
 import Foundation
 @testable import MongoSwift
 import Nimble
@@ -21,6 +22,14 @@ extension String {
     }
 }
 
+extension ConnectionString {
+    public func toString() -> String {
+        self.withMongocURI { uri in
+            String(cString: mongoc_uri_get_string(uri))
+        }
+    }
+}
+
 open class MongoSwiftTestCase: XCTestCase {
     /// Gets the name of the database the test case is running against.
     public class var testDatabase: String {
@@ -30,33 +39,28 @@ open class MongoSwiftTestCase: XCTestCase {
     /// Gets the connection string to use from the environment variable, $MONGODB_URI. If the variable does not exist,
     /// will return a default of "mongodb://127.0.0.1/". If singleMongos is true and this is a sharded topology, will
     /// edit $MONGODB_URI as needed so that it only contains a single host.
-    public static func getConnectionString(singleMongos: Bool = true) -> String {
-        let uri = Self.uri
-
+    public static func getConnectionString(singleMongos: Bool = true) -> ConnectionString {
         // we only need to manipulate the URI if singleMongos is requested and the topology is sharded.
         guard singleMongos && MongoSwiftTestCase.topologyType == .sharded else {
-            return uri
+            return try! ConnectionString(Self.uri)
         }
 
-        guard let hosts = try? ConnectionString(uri).hosts else {
-            return uri
-        }
-
-        var output = uri
+        let hosts = self.getHosts()
+        var output = Self.uri
         // remove all but the first host so we connect to a single mongos.
         for host in hosts[1...] {
             output.removeSubstring(",\(host.description)")
         }
-        return output
+        return try! ConnectionString(output)
     }
 
     /// Get a connection string for the specified host only.
-    public static func getConnectionString(forHost serverAddress: ServerAddress) -> String {
-        Self.getConnectionStringPerHost().first { $0.contains(String(describing: serverAddress)) }!
+    public static func getConnectionString(forHost serverAddress: ServerAddress) -> ConnectionString {
+        Self.getConnectionStringPerHost().first { $0.hosts!.contains(serverAddress) }!
     }
 
     /// Returns a different connection string per host specified in MONGODB_URI.
-    public static func getConnectionStringPerHost() -> [String] {
+    public static func getConnectionStringPerHost() -> [ConnectionString] {
         let uri = Self.uri
 
         let regex = try! NSRegularExpression(pattern: #"mongodb:\/\/(?:.*@)?([^\/]+)(?:\/|$)"#)
@@ -66,8 +70,12 @@ open class MongoSwiftTestCase: XCTestCase {
         let hostsRange = Range(match.range(at: 1), in: uri)!
 
         return try! ConnectionString(uri).hosts!.map { host in
-            uri.replacingCharacters(in: hostsRange, with: host.description)
+            try! ConnectionString(uri.replacingCharacters(in: hostsRange, with: host.description))
         }
+    }
+
+    public static func getHosts() -> [ServerAddress] {
+        try! ConnectionString(self.uri).hosts!
     }
 
     // indicates whether we are running on a 32-bit platform

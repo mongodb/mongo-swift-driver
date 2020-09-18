@@ -15,7 +15,11 @@ protocol TestOperation: Decodable {
 
     func execute(on session: ClientSession) throws -> TestOperationResult?
 
-    func execute<T: SpecTest>(on runner: inout T, sessions: [String: ClientSession]) throws -> TestOperationResult?
+    func execute<T: SpecTest>(
+        on runner: inout T,
+        setupClient: MongoClient,
+        sessions: [String: ClientSession]
+    ) throws -> TestOperationResult?
 }
 
 extension TestOperation {
@@ -38,7 +42,11 @@ extension TestOperation {
         throw TestError(message: "\(type(of: self)) cannot execute on a session")
     }
 
-    func execute<T: SpecTest>(on _: inout T, sessions _: [String: ClientSession]) throws -> TestOperationResult? {
+    func execute<T: SpecTest>(
+        on _: inout T,
+        setupClient _: MongoClient,
+        sessions _: [String: ClientSession]
+    ) throws -> TestOperationResult? {
         throw TestError(message: "\(type(of: self)) cannot execute on a test runner")
     }
 }
@@ -117,8 +125,10 @@ struct TestOperationDescription: Decodable {
     ///
     /// The operation may be mutated over the course of this execution (e.g. by enabling a failpoint), so it
     /// must be passed as an `inout` parameter.
+    // swiftlint:disable:next function_parameter_count
     func validateExecution<T: SpecTest>(
         test: inout T,
+        setupClient: MongoClient,
         client: MongoClient,
         dbName: String,
         collName: String?,
@@ -149,7 +159,7 @@ struct TestOperationDescription: Decodable {
                 }
                 result = try self.operation.op.execute(on: session)
             case .testRunner:
-                result = try self.operation.op.execute(on: &test, sessions: sessions)
+                result = try self.operation.op.execute(on: &test, setupClient: setupClient, sessions: sessions)
             case .gridfsbucket:
                 throw TestError(message: "gridfs tests should be skipped")
             }

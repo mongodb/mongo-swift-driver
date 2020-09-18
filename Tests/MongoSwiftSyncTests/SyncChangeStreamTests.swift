@@ -159,15 +159,16 @@ internal struct ChangeStreamTest: Decodable, FailPointConfigured {
     let result: ChangeStreamTestResult
 
     var activeFailPoint: FailPoint?
+    var targetedHost: ServerAddress?
 
     internal mutating func run(globalClient: MongoClient, database: String, collection: String) throws {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
 
         if let failPoint = self.failPoint {
-            try self.activateFailPoint(failPoint)
+            try failPoint.enable(using: globalClient)
         }
-        defer { self.disableActiveFailPoint() }
+        defer { self.failPoint?.disable(using: globalClient) }
 
         monitor.captureEvents {
             do {

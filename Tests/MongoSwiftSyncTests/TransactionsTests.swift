@@ -24,6 +24,7 @@ private struct TransactionsTest: SpecTest {
     let expectations: [TestCommandStartedEvent]?
 
     var activeFailPoint: FailPoint?
+    var targetedHost: ServerAddress?
 
     static let sessionNames: [String] = ["session0", "session1"]
 

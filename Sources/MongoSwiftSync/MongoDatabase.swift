@@ -22,7 +22,7 @@ public struct MongoDatabase {
     public var writeConcern: WriteConcern? { self.asyncDB.writeConcern }
 
     /// The underlying asynchronous database.
-    private let asyncDB: MongoSwift.MongoDatabase
+    internal let asyncDB: MongoSwift.MongoDatabase
 
     /// The client this database was derived from. We store this to ensure it remains open for as long as this object
     /// is in scope.

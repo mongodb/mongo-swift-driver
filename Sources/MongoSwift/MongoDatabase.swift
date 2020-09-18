@@ -348,6 +348,19 @@ public struct MongoDatabase {
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
+    /// Run a command against a specific server address. For testing purposes only.
+    /// Note: SDAM must already be started on this client in order for this to succeed.
+    @discardableResult
+    internal func runCommand(
+        _ command: BSONDocument,
+        on server: ServerAddress,
+        options: RunCommandOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> EventLoopFuture<BSONDocument> {
+        let operation = RunCommandOperation(database: self, command: command, options: options, serverAddress: server)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+    }
+
     /**
      * Starts a `ChangeStream` on a database. Excludes system collections.
      *
