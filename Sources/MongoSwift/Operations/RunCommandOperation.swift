@@ -10,13 +10,13 @@ public struct RunCommandOptions: Encodable {
     /// command that reads.
     public var readPreference: ReadPreference?
 
-    /// An optional `WriteConcern` to use for this operation. This option should only be used when executing a command
-    /// that writes.
-    public var writeConcern: WriteConcern?
-
     /// Opaque value representing a server to run the command on.
     /// For usage in tests only.
     internal var serverId: Int?
+
+    /// An optional `WriteConcern` to use for this operation. This option should only be used when executing a command
+    /// that writes.
+    public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
