@@ -92,6 +92,7 @@ echo "RENAMING header files"
   # NOTE: the below sed syntax uses addresses to include or ingore lines including the word `private`
   find $CLIBMONGOC_PATH -name "*.[ch]" | \
     xargs $sed -i -e 's+include "common+include "CLibMongoC_common+' \
+                  -e 's+include <common-thread-private.h>+include "CLibMongoC_common-thread-private.h"+' \
                   \
                   -e '/private/! s+include "bson.h"+include "CLibMongoC_bson.h"+' \
                   -e '/private/! s+include "bcon.h"+include "CLibMongoC_bcon.h"+' \
@@ -108,8 +109,7 @@ echo "RENAMING header files"
                   -e '/private/ s+include "mongoc/+include "+' \
                   \
                   -e 's+CLibMongoC_utlist.h+utlist.h+' \
-                  -e 's+PRId64+\"lld\"+' \
-                  -e 's+include <common-thread-private.h>+include "CLibMongoC_common-thread-private.h"+'
+                  -e 's+PRId64+\"lld\"+'
 
   # fix jsonsl references
   $sed -i -e 's+include "jsonsl/+include "+' $BSON_PATH/bson-json.c
@@ -133,7 +133,7 @@ echo "RENAMING header files"
 )
 
 # Here we would apply any number of larger patches that don't fit into a single sed line.
-# echo "PATCHING libmongoc"
+echo "PATCHING libmongoc"
 git apply ${ETC_DIR}/lower-minheartbeatfrequencyms.diff
 
 # Clang modules are build by a conventional structure with an `include` folder for public
