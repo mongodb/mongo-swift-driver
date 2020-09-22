@@ -50,8 +50,8 @@ internal struct RunCommandOperation: Operation {
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> BSONDocument {
-        let serverId: Int? = try self.serverAddress.map { address in
-            let id: Int? = connection.withMongocConnection { connection in
+        let serverId: UInt32? = try self.serverAddress.map { address in
+            let id: UInt32? = connection.withMongocConnection { connection in
                 var numServers = 0
                 let sds = mongoc_client_get_server_descriptions(connection, &numServers)
                 defer { mongoc_server_descriptions_destroy_all(sds, numServers) }
