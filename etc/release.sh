@@ -4,25 +4,47 @@
 # exit if any command fails
 set -e
 
+version=${1}
+
+# Ensure version is non-empty
+[ ! -z "${version}" ] || { echo "ERROR: Missing version string"; exit 1; }
+
 # verify that the examples build
 ./etc/build-examples.sh
 
-# update version string for libmongoc handshake
-sourcery --sources Sources/MongoSwift --templates Sources/MongoSwift/MongoSwiftVersion.stencil --output Sources/MongoSwift/MongoSwiftVersion.swift --args versionString=${1}
-
 # regenerate documentation with new version string
-./etc/generate-docs.sh ${1}
+./etc/generate-docs.sh ${version}
+
+# commit/push docs to the gh-pages branch
+git checkout gh-pages
+
+rm -rf docs/*
+mv docs-temp/* docs/
+rm -d docs-temp
+
+git add docs/
+git commit -m "${version} docs"
+git push
+
+# go back to our original branch
+git checkout -
+
+# update version string for libmongoc handshake
+sourcery --sources Sources/MongoSwift \
+        --templates Sources/MongoSwift/MongoSwiftVersion.stencil \
+        --output Sources/MongoSwift/MongoSwiftVersion.swift \
+        --args versionString=${version}
 
 # commit changes
 git add Sources/MongoSwift/MongoSwiftVersion.swift
-git commit -m "${1}"
+git commit -m "${version}"
 
 # tag release 
-git tag "v${1}"
+git tag "v${version}"
 
 # push changes
 git push
 git push --tags
 
 # go to GitHub to publish release notes
-open "https://github.com/mongodb/mongo-swift-driver/releases/tag/v${1}"
+open "https://github.com/mongodb/mongo-swift-driver/releases/tag/v${version}"

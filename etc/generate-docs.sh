@@ -10,7 +10,7 @@ if ! command -v jazzy > /dev/null; then
 fi
 
 if ! command -v sourcekitten > /dev/null; then
-  gem install jazzy || { echo "ERROR: Failed to locate SourceKitten; please install yourself"; exit 1; }
+  echo "ERROR: Failed to locate SourceKitten; please install yourself and/or add to your \$PATH"; exit 1
 fi
 
 version=${1}
@@ -44,18 +44,4 @@ rm mongoswift-docs.json
 rm mongoswift-filtered.json
 rm mongoswiftsync-docs.json
 
-# git checkout gh-pages
-
-# rm -rf docs/*
-# cp -r docs-temp/* docs/
-# rm -rf docs-temp
-
-# echo '<html><head><meta http-equiv="refresh" content="0; url=MongoSwift/index.html" /></head></html>' > docs/index.html
-
-# git add docs/
-
-# git commit -m "${version} docs"
-# git push
-
-# # go back to wherever we started
-# git checkout -
+echo '<html><head><meta http-equiv="refresh" content="0; url=MongoSwift/index.html" /></head></html>' > docs-temp/index.html
