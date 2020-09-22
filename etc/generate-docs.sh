@@ -44,18 +44,18 @@ rm mongoswift-docs.json
 rm mongoswift-filtered.json
 rm mongoswiftsync-docs.json
 
-git checkout gh-pages
+# git checkout gh-pages
 
-rm -rf docs/*
-cp -r docs-temp/* docs/
-rm -rf docs-temp
+# rm -rf docs/*
+# cp -r docs-temp/* docs/
+# rm -rf docs-temp
 
-echo '<html><head><meta http-equiv="refresh" content="0; url=MongoSwift/index.html" /></head></html>' > docs/index.html
+# echo '<html><head><meta http-equiv="refresh" content="0; url=MongoSwift/index.html" /></head></html>' > docs/index.html
 
-git add docs/
+# git add docs/
 
-git commit -m "${version} docs"
-git push
+# git commit -m "${version} docs"
+# git push
 
-# go back to wherever we started
-git checkout -
+# # go back to wherever we started
+# git checkout -
