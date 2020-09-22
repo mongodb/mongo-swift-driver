@@ -10,10 +10,6 @@ public struct RunCommandOptions: Encodable {
     /// command that reads.
     public var readPreference: ReadPreference?
 
-    /// Opaque value representing a server to run the command on.
-    /// For usage in tests only.
-    internal var serverId: Int?
-
     /// An optional `WriteConcern` to use for this operation. This option should only be used when executing a command
     /// that writes.
     public var writeConcern: WriteConcern?
@@ -27,11 +23,10 @@ public struct RunCommandOptions: Encodable {
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.writeConcern = writeConcern
-        self.serverId = nil
     }
 
     private enum CodingKeys: String, CodingKey {
-        case readConcern, writeConcern, serverId
+        case readConcern, writeConcern
     }
 }
 
@@ -79,13 +74,11 @@ internal struct RunCommandOperation: Operation {
             return out
         }
 
-        var options = self.options
+        var opts = try encodeOptions(options: self.options, session: session)
         if let id = serverId {
-            options = options ?? RunCommandOptions()
-            options?.serverId = id
+            opts = opts ?? [:]
+            opts?["serverId"] = .int64(Int64(id))
         }
-
-        let opts = try encodeOptions(options: options, session: session)
 
         return try self.database.withMongocDatabase(from: connection) { dbPtr in
             try ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
