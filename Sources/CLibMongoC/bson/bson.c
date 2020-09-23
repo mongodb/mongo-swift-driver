@@ -26,9 +26,6 @@
 #include <string.h>
 #include <math.h>
 
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-#include <inttypes.h>
-#endif
 
 #ifndef BSON_MAX_RECURSION
 #define BSON_MAX_RECURSION 200
@@ -108,7 +105,7 @@ static const uint8_t gZero;
  *       a malloc based buffer.
  *
  * Returns:
- *       true if successful; otherwise false indicating INT_MAX overflow.
+ *       true if successful; otherwise false indicating BSON_MAX_SIZE overflow.
  *
  * Side effects:
  *       None.
@@ -130,7 +127,7 @@ _bson_impl_inline_grow (bson_impl_inline_t *impl, /* IN */
 
    req = bson_next_power_of_two (impl->len + size);
 
-   if (req <= INT32_MAX) {
+   if (req <= BSON_MAX_SIZE) {
       data = bson_malloc (req);
 
       memcpy (data, impl->data, impl->len);
@@ -164,7 +161,7 @@ _bson_impl_inline_grow (bson_impl_inline_t *impl, /* IN */
  *       based buffers.
  *
  * Returns:
- *       true if successful; otherwise false indicating INT_MAX overflow.
+ *       true if successful; otherwise false indicating BSON_MAX_SIZE overflow.
  *
  * Side effects:
  *       None.
@@ -190,7 +187,7 @@ _bson_impl_alloc_grow (bson_impl_alloc_t *impl, /* IN */
 
    req = bson_next_power_of_two (req);
 
-   if ((req <= INT32_MAX) && impl->realloc) {
+   if ((req <= BSON_MAX_SIZE) && impl->realloc) {
       *impl->buf = impl->realloc (*impl->buf, req, impl->realloc_func_ctx);
       *impl->buflen = req;
       return true;
@@ -306,7 +303,7 @@ _bson_encode_length (bson_t *bson) /* IN */
  *
  * Returns:
  *       true if the bytes were appended successfully.
- *       false if it bson would overflow INT_MAX.
+ *       false if it bson would overflow BSON_MAX_SIZE.
  *
  * Side effects:
  *       None.
@@ -340,7 +337,8 @@ _bson_append_va (bson_t *bson,              /* IN */
 
    do {
       n_pairs--;
-      /* data may be NULL if data_len is 0. memcpy is not safe to call with NULL. */
+      /* data may be NULL if data_len is 0. memcpy is not safe to call with
+       * NULL. */
       if (BSON_LIKELY (data_len != 0 && data != NULL)) {
          memcpy (buf, data, data_len);
          bson->len += data_len;
@@ -381,7 +379,7 @@ _bson_append_va (bson_t *bson,              /* IN */
  *       @first_data: First buffer.
  *
  * Returns:
- *       true if successful; otherwise false indicating INT_MAX overflow.
+ *       true if successful; otherwise false indicating BSON_MAX_SIZE overflow.
  *
  * Side effects:
  *       None.
@@ -435,7 +433,7 @@ _bson_append (bson_t *bson,              /* IN */
  *       @key_type MUST be either BSON_TYPE_DOCUMENT or BSON_TYPE_ARRAY.
  *
  * Returns:
- *       true if successful; otherwise false indicating INT_MAX overflow.
+ *       true if successful; otherwise false indicating BSON_MAX_SIZE overflow.
  *
  * Side effects:
  *       @child is initialized if true is returned.
@@ -698,7 +696,7 @@ bson_append_document_begin (bson_t *bson,    /* IN */
  *       function, if true is returned.
  *
  * Returns:
- *       true if successful; otherwise false indicating INT_MAX overflow.
+ *       true if successful; otherwise false indicating BSON_MAX_SIZE overflow.
  *
  * Side effects:
  *       @child is destroyed and invalid after calling this function.
@@ -728,7 +726,7 @@ bson_append_document_end (bson_t *bson,  /* IN */
  *       since few buffers need to be malloced.
  *
  * Returns:
- *       true if successful; otherwise false indicating INT_MAX overflow.
+ *       true if successful; otherwise false indicating BSON_MAX_SIZE overflow.
  *
  * Side effects:
  *       None.
@@ -2008,7 +2006,7 @@ bson_init_static (bson_t *bson, const uint8_t *data, size_t length)
    BSON_ASSERT (bson);
    BSON_ASSERT (data);
 
-   if ((length < 5) || (length > INT_MAX)) {
+   if ((length < 5) || (length > BSON_MAX_SIZE)) {
       return false;
    }
 
@@ -2068,7 +2066,7 @@ bson_sized_new (size_t size)
    bson_impl_alloc_t *impl_a;
    bson_t *b;
 
-   BSON_ASSERT (size <= INT32_MAX);
+   BSON_ASSERT (size <= BSON_MAX_SIZE);
 
    b = bson_malloc (sizeof *b);
    impl_a = (bson_impl_alloc_t *) b;
@@ -2107,7 +2105,7 @@ bson_new_from_data (const uint8_t *data, size_t length)
 
    BSON_ASSERT (data);
 
-   if ((length < 5) || (length > INT_MAX) || data[length - 1]) {
+   if ((length < 5) || (length > BSON_MAX_SIZE) || data[length - 1]) {
       return NULL;
    }
 
@@ -2154,7 +2152,7 @@ bson_new_from_buffer (uint8_t **buf,
       memcpy (*buf, &len_le, sizeof (len_le));
       (*buf)[4] = '\0';
    } else {
-      if ((*buf_len < 5) || (*buf_len > INT_MAX)) {
+      if ((*buf_len < 5) || (*buf_len > BSON_MAX_SIZE)) {
          bson_free (bson);
          return NULL;
       }
@@ -2518,7 +2516,7 @@ bson_compare (const bson_t *bson, const bson_t *other)
    ret = memcmp (data1, data2, BSON_MIN (len1, len2));
 
    if (ret == 0) {
-      ret = (int64_t) (len1 - len2);
+      ret = (int64_t) len1 - (int64_t) len2;
    }
 
    return (ret < 0) ? -1 : (ret > 0);
@@ -2715,9 +2713,10 @@ _bson_as_json_visit_binary (const bson_iter_t *iter,
    size_t b64_len;
    char *b64;
 
-   b64_len = (v_binary_len / 3 + 1) * 4 + 1;
+   b64_len = COMMON_PREFIX (bson_b64_ntop_calculate_target_size (v_binary_len));
    b64 = bson_malloc0 (b64_len);
-   BSON_ASSERT (bson_b64_ntop (v_binary, v_binary_len, b64, b64_len) != -1);
+   BSON_ASSERT (
+      COMMON_PREFIX (bson_b64_ntop (v_binary, v_binary_len, b64, b64_len) != -1));
 
    if (state->mode == BSON_JSON_MODE_CANONICAL ||
        state->mode == BSON_JSON_MODE_RELAXED) {

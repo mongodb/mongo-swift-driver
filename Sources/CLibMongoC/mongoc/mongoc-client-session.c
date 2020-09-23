@@ -22,8 +22,7 @@
 #include "mongoc-util-private.h"
 #include "mongoc-read-concern-private.h"
 #include "mongoc-read-prefs-private.h"
-
-#define SESSION_NEVER_USED (-1)
+#include "mongoc-error-private.h"
 
 #define WITH_TXN_TIMEOUT_MS (120 * 1000)
 
@@ -80,37 +79,6 @@ txn_opts_copy (const mongoc_transaction_opt_t *src,
 }
 
 
-static void
-copy_labels_plus_unknown_commit_result (const bson_t *src, bson_t *dst)
-{
-   bson_iter_t iter;
-   bson_iter_t src_label;
-   bson_t dst_labels;
-   char str[16];
-   uint32_t i = 0;
-   const char *key;
-
-   BSON_APPEND_ARRAY_BEGIN (dst, "errorLabels", &dst_labels);
-   BSON_APPEND_UTF8 (&dst_labels, "0", UNKNOWN_COMMIT_RESULT);
-
-   /* append any other errorLabels already in "src" */
-   if (bson_iter_init_find (&iter, src, "errorLabels") &&
-       bson_iter_recurse (&iter, &src_label)) {
-      while (bson_iter_next (&src_label) && BSON_ITER_HOLDS_UTF8 (&src_label)) {
-         if (strcmp (bson_iter_utf8 (&src_label, NULL),
-                     UNKNOWN_COMMIT_RESULT) != 0) {
-            i++;
-            bson_uint32_to_string (i, &key, str, sizeof str);
-            BSON_APPEND_UTF8 (
-               &dst_labels, key, bson_iter_utf8 (&src_label, NULL));
-         }
-      }
-   }
-
-   bson_append_array_end (dst, &dst_labels);
-}
-
-
 static bool
 txn_abort (mongoc_client_session_t *session, bson_t *reply, bson_error_t *error)
 {
@@ -119,7 +87,6 @@ txn_abort (mongoc_client_session_t *session, bson_t *reply, bson_error_t *error)
    bson_error_t err_local;
    bson_error_t *err_ptr = error ? error : &err_local;
    bson_t reply_local = BSON_INITIALIZER;
-   mongoc_write_err_type_t error_type;
    bool r = false;
 
    _mongoc_bson_init_if_set (reply);
@@ -150,9 +117,9 @@ txn_abort (mongoc_client_session_t *session, bson_t *reply, bson_error_t *error)
       session->client, "admin", &cmd, &opts, &reply_local, err_ptr);
 
    /* Transactions Spec: "Drivers MUST retry the commitTransaction command once
-    * after it fails with a retryable error", same for abort */
-   error_type = _mongoc_write_error_get_type (r, err_ptr, &reply_local);
-   if (error_type == MONGOC_WRITE_ERR_RETRY) {
+    * after it fails with a retryable error", same for abort. Note that a
+    * RetryableWriteError label has already been appended here. */
+   if (mongoc_error_has_label (&reply_local, RETRYABLE_WRITE_ERROR)) {
       _mongoc_client_session_unpin (session);
       bson_destroy (&reply_local);
       r = mongoc_client_write_command_with_opts (
@@ -266,8 +233,9 @@ retry:
       session->client, "admin", &cmd, &opts, &reply_local, err_ptr);
 
    /* Transactions Spec: "Drivers MUST retry the commitTransaction command once
-    * after it fails with a retryable error", same for abort */
-   error_type = _mongoc_write_error_get_type (r, err_ptr, &reply_local);
+    * after it fails with a retryable error", same for abort. Note that a
+    * RetryableWriteError label has already been appended here. */
+   error_type = _mongoc_write_error_get_type (&reply_local);
    if (!retrying_after_error && error_type == MONGOC_WRITE_ERR_RETRY) {
       retrying_after_error = true; /* retry after error only once */
       _mongoc_client_session_unpin (session);
@@ -290,7 +258,8 @@ retry:
       if (reply) {
          bson_copy_to_excluding_noinit (
             &reply_local, reply, "errorLabels", NULL);
-         copy_labels_plus_unknown_commit_result (&reply_local, reply);
+         _mongoc_error_copy_labels_and_upsert (
+            &reply_local, reply, UNKNOWN_COMMIT_RESULT);
       }
    } else if (reply) {
       /* maintain invariants: reply & reply_local are valid until the end */

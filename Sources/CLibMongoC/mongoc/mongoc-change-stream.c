@@ -22,6 +22,7 @@
 #include "mongoc-cursor-private.h"
 #include "mongoc-database-private.h"
 #include "CLibMongoC_mongoc-error.h"
+#include "mongoc-error-private.h"
 
 #define CHANGE_STREAM_ERR(_str)         \
    bson_set_error (&stream->err,        \
@@ -32,7 +33,7 @@
 /* the caller knows either a client or server error has occurred.
  * `reply` contains the server reply or an empty document. */
 static bool
-_is_resumable_error (const bson_t *reply)
+_is_resumable_error (mongoc_change_stream_t *stream, const bson_t *reply)
 {
    bson_error_t error = {0};
 
@@ -46,28 +47,35 @@ _is_resumable_error (const bson_t *reply)
       return true;
    }
 
-   if (mongoc_error_has_label (reply, "NonResumableChangeStreamError")) {
-      return false;
-   }
-
-   /* Change Streams Spec resumable criteria: "a server error response with an
-    * error message containing the substring 'not master' or 'node is
-    * recovering' */
-   if (strstr (error.message, "not master") ||
-       strstr (error.message, "node is recovering")) {
+   if (error.code == MONGOC_SERVER_ERR_CURSOR_NOT_FOUND) {
       return true;
    }
 
-   /* Change Streams Spec resumable criteria: "any server error response from a
-    * getMore command excluding those containing the following error codes" */
+   if (stream->max_wire_version >= WIRE_VERSION_4_4) {
+      return mongoc_error_has_label (reply, "ResumableChangeStreamError");
+   }
+
    switch (error.code) {
-   case 11601:                      /* Interrupted */
-   case 136:                        /* CappedPositionLost */
-   case 237:                        /* CursorKilled */
-   case MONGOC_ERROR_QUERY_FAILURE: /* error code omitted */
-      return false;
-   default:
+   case MONGOC_SERVER_ERR_HOSTUNREACHABLE:
+   case MONGOC_SERVER_ERR_HOSTNOTFOUND:
+   case MONGOC_SERVER_ERR_NETWORKTIMEOUT:
+   case MONGOC_SERVER_ERR_SHUTDOWNINPROGRESS:
+   case MONGOC_SERVER_ERR_PRIMARYSTEPPEDDOWN:
+   case MONGOC_SERVER_ERR_EXCEEDEDTIMELIMIT:
+   case MONGOC_SERVER_ERR_SOCKETEXCEPTION:
+   case MONGOC_SERVER_ERR_NOTMASTER:
+   case MONGOC_SERVER_ERR_INTERRUPTEDATSHUTDOWN:
+   case MONGOC_SERVER_ERR_INTERRUPTEDDUETOREPLSTATECHANGE:
+   case MONGOC_SERVER_ERR_NOTMASTERNOSLAVEOK:
+   case MONGOC_SERVER_ERR_NOTMASTERORSECONDARY:
+   case MONGOC_SERVER_ERR_STALESHARDVERSION:
+   case MONGOC_SERVER_ERR_STALEEPOCH:
+   case MONGOC_SERVER_ERR_STALECONFIG:
+   case MONGOC_SERVER_ERR_RETRYCHANGESTREAM:
+   case MONGOC_SERVER_ERR_FAILEDTOSATISFYREADPREFERENCE:
       return true;
+   default:
+      return false;
    }
 }
 
@@ -93,9 +101,7 @@ _set_resume_token (mongoc_change_stream_t *stream, const bson_t *resume_token)
  *     cursor: { batchSize: x } }
  */
 static void
-_make_command (mongoc_change_stream_t *stream,
-               bson_t *command,
-               int32_t max_wire_version)
+_make_command (mongoc_change_stream_t *stream, bson_t *command)
 {
    bson_iter_t iter;
    bson_t change_stream_stage; /* { $changeStream: <change_stream_doc> } */
@@ -135,7 +141,7 @@ _make_command (mongoc_change_stream_t *stream,
                &change_stream_doc, "resumeAfter", &stream->resume_token);
          }
       } else if (!_mongoc_timestamp_empty (&stream->operation_time) &&
-                 max_wire_version >= 7) {
+                 stream->max_wire_version >= WIRE_VERSION_4_0) {
          /* Else if there is no cached resumeToken and the ChangeStream
             has a saved operation time and the max wire version is >= 7,
             the driver MUST set startAtOperationTime */
@@ -231,7 +237,6 @@ _make_cursor (mongoc_change_stream_t *stream)
    bson_iter_t iter;
    mongoc_server_description_t *sd;
    uint32_t server_id;
-   int32_t max_wire_version = -1;
 
    BSON_ASSERT (stream);
    BSON_ASSERT (!stream->cursor);
@@ -245,7 +250,7 @@ _make_cursor (mongoc_change_stream_t *stream)
    server_id = mongoc_server_description_id (sd);
    bson_append_int32 (&command_opts, "serverId", 8, server_id);
    bson_append_int32 (&getmore_opts, "serverId", 8, server_id);
-   max_wire_version = sd->max_wire_version;
+   stream->max_wire_version = sd->max_wire_version;
    mongoc_server_description_destroy (sd);
 
    if (bson_iter_init_find (&iter, &command_opts, "sessionId")) {
@@ -288,7 +293,7 @@ _make_cursor (mongoc_change_stream_t *stream)
       mongoc_read_concern_append (stream->read_concern, &command_opts);
    }
 
-   _make_command (stream, &command, max_wire_version);
+   _make_command (stream, &command);
 
    /* even though serverId has already been set, still pass the read prefs.
     * they are necessary for OP_MSG if sending to a secondary. */
@@ -350,7 +355,8 @@ _make_cursor (mongoc_change_stream_t *stream)
    if (bson_empty (&stream->opts.resumeAfter) &&
        bson_empty (&stream->opts.startAfter) &&
        _mongoc_timestamp_empty (&stream->operation_time) &&
-       max_wire_version >= 7 && bson_empty (&stream->resume_token) &&
+       stream->max_wire_version >= WIRE_VERSION_4_0 &&
+       bson_empty (&stream->resume_token) &&
        bson_iter_init_find (
           &iter,
           _mongoc_cursor_change_stream_get_reply (stream->cursor),
@@ -440,8 +446,8 @@ _mongoc_change_stream_new_from_collection (const mongoc_collection_t *coll,
 
    stream =
       (mongoc_change_stream_t *) bson_malloc0 (sizeof (mongoc_change_stream_t));
-   bson_strncpy (stream->db, coll->db, sizeof (stream->db));
-   bson_strncpy (stream->coll, coll->collection, sizeof (stream->coll));
+   stream->db = bson_strdup (coll->db);
+   stream->coll = bson_strdup (coll->collection);
    stream->read_prefs = mongoc_read_prefs_copy (coll->read_prefs);
    stream->read_concern = mongoc_read_concern_copy (coll->read_concern);
    stream->client = coll->client;
@@ -460,8 +466,8 @@ _mongoc_change_stream_new_from_database (const mongoc_database_t *db,
 
    stream =
       (mongoc_change_stream_t *) bson_malloc0 (sizeof (mongoc_change_stream_t));
-   bson_strncpy (stream->db, db->name, sizeof (stream->db));
-   stream->coll[0] = '\0';
+   stream->db = bson_strdup (db->name);
+   stream->coll = NULL;
    stream->read_prefs = mongoc_read_prefs_copy (db->read_prefs);
    stream->read_concern = mongoc_read_concern_copy (db->read_concern);
    stream->client = db->client;
@@ -480,8 +486,8 @@ _mongoc_change_stream_new_from_client (mongoc_client_t *client,
 
    stream =
       (mongoc_change_stream_t *) bson_malloc0 (sizeof (mongoc_change_stream_t));
-   bson_strncpy (stream->db, "admin", sizeof (stream->db));
-   stream->coll[0] = '\0';
+   stream->db = bson_strdup ("admin");
+   stream->coll = NULL;
    stream->read_prefs = mongoc_read_prefs_copy (client->read_prefs);
    stream->read_concern = mongoc_read_concern_copy (client->read_concern);
    stream->client = client;
@@ -529,7 +535,7 @@ mongoc_change_stream_next (mongoc_change_stream_t *stream, const bson_t **bson)
          goto end;
       }
 
-      resumable = _is_resumable_error (err_doc);
+      resumable = _is_resumable_error (stream, err_doc);
       while (resumable) {
          /* recreate the cursor. */
          mongoc_cursor_destroy (stream->cursor);
@@ -545,7 +551,7 @@ mongoc_change_stream_next (mongoc_change_stream_t *stream, const bson_t **bson)
             goto end;
          }
          if (err_doc) {
-            resumable = _is_resumable_error (err_doc);
+            resumable = _is_resumable_error (stream, err_doc);
          } else {
             resumable = false;
          }
@@ -649,5 +655,7 @@ mongoc_change_stream_destroy (mongoc_change_stream_t *stream)
    mongoc_read_prefs_destroy (stream->read_prefs);
    mongoc_read_concern_destroy (stream->read_concern);
 
+   bson_free (stream->db);
+   bson_free (stream->coll);
    bson_free (stream);
 }

@@ -25,9 +25,6 @@
 #include "mongoc-compression-private.h"
 #include "mongoc-cluster-private.h"
 
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-#include <inttypes.h>
-#endif
 
 #define RPC(_name, _code)                                               \
    static void _mongoc_rpc_gather_##_name (mongoc_rpc_##_name##_t *rpc, \
@@ -803,6 +800,7 @@ _mongoc_rpc_decompress (mongoc_rpc_t *rpc_le, uint8_t *buf, size_t buflen)
                            rpc_le->compressed.compressed_message_len,
                            buf + 16,
                            &uncompressed_size);
+
    BSON_ASSERT (original_uncompressed_size == uncompressed_size);
 
    if (ok) {
@@ -1069,9 +1067,13 @@ _parse_error_reply (const bson_t *doc,
    BSON_ASSERT (code);
    *code = 0;
 
+   /* The server only returns real error codes as int32.
+    * But it may return as a double or int64 if a failpoint
+    * based on how it is configured to error. */
    if (bson_iter_init_find (&iter, doc, "code") &&
-       BSON_ITER_HOLDS_INT32 (&iter)) {
-      *code = (uint32_t) bson_iter_int32 (&iter);
+       BSON_ITER_HOLDS_NUMBER (&iter)) {
+      *code = (uint32_t) bson_iter_as_int64 (&iter);
+      BSON_ASSERT (*code);
       found_error = true;
    }
 
@@ -1097,8 +1099,9 @@ _parse_error_reply (const bson_t *doc,
          bson_iter_t child;
          BSON_ASSERT (bson_iter_recurse (&iter, &child));
          if (bson_iter_find (&child, "code") &&
-             BSON_ITER_HOLDS_INT32 (&child)) {
-            *code = (uint32_t) bson_iter_int32 (&child);
+             BSON_ITER_HOLDS_NUMBER (&child)) {
+            *code = (uint32_t) bson_iter_as_int64 (&child);
+            BSON_ASSERT (*code);
             found_error = true;
          }
          BSON_ASSERT (bson_iter_recurse (&iter, &child));
@@ -1238,8 +1241,9 @@ _mongoc_populate_query_error (const bson_t *doc,
    BSON_ASSERT (doc);
 
    if (bson_iter_init_find (&iter, doc, "code") &&
-       BSON_ITER_HOLDS_INT32 (&iter)) {
-      code = (uint32_t) bson_iter_int32 (&iter);
+       BSON_ITER_HOLDS_NUMBER (&iter)) {
+      code = (uint32_t) bson_iter_as_int64 (&iter);
+      BSON_ASSERT (code);
    }
 
    if (bson_iter_init_find (&iter, doc, "$err") &&
@@ -1325,4 +1329,43 @@ _mongoc_rpc_check_ok (mongoc_rpc_t *rpc,
 
 
    RETURN (true);
+}
+
+/* If rpc is OP_COMPRESSED, decompress it into buffer.
+ *
+ * Assumes rpc is still in network little-endian representation (i.e.
+ * _mongoc_rpc_swab_to_le has not been called).
+ * Returns true if rpc is not OP_COMPRESSED (and is a no-op) or if decompression
+ * succeeds.
+ * Return false and sets error otherwise.
+ */
+bool
+_mongoc_rpc_decompress_if_necessary (mongoc_rpc_t *rpc,
+                                     mongoc_buffer_t *buffer /* IN/OUT */,
+                                     bson_error_t *error /* OUT */)
+{
+   uint8_t *buf = NULL;
+   size_t len;
+
+   if (BSON_UINT32_FROM_LE (rpc->header.opcode) != MONGOC_OPCODE_COMPRESSED) {
+      return true;
+   }
+
+   len = BSON_UINT32_FROM_LE (rpc->compressed.uncompressed_size) +
+         sizeof (mongoc_rpc_header_t);
+
+   buf = bson_malloc0 (len);
+   if (!_mongoc_rpc_decompress (rpc, buf, len)) {
+      bson_free (buf);
+      bson_set_error (error,
+                      MONGOC_ERROR_PROTOCOL,
+                      MONGOC_ERROR_PROTOCOL_INVALID_REPLY,
+                      "Could not decompress server reply");
+      return false;
+   }
+
+   _mongoc_buffer_destroy (buffer);
+   _mongoc_buffer_init (buffer, buf, len, NULL, NULL);
+
+   return true;
 }

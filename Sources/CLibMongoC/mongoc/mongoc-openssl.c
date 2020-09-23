@@ -23,18 +23,25 @@
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/ocsp.h>
 #include <openssl/x509v3.h>
 #include <openssl/crypto.h>
 
 #include <string.h>
 
+#include "mongoc-http-private.h"
 #include "CLibMongoC_mongoc-init.h"
+#include "mongoc-openssl-private.h"
 #include "CLibMongoC_mongoc-socket.h"
 #include "CLibMongoC_mongoc-ssl.h"
-#include "mongoc-openssl-private.h"
-#include "mongoc-trace-private.h"
+#include "mongoc-stream-tls-openssl-private.h"
 #include "mongoc-thread-private.h"
+#include "mongoc-trace-private.h"
 #include "mongoc-util-private.h"
+
+#ifdef MONGOC_ENABLE_OCSP_OPENSSL
+#include "mongoc-ocsp-cache-private.h"
+#endif
 
 #ifdef _WIN32
 #include <wincrypt.h>
@@ -51,6 +58,8 @@ _mongoc_openssl_thread_cleanup (void);
 #ifndef MONGOC_HAVE_ASN1_STRING_GET0_DATA
 #define ASN1_STRING_get0_data ASN1_STRING_data
 #endif
+
+static int tlsfeature_nid;
 
 /**
  * _mongoc_openssl_init:
@@ -77,6 +86,14 @@ _mongoc_openssl_init (void)
    if (!ctx) {
       MONGOC_ERROR ("Failed to initialize OpenSSL.");
    }
+
+#ifdef NID_tlsfeature
+   tlsfeature_nid = NID_tlsfeature;
+#else
+   /* TLS versions before 1.1.0 did not define the TLS Feature extension. */
+   tlsfeature_nid =
+      OBJ_create ("1.3.6.1.5.5.7.1.24", "tlsfeature", "TLS Feature");
+#endif
 
    SSL_CTX_free (ctx);
 }
@@ -177,6 +194,31 @@ _mongoc_openssl_import_cert_stores (SSL_CTX *context)
 }
 #endif
 
+#if OPENSSL_VERSION_NUMBER > 0x10002000L
+bool
+_mongoc_openssl_check_peer_hostname (SSL *ssl,
+                                     const char *host,
+                                     bool allow_invalid_hostname)
+{
+   X509 *peer = NULL;
+
+   if (allow_invalid_hostname) {
+      return true;
+   }
+
+   peer = SSL_get_peer_certificate (ssl);
+   if (peer && (X509_check_host (peer, host, 0, 0, NULL) == 1 ||
+                X509_check_ip_asc (peer, host, 0) == 1)) {
+      X509_free (peer);
+      return true;
+   }
+
+   if (peer) {
+      X509_free (peer);
+   }
+   return false;
+}
+#else
 /** mongoc_openssl_hostcheck
  *
  * rfc 6125 match a given hostname against a given pattern
@@ -244,9 +286,9 @@ _mongoc_openssl_hostcheck (const char *pattern, const char *hostname)
 /** check if a provided cert matches a passed hostname
  */
 bool
-_mongoc_openssl_check_cert (SSL *ssl,
-                            const char *host,
-                            bool allow_invalid_hostname)
+_mongoc_openssl_check_peer_hostname (SSL *ssl,
+                                     const char *host,
+                                     bool allow_invalid_hostname)
 {
    X509 *peer;
    X509_NAME *subject_name;
@@ -386,6 +428,7 @@ _mongoc_openssl_check_cert (SSL *ssl,
    X509_free (peer);
    RETURN (r);
 }
+#endif /* OPENSSL_VERSION_NUMBER */
 
 
 static bool
@@ -451,6 +494,470 @@ _mongoc_openssl_setup_pem_file (SSL_CTX *ctx,
    return 1;
 }
 
+#ifdef MONGOC_ENABLE_OCSP_OPENSSL
+
+static X509 *
+_get_issuer (X509 *cert, STACK_OF (X509) * chain)
+{
+   X509 *issuer = NULL, *candidate = NULL;
+   X509_NAME *issuer_name = NULL, *candidate_name = NULL;
+   int i;
+
+   issuer_name = X509_get_issuer_name (cert);
+   for (i = 0; i < sk_X509_num (chain) && issuer == NULL; i++) {
+      candidate = sk_X509_value (chain, i);
+      candidate_name = X509_get_subject_name (candidate);
+      if (0 == X509_NAME_cmp (candidate_name, issuer_name)) {
+         issuer = candidate;
+      }
+   }
+   RETURN (issuer);
+}
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+/* OpenSSL 1.1.0+ has conveniences that we polyfill in older OpenSSL versions.
+ */
+
+STACK_OF (X509) * _get_verified_chain (SSL *ssl)
+{
+   return SSL_get0_verified_chain (ssl);
+}
+
+void _free_verified_chain (STACK_OF (X509) * verified_chain)
+{
+   /* _get_verified_chain does not return a copy. Do nothing. */
+   return;
+}
+
+const STACK_OF (X509_EXTENSION) * _get_extensions (const X509 *cert)
+{
+   return X509_get0_extensions (cert);
+}
+
+#else
+/* Polyfill functionality for pre 1.1.0 OpenSSL */
+
+STACK_OF (X509) * _get_verified_chain (SSL *ssl)
+{
+   X509_STORE *store = NULL;
+   X509 *peer = NULL;
+   STACK_OF (X509) *peer_chain = NULL;
+   X509_STORE_CTX *store_ctx = NULL;
+   STACK_OF (X509) *verified_chain = NULL;
+
+   /* Get the certificate the server presented. */
+   peer = SSL_get_peer_certificate (ssl);
+   /* Get the chain of certificates the server presented. This is not a verified
+    * chain. */
+   peer_chain = SSL_get_peer_cert_chain (ssl);
+   store = SSL_CTX_get_cert_store (SSL_get_SSL_CTX (ssl));
+   store_ctx = X509_STORE_CTX_new ();
+   if (!X509_STORE_CTX_init (store_ctx, store, peer, peer_chain)) {
+      MONGOC_ERROR ("failed to initialize X509 store");
+      goto fail;
+   }
+
+   if (X509_verify_cert (store_ctx) <= 0) {
+      MONGOC_ERROR ("failed to obtain verified chain");
+      goto fail;
+   }
+
+   verified_chain = X509_STORE_CTX_get1_chain (store_ctx);
+
+fail:
+   X509_free (peer);
+   X509_STORE_CTX_free (store_ctx);
+   return verified_chain;
+}
+
+/* On OpenSSL < 1.1.0, this chain isn't attached to the SSL session, so we need
+ * it to dispose of itself. */
+void _free_verified_chain (STACK_OF (X509) * verified_chain)
+{
+   if (!verified_chain) {
+      return;
+   }
+   sk_X509_pop_free (verified_chain, X509_free);
+}
+
+const STACK_OF (X509_EXTENSION) * _get_extensions (const X509 *cert)
+{
+   return cert->cert_info->extensions;
+}
+#endif /* OPENSSL_VERSION_NUMBER */
+
+
+#define TLSFEATURE_STATUS_REQUEST 5
+
+/* Check a tlsfeature extension contents for a status_request.
+ *
+ * Parse just enough of a DER encoded data to check if a SEQUENCE of INTEGER
+ * contains the status_request extension (5). There are only five tlsfeature
+ * extension types, so this only handles the case that the sequence's length is
+ * representable in one byte, and that each integer is representable in one
+ * byte. */
+bool
+_mongoc_tlsfeature_has_status_request (const uint8_t *data, int length)
+{
+   int i;
+
+   /* Expect a sequence type, with a sequence length representable in one byte.
+    */
+   if (length < 3 || data[0] != 0x30 || data[1] >= 127) {
+      MONGOC_ERROR ("malformed tlsfeature extension sequence");
+      return false;
+   }
+
+   for (i = 2; i < length; i += 3) {
+      /* Expect an integer, representable in one byte. */
+      if (length < i + 3 || data[i] != 0x02 || data[i + 1] != 1) {
+         MONGOC_ERROR ("malformed tlsfeature extension integer");
+         return false;
+      }
+
+      if (data[i + 2] == TLSFEATURE_STATUS_REQUEST) {
+         TRACE ("%s", "found status request in tlsfeature extension");
+         return true;
+      }
+   }
+   return false;
+}
+
+/* Check that the certificate has a tlsfeature extension with status_request. */
+bool
+_get_must_staple (X509 *cert)
+{
+   const STACK_OF (X509_EXTENSION) *exts = NULL;
+   X509_EXTENSION *ext;
+   ASN1_STRING *ext_data;
+   int idx;
+
+   exts = _get_extensions (cert);
+   if (!exts) {
+      TRACE ("%s", "certificate extensions not found");
+      return false;
+   }
+
+   idx = X509v3_get_ext_by_NID (exts, tlsfeature_nid, -1);
+   if (-1 == idx) {
+      TRACE ("%s", "tlsfeature extension not found");
+      return false;
+   }
+
+   ext = sk_X509_EXTENSION_value (exts, idx);
+   ext_data = X509_EXTENSION_get_data (ext);
+
+   /* Data is a DER encoded sequence of integers. */
+   return _mongoc_tlsfeature_has_status_request (
+      ASN1_STRING_get0_data (ext_data), ASN1_STRING_length (ext_data));
+}
+
+#define ERR_STR (ERR_error_string (ERR_get_error (), NULL))
+#define MONGOC_OCSP_REQUEST_TIMEOUT_MS 5000
+
+static OCSP_RESPONSE *
+_contact_ocsp_responder (OCSP_CERTID *id,
+                         X509 *peer,
+                         mongoc_ssl_opt_t *ssl_opts,
+                         int *ocsp_uri_count)
+{
+   STACK_OF (OPENSSL_STRING) *url_stack = NULL;
+   OPENSSL_STRING url = NULL, host = NULL, path = NULL, port = NULL;
+   OCSP_REQUEST *req = NULL;
+   const unsigned char *resp_data;
+   OCSP_RESPONSE *resp = NULL;
+   int i, ssl;
+
+   url_stack = X509_get1_ocsp (peer);
+   *ocsp_uri_count = sk_OPENSSL_STRING_num (url_stack);
+   for (i = 0; i < *ocsp_uri_count && !resp; i++) {
+      unsigned char *request_der = NULL;
+      int request_der_len;
+      mongoc_http_request_t http_req;
+      mongoc_http_response_t http_res;
+      bson_error_t error;
+
+      _mongoc_http_request_init (&http_req);
+      _mongoc_http_response_init (&http_res);
+      url = sk_OPENSSL_STRING_value (url_stack, i);
+      TRACE ("Contacting OCSP responder '%s'", url);
+
+      /* splits the given url into its host, port and path components */
+      if (!OCSP_parse_url (url, &host, &port, &path, &ssl)) {
+         MONGOC_DEBUG ("Could not parse URL");
+         GOTO (retry);
+      }
+
+      if (!(req = OCSP_REQUEST_new ())) {
+         MONGOC_DEBUG ("Could not create new OCSP request");
+         GOTO (retry);
+      }
+
+      /* add the cert ID to the OCSP request object */
+      if (!id || !OCSP_request_add0_id (req, OCSP_CERTID_dup (id))) {
+         MONGOC_DEBUG ("Could not add cert ID to the OCSP request object");
+         GOTO (retry);
+      }
+
+      /* add nonce to OCSP request object */
+      if (!OCSP_request_add1_nonce (req, 0 /* use random nonce */, -1)) {
+         MONGOC_DEBUG ("Could not add nonce to OCSP request object");
+         GOTO (retry);
+      }
+
+      request_der_len = i2d_OCSP_REQUEST (req, &request_der);
+      if (request_der_len < 0) {
+         MONGOC_DEBUG ("Could not encode OCSP request");
+         GOTO (retry);
+      }
+
+      http_req.method = "POST";
+      http_req.extra_headers = "Content-Type: application/ocsp-request\r\n";
+      http_req.host = host;
+      http_req.path = path;
+      http_req.port = (int) bson_ascii_strtoll (port, NULL, 10);
+      http_req.body = (const char *) request_der;
+      http_req.body_len = request_der_len;
+      if (!_mongoc_http_send (&http_req,
+                              MONGOC_OCSP_REQUEST_TIMEOUT_MS,
+                              ssl != 0,
+                              ssl_opts,
+                              &http_res,
+                              &error)) {
+         MONGOC_DEBUG ("Could not send HTTP request: %s", error.message);
+         GOTO (retry);
+      }
+
+      resp_data = (const unsigned char *) http_res.body;
+
+      if (http_res.body_len == 0 ||
+          !d2i_OCSP_RESPONSE (&resp, &resp_data, http_res.body_len)) {
+         MONGOC_DEBUG ("Could not parse OCSP response from HTTP response");
+         MONGOC_DEBUG ("Response headers: %s", http_res.headers);
+         GOTO (retry);
+      }
+
+   retry:
+      if (host)
+         OPENSSL_free (host);
+      if (port)
+         OPENSSL_free (port);
+      if (path)
+         OPENSSL_free (path);
+      if (req)
+         OCSP_REQUEST_free (req);
+      if (request_der)
+         OPENSSL_free (request_der);
+      _mongoc_http_response_cleanup (&http_res);
+   }
+
+   if (url_stack)
+      X509_email_free (url_stack);
+   RETURN (resp);
+}
+
+#define SOFT_FAIL(...)                              \
+   ((stapled_response) ? MONGOC_ERROR (__VA_ARGS__) \
+                       : MONGOC_DEBUG (__VA_ARGS__))
+
+#define X509_CHECK_SUCCESS 1
+#define OCSP_VERIFY_SUCCESS 1
+
+int
+_mongoc_ocsp_tlsext_status (SSL *ssl, mongoc_openssl_ocsp_opt_t *opts)
+{
+   enum { OCSP_CB_ERROR = -1, OCSP_CB_REVOKED, OCSP_CB_SUCCESS } ret;
+   bool stapled_response = true;
+   bool must_staple;
+   OCSP_RESPONSE *resp = NULL;
+   OCSP_BASICRESP *basic = NULL;
+   X509_STORE *store = NULL;
+   X509 *peer = NULL, *issuer = NULL;
+   STACK_OF (X509) *cert_chain = NULL;
+   const unsigned char *resp_data = NULL;
+   int cert_status, reason, len, status;
+   OCSP_CERTID *id = NULL;
+   ASN1_GENERALIZEDTIME *produced_at = NULL, *this_update = NULL,
+                        *next_update = NULL;
+   int ocsp_uri_count = 0;
+
+   if (opts->weak_cert_validation) {
+      return OCSP_CB_SUCCESS;
+   }
+
+   if (!(peer = SSL_get_peer_certificate (ssl))) {
+      MONGOC_ERROR ("No certificate was presented by the peer");
+      ret = OCSP_CB_ERROR;
+      GOTO (done);
+   }
+
+   /* Get a STACK_OF(X509) certs forming the cert chain of the peer, including
+    * the peer's cert */
+   if (!(cert_chain = _get_verified_chain (ssl))) {
+      MONGOC_ERROR ("Unable to obtain verified chain");
+      ret = OCSP_CB_REVOKED;
+      GOTO (done);
+   }
+
+   if (!(issuer = _get_issuer (peer, cert_chain))) {
+      MONGOC_ERROR ("Could not get issuer from peer cert");
+      ret = OCSP_CB_ERROR;
+      GOTO (done);
+   }
+
+   if (!(id = OCSP_cert_to_id (NULL /* SHA1 */, peer, issuer))) {
+      MONGOC_ERROR ("Could not obtain a valid OCSP_CERTID for peer");
+      ret = OCSP_CB_ERROR;
+      GOTO (done);
+   }
+
+   if (_mongoc_ocsp_cache_get_status (
+          id, &cert_status, &reason, &this_update, &next_update)) {
+      GOTO (validate);
+   }
+
+   /* Get the stapled OCSP response returned by the server */
+   len = SSL_get_tlsext_status_ocsp_resp (ssl, &resp_data);
+   stapled_response = !!resp_data;
+   if (stapled_response) {
+      /* obtain an OCSP_RESPONSE object from the OCSP response */
+      if (!d2i_OCSP_RESPONSE (&resp, &resp_data, len)) {
+         MONGOC_ERROR ("Failed to parse OCSP response");
+         ret = OCSP_CB_ERROR;
+         GOTO (done);
+      }
+   } else {
+      TRACE ("%s", "Server does not contain a stapled response");
+      must_staple = _get_must_staple (peer);
+      if (must_staple) {
+         MONGOC_ERROR ("Server must contain a stapled response");
+         ret = OCSP_CB_REVOKED;
+         GOTO (done);
+      }
+
+      if (opts->disable_endpoint_check ||
+          !(resp = _contact_ocsp_responder (
+               id, peer, &opts->ssl_opts, &ocsp_uri_count))) {
+         if (ocsp_uri_count > 0) {
+            /* Only log a soft failure if there were OCSP responders listed in
+             * the certificate. */
+            MONGOC_DEBUG ("Soft-fail: No OCSP responder could be reached");
+         }
+         ret = OCSP_CB_SUCCESS;
+         GOTO (done);
+      }
+   }
+
+   TRACE ("%s", "Validating OCSP response");
+   /* Validate the OCSP response status of the OCSP_RESPONSE object */
+   status = OCSP_response_status (resp);
+   if (status != OCSP_RESPONSE_STATUS_SUCCESSFUL) {
+      SOFT_FAIL ("OCSP response error %d %s",
+                 status,
+                 OCSP_response_status_str (status));
+      ret = OCSP_CB_ERROR;
+      GOTO (done);
+   }
+
+   TRACE ("%s", "OCSP response status successful");
+
+   /* Get the OCSP_BASICRESP structure contained in OCSP_RESPONSE object for the
+    * peer cert */
+   basic = OCSP_response_get1_basic (resp);
+   if (!basic) {
+      SOFT_FAIL ("Could not find BasicOCSPResponse: %s", ERR_STR);
+      ret = OCSP_CB_ERROR;
+      GOTO (done);
+   }
+
+   store = SSL_CTX_get_cert_store (SSL_get_SSL_CTX (ssl));
+
+   /*
+    * checks that the basic response message is correctly signed and that the
+    * signer certificate can be validated.
+    * 1. The function first verifies the signer cert of the response is in the
+    * given cert chain.
+    * 2. Next, the function verifies the signature of the basic response.
+    * 3. Finally, the function validates the signer cert, constructing the
+    * validation path via the untrusted cert chain.
+    *
+    * cert_chain has already been verified. Use OCSP_TRUSTOTHER so the signer
+    * certificate can be considered verified if it is in cert_chain.
+    */
+   if (OCSP_basic_verify (basic, cert_chain, store, OCSP_TRUSTOTHER) !=
+       OCSP_VERIFY_SUCCESS) {
+      SOFT_FAIL ("OCSP response failed verification: %s", ERR_STR);
+      ret = OCSP_CB_ERROR;
+      GOTO (done);
+   }
+
+   /* searches the basic response for an OCSP response for the given cert ID */
+   if (!OCSP_resp_find_status (basic,
+                               id,
+                               &cert_status,
+                               &reason,
+                               &produced_at,
+                               &this_update,
+                               &next_update)) {
+      SOFT_FAIL ("No OCSP response found for the peer certificate");
+      ret = OCSP_CB_ERROR;
+      GOTO (done);
+   }
+
+   /* checks the validity of this_update and next_update values */
+   if (!OCSP_check_validity (this_update, next_update, 0L, -1L)) {
+      SOFT_FAIL ("OCSP response has expired: %s", ERR_STR);
+      ret = OCSP_CB_ERROR;
+      GOTO (done);
+   }
+
+validate:
+   switch (cert_status) {
+   case V_OCSP_CERTSTATUS_GOOD:
+      TRACE ("%s", "OCSP Certificate Status: Good");
+      _mongoc_ocsp_cache_set_resp (
+         id, cert_status, reason, this_update, next_update);
+      break;
+
+   case V_OCSP_CERTSTATUS_REVOKED:
+      MONGOC_ERROR ("OCSP Certificate Status: Revoked. Reason: %s",
+                    OCSP_crl_reason_str (reason));
+      ret = OCSP_CB_REVOKED;
+      _mongoc_ocsp_cache_set_resp (
+         id, cert_status, reason, this_update, next_update);
+      GOTO (done);
+
+   default:
+      MONGOC_DEBUG ("OCSP Certificate Status: Unknown");
+      break;
+   }
+
+   /* Validate hostname matches cert */
+   if (!_mongoc_openssl_check_peer_hostname (
+          ssl, opts->host, opts->allow_invalid_hostname)) {
+      ret = OCSP_CB_REVOKED;
+      GOTO (done);
+   }
+
+   ret = OCSP_CB_SUCCESS;
+done:
+   if (ret == OCSP_CB_ERROR && !stapled_response) {
+      ret = OCSP_CB_SUCCESS;
+   }
+   if (basic)
+      OCSP_BASICRESP_free (basic);
+   if (resp)
+      OCSP_RESPONSE_free (resp);
+   if (id)
+      OCSP_CERTID_free (id);
+   if (peer)
+      X509_free (peer);
+   if (cert_chain)
+      _free_verified_chain (cert_chain);
+   RETURN (ret);
+}
+
+#endif /* MONGOC_ENABLE_OCSP_OPENSSL */
 
 /**
  * _mongoc_openssl_ctx_new:
@@ -493,7 +1000,8 @@ _mongoc_openssl_ctx_new (mongoc_ssl_opt_t *opt)
    ssl_ctx_options |= SSL_OP_NO_COMPRESSION;
 #endif
 
-/* man SSL_get_options says: "SSL_OP_NO_RENEGOTIATION options were added in OpenSSL 1.1.1". */
+/* man SSL_get_options says: "SSL_OP_NO_RENEGOTIATION options were added in
+ * OpenSSL 1.1.1". */
 #ifdef SSL_OP_NO_RENEGOTIATION
    ssl_ctx_options |= SSL_OP_NO_RENEGOTIATION;
 #endif

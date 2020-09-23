@@ -159,15 +159,16 @@ internal struct ChangeStreamTest: Decodable, FailPointConfigured {
     let result: ChangeStreamTestResult
 
     var activeFailPoint: FailPoint?
+    var targetedHost: ServerAddress?
 
     internal mutating func run(globalClient: MongoClient, database: String, collection: String) throws {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
 
         if let failPoint = self.failPoint {
-            try self.activateFailPoint(failPoint)
+            try failPoint.enable(using: globalClient)
         }
-        defer { self.disableActiveFailPoint() }
+        defer { self.failPoint?.disable(using: globalClient) }
 
         monitor.captureEvents {
             do {
@@ -407,7 +408,12 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
                 }
 
                 // notMaster error
-                let failPoint = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 10107)
+                let failPoint = FailPoint.failCommand(
+                    failCommands: ["getMore"],
+                    mode: .times(1),
+                    errorCode: 10107,
+                    errorLabels: ["ResumableChangeStreamError"]
+                )
                 try failPoint.enable()
                 defer { failPoint.disable() }
 
@@ -480,7 +486,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             let getMoreFailpoint = FailPoint.failCommand(
                 failCommands: ["getMore", "aggregate"],
                 mode: .times(2),
-                errorCode: 10107
+                errorCode: 10107,
+                errorLabels: ["ResumableChangeStreamError"]
             )
             try getMoreFailpoint.enable()
             defer { getMoreFailpoint.disable() }

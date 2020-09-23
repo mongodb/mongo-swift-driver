@@ -36,6 +36,7 @@
 #include "CLibMongoC_mongoc-write-concern.h"
 #include "mongoc-scram-private.h"
 #include "mongoc-cmd-private.h"
+#include "mongoc-crypto-private.h"
 
 BSON_BEGIN_DECLS
 
@@ -43,14 +44,14 @@ BSON_BEGIN_DECLS
 typedef struct _mongoc_cluster_node_t {
    mongoc_stream_t *stream;
    char *connection_address;
+   uint32_t generation;
 
+   /* TODO CDRIVER-3653, these fields are unused. */
    int32_t max_wire_version;
    int32_t min_wire_version;
    int32_t max_write_batch_size;
    int32_t max_bson_obj_size;
    int32_t max_msg_size;
-
-   int64_t timestamp;
 } mongoc_cluster_node_t;
 
 typedef struct _mongoc_cluster_t {
@@ -79,10 +80,7 @@ void
 mongoc_cluster_destroy (mongoc_cluster_t *cluster);
 
 void
-mongoc_cluster_disconnect_node (mongoc_cluster_t *cluster,
-                                uint32_t id,
-                                bool invalidate,
-                                const bson_error_t *why);
+mongoc_cluster_disconnect_node (mongoc_cluster_t *cluster, uint32_t id);
 
 int32_t
 mongoc_cluster_get_max_bson_obj_size (mongoc_cluster_t *cluster);
@@ -135,6 +133,10 @@ mongoc_cluster_stream_for_server (mongoc_cluster_t *cluster,
                                   bson_error_t *error);
 
 bool
+mongoc_cluster_stream_valid (mongoc_cluster_t *cluster,
+                             mongoc_server_stream_t *server_stream);
+
+bool
 mongoc_cluster_run_command_monitored (mongoc_cluster_t *cluster,
                                       mongoc_cmd_t *cmd,
                                       bson_t *reply,
@@ -173,6 +175,26 @@ _mongoc_cluster_create_server_stream (mongoc_topology_t *topology,
                                       uint32_t server_id,
                                       mongoc_stream_t *stream,
                                       bson_error_t *error /* OUT */);
+
+bool
+_mongoc_cluster_get_auth_cmd_x509 (const mongoc_uri_t *uri,
+                                   const mongoc_ssl_opt_t *ssl_opts,
+                                   bson_t *cmd /* OUT */,
+                                   bson_error_t *error /* OUT */);
+
+#ifdef MONGOC_ENABLE_CRYPTO
+void
+_mongoc_cluster_init_scram (const mongoc_cluster_t *cluster,
+                            mongoc_scram_t *scram,
+                            mongoc_crypto_hash_algorithm_t algo);
+
+bool
+_mongoc_cluster_get_auth_cmd_scram (mongoc_crypto_hash_algorithm_t algo,
+                                    mongoc_scram_t *scram,
+                                    bson_t *cmd /* OUT */,
+                                    bson_error_t *error /* OUT */);
+#endif /* MONGOC_ENABLE_CRYPTO */
+
 BSON_END_DECLS
 
 

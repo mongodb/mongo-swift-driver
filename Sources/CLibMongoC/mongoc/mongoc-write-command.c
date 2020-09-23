@@ -20,6 +20,7 @@
 #include "mongoc-client-session-private.h"
 #include "mongoc-client-side-encryption-private.h"
 #include "CLibMongoC_mongoc-error.h"
+#include "mongoc-error-private.h"
 #include "mongoc-trace-private.h"
 #include "mongoc-write-command-private.h"
 #include "mongoc-write-command-legacy-private.h"
@@ -582,6 +583,11 @@ _mongoc_write_opmsg (mongoc_write_command_t *command,
          ret = mongoc_cluster_run_command_monitored (
             &client->cluster, &parts.assembled, &reply, error);
 
+         if (parts.is_retryable_write) {
+            _mongoc_write_error_handle_labels (
+               ret, error, &reply, server_stream->sd->max_wire_version);
+         }
+
          /* Add this batch size so we skip these documents next time */
          payload_total_offset += payload_batch_size;
          payload_batch_size = 0;
@@ -590,7 +596,7 @@ _mongoc_write_opmsg (mongoc_write_command_t *command,
           * select a new writable stream and retry. If server selection fails or
           * the selected server does not support retryable writes, fall through
           * and allow the original error to be reported. */
-         error_type = _mongoc_write_error_get_type (ret, error, &reply);
+         error_type = _mongoc_write_error_get_type (&reply);
          if (is_retryable) {
             _mongoc_write_error_update_if_unsupported_storage_engine (
                ret, error, &reply);
@@ -619,10 +625,12 @@ _mongoc_write_opmsg (mongoc_write_command_t *command,
 
          if (!ret) {
             result->failed = true;
-            /* Conservatively set must_stop to true. Per CDRIVER-3305 we
-             * shouldn't stop for unordered bulk writes, but also need to check
-             * if the server stream was invalidated per CDRIVER-3306. */
-            result->must_stop = true;
+            /* Stop for ordered bulk writes or when the server stream has been
+             * properly invalidated (e.g., due to a network error). */
+            if (command->flags.ordered || !mongoc_cluster_stream_valid (
+                                             &client->cluster, server_stream)) {
+               result->must_stop = true;
+            }
          }
 
          /* Result merge needs to know the absolute index for a document
@@ -851,7 +859,8 @@ again:
 
       if (!ret) {
          result->failed = true;
-         if (bson_empty (&reply)) {
+         if (bson_empty (&reply) ||
+             !mongoc_cluster_stream_valid (&client->cluster, server_stream)) {
             /* assembling failed, or a network error running the command */
             result->must_stop = true;
          }
@@ -984,12 +993,30 @@ _mongoc_write_command_execute_idl (mongoc_write_command_t *command,
    }
 
    if (command->flags.has_update_hint) {
-      if (server_stream->sd->max_wire_version < WIRE_VERSION_UPDATE_HINT) {
+      if (server_stream->sd->max_wire_version <
+             WIRE_VERSION_HINT_SERVER_SIDE_ERROR ||
+          (server_stream->sd->max_wire_version < WIRE_VERSION_UPDATE_HINT &&
+           !mongoc_write_concern_is_acknowledged (crud->writeConcern))) {
          bson_set_error (
             &result->error,
             MONGOC_ERROR_COMMAND,
             MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION,
             "The selected server does not support hint for update");
+         result->failed = true;
+         EXIT;
+      }
+   }
+
+   if (command->flags.has_delete_hint) {
+      if (server_stream->sd->max_wire_version <
+             WIRE_VERSION_HINT_SERVER_SIDE_ERROR ||
+          (server_stream->sd->max_wire_version < WIRE_VERSION_DELETE_HINT &&
+           !mongoc_write_concern_is_acknowledged (crud->writeConcern))) {
+         bson_set_error (
+            &result->error,
+            MONGOC_ERROR_COMMAND,
+            MONGOC_ERROR_COMMAND_INVALID_ARG,
+            "The selected server does not support hint for delete");
          result->failed = true;
          EXIT;
       }
@@ -1339,7 +1366,7 @@ _set_error_from_response (bson_t *bson_array,
             while (bson_iter_next (&doc_iter)) {
                /* use the first error code we find */
                if (BSON_ITER_IS_KEY (&doc_iter, "code") && code == 0) {
-                  code = bson_iter_int32 (&doc_iter);
+                  code = (uint32_t) bson_iter_as_int64 (&doc_iter);
                } else if (BSON_ITER_IS_KEY (&doc_iter, "errmsg")) {
                   errmsg = bson_iter_utf8 (&doc_iter, NULL);
 
@@ -1500,7 +1527,9 @@ _mongoc_write_result_complete (
  *       retryable according to the retryable writes spec. Checks both
  *       for a client error (a network exception) and a server error in
  *       the reply. @cmd_ret and @cmd_err come from the result of a
- *       write_command function.
+ *       write_command function. This function should be called after
+ *       error labels are appended in _mongoc_write_error_handle_labels,
+ *       which should be called after mongoc_cluster_run_command_monitored.
  *
  *
  * Return:
@@ -1509,16 +1538,11 @@ _mongoc_write_result_complete (
  *--------------------------------------------------------------------------
  */
 mongoc_write_err_type_t
-_mongoc_write_error_get_type (bool cmd_ret,
-                              const bson_error_t *cmd_err,
-                              const bson_t *reply)
+_mongoc_write_error_get_type (bson_t *reply)
 {
    bson_error_t error;
 
-   /* check for a client error. */
-   if (!cmd_ret && cmd_err->domain == MONGOC_ERROR_STREAM) {
-      /* Retryable writes spec: "considered retryable if [...] any network
-       * exception (e.g. socket timeout or error) */
+   if (mongoc_error_has_label (reply, RETRYABLE_WRITE_ERROR)) {
       return MONGOC_WRITE_ERR_RETRY;
    }
 
@@ -1529,25 +1553,9 @@ _mongoc_write_error_get_type (bool cmd_ret,
    }
 
    switch (error.code) {
-   case 11600: /* InterruptedAtShutdown */
-   case 11602: /* InterruptedDueToReplStateChange */
-   case 10107: /* NotMaster */
-   case 13435: /* NotMasterNoSlaveOk */
-   case 13436: /* NotMasterOrSecondary */
-   case 189:   /* PrimarySteppedDown */
-   case 91:    /* ShutdownInProgress */
-   case 7:     /* HostNotFound */
-   case 6:     /* HostUnreachable */
-   case 89:    /* NetworkTimeout */
-   case 9001:  /* SocketException */
-      return MONGOC_WRITE_ERR_RETRY;
    case 64: /* WriteConcernFailed */
       return MONGOC_WRITE_ERR_WRITE_CONCERN;
    default:
-      if (strstr (error.message, "not master") ||
-          strstr (error.message, "node is recovering")) {
-         return MONGOC_WRITE_ERR_RETRY;
-      }
       return MONGOC_WRITE_ERR_OTHER;
    }
 }

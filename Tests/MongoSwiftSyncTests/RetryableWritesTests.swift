@@ -1,7 +1,9 @@
 import Foundation
+@testable import struct MongoSwift.MongoClientOptions
 import MongoSwiftSync
 import Nimble
 import TestsCommon
+import XCTest
 
 /// Struct representing a single test within a retryable-writes spec test JSON file.
 private struct RetryableWritesTest: Decodable, FailPointConfigured {
@@ -27,6 +29,7 @@ private struct RetryableWritesTest: Decodable, FailPointConfigured {
     let failPoint: FailPoint?
 
     var activeFailPoint: FailPoint?
+    var targetedHost: ServerAddress?
 }
 
 /// Struct representing a single retryable-writes spec test JSON file.
@@ -78,7 +81,9 @@ final class RetryableWritesTests: MongoSwiftTestCase {
             for var test in testFile.tests {
                 print("Executing test: \(test.description)")
 
-                let clientOptions = test.clientOptions ?? MongoClientOptions(retryWrites: true)
+                var clientOptions = test.clientOptions ?? MongoClientOptions()
+                clientOptions.minHeartbeatFrequencyMS = 50
+                clientOptions.heartbeatFrequencyMS = 50
                 let client = try MongoClient.makeTestClient(options: clientOptions)
                 let db = client.db(Self.testDatabase)
                 let collection = db.collection(self.getCollectionName(suffix: test.description))
@@ -88,9 +93,9 @@ final class RetryableWritesTests: MongoSwiftTestCase {
                 }
 
                 if let failPoint = test.failPoint {
-                    try test.activateFailPoint(failPoint)
+                    try test.activateFailPoint(failPoint, using: setupClient)
                 }
-                defer { test.disableActiveFailPoint() }
+                defer { test.disableActiveFailPoint(using: setupClient) }
 
                 var result: TestOperationResult?
                 var seenError: Error?
@@ -108,18 +113,23 @@ final class RetryableWritesTests: MongoSwiftTestCase {
                 }
 
                 if test.outcome.error ?? false {
-                    expect(seenError).toNot(beNil(), description: test.description)
+                    guard let error = seenError else {
+                        XCTFail("\(test.description): expected to get an error but got nil")
+                        continue
+                    }
+                    if case let .error(errorResult) = test.outcome.result {
+                        errorResult.checkErrorResult(error, description: test.description)
+                    }
                 } else {
                     expect(seenError).to(beNil(), description: test.description)
-                }
-
-                if let expectedResult = test.outcome.result {
-                    expect(result).toNot(beNil())
-                    expect(result).to(equal(expectedResult))
+                    if let expectedResult = test.outcome.result {
+                        expect(result).toNot(beNil())
+                        expect(result).to(equal(expectedResult))
+                    }
                 }
 
                 let verifyColl = db.collection(test.outcome.collection.name ?? collection.name)
-                let foundDocs = try Array(verifyColl.find().all())
+                let foundDocs = try verifyColl.find().all()
                 expect(foundDocs.count).to(equal(test.outcome.collection.data.count))
                 zip(foundDocs, test.outcome.collection.data).forEach {
                     expect($0).to(sortedEqual($1), description: test.description)

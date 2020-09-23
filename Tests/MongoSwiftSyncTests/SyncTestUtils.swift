@@ -101,7 +101,7 @@ extension MongoClient {
     }
 
     static func makeTestClient(
-        _ uri: String = MongoSwiftTestCase.getConnectionString(),
+        _ uri: String = MongoSwiftTestCase.getConnectionString().toString(),
         options: MongoClientOptions? = nil
     ) throws -> MongoClient {
         var opts = options ?? MongoClientOptions()
@@ -138,6 +138,18 @@ internal func captureCommandEvents(
         try f(client)
     }
     return monitor.events(withEventTypes: eventTypes, withNames: commandNames)
+}
+
+extension MongoDatabase {
+    @discardableResult
+    public func runCommand(
+        _ command: BSONDocument,
+        on server: ServerAddress,
+        options: RunCommandOptions? = nil,
+        session: MongoSwiftSync.ClientSession? = nil
+    ) throws -> BSONDocument {
+        try self.asyncDB.runCommand(command, on: server, options: options, session: session?.asyncSession).wait()
+    }
 }
 
 extension MongoSwiftSync.MongoCollection {

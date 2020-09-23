@@ -5,22 +5,31 @@ import TestsCommon
 internal protocol FailPointConfigured {
     /// The fail point currently set, if one exists.
     var activeFailPoint: FailPoint? { get set }
+
+    /// The address of the host in which this failpoint was set on, if applicable.
+    var targetedHost: ServerAddress? { get set }
 }
 
 extension FailPointConfigured {
     /// Sets the active fail point to the provided fail point and enables it.
-    internal mutating func activateFailPoint(_ failPoint: FailPoint, on serverAddress: ServerAddress? = nil) throws {
+    internal mutating func activateFailPoint(
+        _ failPoint: FailPoint,
+        using client: MongoClient,
+        on serverAddress: ServerAddress? = nil
+    ) throws {
         self.activeFailPoint = failPoint
-        try self.activeFailPoint?.enable(on: serverAddress)
+        try self.activeFailPoint?.enable(using: client, on: serverAddress)
+        self.targetedHost = serverAddress
     }
 
     /// If a fail point is active, it is disabled and cleared.
-    internal mutating func disableActiveFailPoint() {
+    internal mutating func disableActiveFailPoint(using client: MongoClient) {
         guard let failPoint = self.activeFailPoint else {
             return
         }
-        failPoint.disable()
+        failPoint.disable(using: client, on: self.targetedHost)
         self.activeFailPoint = nil
+        self.targetedHost = nil
     }
 }
 
@@ -44,7 +53,7 @@ internal struct FailPoint: Decodable {
         self.failPoint = try BSONDocument(from: decoder)
     }
 
-    internal func enable(on serverAddress: ServerAddress? = nil) throws {
+    internal func enable(using client: MongoClient, on serverAddress: ServerAddress? = nil) throws {
         var commandDoc = ["configureFailPoint": self.failPoint["configureFailPoint"]!] as BSONDocument
         for (k, v) in self.failPoint {
             guard k != "configureFailPoint" else {
@@ -63,22 +72,39 @@ internal struct FailPoint: Decodable {
                 commandDoc[k] = v
             }
         }
-        if let serverAddress = serverAddress {
-            let connectionString = MongoSwiftTestCase.getConnectionString(forHost: serverAddress)
-            let client = try MongoClient.makeTestClient(connectionString)
-            try client.db("admin").runCommand(commandDoc)
+        if let address = serverAddress {
+            try client.db("admin").runCommand(commandDoc, on: address)
         } else {
-            let client = try MongoClient.makeTestClient()
             try client.db("admin").runCommand(commandDoc)
         }
     }
 
-    internal func disable() {
+    internal func enable() throws {
+        let client = try MongoClient.makeTestClient()
+        try self.enable(using: client)
+    }
+
+    internal func disable(using client: MongoClient? = nil, on address: ServerAddress? = nil) {
         do {
-            let client = try MongoClient.makeTestClient()
-            try client.db("admin").runCommand(["configureFailPoint": .string(self.name), "mode": "off"])
+            let clientToUse: MongoClient
+            if let client = client {
+                clientToUse = client
+            } else {
+                clientToUse = try MongoClient.makeTestClient()
+            }
+
+            let command: BSONDocument = ["configureFailPoint": .string(self.name), "mode": "off"]
+
+            if let addr = address {
+                try clientToUse.db("admin").runCommand(command, on: addr)
+            } else {
+                try clientToUse.db("admin").runCommand(command)
+            }
+        } catch _ as MongoError.ServerSelectionError {
+            // this often means the server that the failpoint was set against was marked as unknown
+            // due to the failpoint firing, so we just ignore
         } catch {
-            print("Failed to disable fail point \(self.name): \(error)")
+            print("Failed to disable failpoint: \(error)")
         }
     }
 

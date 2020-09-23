@@ -1,0 +1,44 @@
+diff --git a/Sources/CLibMongoC/mongoc/mongoc-topology-private.h b/Sources/CLibMongoC/mongoc/mongoc-topology-private.h
+index 350b3b5..0e8ea28 100644
+--- a/Sources/CLibMongoC/mongoc/mongoc-topology-private.h
++++ b/Sources/CLibMongoC/mongoc/mongoc-topology-private.h
+@@ -28,7 +28,7 @@
+ #include "mongoc-client-session-private.h"
+ #include "mongoc-crypt-private.h"
+ 
+-#define MONGOC_TOPOLOGY_MIN_HEARTBEAT_FREQUENCY_MS 500
++#define MONGOC_TOPOLOGY_MIN_HEARTBEAT_FREQUENCY_MS 50
+ #define MONGOC_TOPOLOGY_SOCKET_CHECK_INTERVAL_MS 5000
+ #define MONGOC_TOPOLOGY_COOLDOWN_MS 5000
+ #define MONGOC_TOPOLOGY_LOCAL_THRESHOLD_MS 15
+
+
+diff --git a/Sources/CLibMongoC/include/CLibMongoC_mongoc-client-pool.h b/Sources/CLibMongoC/include/CLibMongoC_mongoc-client-pool.h
+index 63a22ed..7349f19 100644
+--- a/Sources/CLibMongoC/include/CLibMongoC_mongoc-client-pool.h
++++ b/Sources/CLibMongoC/include/CLibMongoC_mongoc-client-pool.h
+@@ -71,4 +71,7 @@ MONGOC_EXPORT (bool)
+ mongoc_client_pool_enable_auto_encryption (mongoc_client_pool_t *pool,
+                                            mongoc_auto_encryption_opts_t *opts,
+                                            bson_error_t *error);
++MONGOC_EXPORT (void)
++mongoc_client_pool_set_min_heartbeat_frequency_msec (mongoc_client_pool_t *pool,
++                                                     uint64_t freq_msec);
+ BSON_END_DECLS
+
+
+diff --git a/Sources/CLibMongoC/mongoc/mongoc-client-pool.c b/Sources/CLibMongoC/mongoc/mongoc-client-pool.c
+index b8534b7..726be29 100644
+--- a/Sources/CLibMongoC/mongoc/mongoc-client-pool.c
++++ b/Sources/CLibMongoC/mongoc/mongoc-client-pool.c
+@@ -504,3 +504,10 @@ mongoc_client_pool_enable_auto_encryption (mongoc_client_pool_t *pool,
+    return _mongoc_cse_client_pool_enable_auto_encryption (
+       pool->topology, opts, error);
+ }
++
++void
++mongoc_client_pool_set_min_heartbeat_frequency_msec (mongoc_client_pool_t *pool,
++                                                     uint64_t freq_msec)
++{
++    pool-> topology-> min_heartbeat_frequency_msec = freq_msec;
++}

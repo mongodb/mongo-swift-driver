@@ -43,7 +43,7 @@ BSON_BEGIN_DECLS
 
 /* protocol versions this driver can speak */
 #define WIRE_VERSION_MIN 3
-#define WIRE_VERSION_MAX 8
+#define WIRE_VERSION_MAX 9
 
 /* first version that supported "find" and "getMore" commands */
 #define WIRE_VERSION_FIND_CMD 4
@@ -59,6 +59,8 @@ BSON_BEGIN_DECLS
 #define WIRE_VERSION_CMD_WRITE_CONCERN 5
 /* first version to support collation */
 #define WIRE_VERSION_COLLATION 5
+/* first version to support server-side errors for unsupported hint options */
+#define WIRE_VERSION_HINT_SERVER_SIDE_ERROR 5
 /* first version to support OP_MSG */
 #define WIRE_VERSION_OP_MSG 6
 /* first version to support array filters for "update" command */
@@ -75,6 +77,19 @@ BSON_BEGIN_DECLS
 #define WIRE_VERSION_4_2 8
 /* version corresponding to client side field level encryption support. */
 #define WIRE_VERSION_CSE 8
+/* first version to throw server-side errors for unsupported hint in
+ * "findAndModify" command */
+#define WIRE_VERSION_FIND_AND_MODIFY_HINT_SERVER_SIDE_ERROR 8
+/* first version to support hint for "delete" command */
+#define WIRE_VERSION_DELETE_HINT 9
+/* first version to support hint for "findAndModify" command */
+#define WIRE_VERSION_FIND_AND_MODIFY_HINT 9
+/* version corresponding to server 4.4 release */
+#define WIRE_VERSION_4_4 9
+/* version corresponding to retryable writes error label */
+#define WIRE_VERSION_RETRYABLE_WRITE_ERROR_LABEL 9
+/* first version to support server hedged reads */
+#define WIRE_VERSION_HEDGED_READS 9
 
 struct _mongoc_collection_t;
 
@@ -133,16 +148,16 @@ typedef struct _mongoc_rr_data_t {
    /* Set to lowest TTL found when polling SRV records. */
    uint32_t min_ttl;
 
-   /* Initialized with copy of uri->hosts prior to polling.
-    * Any remaining records after DNS query are no longer active.
-    */
+   /* Set to the resulting host list when polling SRV records */
    mongoc_host_list_t *hosts;
+
+   /* Set to the TXT record when polling for TXT */
+   char *txt_record_opts;
 } mongoc_rr_data_t;
 
 bool
 _mongoc_client_get_rr (const char *service,
                        mongoc_rr_type_t rr_type,
-                       mongoc_uri_t *uri,
                        mongoc_rr_data_t *rr_data,
                        bson_error_t *error);
 
@@ -218,6 +233,14 @@ mongoc_stream_t *
 mongoc_client_connect_tcp (int32_t connecttimeoutms,
                            const mongoc_host_list_t *host,
                            bson_error_t *error);
+
+mongoc_stream_t *
+mongoc_client_connect (bool buffered,
+                       bool use_ssl,
+                       void *ssl_opts_void,
+                       const mongoc_uri_t *uri,
+                       const mongoc_host_list_t *host,
+                       bson_error_t *error);
 BSON_END_DECLS
 
 #endif /* MONGOC_CLIENT_PRIVATE_H */

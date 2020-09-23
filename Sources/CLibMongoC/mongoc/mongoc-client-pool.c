@@ -15,7 +15,6 @@
  */
 
 
-
 #include "CLibMongoC_mongoc.h"
 #include "mongoc-apm-private.h"
 #include "mongoc-counters-private.h"
@@ -26,11 +25,8 @@
 #include "mongoc-queue-private.h"
 #include "mongoc-thread-private.h"
 #include "mongoc-topology-private.h"
+#include "mongoc-topology-background-monitoring-private.h"
 #include "mongoc-trace-private.h"
-
-#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
-#include <inttypes.h>
-#endif
 
 #ifdef MONGOC_ENABLE_SSL
 #include "mongoc-ssl-private.h"
@@ -62,23 +58,36 @@ void
 mongoc_client_pool_set_ssl_opts (mongoc_client_pool_t *pool,
                                  const mongoc_ssl_opt_t *opts)
 {
-   BSON_ASSERT (pool);
-
    bson_mutex_lock (&pool->mutex);
 
-   _mongoc_ssl_opts_cleanup (&pool->ssl_opts);
+   _mongoc_ssl_opts_cleanup (&pool->ssl_opts,
+                             false /* don't free internal opts. */);
 
-   memset (&pool->ssl_opts, 0, sizeof pool->ssl_opts);
    pool->ssl_opts_set = false;
 
    if (opts) {
-      _mongoc_ssl_opts_copy_to (opts, &pool->ssl_opts);
+      _mongoc_ssl_opts_copy_to (
+         opts, &pool->ssl_opts, false /* don't overwrite internal opts. */);
       pool->ssl_opts_set = true;
    }
 
    mongoc_topology_scanner_set_ssl_opts (pool->topology->scanner,
                                          &pool->ssl_opts);
 
+   bson_mutex_unlock (&pool->mutex);
+}
+
+void
+_mongoc_client_pool_set_internal_tls_opts (
+   mongoc_client_pool_t *pool, _mongoc_internal_tls_opts_t *internal)
+{
+   bson_mutex_lock (&pool->mutex);
+   if (!pool->ssl_opts_set) {
+      return;
+   }
+   pool->ssl_opts.internal = bson_malloc (sizeof (_mongoc_internal_tls_opts_t));
+   memcpy (
+      pool->ssl_opts.internal, internal, sizeof (_mongoc_internal_tls_opts_t));
    bson_mutex_unlock (&pool->mutex);
 }
 #endif
@@ -147,10 +156,12 @@ mongoc_client_pool_new (const mongoc_uri_t *uri)
 #ifdef MONGOC_ENABLE_SSL
    if (mongoc_uri_get_tls (pool->uri)) {
       mongoc_ssl_opt_t ssl_opt = {0};
+      _mongoc_internal_tls_opts_t internal_tls_opts = {0};
 
-      _mongoc_ssl_opts_from_uri (&ssl_opt, pool->uri);
+      _mongoc_ssl_opts_from_uri (&ssl_opt, &internal_tls_opts, pool->uri);
       /* sets use_ssl = true */
       mongoc_client_pool_set_ssl_opts (pool, &ssl_opt);
+      _mongoc_client_pool_set_internal_tls_opts (pool, &internal_tls_opts);
    }
 #endif
    mongoc_counter_client_pools_active_inc ();
@@ -188,7 +199,7 @@ mongoc_client_pool_destroy (mongoc_client_pool_t *pool)
    mongoc_cond_destroy (&pool->cond);
 
 #ifdef MONGOC_ENABLE_SSL
-   _mongoc_ssl_opts_cleanup (&pool->ssl_opts);
+   _mongoc_ssl_opts_cleanup (&pool->ssl_opts, true);
 #endif
 
    bson_free (pool);
@@ -208,9 +219,10 @@ mongoc_client_pool_destroy (mongoc_client_pool_t *pool)
 static void
 _start_scanner_if_needed (mongoc_client_pool_t *pool)
 {
-   if (!_mongoc_topology_start_background_scanner (pool->topology)) {
-      MONGOC_ERROR ("Background scanner did not start!");
-      abort ();
+   if (!pool->topology->single_threaded) {
+      bson_mutex_lock (&pool->topology->mutex);
+      _mongoc_topology_background_monitoring_start (pool->topology);
+      bson_mutex_unlock (&pool->topology->mutex);
    }
 }
 
@@ -238,11 +250,21 @@ mongoc_client_t *
 mongoc_client_pool_pop (mongoc_client_pool_t *pool)
 {
    mongoc_client_t *client;
+   int32_t wait_queue_timeout_ms;
+   int64_t expire_at_ms = -1;
+   int64_t now_ms;
+   int r;
 
    ENTRY;
 
    BSON_ASSERT (pool);
 
+   wait_queue_timeout_ms = mongoc_uri_get_option_as_int32 (
+      pool->uri, MONGOC_URI_WAITQUEUETIMEOUTMS, -1);
+   if (wait_queue_timeout_ms > 0) {
+      expire_at_ms =
+         (bson_get_monotonic_time () / 1000) + wait_queue_timeout_ms;
+   }
    bson_mutex_lock (&pool->mutex);
 
 again:
@@ -252,12 +274,26 @@ again:
          _initialize_new_client (pool, client);
          pool->size++;
       } else {
-         mongoc_cond_wait (&pool->cond, &pool->mutex);
+         if (wait_queue_timeout_ms > 0) {
+            now_ms = bson_get_monotonic_time () / 1000;
+            if (now_ms < expire_at_ms) {
+               r = mongoc_cond_timedwait (
+                  &pool->cond, &pool->mutex, expire_at_ms - now_ms);
+               if (mongo_cond_ret_is_timedout (r)) {
+                  GOTO (done);
+               }
+            } else {
+               GOTO (done);
+            }
+         } else {
+            mongoc_cond_wait (&pool->cond, &pool->mutex);
+         }
          GOTO (again);
       }
    }
 
    _start_scanner_if_needed (pool);
+done:
    bson_mutex_unlock (&pool->mutex);
 
    RETURN (client);
@@ -467,4 +503,11 @@ mongoc_client_pool_enable_auto_encryption (mongoc_client_pool_t *pool,
 {
    return _mongoc_cse_client_pool_enable_auto_encryption (
       pool->topology, opts, error);
+}
+
+void
+mongoc_client_pool_set_min_heartbeat_frequency_msec (mongoc_client_pool_t *pool,
+                                                     uint64_t freq_msec)
+{
+    pool-> topology-> min_heartbeat_frequency_msec = freq_msec;
 }

@@ -7,6 +7,10 @@ internal class ConnectionString {
     /// Tracks whether we have already destroyed the above pointer.
     private var destroyedPtr = false
 
+    /// Minimum possible value for a heartbeatFrequencyMS specified via the URI or options.
+    /// This may be overridden in the tests via an internal option on `MongoClientOptions`.
+    internal var minHeartbeatFrequencyMS: Int32 = 500
+
     /// Initializes a new `ConnectionString` with the provided options.
     internal init(_ connectionString: String, options: MongoClientOptions? = nil) throws {
         var error = bson_error_t()
@@ -69,6 +73,19 @@ internal class ConnectionString {
             throw MongoError.InvalidArgumentError(
                 message: "Invalid \(MONGOC_URI_SOCKETTIMEOUTMS): must be between 1 and \(Int32.max)"
             )
+        }
+
+        // We effectively disabled libmongoc's validation of this option to support setting lower heartbeat frequencies
+        // in the tests, so we need to do the validation ourselves.
+        if let heartbeatFrequencyMS = self.options?[MONGOC_URI_HEARTBEATFREQUENCYMS]?.int32Value {
+            guard heartbeatFrequencyMS >= self.minHeartbeatFrequencyMS else {
+                throw self.int32OutOfRangeError(
+                    option: MONGOC_URI_HEARTBEATFREQUENCYMS,
+                    value: heartbeatFrequencyMS,
+                    min: self.minHeartbeatFrequencyMS,
+                    max: Int32.max
+                )
+            }
         }
     }
 
@@ -295,12 +312,16 @@ internal class ConnectionString {
             try self.setBoolOption(MONGOC_URI_DIRECTCONNECTION, to: false)
         }
 
+        if let minHeartbeatFreqMS = options?.minHeartbeatFrequencyMS {
+            self.minHeartbeatFrequencyMS = Int32(minHeartbeatFreqMS)
+        }
+
         if let heartbeatFreqMS = options?.heartbeatFrequencyMS {
-            guard let value = Int32(exactly: heartbeatFreqMS), value >= 500 else {
+            guard let value = Int32(exactly: heartbeatFreqMS), value >= self.minHeartbeatFrequencyMS else {
                 throw self.int32OutOfRangeError(
                     option: MONGOC_URI_HEARTBEATFREQUENCYMS,
                     value: heartbeatFreqMS,
-                    min: 500,
+                    min: self.minHeartbeatFrequencyMS,
                     max: Int32.max
                 )
             }

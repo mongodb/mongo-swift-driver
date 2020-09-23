@@ -93,6 +93,9 @@ public struct ServerDescription {
     /// address the client uses.
     public let address: ServerAddress
 
+    /// Opaque identifier for this server, used for testing only.
+    internal let serverId: UInt32
+
     /// The duration in milliseconds of the server's last ismaster call.
     public let roundTripTime: Int?
 
@@ -146,6 +149,7 @@ public struct ServerDescription {
     /// mongoc_server_description_t.
     internal init(_ description: OpaquePointer) {
         self.address = ServerAddress(mongoc_server_description_host(description))
+        self.serverId = mongoc_server_description_id(description)
         self.roundTripTime = Int(mongoc_server_description_round_trip_time(description))
         self.lastUpdateTime = Date(msSinceEpoch: mongoc_server_description_last_update_time(description))
         self.type = ServerType(rawValue: String(cString: mongoc_server_description_type(description))) ?? .unknown

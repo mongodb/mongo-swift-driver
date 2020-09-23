@@ -39,7 +39,7 @@ final class SDAMTests: MongoSwiftTestCase {
 
         let receivedEvents = monitor.events().filter { !$0.isHeartbeatEvent }
 
-        let connString = try ConnectionString(MongoSwiftTestCase.getConnectionString())
+        let connString = MongoSwiftTestCase.getConnectionString()
 
         guard let hostAddress = connString.hosts?[0] else {
             XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
@@ -97,7 +97,7 @@ final class SDAMTests: MongoSwiftTestCase {
             return
         }
 
-        let hostURIs = Self.getConnectionStringPerHost()
+        let hostURIs = Self.getConnectionStringPerHost().map { $0.toString() }
 
         let optsFalse = MongoClientOptions(directConnection: false)
         let optsTrue = MongoClientOptions(directConnection: true)

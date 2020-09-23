@@ -104,10 +104,6 @@ let shouldWarnButLibmongocErrors: [String: [String]] = [
         "Non-numeric wTimeoutMS causes a warning",
         "Too low wTimeoutMS causes a warning",
         "Invalid journal causes a warning"
-    ],
-    "valid-warnings.json": [
-        "Empty integer option values are ignored",
-        "Empty boolean option value are ignored"
     ]
 ]
 
@@ -248,11 +244,14 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
 
         let testConnStr = MongoSwiftTestCase.getConnectionString()
-        let rsName = try ConnectionString(testConnStr).replicaSet!
+        let rsName = testConnStr.replicaSet!
 
-        var connStrWithoutRS = testConnStr
+        var connStrWithoutRS = testConnStr.toString()
         connStrWithoutRS.removeSubstring("replicaSet=\(rsName)")
-        print("without rs: \(connStrWithoutRS)")
+        // need to delete the extra & in case replicaSet was first
+        connStrWithoutRS = connStrWithoutRS.replacingOccurrences(of: "?&", with: "?")
+        // need to delete exta & in case replicaSet was between two options
+        connStrWithoutRS = connStrWithoutRS.replacingOccurrences(of: "&&", with: "&")
 
         // setting actual name via options struct only should succeed in connecting
         opts.replicaSet = rsName
@@ -262,14 +261,14 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
         // setting actual name via both client options and URI should succeed in connecting
         opts.replicaSet = rsName
-        try self.withTestClient(testConnStr, options: opts) { client in
+        try self.withTestClient(testConnStr.toString(), options: opts) { client in
             expect(try client.listDatabases().wait()).toNot(throwError())
         }
 
         // setting to an incorrect repl set name via client options should fail to connect
         // speed up server selection timeout to fail faster
         opts.replicaSet! += "xyz"
-        try self.withTestClient(testConnStr + "&serverSelectionTimeoutMS=1000", options: opts) { client in
+        try self.withTestClient(testConnStr.toString() + "&serverSelectionTimeoutMS=1000", options: opts) { client in
             expect(try client.listDatabases().wait()).to(throwError())
         }
     }
@@ -288,7 +287,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         let connStr3 = try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=20000", options: opts)
         expect(connStr3.options?["heartbeatfrequencyms"]?.int32Value).to(equal(50000))
 
-        let tooSmall = 10
+        let tooSmall = 60
         expect(try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=\(tooSmall)"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
@@ -346,16 +345,15 @@ final class ConnectionStringTests: MongoSwiftTestCase {
             sleep(5) // sleep to allow heartbeats to occur
         }
 
-        // in case there's an uneven number of events (i.e. client was closed mid-heartbeat) drop any
-        // started events at the end with no corresponding succeeded event
         let succeeded = watcher.succeeded
-        let started = watcher.started[0..<succeeded.endIndex]
 
-        // the last started time should be 2s after the second-to-last succeeded time.
-        let lastStart = started.last!
+        // the last success time should be roughly 2s after the second-to-last succeeded time.
+        // we can't use started events here because streamable monitor checks begin immediately after previous
+        // ones succeed. They only fire success events every heartbeatFrequencyMS though.
+        let lastSuccess = succeeded.last!
         let secondToLastSuccess = succeeded[succeeded.count - 2]
 
-        let difference = lastStart.timeIntervalSince1970 - secondToLastSuccess.timeIntervalSince1970
+        let difference = lastSuccess.timeIntervalSince1970 - secondToLastSuccess.timeIntervalSince1970
         expect(difference).to(beCloseTo(2.0, within: 0.2))
     }
 

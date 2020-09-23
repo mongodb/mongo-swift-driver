@@ -20,6 +20,7 @@ private struct RetryableReadsTest: SpecTest {
     let expectations: [TestCommandStartedEvent]?
 
     var activeFailPoint: FailPoint?
+    var targetedHost: ServerAddress?
 }
 
 /// Struct representing a single retryable-writes spec test JSON file.

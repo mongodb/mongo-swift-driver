@@ -101,7 +101,7 @@
           "arguments": {
             "options": {
               "readPreference": {
-                "mode": "primary"
+                "mode": "Primary"
               }
             }
           }
@@ -193,7 +193,7 @@
               ]
             },
             "readPreference": {
-              "mode": "primary"
+              "mode": "Primary"
             }
           },
           "result": {
@@ -263,7 +263,7 @@
               "find": "test"
             },
             "readPreference": {
-              "mode": "secondary"
+              "mode": "Secondary"
             }
           },
           "result": {
@@ -281,7 +281,7 @@
           "arguments": {
             "options": {
               "readPreference": {
-                "mode": "secondary"
+                "mode": "Secondary"
               }
             }
           }

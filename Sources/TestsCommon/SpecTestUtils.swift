@@ -1,5 +1,6 @@
 import Foundation
-import MongoSwift
+@testable import MongoSwift
+import NIO
 import XCTest
 
 extension MongoSwiftTestCase {
@@ -23,6 +24,19 @@ extension BSONDocument {
     public init(fromJSONFile file: URL) throws {
         let jsonString = try String(contentsOf: file, encoding: .utf8)
         try self.init(fromJSON: jsonString)
+    }
+}
+
+extension MongoDatabase {
+    @discardableResult
+    public func runCommand(
+        _ command: BSONDocument,
+        on server: ServerAddress,
+        options: RunCommandOptions? = nil,
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<BSONDocument> {
+        let operation = RunCommandOperation(database: self, command: command, options: options, serverAddress: server)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 }
 

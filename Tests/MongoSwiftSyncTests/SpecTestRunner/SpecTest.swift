@@ -1,6 +1,7 @@
 import Foundation
 @testable import struct MongoSwift.ReadPreference
 import MongoSwiftSync
+@testable import struct MongoSwiftSync.MongoClientOptions
 import Nimble
 import TestsCommon
 import XCTest
@@ -163,10 +164,11 @@ extension SpecTestFile {
             self.databaseName,
             options: MongoDatabaseOptions(writeConcern: try WriteConcern(w: .majority))
         )
-        try? database.drop()
 
         func populateCollection(name: String, docs: [BSONDocument]) throws {
-            let collection = try database.createCollection(name)
+            try? database.collection(name).drop(options: DropCollectionOptions(writeConcern: WriteConcern.majority))
+            let createOptions = CreateCollectionOptions(writeConcern: WriteConcern.majority)
+            let collection = try database.createCollection(name, options: createOptions)
 
             guard !docs.isEmpty else {
                 return
@@ -195,7 +197,13 @@ extension SpecTestFile {
             return
         }
 
-        let setupClient = try MongoClient.makeTestClient()
+        // setup client needs to be able to talk to all mongoses for targetedFailPoint and for
+        // the distinct workaround.
+        let connString = MongoSwiftTestCase.getConnectionString(singleMongos: false).toString()
+        var setupClientOptions = MongoClientOptions()
+        setupClientOptions.minHeartbeatFrequencyMS = 50
+        setupClientOptions.heartbeatFrequencyMS = 50
+        let setupClient = try MongoClient.makeTestClient(connString, options: setupClientOptions)
 
         if let requirements = self.runOn {
             guard try requirements.contains(where: { try setupClient.getUnmetRequirement($0) == nil }) else {
@@ -215,14 +223,16 @@ extension SpecTestFile {
 
             // Due to strange behavior in mongos, a "distinct" command needs to be run against each mongos
             // before the tests run to prevent certain errors from ocurring. (SERVER-39704)
-            if MongoSwiftTestCase.topologyType == .sharded, let collName = self.collectionName {
-                for connStr in MongoSwiftTestCase.getConnectionStringPerHost() {
-                    let client = try MongoClient.makeTestClient(connStr)
-                    _ = try client.db(self.databaseName).collection(collName).distinct(fieldName: "_id")
+            if MongoSwiftTestCase.topologyType == .sharded,
+                let collName = self.collectionName,
+                test.description.contains("distinct") {
+                for address in MongoSwiftTestCase.getHosts() {
+                    _ = try setupClient.db(self.databaseName)
+                        .runCommand(["distinct": .string(collName), "key": "_id"], on: address)
                 }
             }
 
-            try test.run(dbName: self.databaseName, collName: self.collectionName)
+            try test.run(setupClient: setupClient, dbName: self.databaseName, collName: self.collectionName)
         }
     }
 }
@@ -279,6 +289,7 @@ extension SpecTest {
     static var skippedTestKeywords: [String] { [] }
 
     internal mutating func run(
+        setupClient: MongoClient,
         dbName: String,
         collName: String?
     ) throws {
@@ -290,17 +301,32 @@ extension SpecTest {
         print("Executing test: \(self.description)")
 
         let connectionString = MongoSwiftTestCase.getConnectionString(singleMongos: self.useMultipleMongoses != true)
+
+        // We need to lower heartbeat frequency to speed up tests on 4.4+ since failpoints don't trigger proper
+        // topology updates when using streamable ismaster. See CDRIVER-3793 for more information.
+        var options = self.clientOptions ?? MongoClientOptions()
+
+        if options.heartbeatFrequencyMS == nil {
+            options.minHeartbeatFrequencyMS = 50
+            options.heartbeatFrequencyMS = 50
+        }
+
         let client = try MongoClient.makeTestClient(
-            connectionString, options: self.clientOptions
+            connectionString.toString(), options: options
         )
         let monitor = client.addCommandMonitor()
 
         if let failPoint = self.failPoint {
-            try self.activateFailPoint(failPoint)
+            // if only using a single mongos, make sure to enable the failpoint on the correct mongos.
+            if MongoSwiftTestCase.topologyType == .sharded, self.useMultipleMongoses != true {
+                try self.activateFailPoint(failPoint, using: setupClient, on: connectionString.hosts![0])
+            } else {
+                try self.activateFailPoint(failPoint, using: setupClient)
+            }
         }
         // this defer will cover any failpoints set in `validateExecution` as well.
         defer {
-            self.disableActiveFailPoint()
+            self.disableActiveFailPoint(using: setupClient)
         }
 
         var sessions = [String: MongoSwiftSync.ClientSession]()
@@ -314,6 +340,7 @@ extension SpecTest {
             for operation in self.operations {
                 try operation.validateExecution(
                     test: &self,
+                    setupClient: setupClient,
                     client: client,
                     dbName: dbName,
                     collName: collName,
@@ -336,18 +363,13 @@ extension SpecTest {
             expect(events).to(match(expectations), description: self.description)
         }
 
-        try self.checkOutcome(dbName: dbName, collName: collName)
-    }
-
-    internal func checkOutcome(dbName: String, collName: String?) throws {
         guard let outcome = self.outcome else {
             return
         }
         guard let collName = collName else {
             throw TestError(message: "outcome specifies a collection but spec test omits collection name")
         }
-        let client = try MongoClient.makeTestClient()
-        let verifyColl = client.db(dbName).collection(collName)
+        let verifyColl = setupClient.db(dbName).collection(collName)
         let foundDocs = try verifyColl.find().all()
         expect(foundDocs.count).to(equal(outcome.collection.data.count))
         zip(foundDocs, outcome.collection.data).forEach {

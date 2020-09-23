@@ -44,6 +44,9 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// given time. This includes in-use and available connections. Defaults to 100.
     public var maxPoolSize: Int?
 
+    /// An alternative lower bound for heartbeatFrequencyMS, used for speeding up tests (default 500ms).
+    internal var minHeartbeatFrequencyMS: Int?
+
     /// Specifies a ReadConcern to use for the client.
     public var readConcern: ReadConcern?
 
@@ -111,10 +114,6 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Specifies a WriteConcern to use for the client.
     public var writeConcern: WriteConcern?
 
-    private enum CodingKeys: CodingKey {
-        case retryWrites, retryReads, readConcern, writeConcern
-    }
-
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
     public init(
         appName: String? = nil,
@@ -152,6 +151,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.heartbeatFrequencyMS = heartbeatFrequencyMS
         self.localThresholdMS = localThresholdMS
         self.maxPoolSize = maxPoolSize
+        self.minHeartbeatFrequencyMS = nil
         self.readConcern = readConcern
         self.readPreference = readPreference
         self.replicaSet = replicaSet

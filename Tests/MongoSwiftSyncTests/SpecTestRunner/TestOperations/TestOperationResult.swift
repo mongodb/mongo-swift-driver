@@ -184,66 +184,71 @@ struct ErrorResult: Equatable, Decodable {
         self.errorLabelsOmit = try container.decodeIfPresent([String].self, forKey: .errorLabelsOmit)
     }
 
-    public func checkErrorResult(_ error: Error) throws {
-        try self.checkErrorContains(error)
-        try self.checkCodeName(error)
-        try self.checkErrorLabels(error)
+    public func checkErrorResult(_ error: Error, description: String) {
+        self.checkErrorContains(error, description: description)
+        self.checkCodeName(error, description: description)
+        self.checkErrorLabels(error, description: description)
     }
 
-    internal func checkErrorContains(_ error: Error) throws {
+    private func checkErrorContains(_ error: Error, description: String) {
         if let errorContains = self.errorContains?.lowercased() {
-            expect(error.localizedDescription.lowercased()).to(contain(errorContains))
+            expect(error.localizedDescription.lowercased()).to(contain(errorContains), description: description)
         }
     }
 
-    internal func checkCodeName(_ error: Error) throws {
+    private func checkCodeName(_ error: Error, description: String) {
         // TODO: can remove `equal("")` references once SERVER-36755 is resolved
         if let errorCodeName = self.errorCodeName {
             if let commandError = error as? MongoError.CommandError {
-                expect(commandError.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
+                expect(commandError.codeName)
+                    .to(satisfyAnyOf(equal(errorCodeName), equal("")), description: description)
             } else if let writeError = error as? MongoError.WriteError {
                 if let writeFailure = writeError.writeFailure {
-                    expect(writeFailure.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
+                    expect(writeFailure.codeName)
+                        .to(satisfyAnyOf(equal(errorCodeName), equal("")), description: description)
                 }
                 if let writeConcernFailure = writeError.writeConcernFailure {
-                    expect(writeConcernFailure.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
+                    expect(writeConcernFailure.codeName)
+                        .to(satisfyAnyOf(equal(errorCodeName), equal("")), description: description)
                 }
             } else if let bulkWriteError = error as? MongoError.BulkWriteError {
                 if let writeFailures = bulkWriteError.writeFailures {
                     for writeFailure in writeFailures {
-                        expect(writeFailure.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
+                        expect(writeFailure.codeName)
+                            .to(satisfyAnyOf(equal(errorCodeName), equal("")), description: description)
                     }
                 }
                 if let writeConcernFailure = bulkWriteError.writeConcernFailure {
-                    expect(writeConcernFailure.codeName).to(satisfyAnyOf(equal(errorCodeName), equal("")))
+                    expect(writeConcernFailure.codeName)
+                        .to(satisfyAnyOf(equal(errorCodeName), equal("")), description: description)
                 }
             } else {
-                XCTFail("\(error) does not contain codeName")
+                XCTFail("\(description): \(error) does not contain codeName")
             }
         }
     }
 
-    internal func checkErrorLabels(_ error: Error) throws {
+    private func checkErrorLabels(_ error: Error, description: String) {
         if let errorLabelsContain = self.errorLabelsContain {
             guard let labeledError = error as? MongoLabeledError else {
-                XCTFail("\(error) does not contain errorLabels")
+                XCTFail("\(description): \(error) does not contain errorLabels")
                 return
             }
             for label in errorLabelsContain {
-                expect(labeledError.errorLabels).to(contain(label))
+                expect(labeledError.hasErrorLabel(label)).to(beTrue(), description: description)
             }
         }
 
         if let errorLabelsOmit = self.errorLabelsOmit {
             guard let labeledError = error as? MongoLabeledError else {
-                XCTFail("\(error) does not contain errorLabels")
+                XCTFail("\(description): \(error) does not contain errorLabels")
                 return
             }
             guard let errorLabels = labeledError.errorLabels else {
                 return
             }
             for label in errorLabelsOmit {
-                expect(errorLabels).toNot(contain(label))
+                expect(errorLabels).toNot(contain(label), description: description)
             }
         }
     }

@@ -3,7 +3,7 @@
 set -eou pipefail
 
 PWD=`pwd`
-LIBMONGOC_VERSION=1.16.2
+LIBMONGOC_VERSION=1.17.0
 TARBALL_URL=https://github.com/mongodb/mongo-c-driver/releases/download/$LIBMONGOC_VERSION/mongo-c-driver-$LIBMONGOC_VERSION.tar.gz
 TARBALL_NAME=`basename $TARBALL_URL`
 TARBALL_DIR=`basename -s .tar.gz $TARBALL_NAME`
@@ -92,6 +92,7 @@ echo "RENAMING header files"
   # NOTE: the below sed syntax uses addresses to include or ingore lines including the word `private`
   find $CLIBMONGOC_PATH -name "*.[ch]" | \
     xargs $sed -i -e 's+include "common+include "CLibMongoC_common+' \
+                  -e 's+include <common-thread-private.h>+include "CLibMongoC_common-thread-private.h"+' \
                   \
                   -e '/private/! s+include "bson.h"+include "CLibMongoC_bson.h"+' \
                   -e '/private/! s+include "bcon.h"+include "CLibMongoC_bcon.h"+' \
@@ -103,6 +104,7 @@ echo "RENAMING header files"
                   \
                   -e '/private/! s+include "mongoc.h"+include "CLibMongoC_mongoc.h"+' \
                   -e '/private\|defs/! s+include "mongoc-+include "CLibMongoC_mongoc-+' \
+                  -e '/private/! s+include "mongoc/+include "CLibMongoC_+' \
                   -e '/private/! s+include <mongoc-+include <CLibMongoC_mongoc-+' \
                   -e '/private/ s+include "mongoc/+include "+' \
                   \
@@ -130,16 +132,9 @@ echo "RENAMING header files"
   popd
 )
 
-# Here we apply a number of larger patches that don't fit into a single sed line, specifically
-# an inability to use the `inttypes.h` header in an umbrella header file due to limitations with
-# how clang is building the module
+# Here we would apply any number of larger patches that don't fit into a single sed line.
 echo "PATCHING libmongoc"
-git apply "${ETC_DIR}/inttypes-non-modular-header-workaround.diff"
-
-# These patches are temporary workarounds to give us early access to the directConnection URI option and a bug fix.
-# This should be removed from the script when we update our vendored libmongoc to 1.17 via SWIFT-766.
-git apply "${ETC_DIR}/CDRIVER-3532-directConnection.diff"
-git apply "${ETC_DIR}/CDRIVER-3623-fix-setting-apm-in-pooled-client.diff"
+git apply ${ETC_DIR}/lower-minheartbeatfrequencyms.diff
 
 # Clang modules are build by a conventional structure with an `include` folder for public
 # includes, and an umbrella header used as the primary entry point. As part of the vendoring
