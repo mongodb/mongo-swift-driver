@@ -408,7 +408,7 @@ axes:
         display_name: "Ubuntu 16.04"
         run_on: ubuntu1604-test
 
-      - id: macos-1014
+      - id: macos-10.14
         display_name: "macOS 10.14"
         run_on: macos-1014
 
@@ -433,11 +433,15 @@ axes:
       - id: "5.1"
         display_name: "Swift 5.1"
         variables:
-           SWIFT_VERSION: "5.1.4"
+           SWIFT_VERSION: "5.1.5"
       - id: "5.2"
         display_name: "Swift 5.2"
         variables:
-           SWIFT_VERSION: "5.2"
+           SWIFT_VERSION: "5.2.5"
+      - id: "5.3"
+        display_name: "Swift 5.3"
+        variables:
+          SWIFT_VERSION: "5.3"
 
   - id: ssl-auth
     display_name: SSL and Auth
@@ -459,7 +463,9 @@ buildvariants:
 - matrix_name: "tests-all"
   matrix_spec:
     os-fully-featured: "*"
-    swift-version: "*"
+    swift-version:
+      - "5.1"
+      - "5.2"
     ssl-auth: "*"
   display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
   tasks:
@@ -482,7 +488,49 @@ buildvariants:
 - matrix_name: "atlas-connect"
   matrix_spec:
     os-fully-featured: "*"
-    swift-version: "*"
+    swift-version:
+      - "5.1"
+      - "5.2"
+  display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
+  tasks:
+    - ".atlas-connect"
+
+
+# define separate matrices for swift 5.3 that excludes macOS 10.14. unfortunately
+# as of now we cannot remove entire buildvariants via rule from the matrices above
+# so we need to split this up due to inability to test 5.3 on macOS 10.14.
+# see EVG-13092
+- matrix_name: "tests-all"
+  matrix_spec:
+    os-fully-featured:
+      - "ubuntu-18.04"
+      - "ubuntu-16.04"
+    swift-version: "5.3"
+    ssl-auth: "*"
+  display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
+  tasks:
+     - ".latest"
+     - ".4.4"
+     - ".4.2"
+     - ".4.0"
+     - ".3.6"
+  rules:
+  # pre 4.0 we are just using legacy linux mongoDB since ubuntu 18.04 didn't
+  # exist when 3.6 came out. legacy doesn't link to OpenSSL so we can't run
+  # SSL tests there.
+  - if:
+      os-fully-featured: "ubuntu-18.04"
+      swift-version: "*"
+      ssl-auth: "ssl-auth"
+    then:
+      remove_tasks: ".3.6"
+
+- matrix_name: "atlas-connect"
+  matrix_spec:
+    os-fully-featured:
+      - "ubuntu-18.04"
+      - "ubuntu-16.04"
+    swift-version: "5.3"
   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
   tasks:
     - ".atlas-connect"
