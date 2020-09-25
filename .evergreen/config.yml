@@ -500,7 +500,7 @@ buildvariants:
 # as of now we cannot remove entire buildvariants via rule from the matrices above
 # so we need to split this up due to inability to test 5.3 on macOS 10.14.
 # see EVG-13092
-- matrix_name: "tests-all"
+- matrix_name: "tests-all-5.3"
   matrix_spec:
     os-fully-featured:
       - "ubuntu-18.04"
@@ -525,7 +525,7 @@ buildvariants:
     then:
       remove_tasks: ".3.6"
 
-- matrix_name: "atlas-connect"
+- matrix_name: "atlas-connect-5.3"
   matrix_spec:
     os-fully-featured:
       - "ubuntu-18.04"
