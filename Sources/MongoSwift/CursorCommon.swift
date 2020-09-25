@@ -148,7 +148,7 @@ internal class Cursor<CursorKind: MongocCursorWrapper> {
             return nil
         }
 
-        var replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
+        let replyPtr = UnsafeMutablePointer<BSONPointer?>.allocate(capacity: 1)
         defer {
             replyPtr.deinitialize(count: 1)
             replyPtr.deallocate()
