@@ -83,6 +83,7 @@ _mongoc_client_pool_set_internal_tls_opts (
 {
    bson_mutex_lock (&pool->mutex);
    if (!pool->ssl_opts_set) {
+      bson_mutex_unlock (&pool->mutex);
       return;
    }
    pool->ssl_opts.internal = bson_malloc (sizeof (_mongoc_internal_tls_opts_t));
@@ -117,6 +118,7 @@ mongoc_client_pool_new (const mongoc_uri_t *uri)
 
    pool = (mongoc_client_pool_t *) bson_malloc0 (sizeof *pool);
    bson_mutex_init (&pool->mutex);
+   mongoc_cond_init (&pool->cond);
    _mongoc_queue_init (&pool->queue);
    pool->uri = mongoc_uri_copy (uri);
    pool->min_pool_size = 0;

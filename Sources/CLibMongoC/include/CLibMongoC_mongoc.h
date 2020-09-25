@@ -54,6 +54,7 @@
 #include "CLibMongoC_mongoc-stream-file.h"
 #include "CLibMongoC_mongoc-stream-gridfs.h"
 #include "CLibMongoC_mongoc-stream-socket.h"
+#include "CLibMongoC_mongoc-structured-log.h"
 #include "CLibMongoC_mongoc-uri.h"
 #include "CLibMongoC_mongoc-write-concern.h"
 #include "CLibMongoC_mongoc-version.h"

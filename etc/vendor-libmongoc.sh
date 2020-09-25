@@ -3,10 +3,20 @@
 set -eou pipefail
 
 PWD=`pwd`
-LIBMONGOC_VERSION=1.17.0
-TARBALL_URL=https://github.com/mongodb/mongo-c-driver/releases/download/$LIBMONGOC_VERSION/mongo-c-driver-$LIBMONGOC_VERSION.tar.gz
-TARBALL_NAME=`basename $TARBALL_URL`
-TARBALL_DIR=`basename -s .tar.gz $TARBALL_NAME`
+
+WORK_DIR=`mktemp -d`
+if [[ ! "$WORK_DIR" || ! -d "$WORK_DIR" ]]; then
+  echo "Could not create temp dir"
+  exit 1
+fi
+
+
+# LIBMONGOC_VERSION=1.17.0
+# TARBALL_URL=https://github.com/mongodb/mongo-c-driver/releases/download/$LIBMONGOC_VERSION/mongo-c-driver-$LIBMONGOC_VERSION.tar.gz
+# TARBALL_NAME=`basename $TARBALL_URL`
+# TARBALL_DIR=`basename -s .tar.gz $TARBALL_NAME`
+
+TARBALL_DIR="${WORK_DIR}/mongo-c-driver"
 
 # install paths
 CLIBMONGOC_PATH=$PWD/Sources/CLibMongoC
@@ -22,12 +32,6 @@ BSON_SRC_PATH=$TARBALL_DIR/src/libbson/src/bson
 JSONSL_SRC_PATH=$TARBALL_DIR/src/libbson/src/jsonsl
 MONGOC_SRC_PATH=$TARBALL_DIR/src/libmongoc/src/mongoc
 
-WORK_DIR=`mktemp -d`
-if [[ ! "$WORK_DIR" || ! -d "$WORK_DIR" ]]; then
-  echo "Could not create temp dir"
-  exit 1
-fi
-
 sed="$ETC_DIR/sed.sh"
 
 echo "REMOVING any previously vendored libmongoc code"
@@ -41,8 +45,10 @@ mkdir -p $COMMON_PATH
 mkdir -p $BSON_PATH
 mkdir -p $MONGOC_PATH
 
-echo "DOWNLOADING source tarball..."
-curl -L# -o $WORK_DIR/$TARBALL_NAME $TARBALL_URL
+# echo "DOWNLOADING source tarball..."
+# curl -L# -o $WORK_DIR/$TARBALL_NAME $TARBALL_URL
+echo "Cloning code..."
+git clone --single-branch --branch cdriver-3775 https://github.com/alcaeus/mongo-c-driver.git $TARBALL_DIR
 
 # This step copies all files from the tarball into `Sources/CLibMongoC`. It takes an extra step
 # to maintain private headers in component-specific folders (`bson`, `mongoc`, `common`), and
@@ -50,7 +56,7 @@ curl -L# -o $WORK_DIR/$TARBALL_NAME $TARBALL_URL
 echo "COPYING libmongoc"
 (
   pushd $WORK_DIR
-  tar -xzf $TARBALL_NAME
+  #tar -xzf $TARBALL_NAME
 
   # common
   cp $COMMON_SRC_PATH/*.h $CLIBMONGOC_INCLUDE_PATH
