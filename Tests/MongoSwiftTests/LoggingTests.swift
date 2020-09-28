@@ -10,24 +10,4 @@ final class LoggingTests: MongoSwiftTestCase {
             try db.runCommand(["isMaster": 1]).wait()
         }
     }
-
-    func testAuthConnectionStrings() throws {
-        let testFiles = try retrieveSpecTestFiles(specName: "auth", asType: AuthTestFile.self)
-
-        for (_, file) in testFiles {
-            for testCase in file.tests {
-                guard testCase.valid else {
-                    expect(try ConnectionString(testCase.uri))
-                        .to(
-                            throwError(errorType: MongoError.InvalidArgumentError.self),
-                            description: testCase.description
-                        )
-                    return
-                }
-
-                let connString = try ConnectionString(testCase.uri)
-                expect(connString.credential).to(equal(testCase.credential), description: testCase.description)
-            }
-        }
-    }
 }
