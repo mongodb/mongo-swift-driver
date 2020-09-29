@@ -18,13 +18,13 @@ private class LogMessageContainer {
     fileprivate init() {}
 
     fileprivate func append(_ message: LogMessage) {
-        queue.sync {
+        self.queue.sync {
             self.messages.append(message)
         }
     }
 
     fileprivate func getMessages() -> [LogMessage] {
-        queue.sync {
+        self.queue.sync {
             let messages = self.messages
             self.messages = []
             return messages
@@ -47,7 +47,7 @@ private struct TestLogHandler: LogHandler {
         self.logLevel = .debug
     }
 
-    static func bootstrap(label: String) -> LogHandler {
+    static func bootstrap(label _: String) -> LogHandler {
         self.init()
     }
 
@@ -67,9 +67,9 @@ private struct TestLogHandler: LogHandler {
         level: Logger.Level,
         message: Logger.Message,
         metadata: Logger.Metadata?,
-        file: String,
-        function: String,
-        line: UInt
+        file _: String,
+        function _: String,
+        line _: UInt
     ) {
         let message = LogMessage(level: level, message: message, metadata: metadata)
         globalContainer.append(message)
