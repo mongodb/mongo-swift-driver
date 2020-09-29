@@ -283,6 +283,7 @@ public class MongoClient {
     ) throws {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
+
         let connString = try ConnectionString(connectionString, options: options)
         self.connectionPool = try ConnectionPool(from: connString)
         self.operationExecutor = OperationExecutor(
