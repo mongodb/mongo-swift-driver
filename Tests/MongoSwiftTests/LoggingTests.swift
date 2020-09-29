@@ -11,7 +11,7 @@ import TestsCommon
 
 private let globalContainer = LogMessageContainer()
 
-fileprivate class LogMessageContainer {
+private class LogMessageContainer {
     private var messages: [LogMessage] = []
     private let queue = DispatchQueue(label: "MessageContainer")
 
@@ -33,10 +33,10 @@ fileprivate class LogMessageContainer {
 }
 
 /// Struct representing info we care about from a log message.
-fileprivate struct LogMessage {
-    let level: Logger.Level
-    let message: Logger.Message
-    let metadata: Logger.Metadata?
+private struct LogMessage {
+    fileprivate let level: Logger.Level
+    fileprivate let message: Logger.Message
+    fileprivate let metadata: Logger.Metadata?
 }
 
 /// Test log handler that conforms to the LogHandler protocol, so we can register it with swift-log.
@@ -48,20 +48,29 @@ private struct TestLogHandler: LogHandler {
     }
 
     static func bootstrap(label: String) -> LogHandler {
-        return self.init()
+        self.init()
     }
 
     public var metadata: Logger.Metadata {
-        get { fatalError("Unimplemented") }
-        set { fatalError("Unimplemented") }
+        get { [:] }
+        set { _ = newValue }
     }
 
     public subscript(metadataKey _: String) -> Logger.Metadata.Value? {
-        get { fatalError("Unimplemented") }
-        set { fatalError("Unimplemented") }
+        get { nil }
+        set { _ = newValue }
     }
 
-    func log(level: Logger.Level, message: Logger.Message, metadata: Logger.Metadata?, file: String, function: String, line: UInt) {
+    // part of the Logger protocol, we can't work around it.
+    // swiftlint:disable:next function_parameter_count
+    func log(
+        level: Logger.Level,
+        message: Logger.Message,
+        metadata: Logger.Metadata?,
+        file: String,
+        function: String,
+        line: UInt
+    ) {
         let message = LogMessage(level: level, message: message, metadata: metadata)
         globalContainer.append(message)
     }

@@ -1,4 +1,4 @@
-// Generated using Sourcery 0.16.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 0.18.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 
@@ -175,6 +175,12 @@ extension Document_SequenceTests {
         ("testSuffix", testSuffix),
         ("testSplit", testSplit),
         ("testIsEmpty", testIsEmpty),
+    ]
+}
+
+extension LoggingTests {
+    static var allTests = [
+        ("testCommandLogging", testCommandLogging),
     ]
 }
 
@@ -440,6 +446,7 @@ XCTMain([
     testCase(DocumentTests.allTests),
     testCase(Document_CollectionTests.allTests),
     testCase(Document_SequenceTests.allTests),
+    testCase(LoggingTests.allTests),
     testCase(MongoClientTests.allTests),
     testCase(MongoCollectionTests.allTests),
     testCase(MongoCollection_BulkWriteTests.allTests),

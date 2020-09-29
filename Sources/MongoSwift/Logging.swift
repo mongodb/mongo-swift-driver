@@ -54,7 +54,7 @@ private func makeLogger(envVar: String, label: String) -> Logger? {
 private let COMMAND_LOGGER = makeLogger(envVar: "MONGODB_LOGGING_COMMAND", label: "MongoSwift.command")
 private let SDAM_LOGGER = makeLogger(envVar: "MONGODB_LOGGING_SDAM", label: "MongoSwift.sdam")
 private let SERVER_SELECTION_LOGGER = makeLogger(
-    envVar: "MONGODB_LOGGING_SERVER_SELECTION", 
+    envVar: "MONGODB_LOGGING_SERVER_SELECTION",
     label: "MongoSwift.serverSelection"
 )
 private let CONNECTION_LOGGER = makeLogger(envVar: "MONGODB_LOGGING_CONNECTION", label: "MongoSwift.connection")
@@ -62,10 +62,10 @@ private let CONNECTION_LOGGER = makeLogger(envVar: "MONGODB_LOGGING_CONNECTION",
 /// For testing purposes, we define fallback loggers which can be mutated as needed to temporarily turn logging on/off
 /// during tests. Arguably you could just handle this by making the original variables mutable, but it seemed a bit
 /// safer to keep those locked down with their initial values.
-internal var TEST_COMMAND_LOGGER: Logger? = nil
-internal var TEST_SDAM_LOGGER: Logger? = nil
-internal var TEST_SERVER_SELECTION_LOGGER: Logger? = nil
-internal var TEST_CONNECTION_LOGGER: Logger? = nil
+internal var TEST_COMMAND_LOGGER: Logger?
+internal var TEST_SDAM_LOGGER: Logger?
+internal var TEST_SERVER_SELECTION_LOGGER: Logger?
+internal var TEST_CONNECTION_LOGGER: Logger?
 
 extension mongoc_structured_log_component_t {
     /// Returns the Swift logger corresponding to the mongoc log component. This value is nil if the user did not
@@ -102,7 +102,8 @@ internal func handleMongocStructuredLogMessage(entry: OpaquePointer!, _: UnsafeM
     let msg = BSONDocument(copying: mongoc_structured_log_entry_get_message(entry))
     logger.log(
         level: level,
-        "\(msg["message"]!.stringValue!)", // assumes message is always present and a string. TODO: perhaps codify in spec?
+        // swiftlint:disable:next force_unwrapping
+        "\(msg["message"]!.stringValue!)", // assumes message is always present and a string. TODO: codify in spec?
         metadata: msg.toLoggerMetadata()
     )
 }
