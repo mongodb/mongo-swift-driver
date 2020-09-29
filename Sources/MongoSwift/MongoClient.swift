@@ -281,6 +281,8 @@ public class MongoClient {
         using eventLoopGroup: EventLoopGroup,
         options: MongoClientOptions? = nil
     ) throws {
+        // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
+        initializeMongoc()
         let connString = try ConnectionString(connectionString, options: options)
         self.connectionPool = try ConnectionPool(from: connString)
         self.operationExecutor = OperationExecutor(

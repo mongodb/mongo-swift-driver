@@ -13,8 +13,6 @@ internal class ConnectionString {
 
     /// Initializes a new `ConnectionString` with the provided options.
     internal init(_ connectionString: String, options: MongoClientOptions? = nil) throws {
-        // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
-        initializeMongoc()
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(connectionString, &error) else {
             throw extractMongoError(error: error)
