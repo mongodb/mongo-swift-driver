@@ -22,6 +22,9 @@
 #include "CLibMongoC_bson-json.h"
 #include "bson-timegm-private.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
 
 static bool
 get_tok (const char *terminals,

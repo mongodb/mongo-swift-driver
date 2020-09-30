@@ -24,6 +24,9 @@
 #include "mongoc-opts-private.h"
 #include "mongoc-write-command-private.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
 
 /*
  * This is the implementation of both write commands and bulk write commands.

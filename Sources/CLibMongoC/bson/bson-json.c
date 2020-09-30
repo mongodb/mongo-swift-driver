@@ -28,6 +28,10 @@
 #include "CLibMongoC_common-b64-private.h"
 #include "jsonsl.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
+
 #ifdef _WIN32
 #include <io.h>
 #include <share.h>

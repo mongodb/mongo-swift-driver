@@ -1,5 +1,5 @@
 diff --git a/Sources/CLibMongoC/bson/bson-iso8601.c b/Sources/CLibMongoC/bson/bson-iso8601.c
-index d4cc18d..5408ec3 100644
+index 2b2cdfc..b0fda88 100644
 --- a/Sources/CLibMongoC/bson/bson-iso8601.c
 +++ b/Sources/CLibMongoC/bson/bson-iso8601.c
 @@ -22,6 +22,9 @@
@@ -13,7 +13,7 @@ index d4cc18d..5408ec3 100644
  static bool
  get_tok (const char *terminals,
 diff --git a/Sources/CLibMongoC/bson/bson-json.c b/Sources/CLibMongoC/bson/bson-json.c
-index 29e344e..0a48e11 100644
+index 9ab1bb9..e58547e 100644
 --- a/Sources/CLibMongoC/bson/bson-json.c
 +++ b/Sources/CLibMongoC/bson/bson-json.c
 @@ -28,6 +28,10 @@
@@ -28,21 +28,21 @@ index 29e344e..0a48e11 100644
  #include <io.h>
  #include <share.h>
 diff --git a/Sources/CLibMongoC/bson/bson.c b/Sources/CLibMongoC/bson/bson.c
-index cf2457e..d3a7e1b 100644
+index 183244c..83b4d9f 100644
 --- a/Sources/CLibMongoC/bson/bson.c
 +++ b/Sources/CLibMongoC/bson/bson.c
-@@ -26,6 +26,9 @@
- #include <string.h>
- #include <math.h>
+@@ -31,6 +31,9 @@
+ #define BSON_MAX_RECURSION 200
+ #endif
  
 +#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 +#include <inttypes.h>
 +#endif
  
- #ifndef BSON_MAX_RECURSION
- #define BSON_MAX_RECURSION 200
+ typedef enum {
+    BSON_VALIDATE_PHASE_START,
 diff --git a/Sources/CLibMongoC/include/CLibMongoC_bson-compat.h b/Sources/CLibMongoC/include/CLibMongoC_bson-compat.h
-index 286cdcc..2f5096e 100644
+index b77b2c4..3d112ba 100644
 --- a/Sources/CLibMongoC/include/CLibMongoC_bson-compat.h
 +++ b/Sources/CLibMongoC/include/CLibMongoC_bson-compat.h
 @@ -82,9 +82,6 @@
@@ -56,7 +56,7 @@ index 286cdcc..2f5096e 100644
  #ifndef __cplusplus
  /* benign redefinition of type */
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-buffer.c b/Sources/CLibMongoC/mongoc/mongoc-buffer.c
-index d5601fb..d535c41 100644
+index b420fe5..fd6cb35 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-buffer.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-buffer.c
 @@ -22,6 +22,9 @@
@@ -70,7 +70,7 @@ index d5601fb..d535c41 100644
  #undef MONGOC_LOG_DOMAIN
  #define MONGOC_LOG_DOMAIN "buffer"
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-bulk-operation.c b/Sources/CLibMongoC/mongoc/mongoc-bulk-operation.c
-index 6ca1f89..75759f3 100644
+index 489256a..ed5d943 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-bulk-operation.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-bulk-operation.c
 @@ -24,6 +24,9 @@
@@ -83,12 +83,27 @@ index 6ca1f89..75759f3 100644
  
  /*
   * This is the implementation of both write commands and bulk write commands.
+diff --git a/Sources/CLibMongoC/mongoc/mongoc-change-stream.c b/Sources/CLibMongoC/mongoc/mongoc-change-stream.c
+index 985b4a8..e2ec7a8 100644
+--- a/Sources/CLibMongoC/mongoc/mongoc-change-stream.c
++++ b/Sources/CLibMongoC/mongoc/mongoc-change-stream.c
+@@ -24,6 +24,10 @@
+ #include "CLibMongoC_mongoc-error.h"
+ #include "mongoc-error-private.h"
+ 
++#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
++#include <inttypes.h>
++#endif
++
+ #define CHANGE_STREAM_ERR(_str)         \
+    bson_set_error (&stream->err,        \
+                    MONGOC_ERROR_CURSOR, \
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-client-pool.c b/Sources/CLibMongoC/mongoc/mongoc-client-pool.c
-index 2c6b741..8bb407b 100644
+index 726be29..4d430fa 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-client-pool.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-client-pool.c
-@@ -26,6 +26,10 @@
- #include "mongoc-topology-private.h"
+@@ -28,6 +28,10 @@
+ #include "mongoc-topology-background-monitoring-private.h"
  #include "mongoc-trace-private.h"
  
 +#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
@@ -99,10 +114,10 @@ index 2c6b741..8bb407b 100644
  #include "mongoc-ssl-private.h"
  #endif
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-client.c b/Sources/CLibMongoC/mongoc/mongoc-client.c
-index c056751..8f2df7c 100644
+index 92a10b2..35159b1 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-client.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-client.c
-@@ -68,6 +68,9 @@
+@@ -69,6 +69,9 @@
  #include "mongoc-opts-private.h"
  #endif
  
@@ -113,12 +128,12 @@ index c056751..8f2df7c 100644
  #undef MONGOC_LOG_DOMAIN
  #define MONGOC_LOG_DOMAIN "client"
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-collection.c b/Sources/CLibMongoC/mongoc/mongoc-collection.c
-index 0213fe2..186ec98 100644
+index 7cbf2cd..1f697c4 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-collection.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-collection.c
-@@ -39,6 +39,10 @@
- #include "mongoc-opts-private.h"
+@@ -40,6 +40,10 @@
  #include "mongoc-write-command-private.h"
+ #include "mongoc-error-private.h"
  
 +#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 +#include <inttypes.h>
@@ -128,12 +143,12 @@ index 0213fe2..186ec98 100644
  #define MONGOC_LOG_DOMAIN "collection"
  
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket-file.c b/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket-file.c
-index 8a99909..17f70c6 100644
+index f483337..a7e5ed3 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket-file.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket-file.c
-@@ -21,6 +21,10 @@
- #include "mongoc-stream-gridfs-download-private.h"
+@@ -22,6 +22,10 @@
  #include "mongoc-stream-gridfs-upload-private.h"
+ #include "mongoc-collection-private.h"
  
 +#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 +#include <inttypes.h>
@@ -143,7 +158,7 @@ index 8a99909..17f70c6 100644
  static size_t
  _mongoc_min (const size_t a, const size_t b)
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket.c b/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket.c
-index a33c5d0..8fe28ba 100644
+index ecc7d8a..6ecdc40 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket.c
 @@ -27,6 +27,10 @@
@@ -173,7 +188,7 @@ index e7ca585..1f4da06 100644
  _mongoc_gridfs_file_refresh_page (mongoc_gridfs_file_t *file);
  
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-opts-helpers.c b/Sources/CLibMongoC/mongoc/mongoc-opts-helpers.c
-index 82e1f23..e3dda07 100644
+index 0fe26f3..be2cb8d 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-opts-helpers.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-opts-helpers.c
 @@ -20,6 +20,10 @@
@@ -188,7 +203,7 @@ index 82e1f23..e3dda07 100644
     do {                                                                     \
        bson_set_error (                                                      \
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-rpc.c b/Sources/CLibMongoC/mongoc/mongoc-rpc.c
-index 9fb267a..96eb478 100644
+index 50325f5..537a9a1 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-rpc.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-rpc.c
 @@ -25,6 +25,9 @@
@@ -201,16 +216,8 @@ index 9fb267a..96eb478 100644
  
  #define RPC(_name, _code)                                               \
     static void _mongoc_rpc_gather_##_name (mongoc_rpc_##_name##_t *rpc, \
-@@ -800,7 +803,6 @@ _mongoc_rpc_decompress (mongoc_rpc_t *rpc_le, uint8_t *buf, size_t buflen)
-                            rpc_le->compressed.compressed_message_len,
-                            buf + 16,
-                            &uncompressed_size);
--   
-    BSON_ASSERT (original_uncompressed_size == uncompressed_size);
- 
-    if (ok) {
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-stream.c b/Sources/CLibMongoC/mongoc/mongoc-stream.c
-index f6e32e1..f38ff4e 100644
+index a7c8206..55aa1d0 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-stream.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-stream.c
 @@ -30,6 +30,9 @@
@@ -224,12 +231,12 @@ index f6e32e1..f38ff4e 100644
  #undef MONGOC_LOG_DOMAIN
  #define MONGOC_LOG_DOMAIN "stream"
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-topology-description.c b/Sources/CLibMongoC/mongoc/mongoc-topology-description.c
-index 83dc75c..ccf8ebd 100644
+index 012fcb0..3b052b9 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-topology-description.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-topology-description.c
-@@ -25,6 +25,9 @@
- #include "mongoc-client-private.h"
- #include "mongoc-thread-private.h"
+@@ -27,6 +27,9 @@
+ #include "mongoc-host-list-private.h"
+ #include "utlist.h"
  
 +#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 +#include <inttypes.h>

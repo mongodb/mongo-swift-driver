@@ -31,6 +31,9 @@
 #define BSON_MAX_RECURSION 200
 #endif
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
 
 typedef enum {
    BSON_VALIDATE_PHASE_START,

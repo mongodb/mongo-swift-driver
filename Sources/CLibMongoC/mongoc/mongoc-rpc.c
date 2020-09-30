@@ -25,6 +25,9 @@
 #include "mongoc-compression-private.h"
 #include "mongoc-cluster-private.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
 
 #define RPC(_name, _code)                                               \
    static void _mongoc_rpc_gather_##_name (mongoc_rpc_##_name##_t *rpc, \

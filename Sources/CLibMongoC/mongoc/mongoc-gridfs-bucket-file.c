@@ -22,6 +22,10 @@
 #include "mongoc-stream-gridfs-upload-private.h"
 #include "mongoc-collection-private.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
+
 /* Returns the minimum of two numbers */
 static size_t
 _mongoc_min (const size_t a, const size_t b)
