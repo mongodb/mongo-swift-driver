@@ -88,7 +88,7 @@ extension mongoc_structured_log_component_t {
 }
 
 /// Callback for handling a mongoc structured log message. This is registered one time via `initializeMongoc()`.
-internal func handleMongocStructuredLogMessage(entry: OpaquePointer!, _: UnsafeMutableRawPointer?) {
+internal func handleMongocStructuredLogMessage(entry: OpaquePointer!, context _: UnsafeMutableRawPointer?) {
     // Get the level associated with this log message.
     let level = mongoc_structured_log_entry_get_level(entry).swiftLogLevel
 
