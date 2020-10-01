@@ -35,6 +35,10 @@
 #include "mongoc-trace-private.h"
 #include "CLibMongoC_mongoc-error.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
+
 static bool
 _mongoc_gridfs_file_refresh_page (mongoc_gridfs_file_t *file);
 

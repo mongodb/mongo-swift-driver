@@ -27,6 +27,10 @@
 #include "mongoc-stream-private.h"
 #include "mongoc-write-concern-private.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
+
 /*--------------------------------------------------------------------------
  *
  * _mongoc_gridfs_find_file_with_id --

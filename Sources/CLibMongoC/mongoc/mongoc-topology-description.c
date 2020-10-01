@@ -27,6 +27,9 @@
 #include "mongoc-host-list-private.h"
 #include "utlist.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
 
 static bool
 _is_data_node (mongoc_server_description_t *sd)

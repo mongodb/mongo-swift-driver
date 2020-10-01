@@ -40,6 +40,10 @@
 #include "mongoc-write-command-private.h"
 #include "mongoc-error-private.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
+
 #undef MONGOC_LOG_DOMAIN
 #define MONGOC_LOG_DOMAIN "collection"
 

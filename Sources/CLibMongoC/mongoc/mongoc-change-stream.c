@@ -24,6 +24,10 @@
 #include "CLibMongoC_mongoc-error.h"
 #include "mongoc-error-private.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
+
 #define CHANGE_STREAM_ERR(_str)         \
    bson_set_error (&stream->err,        \
                    MONGOC_ERROR_CURSOR, \

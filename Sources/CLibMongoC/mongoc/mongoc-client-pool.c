@@ -28,6 +28,10 @@
 #include "mongoc-topology-background-monitoring-private.h"
 #include "mongoc-trace-private.h"
 
+#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
+#include <inttypes.h>
+#endif
+
 #ifdef MONGOC_ENABLE_SSL
 #include "mongoc-ssl-private.h"
 #endif
