@@ -31,6 +31,7 @@ private protocol MongoSwiftEvent {
     func toPublishable() -> PublishableEventType
 }
 
+/// Indicates which type of monitoring an event is associated with.
 private enum MonitoringComponent {
     case command, sdam
 }
