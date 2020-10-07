@@ -46,23 +46,27 @@ final class SDAMTests: MongoSwiftTestCase {
             return
         }
 
-        expect(receivedEvents.count).to(equal(4))
+        expect(receivedEvents.count).to(equal(5))
         expect(receivedEvents[0].topologyOpeningValue).toNot(beNil())
-        expect(receivedEvents[1].serverOpeningValue).toNot(beNil())
-        expect(receivedEvents[2].serverDescriptionChangedValue).toNot(beNil())
-        expect(receivedEvents[3].topologyDescriptionChangedValue).toNot(beNil())
+        expect(receivedEvents[1].topologyDescriptionChangedValue).toNot(beNil())
+        expect(receivedEvents[2].serverOpeningValue).toNot(beNil())
+        expect(receivedEvents[3].serverDescriptionChangedValue).toNot(beNil())
+        expect(receivedEvents[4].topologyDescriptionChangedValue).toNot(beNil())
 
         let event0 = receivedEvents[0].topologyOpeningValue!
 
-        let event1 = receivedEvents[1].serverOpeningValue!
+        let event1 = receivedEvents[1].topologyDescriptionChangedValue!
         expect(event1.topologyID).to(equal(event0.topologyID))
-        expect(event1.serverAddress).to(equal(hostAddress))
 
-        let event2 = receivedEvents[2].serverDescriptionChangedValue!
+        let event2 = receivedEvents[2].serverOpeningValue!
         expect(event2.topologyID).to(equal(event1.topologyID))
+        expect(event2.serverAddress).to(equal(hostAddress))
 
-        let prevServer = event2.previousDescription
-        let newServer = event2.newDescription
+        let event3 = receivedEvents[3].serverDescriptionChangedValue!
+        expect(event3.topologyID).to(equal(event2.topologyID))
+
+        let prevServer = event3.previousDescription
+        let newServer = event3.newDescription
 
         expect(prevServer.address).to(equal(hostAddress))
         expect(newServer.address).to(equal(hostAddress))
@@ -73,11 +77,11 @@ final class SDAMTests: MongoSwiftTestCase {
         expect(prevServer.type).to(equal(.unknown))
         expect(newServer.type).to(equal(.standalone))
 
-        let event3 = receivedEvents[3].topologyDescriptionChangedValue!
-        expect(event3.topologyID).to(equal(event2.topologyID))
+        let event4 = receivedEvents[4].topologyDescriptionChangedValue!
+        expect(event4.topologyID).to(equal(event3.topologyID))
 
-        let prevTopology = event3.previousDescription
-        let newTopology = event3.newDescription
+        let prevTopology = event4.previousDescription
+        let newTopology = event4.newDescription
 
         expect(prevTopology.type).to(equal(.unknown))
         expect(newTopology.type).to(equal(.single))

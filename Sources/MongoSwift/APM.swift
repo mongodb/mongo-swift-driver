@@ -24,9 +24,15 @@ private protocol MongoSwiftEvent {
     associatedtype MongocEventType: MongocEvent
     associatedtype PublishableEventType: Publishable
 
+    static var monitoringComponent: MonitoringComponent { get }
+
     init(mongocEvent: MongocEventType)
 
     func toPublishable() -> PublishableEventType
+}
+
+private enum MonitoringComponent {
+    case command, sdam
 }
 
 /// A protocol for libmongoc event wrappers to implement.
@@ -117,6 +123,8 @@ public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
         }
     }
 
+    fileprivate static var monitoringComponent: MonitoringComponent { .command }
+
     /// The command.
     public let command: BSONDocument
 
@@ -165,6 +173,8 @@ public struct CommandSucceededEvent: MongoSwiftEvent, CommandEventProtocol {
             mongoc_apm_command_succeeded_get_context(self.ptr)
         }
     }
+
+    fileprivate static var monitoringComponent: MonitoringComponent { .command }
 
     /// The execution time of the event, in microseconds.
     public let duration: Int
@@ -215,6 +225,8 @@ public struct CommandFailedEvent: MongoSwiftEvent, CommandEventProtocol {
             mongoc_apm_command_failed_get_context(self.ptr)
         }
     }
+
+    fileprivate static var monitoringComponent: MonitoringComponent { .command }
 
     /// The execution time of the event, in microseconds.
     public let duration: Int
@@ -304,6 +316,8 @@ public struct ServerDescriptionChangedEvent: MongoSwiftEvent {
         }
     }
 
+    fileprivate static var monitoringComponent: MonitoringComponent { .sdam }
+
     /// The connection ID (host/port pair) of the server.
     public let serverAddress: ServerAddress
 
@@ -339,6 +353,8 @@ public struct ServerOpeningEvent: MongoSwiftEvent {
     fileprivate struct MongocServerOpeningEvent: MongocEvent {
         fileprivate let ptr: OpaquePointer
 
+        fileprivate static var monitoringComponent: MonitoringComponent { .sdam }
+
         fileprivate init(_ eventPtr: OpaquePointer) {
             self.ptr = eventPtr
         }
@@ -347,6 +363,8 @@ public struct ServerOpeningEvent: MongoSwiftEvent {
             mongoc_apm_server_opening_get_context(self.ptr)
         }
     }
+
+    fileprivate static var monitoringComponent: MonitoringComponent { .sdam }
 
     /// The connection ID (host/port pair) of the server.
     public let serverAddress: ServerAddress
@@ -374,6 +392,8 @@ public struct ServerClosedEvent: MongoSwiftEvent {
     fileprivate struct MongocServerClosedEvent: MongocEvent {
         fileprivate let ptr: OpaquePointer
 
+        fileprivate static var monitoringComponent: MonitoringComponent { .sdam }
+
         fileprivate init(_ eventPtr: OpaquePointer) {
             self.ptr = eventPtr
         }
@@ -382,6 +402,8 @@ public struct ServerClosedEvent: MongoSwiftEvent {
             mongoc_apm_server_closed_get_context(self.ptr)
         }
     }
+
+    fileprivate static var monitoringComponent: MonitoringComponent { .sdam }
 
     /// The connection ID (host/port pair) of the server.
     public let serverAddress: ServerAddress
@@ -417,6 +439,8 @@ public struct TopologyDescriptionChangedEvent: MongoSwiftEvent {
             mongoc_apm_topology_changed_get_context(self.ptr)
         }
     }
+
+    fileprivate static var monitoringComponent: MonitoringComponent { .sdam }
 
     /// A unique identifier for the topology.
     public let topologyID: BSONObjectID
@@ -458,6 +482,8 @@ public struct TopologyOpeningEvent: MongoSwiftEvent {
         }
     }
 
+    fileprivate static var monitoringComponent: MonitoringComponent { .sdam }
+
     /// A unique identifier for the topology.
     public let topologyID: BSONObjectID
 
@@ -488,6 +514,8 @@ public struct TopologyClosedEvent: MongoSwiftEvent {
             mongoc_apm_topology_closed_get_context(self.ptr)
         }
     }
+
+    fileprivate static var monitoringComponent: MonitoringComponent { .sdam }
 
     /// A unique identifier for the topology.
     public let topologyID: BSONObjectID
@@ -521,6 +549,8 @@ public struct ServerHeartbeatStartedEvent: MongoSwiftEvent {
         }
     }
 
+    fileprivate static var monitoringComponent: MonitoringComponent { .sdam }
+
     /// The address of the server.
     public let serverAddress: ServerAddress
 
@@ -547,6 +577,8 @@ public struct ServerHeartbeatSucceededEvent: MongoSwiftEvent {
             mongoc_apm_server_heartbeat_succeeded_get_context(self.ptr)
         }
     }
+
+    fileprivate static var monitoringComponent: MonitoringComponent { .sdam }
 
     /// The execution time of the event, in microseconds.
     public let duration: Int
@@ -583,6 +615,8 @@ public struct ServerHeartbeatFailedEvent: MongoSwiftEvent {
             mongoc_apm_server_heartbeat_failed_get_context(self.ptr)
         }
     }
+
+    fileprivate static var monitoringComponent: MonitoringComponent { .sdam }
 
     /// The execution time of the event, in microseconds.
     public let duration: Int
@@ -683,19 +717,19 @@ private func publishEvent<T: MongoSwiftEvent>(type: T.Type, eventPtr: OpaquePoin
     }
     let client = Unmanaged<MongoClient>.fromOpaque(context).takeUnretainedValue()
 
+    // only create Swift events if handlers are actually registered for this type of event.
+    switch type.monitoringComponent {
+    case .sdam:
+        guard !client.sdamEventHandlers.isEmpty else {
+            return
+        }
+    case .command:
+        guard !client.commandEventHandlers.isEmpty else {
+            return
+        }
+    }
+
     let event = type.init(mongocEvent: mongocEvent)
-
-    // TODO: SWIFT-524: remove workaround for CDRIVER-3256
-    if let tdChanged = event as? TopologyDescriptionChangedEvent,
-        tdChanged.previousDescription == tdChanged.newDescription {
-        return
-    }
-
-    if let sdChanged = event as? ServerDescriptionChangedEvent,
-        sdChanged.previousDescription == sdChanged.newDescription {
-        return
-    }
-
     event.toPublishable().publish(to: client)
 }
 
