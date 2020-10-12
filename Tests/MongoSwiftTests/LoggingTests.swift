@@ -108,11 +108,13 @@ final class LoggingTests: MongoSwiftTestCase {
                 "command",
                 "commandName",
                 "databaseName",
-                "driverConnectionId", // this is likely being removed from the spec and replaced with different fields
                 "explicitSession",
                 "operationId",
                 "requestId",
-                "serverConnectionId"
+                "serverConnectionId",
+                "serverHostname",
+                "serverPort",
+                "serverResolvedIPAddress"
             ]
 
             expect(metadata0.keys.sorted()).to(equal(expectedStartedKeys))
@@ -122,13 +124,15 @@ final class LoggingTests: MongoSwiftTestCase {
 
             let expectedSucceededKeys = [
                 "commandName",
-                "driverConnectionId", // this is likely being removed from the spec and replaced with different fields
                 "duration",
                 "explicitSession",
                 "operationId",
                 "reply",
                 "requestId",
-                "serverConnectionId"
+                "serverConnectionId",
+                "serverHostname",
+                "serverPort",
+                "serverResolvedIPAddress"
             ]
 
             expect(metadata1.keys.sorted()).to(equal(expectedSucceededKeys))
@@ -149,10 +153,36 @@ final class LoggingTests: MongoSwiftTestCase {
             expect(replyDoc["ok"]?.doubleValue).to(equal(1.0))
 
             // no particular values to expect here, but they should always match up.
-            expect(metadata0["driverConnectionId"]).to(equal(metadata1["driverConnectionId"]))
             expect(metadata0["operationId"]).to(equal(metadata1["operationId"]))
             expect(metadata0["requestId"]).to(equal(metadata1["requestId"]))
             expect(metadata0["serverConnectionId"]).to(equal(metadata1["serverConnectionId"]))
+            expect(metadata0["serverHostname"]).to(equal(metadata1["serverHostname"]))
+            expect(metadata0["serverPort"]).to(equal(metadata1["serverPort"]))
+            expect(metadata0["serverResolvedIPAddress"]).to(equal(metadata1["serverResolvedIPAddress"]))
+        }
+    }
+
+    func testLoggingTruncation() throws {
+        try self.withTestNamespace { _, db, _ in
+            try withCommandLogging {
+                // choose a very small length to ensure the command/reply are longer and get truncated
+                LOGGING_MAX_DOC_LENGTH = 5
+                defer { LOGGING_MAX_DOC_LENGTH = 1000 }
+                _ = try db.runCommand(["isMaster": 1]).wait()
+            }
+
+            let messages = globalContainer.getMessages()
+            expect(messages).to(haveCount(2))
+
+            expect(messages[0].metadata).toNot(beNil())
+            let metadata0 = messages[0].metadata!
+
+            expect(metadata0["command"]?.description).to(haveCount(5))
+
+            expect(messages[1].metadata).toNot(beNil())
+            let metadata1 = messages[1].metadata!
+
+            expect(metadata1["reply"]?.description).to(haveCount(5))
         }
     }
 }

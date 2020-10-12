@@ -1,4 +1,5 @@
 import CLibMongoC
+import Foundation
 
 /// MongoSwift only supports MongoDB 3.6+.
 internal let MIN_SUPPORTED_WIRE_VERSION = 6
@@ -11,6 +12,16 @@ private final class MongocInitializer {
         mongoc_log_set_handler(handleMongocLogMessage, nil)
         mongoc_structured_log_set_handler(handleMongocStructuredLogMessage, nil)
         mongoc_handshake_data_append("MongoSwift", MongoSwiftVersionString, nil)
+
+        // this is not strictly libmongoc initialization but is also one-time configuration
+        // we need to do, so put it in here for now.
+        if let maxLoggedDocLength = ProcessInfo.processInfo.environment["MONGODB_LOGGING_MAX_DOCUMENT_LENGTH"]?.lowercased() {
+            if maxLoggedDocLength == "unlimited" {
+                LOGGING_MAX_DOC_LENGTH = nil
+            } else if let intVal = Int(maxLoggedDocLength) {
+                LOGGING_MAX_DOC_LENGTH = intVal
+            }
+        }
     }
 }
 

@@ -32,14 +32,23 @@ extension mongoc_structured_log_level_t {
     }
 }
 
-/// If the env var has been set to enable logging, creates a corresponding Logger with the specified level. Else,
+/// If the env vars have been set to enable logging, creates a corresponding Logger with the specified level. Else,
 /// returns nil.
 private func makeLogger(envVar: String, label: String) -> Logger? {
-    // No level was provided.
-    guard let envVarLevel = ProcessInfo.processInfo.environment[envVar]?.lowercased() else {
+    let envVars = ProcessInfo.processInfo.environment
+
+    // check if a level was set either for this particular component or for logging as a whole.
+    // per spec, the per-component environment variable wins out if both are specified.
+    guard let envVarLevel = envVars[envVar]?.lowercased() ?? envVars["MONGODB_LOGGING_ALL"]?.lowercased() else {
         return nil
     }
-    // "off" or any unrecognized level. (should we do something different on an unrecognized level?)
+
+    // user explicitly disabled logging.
+    guard envVarLevel != "off" else {
+        return nil
+    }
+
+    // per spec, we should ignore unrecognized values.
     guard let level = Logger.Level(rawValue: envVarLevel) else {
         return nil
     }
@@ -58,6 +67,9 @@ private let SERVER_SELECTION_LOGGER = makeLogger(
     label: "MongoSwift.serverSelection"
 )
 private let CONNECTION_LOGGER = makeLogger(envVar: "MONGODB_LOGGING_CONNECTION", label: "MongoSwift.connection")
+
+/// Tracks max document length. Defaults to 1000 but configurable at startup via environment variable.
+internal var LOGGING_MAX_DOC_LENGTH: Int? = 1000
 
 /// For testing purposes, we define fallback loggers which can be mutated as needed to temporarily turn logging on/off
 /// during tests. Arguably you could just handle this by making the original variables mutable, but it seemed a bit
@@ -81,7 +93,7 @@ extension mongoc_structured_log_component_t {
         case MONGOC_STRUCTURED_LOG_COMPONENT_CONNECTION:
             return CONNECTION_LOGGER ?? TEST_CONNECTION_LOGGER
         default:
-            // ignore an unrecognized component. (TODO: codify in spec what should happen here?)
+            // ignore an unrecognized component.
             return nil
         }
     }
@@ -102,10 +114,26 @@ internal func handleMongocStructuredLogMessage(entry: OpaquePointer!, context _:
     let msg = BSONDocument(copying: mongoc_structured_log_entry_get_message(entry))
     logger.log(
         level: level,
-        // swiftlint:disable:next force_unwrapping
-        "\(msg["message"]!.stringValue!)", // assumes message is always present and a string. TODO: codify in spec?
+        "\(msg["message"]?.stringValue ?? "")",
         metadata: msg.toLoggerMetadata()
     )
+}
+
+// Perhaps not the most robust solution as these keys could appear elsewhere in future log messages, though it seems
+// likely they will always contain documents and threefore need truncation. This may be handled for us by libmongoc
+// anyway.
+let TRUNCATE_KEYS = [
+    "command",
+    "reply"
+]
+
+extension String {
+    fileprivate func truncateIfNeeded() -> String {
+        guard let max = LOGGING_MAX_DOC_LENGTH, self.count > max else {
+            return self
+        }
+        return String(self.prefix(max))
+    }
 }
 
 extension BSONDocument {
@@ -116,7 +144,12 @@ extension BSONDocument {
         for (k, v) in self where k != "message" {
             // just use the string representation of the BSON value. in practice so far, the values in the log entries
             // are only ever integers or strings.
-            metadata[k] = "\(v.bsonValue)"
+            if TRUNCATE_KEYS.contains(k) {
+                metadata[k] = "\(v.stringValue!.truncateIfNeeded())"
+            } else {
+                metadata[k] = "\(v.bsonValue)"
+            }
+            
         }
         return metadata
     }
