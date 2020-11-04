@@ -139,21 +139,44 @@ open class MongoSwiftTestCase: XCTestCase {
 public enum TestTopologyConfiguration: String, Decodable {
     case sharded
     case replicaSet = "replicaset"
+    case shardedReplicaSet = "sharded-replicaset"
     case single
 
-    /// Determines the topologyType of a client based on the reply returned by running an isMaster command
-    public init(isMasterReply: BSONDocument) throws {
+    /// Determines the topologyType of a client based on the reply returned by running an isMaster command and the
+    /// contents of the config.shards collection.
+    public init(isMasterReply: BSONDocument, shards: [BSONDocument]) throws {
         // Check for symptoms of different topologies
         if isMasterReply["msg"] != "isdbgrid" &&
             isMasterReply["setName"] == nil &&
             isMasterReply["isreplicaset"] != true {
             self = .single
         } else if isMasterReply["msg"] == "isdbgrid" {
-            self = .sharded
+            guard !shards.isEmpty else {
+                throw TestError(
+                    message: "isMasterReply \(isMasterReply) implies a sharded cluster, but config.shards is empty"
+                )
+            }
+            // We only check the first shard here and assume we aren't testing against sharded clusters backed by a mix
+            // of replsets and standalones.
+            let shard = shards[0]
+            guard let host = shard["host"]?.stringValue else {
+                throw TestError(message: "config.shards document \(shard) unexpectedly missing host string")
+            }
+            // If the shard is backed by a single server, this field will contain a single host (e.g. localhost:27017).
+            // If the shard is backed by a replica set, this field will contain the name of the replica followed by a
+            // forward slash and a comma-delimited list of hosts.
+            guard host.contains("/") else {
+                self = .sharded
+                return
+            }
+            self = .shardedReplicaSet
         } else if isMasterReply["ismaster"] == true && isMasterReply["setName"] != nil {
             self = .replicaSet
         } else {
-            fatalError("Invalid test topology configuration given by isMaster reply: \(isMasterReply)")
+            throw TestError(
+                message:
+                "Invalid test topology configuration given by isMaster reply: \(isMasterReply) and shards: \(shards)"
+            )
         }
     }
 }
@@ -169,7 +192,7 @@ public enum UnmetRequirement {
 public struct TestRequirement: Decodable {
     private let minServerVersion: ServerVersion?
     private let maxServerVersion: ServerVersion?
-    private let topology: [TestTopologyConfiguration]?
+    private let topologies: [TestTopologyConfiguration]?
 
     public static let failCommandSupport: [TestRequirement] = [
         TestRequirement(
@@ -189,7 +212,7 @@ public struct TestRequirement: Decodable {
     ) {
         self.minServerVersion = minServerVersion
         self.maxServerVersion = maxServerVersion
-        self.topology = acceptableTopologies
+        self.topologies = acceptableTopologies
     }
 
     /// Determines if the given deployment meets this requirement.
@@ -207,12 +230,36 @@ public struct TestRequirement: Decodable {
                 return .maxServerVersion(actual: version, required: maxVersion)
             }
         }
-        if let topologies = self.topology {
+        if let topologies = self.topologies {
+            // When matching a "sharded" topology, test runners MUST accept any type of sharded cluster (i.e. "sharded"
+            // implies "sharded-replicaset", but not vice versa).
+            if topology == .shardedReplicaSet && topologies.contains(.sharded) {
+                return nil
+            }
+
             guard topologies.contains(topology) else {
                 return .topology(actual: topology, required: topologies)
             }
         }
         return nil
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case minServerVersion, maxServerVersion, topology, topologies
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.minServerVersion = try container.decodeIfPresent(ServerVersion.self, forKey: .minServerVersion)
+        self.maxServerVersion = try container.decodeIfPresent(ServerVersion.self, forKey: .maxServerVersion)
+        // Some older tests use "topology", but the unified format uses "topologies", so look under both keys.
+        if let topologies = try container.decodeIfPresent([TestTopologyConfiguration].self, forKey: .topologies) {
+            self.topologies = topologies
+        } else if let topologies = try container.decodeIfPresent([TestTopologyConfiguration].self, forKey: .topology) {
+            self.topologies = topologies
+        } else {
+            self.topologies = nil
+        }
     }
 }
 
