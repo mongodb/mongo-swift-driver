@@ -136,47 +136,50 @@ open class MongoSwiftTestCase: XCTestCase {
 }
 
 /// Enumerates the different topology configurations that are used throughout the tests
-public enum TestTopologyConfiguration: String, Decodable {
+public enum TestTopologyConfiguration: RawRepresentable, Decodable {
     case sharded
-    case replicaSet = "replicaset"
-    case shardedReplicaSet = "sharded-replicaset"
+    case replicaSet
     case single
 
-    /// Determines the topologyType of a client based on the reply returned by running an isMaster command and the
-    /// contents of the config.shards collection.
-    public init(isMasterReply: BSONDocument, shards: [BSONDocument]) throws {
+    public init?(rawValue: String) {
+        switch rawValue {
+        // as of MongoDB 3.6 (the lowest version this driver supports), shards must be replica sets, so for our
+        // testing purposes there is no distinction between these topology types.
+        case "sharded", "sharded-replicaset":
+            self = .sharded
+        case "replicaset":
+            self = .replicaSet
+        case "single":
+            self = .single
+        default:
+            return nil
+        }
+    }
+
+    public var rawValue: String {
+        switch self {
+        case .sharded:
+            return "sharded"
+        case .replicaSet:
+            return "replicaSet"
+        case .single:
+            return "single"
+        }
+    }
+
+    /// Determines the topologyType of a client based on the reply returned by running an isMaster command.
+    public init(isMasterReply: BSONDocument) throws {
         // Check for symptoms of different topologies
         if isMasterReply["msg"] != "isdbgrid" &&
             isMasterReply["setName"] == nil &&
             isMasterReply["isreplicaset"] != true {
             self = .single
         } else if isMasterReply["msg"] == "isdbgrid" {
-            guard !shards.isEmpty else {
-                throw TestError(
-                    message: "isMasterReply \(isMasterReply) implies a sharded cluster, but config.shards is empty"
-                )
-            }
-            // We only check the first shard here and assume we aren't testing against sharded clusters backed by a mix
-            // of replsets and standalones.
-            let shard = shards[0]
-            guard let host = shard["host"]?.stringValue else {
-                throw TestError(message: "config.shards document \(shard) unexpectedly missing host string")
-            }
-            // If the shard is backed by a single server, this field will contain a single host (e.g. localhost:27017).
-            // If the shard is backed by a replica set, this field will contain the name of the replica followed by a
-            // forward slash and a comma-delimited list of hosts.
-            guard host.contains("/") else {
-                self = .sharded
-                return
-            }
-            self = .shardedReplicaSet
+            self = .sharded
         } else if isMasterReply["ismaster"] == true && isMasterReply["setName"] != nil {
             self = .replicaSet
         } else {
-            throw TestError(
-                message:
-                "Invalid test topology configuration given by isMaster reply: \(isMasterReply) and shards: \(shards)"
-            )
+            throw TestError(message: "Invalid test topology configuration given by isMaster reply: \(isMasterReply)")
         }
     }
 }
@@ -231,12 +234,6 @@ public struct TestRequirement: Decodable {
             }
         }
         if let topologies = self.topologies {
-            // When matching a "sharded" topology, test runners MUST accept any type of sharded cluster (i.e. "sharded"
-            // implies "sharded-replicaset", but not vice versa).
-            if topology == .shardedReplicaSet && topologies.contains(.sharded) {
-                return nil
-            }
-
             guard topologies.contains(topology) else {
                 return .topology(actual: topology, required: topologies)
             }
