@@ -143,29 +143,28 @@ public enum TestTopologyConfiguration: String, Decodable {
     case single
 
     /// Determines the topologyType of a client based on the reply returned by running an isMaster command and the
-    /// contents of the config.shards collection.
-    public init(isMasterReply: BSONDocument, shards: [BSONDocument]) throws {
+    /// first document in the config.shards collection.
+    public init(isMasterReply: BSONDocument, shardDescription: BSONDocument?) throws {
         // Check for symptoms of different topologies
         if isMasterReply["msg"] != "isdbgrid" &&
             isMasterReply["setName"] == nil &&
             isMasterReply["isreplicaset"] != true {
             self = .single
         } else if isMasterReply["msg"] == "isdbgrid" {
-            guard !shards.isEmpty else {
+            guard let shard = shardDescription else {
                 throw TestError(
                     message: "isMasterReply \(isMasterReply) implies a sharded cluster, but config.shards is empty"
                 )
             }
-            // We only check the first shard here and assume we aren't testing against sharded clusters backed by a mix
-            // of replsets and standalones.
-            let shard = shards[0]
             guard let host = shard["host"]?.stringValue else {
                 throw TestError(message: "config.shards document \(shard) unexpectedly missing host string")
             }
             // If the shard is backed by a single server, this field will contain a single host (e.g. localhost:27017).
             // If the shard is backed by a replica set, this field will contain the name of the replica followed by a
             // forward slash and a comma-delimited list of hosts.
-            guard host.contains("/") else {
+            let replSetHostRegex = try NSRegularExpression(pattern: #"^.*\/.*:\d+$"#)
+            let range = NSRange(host.startIndex..<host.endIndex, in: host)
+            guard replSetHostRegex.firstMatch(in: host, range: range) != nil else {
                 self = .sharded
                 return
             }
@@ -175,7 +174,7 @@ public enum TestTopologyConfiguration: String, Decodable {
         } else {
             throw TestError(
                 message:
-                "Invalid test topology configuration given by isMaster reply: \(isMasterReply) and shards: \(shards)"
+                "Invalid test topology configuration given by isMaster reply: \(isMasterReply) and shard: \(shardDescription)"
             )
         }
     }
