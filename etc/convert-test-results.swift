@@ -1,5 +1,7 @@
 import Foundation
 
+// swiftlint:disable explicit_acl
+
 /// Represents a test suite.
 struct TestSuite {
     /// Name of the test suite.
@@ -20,9 +22,10 @@ struct TestSuite {
     /// Converts this test suite to XML.
     func toXML() -> String {
         var output =
-        """
-        <testsuite tests="\(self.count)" failures="\(self.failureCount)" errors="0" time="\(self.time)" name="\(self.name)">\n
-        """
+            """
+            <testsuite tests="\(self.count)" failures="\(self.failureCount)" \
+            errors="0" time="\(self.time)" name="\(self.name)">\n
+            """
 
         for test in self.tests {
             output += test.toXML()
@@ -64,7 +67,7 @@ struct TestCase {
                 .replacingOccurrences(of: ">", with: "﹥")
                 .replacingOccurrences(of: "&", with: "﹠")
 
-            output += 
+            output +=
                 """
                 <failure message="\(escapedFailure)"></failure>\n
                 """
@@ -139,18 +142,26 @@ enum ParsingState {
     /// None of the above. This means we are between test suites.
     case none(completeSuites: [TestSuite])
 
-    // account for variation in formatting of test output on platforms. this assumes you are running this script on the
-    // same platform where you ran the tests.
+// account for variation in formatting of test output on platforms. this assumes you are running this script on the
+// same platform where you ran the tests. disable force_try since we know these are valid regexes.
+// swiftlint:disable force_try
 #if os(macOS)
     static let testCaseStartedRegex = try! NSRegularExpression(pattern: #"Test Case '-\[.+\.(.+) (.+)\]' started"#)
-    static let testCaseStatusRegex = try! NSRegularExpression(pattern:#"Test Case '-\[.+\.(.+) (.+)\]' (passed|failed) \((.+) seconds\)"#)
+    static let testCaseStatusRegex = try! NSRegularExpression(
+        pattern: #"Test Case '-\[.+\.(.+) (.+)\]' (passed|failed) \((.+) seconds\)"#
+    )
 #else
-    static let testCaseStartedRegex = try! NSRegularExpression(pattern:#"Test Case '(.+)\.(.+)' started"#)
-    static let testCaseStatusRegex =  try! NSRegularExpression(pattern:#"Test Case '(.+)\.(.+)' (passed|failed) \((.+) seconds\)"#)
+    static let testCaseStartedRegex = try! NSRegularExpression(pattern: #"Test Case '(.+)\.(.+)' started"#)
+    static let testCaseStatusRegex = try! NSRegularExpression(
+        pattern: #"Test Case '(.+)\.(.+)' (passed|failed) \((.+) seconds\)"#
+    )
 #endif
-    static let testSuiteStartedRegex = try! NSRegularExpression(pattern:#"Test Suite '(.+)' started"#)
-    static let testSuiteStatusRegex = try! NSRegularExpression(pattern:#"Test Suite '(.+)' (passed|failed)"#)
-    static let testSuiteDetailsRegex = try! NSRegularExpression(pattern:#"Executed (\d+) tests?, with (\d+) failures? \((\d+) unexpected\) in (.+) \("#)
+    static let testSuiteStartedRegex = try! NSRegularExpression(pattern: #"Test Suite '(.+)' started"#)
+    static let testSuiteStatusRegex = try! NSRegularExpression(pattern: #"Test Suite '(.+)' (passed|failed)"#)
+    static let testSuiteDetailsRegex = try! NSRegularExpression(
+        pattern: #"Executed (\d+) tests?, with (\d+) failures? \((\d+) unexpected\) in (.+) \("#
+    )
+    // swiftlint:enable force_try
 
     /// Processes a new line of test output and updates self accordingly.
     mutating func processLine(_ line: String) throws {
@@ -158,25 +169,15 @@ enum ParsingState {
 
         if let match = Self.testCaseStartedRegex.firstMatch(in: line, range: fullRange) {
             try self.processTestCaseStart(line: line, regexResult: match)
-        } 
-        
-        else if let match = Self.testCaseStatusRegex.firstMatch(in: line, range: fullRange) {
+        } else if let match = Self.testCaseStatusRegex.firstMatch(in: line, range: fullRange) {
             try self.processTestCaseStatus(line: line, regexResult: match)
-        }
-
-        else if let match = Self.testSuiteStartedRegex.firstMatch(in: line, range: fullRange) {
+        } else if let match = Self.testSuiteStartedRegex.firstMatch(in: line, range: fullRange) {
             try self.processSuiteStart(line: line, regexResult: match)
-        }
-
-        else if let match = Self.testSuiteStatusRegex.firstMatch(in: line, range: fullRange) {
+        } else if let match = Self.testSuiteStatusRegex.firstMatch(in: line, range: fullRange) {
             try self.processSuiteStatus(line: line, regexResult: match)
-        }
-
-        else if let match = Self.testSuiteDetailsRegex.firstMatch(in: line, range: fullRange) {
+        } else if let match = Self.testSuiteDetailsRegex.firstMatch(in: line, range: fullRange) {
             try self.processSuiteDetails(line: line, regexResult: match)
-        }
-
-        else {
+        } else {
             self.processOtherOutput(line)
         }
     }
@@ -259,7 +260,13 @@ enum ParsingState {
         try ensureSuiteMatches(old: prevSuite, new: suiteName)
 
         let testName = try regexResult.readMatch(at: 2, in: line)
-        self = .inTest(suite: suiteName, name: testName, output: [], completeTests: completeTests, completeSuites: completeSuites)
+        self = .inTest(
+            suite: suiteName,
+            name: testName,
+            output: [],
+            completeTests: completeTests,
+            completeSuites: completeSuites
+        )
     }
 
     /// Processes a line indicating the pass/fail status of a test case.
@@ -273,7 +280,9 @@ enum ParsingState {
 
         let testName = try regexResult.readMatch(at: 2, in: line)
         guard testName == prevName else {
-            throw ParsingError("test name \(testName) does not match previously found name for current test \(testName)")
+            throw ParsingError(
+                "test name \(testName) does not match previously found name for current test \(testName)"
+            )
         }
 
         let status = try regexResult.readMatch(at: 3, in: line)
@@ -306,7 +315,13 @@ enum ParsingState {
     mutating func processOtherOutput(_ line: String) {
         if case .inTest(let suite, let name, var output, let completeTests, let completeSuites) = self {
             output.append(line)
-            self = .inTest(suite: suite, name: name, output: output, completeTests: completeTests, completeSuites: completeSuites)
+            self = .inTest(
+                suite: suite,
+                name: name,
+                output: output,
+                completeTests: completeTests,
+                completeSuites: completeSuites
+            )
         }
     }
 }
@@ -326,7 +341,7 @@ let fullXML =
     <?xml version="1.0" encoding="UTF-8"?>
     <testsuites>
     """
-+ completeSuites.map { $0.toXML() }.reduce("", +)
-+ "</testsuites>"
+    + completeSuites.map { $0.toXML() }.reduce("", +)
+    + "</testsuites>"
 
 print(fullXML)
