@@ -160,9 +160,9 @@ public enum TestTopologyConfiguration: String, Decodable {
                 guard let host = shard["host"]?.stringValue else {
                     throw TestError(message: "config.shards document \(shard) unexpectedly missing host string")
                 }
-                // If the shard is backed by a single server, this field will contain a single host (e.g. localhost:27017).
-                // If the shard is backed by a replica set, this field will contain the name of the replica followed by a
-                // forward slash and a comma-delimited list of hosts.
+                // If the shard is backed by a single server, this field will contain a single host (e.g.
+                // localhost:27017). If the shard is backed by a replica set, this field will contain the name of the
+                // replica set followed by a forward slash and a comma-delimited list of hosts.
                 let replSetHostRegex = try NSRegularExpression(pattern: #"^.*\/.*:\d+$"#)
                 let range = NSRange(host.startIndex..<host.endIndex, in: host)
                 guard replSetHostRegex.firstMatch(in: host, range: range) != nil else {
@@ -176,7 +176,7 @@ public enum TestTopologyConfiguration: String, Decodable {
         } else {
             throw TestError(
                 message:
-                "Invalid test topology configuration given by isMaster reply: \(isMasterReply) and shars: \(shards)"
+                "Invalid test topology configuration given by isMaster reply: \(isMasterReply) and shards: \(shards)"
             )
         }
     }
