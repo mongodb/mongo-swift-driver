@@ -122,6 +122,7 @@ functions:
         script: |
           ${PREPARE_SHELL}
           sh ${DRIVERS_TOOLS}/.evergreen/stop-orchestration.sh
+
   "upload-mo-artifacts":
     - command: shell.exec
       params:
@@ -152,7 +153,12 @@ functions:
           SSL=${SSL} \
           AUTH=${AUTH} \
           SWIFT_VERSION=${SWIFT_VERSION} \
-            sh ${PROJECT_DIRECTORY}/.evergreen/run-tests.sh
+            ${PROJECT_DIRECTORY}/.evergreen/run-tests.sh
+    
+  "upload test results":
+    - command: attach.xunit_results
+      params:
+        file: ./src/testResults.xml
 
   "run atlas tests":
     - command: shell.exec
@@ -199,6 +205,7 @@ pre:
 post:
   - func: "stop mongo-orchestration"
   - func: "upload-mo-artifacts"
+  - func: "upload test results"
   - func: "cleanup"
 
 tasks:
