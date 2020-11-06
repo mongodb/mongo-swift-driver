@@ -54,6 +54,8 @@ excluded:
   - Tests/LinuxMain.swift
   - Sources/MongoSwiftSync/Exports.swift
   - Sources/MongoSwift/MongoSwiftVersion.swift
+  - etc/swiftlint
+  - etc/SwiftFormat
 
 trailing_whitespace:
   ignores_comments: false
