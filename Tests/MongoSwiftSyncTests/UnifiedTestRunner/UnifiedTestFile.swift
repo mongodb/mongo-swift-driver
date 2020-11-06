@@ -55,7 +55,7 @@ struct UnifiedTest: Decodable {
 
     /// Optional array of one or more expectedEventsForClient objects. For one or more clients, a list of events that
     /// are expected to be observed in a particular order.
-    let expectEvents: [BSONDocument]? // TODO SWIFT-913: use event types
+    let expectEvents: [BSONDocument]? // TODO: SWIFT-913: use event types
 
     /// Data that is expected to exist in collections after the test case is executed.
     let outcome: [CollectionData]?
