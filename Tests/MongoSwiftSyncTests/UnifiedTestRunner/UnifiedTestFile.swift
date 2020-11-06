@@ -15,7 +15,7 @@ struct UnifiedTestFile: Decodable {
 
     /// Optional array of one or more entity objects (e.g. client, collection, session objects) that SHALL be created
     /// before each test case is executed.
-    let createEntities: [BSONDocument]? // TODO SWIFT-913: add an entity type
+    let createEntities: [BSONDocument]? // TODO: SWIFT-913: add an entity type
 
     /// Optional array of one or more collectionData objects. Data that will exist in collections before each test case
     /// is executed.
@@ -51,7 +51,7 @@ struct UnifiedTest: Decodable {
     let skipReason: String?
 
     /// Array of one or more operation objects. List of operations to be executed for the test case.
-    let operations: [BSONDocument] // TODO SWIFT-913: use operation types
+    let operations: [BSONDocument] // TODO: SWIFT-913: use operation types
 
     /// Optional array of one or more expectedEventsForClient objects. For one or more clients, a list of events that
     /// are expected to be observed in a particular order.

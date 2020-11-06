@@ -44,7 +44,7 @@ struct SchemaVersion: RawRepresentable, Comparable, Decodable {
     }
 
     public var rawValue: String {
-        "\(major).\(minor).\(patch)"
+        "\(self.major).\(self.minor).\(self.patch)"
     }
 
     public static func < (lhs: SchemaVersion, rhs: SchemaVersion) -> Bool {
