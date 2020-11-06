@@ -41,5 +41,11 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             subdirectory: "valid-pass",
             asType: UnifiedTestFile.self
         )).toNot(throwError())
+
+        expect(try retrieveSpecTestFiles(
+            specName: "unified-test-format",
+            subdirectory: "valid-fail",
+            asType: UnifiedTestFile.self
+        )).toNot(throwError())
     }
 }
