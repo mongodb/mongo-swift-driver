@@ -414,6 +414,13 @@ extension TransactionsTests {
     ]
 }
 
+extension UnifiedRunnerTests {
+    static var allTests = [
+        ("testSchemaVersion", testSchemaVersion),
+        ("testUnifiedTestDecoding", testUnifiedTestDecoding),
+    ]
+}
+
 extension WriteConcernTests {
     static var allTests = [
         ("testWriteConcernType", testWriteConcernType),
@@ -461,5 +468,6 @@ XCTMain([
     testCase(SyncClientSessionTests.allTests),
     testCase(SyncMongoClientTests.allTests),
     testCase(TransactionsTests.allTests),
+    testCase(UnifiedRunnerTests.allTests),
     testCase(WriteConcernTests.allTests),
 ])
