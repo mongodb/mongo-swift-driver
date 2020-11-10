@@ -418,6 +418,7 @@ extension UnifiedRunnerTests {
     static var allTests = [
         ("testSchemaVersion", testSchemaVersion),
         ("testUnifiedTestDecoding", testUnifiedTestDecoding),
+        ("testStrictDecodableTypes", testStrictDecodableTypes),
     ]
 }
 
