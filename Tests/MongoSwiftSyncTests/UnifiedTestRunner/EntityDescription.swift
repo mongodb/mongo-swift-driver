@@ -50,7 +50,7 @@ enum EntityDescription: Decodable {
         let databaseName: String
 
         /// Options to use for this database.
-        let options: MongoDatabaseOptions?
+        let databaseOptions: MongoDatabaseOptions?
     }
 
     /// Describes a Collection entity. (named Coll because Collection clashes with the stdlib's Collection protocol.)
@@ -65,7 +65,7 @@ enum EntityDescription: Decodable {
         let collectionName: String
 
         /// Options to use for this collection.
-        let options: MongoCollectionOptions?
+        let collectionOptions: MongoCollectionOptions?
     }
 
     /// Describes a ClientSession entity.
@@ -77,7 +77,7 @@ enum EntityDescription: Decodable {
         let client: String
 
         /// Options to use for this session.
-        let options: ClientSessionOptions?
+        let sessionOptions: ClientSessionOptions?
     }
 
     /// Defines a GridFS bucket entity.
