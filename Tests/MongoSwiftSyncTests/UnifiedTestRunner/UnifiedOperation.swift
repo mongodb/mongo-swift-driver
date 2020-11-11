@@ -39,7 +39,7 @@ struct UnifiedOperation: Decodable {
     let result: UnifiedOperationResult?
 
     private enum CodingKeys: String, CodingKey {
-        case name, object, arguments, expectError, expectResult, saveResultAsEntity
+        case name, object, arguments
     }
 
     public init(from decoder: Decoder) throws {
