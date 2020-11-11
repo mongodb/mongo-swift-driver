@@ -1,8 +1,36 @@
 @testable import struct MongoSwift.ReadPreference
 import MongoSwiftSync
+import TestsCommon
 
-extension MongoDatabaseOptions: Decodable {
+/// Allows a type to specify a set of known keys and check whether any unknown top-level keys are found in a decoder.
+internal protocol StrictDecodable: Decodable {
+    associatedtype CodingKeysType: CodingKey, CaseIterable, RawRepresentable where CodingKeysType.RawValue == String
+
+    /// Checks whether the top-level container in the decoder contains any keys that do not match up with cases in the
+    /// associated CodingKeysType.
+    static func checkKeys(using decoder: Decoder) throws
+}
+
+extension StrictDecodable {
+    /// Default implementation of checkKeys.
+    static func checkKeys(using decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawKeys = try container.decode(BSONDocument.self).keys
+        let supportedKeys = Set(Self.CodingKeysType.allCases.map { $0.rawValue })
+        for key in rawKeys {
+            guard supportedKeys.contains(key) else {
+                throw TestError(message: "Unsupported key \(key) found while decoding instance of \(Self.self)")
+            }
+        }
+    }
+}
+
+extension MongoDatabaseOptions: StrictDecodable {
+    internal typealias CodingKeysType = CodingKeys
+
     public init(from decoder: Decoder) throws {
+        try Self.checkKeys(using: decoder)
+
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let readConcern = try container.decodeIfPresent(ReadConcern.self, forKey: .readConcern)
         let readPreference = try container.decodeIfPresent(ReadPreference.self, forKey: .readPreference)
@@ -10,26 +38,35 @@ extension MongoDatabaseOptions: Decodable {
         self.init(readConcern: readConcern, readPreference: readPreference, writeConcern: writeConcern)
     }
 
-    private enum CodingKeys: CodingKey {
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
         case readConcern, readPreference, writeConcern
     }
 }
 
-extension MongoCollectionOptions: Decodable {
+extension MongoCollectionOptions: StrictDecodable {
+    internal typealias CodingKeysType = CodingKeys
+
     public init(from decoder: Decoder) throws {
+        try Self.checkKeys(using: decoder)
+
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let readConcern = try container.decodeIfPresent(ReadConcern.self, forKey: .readConcern)
+        let readPreference = try container.decodeIfPresent(ReadPreference.self, forKey: .readPreference)
         let writeConcern = try container.decodeIfPresent(WriteConcern.self, forKey: .writeConcern)
-        self.init(readConcern: readConcern, writeConcern: writeConcern)
+        self.init(readConcern: readConcern, readPreference: readPreference, writeConcern: writeConcern)
     }
 
-    private enum CodingKeys: CodingKey {
-        case readConcern, writeConcern
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
+        case readConcern, readPreference, writeConcern
     }
 }
 
-extension ClientSessionOptions: Decodable {
+extension ClientSessionOptions: StrictDecodable {
+    internal typealias CodingKeysType = CodingKeys
+
     public init(from decoder: Decoder) throws {
+        try Self.checkKeys(using: decoder)
+
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let causalConsistency = try container.decodeIfPresent(Bool.self, forKey: .causalConsistency)
         let defaultTransactionOptions = try container.decodeIfPresent(
@@ -39,13 +76,17 @@ extension ClientSessionOptions: Decodable {
         self.init(causalConsistency: causalConsistency, defaultTransactionOptions: defaultTransactionOptions)
     }
 
-    private enum CodingKeys: CodingKey {
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
         case causalConsistency, defaultTransactionOptions
     }
 }
 
-extension TransactionOptions: Decodable {
+extension TransactionOptions: StrictDecodable {
+    internal typealias CodingKeysType = CodingKeys
+
     public init(from decoder: Decoder) throws {
+        try Self.checkKeys(using: decoder)
+
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let maxCommitTimeMS = try container.decodeIfPresent(Int.self, forKey: .maxCommitTimeMS)
         let readConcern = try container.decodeIfPresent(ReadConcern.self, forKey: .readConcern)
@@ -59,7 +100,7 @@ extension TransactionOptions: Decodable {
         )
     }
 
-    private enum CodingKeys: CodingKey {
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
         case maxCommitTimeMS, readConcern, readPreference, writeConcern
     }
 }
@@ -97,12 +138,16 @@ extension ReadPreference: Decodable {
     }
 }
 
-extension MongoClientOptions: Decodable {
-    private enum CodingKeys: String, CodingKey {
+extension MongoClientOptions: StrictDecodable {
+    internal typealias CodingKeysType = CodingKeys
+
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
         case retryReads, retryWrites, w, readConcernLevel, readPreference, heartbeatFrequencyMS
     }
 
     public init(from decoder: Decoder) throws {
+        try Self.checkKeys(using: decoder)
+
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let readConcern = try? ReadConcern.other(container.decode(String.self, forKey: .readConcernLevel))
         let readPreference = try container.decodeIfPresent(ReadPreference.self, forKey: .readPreference)
