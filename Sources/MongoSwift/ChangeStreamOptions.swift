@@ -56,7 +56,7 @@ public struct ChangeStreamOptions: Codable {
      * - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
      */
     // TODO: SWIFT-519 - Make this public when support is added for 4.2 change stream features.
-    internal var startAfter: ResumeToken?
+    // internal var startAfter: ResumeToken?
 
     /// The change stream will only provide changes that occurred at or after the specified timestamp.
     /// Any command run against the server will return an operation time that can be used here.
@@ -77,7 +77,6 @@ public struct ChangeStreamOptions: Codable {
         self.fullDocument = fullDocument
         self.maxAwaitTimeMS = maxAwaitTimeMS
         self.resumeAfter = resumeAfter
-        self.startAfter = nil
         self.startAtOperationTime = startAtOperationTime
     }
 }

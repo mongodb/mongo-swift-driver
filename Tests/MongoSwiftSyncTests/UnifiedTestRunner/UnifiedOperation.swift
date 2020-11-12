@@ -1,5 +1,10 @@
 import Foundation
 import MongoSwiftSync
+import TestsCommon
+
+protocol UnifiedOperationProtocol: Decodable {
+    static var knownArguments: Set<String> { get }
+}
 
 struct UnifiedOperation: Decodable {
     /// Represents an object on which to perform an operation.
@@ -31,9 +36,8 @@ struct UnifiedOperation: Decodable {
     /// Object on which to perform the operation.
     let object: Object
 
-    // TODO: SWIFT-913: parse into an operation instance rather than raw name and arguments.
-    let name: String
-    let arguments: BSONDocument?
+    /// Specific operation to execute.
+    let operation: UnifiedOperationProtocol
 
     /// Expected result of the operation.
     let result: UnifiedOperationResult?
@@ -45,8 +49,41 @@ struct UnifiedOperation: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        self.name = try container.decode(String.self, forKey: .name)
-        self.arguments = try container.decodeIfPresent(BSONDocument.self, forKey: .arguments)
+        let name = try container.decode(String.self, forKey: .name)
+        switch name {
+        case "createChangeStream":
+            self.operation = try container.decode(CreateChangeStream.self, forKey: .arguments)
+        case "insertOne":
+            self.operation = try container.decode(InsertOne.self, forKey: .arguments)
+        case "iterateUntilDocumentOrError":
+            self.operation = IterateUntilDocumentOrError()
+        case "failPoint":
+            self.operation = try container.decode(UnifiedFailPoint.self, forKey: .arguments)
+        case "assertSessionNotDirty":
+            self.operation = try container.decode(AssertSessionNotDirty.self, forKey: .arguments)
+        case "endSession":
+            self.operation = EndSession()
+        case "find":
+            self.operation = try container.decode(Find.self, forKey: .arguments)
+        case "assertSameLsidOnLastTwoCommands":
+            self.operation = try container.decode(AssertSameLsidOnLastTwoCommands.self, forKey: .arguments)
+        case "assertDifferentLsidOnLastTwoCommands":
+            self.operation = try container.decode(AssertDifferentLsidOnLastTwoCommands.self, forKey: .arguments)
+        default:
+            self.operation = Placeholder()
+        }
+
+        if type(of: self.operation) != Placeholder.self,
+            let rawArgs = try container.decodeIfPresent(BSONDocument.self, forKey: .arguments)?.keys {
+            let knownArgsForType = type(of: self.operation).knownArguments
+            for arg in rawArgs {
+                guard knownArgsForType.contains(arg) else {
+                    throw TestError(
+                        message: "Unrecognized argument \"\(arg)\" for operation type \"\(type(of: self.operation))\""
+                    )
+                }
+            }
+        }
 
         self.object = try container.decode(Object.self, forKey: .object)
 
@@ -59,6 +96,10 @@ struct UnifiedOperation: Decodable {
 
         self.result = result
     }
+}
+
+struct Placeholder: UnifiedOperationProtocol {
+    static var knownArguments: Set<String> { [] }
 }
 
 /// Represents the expected result of an operation.
