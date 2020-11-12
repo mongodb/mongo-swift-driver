@@ -64,11 +64,11 @@ struct UnifiedOperation: Decodable {
         case "endSession":
             self.operation = EndSession()
         case "find":
-            self.operation = try container.decode(Find.self, forKey: .arguments)
+            self.operation = try container.decode(UnifiedFind.self, forKey: .arguments)
         case "failPoint":
             self.operation = try container.decode(UnifiedFailPoint.self, forKey: .arguments)
         case "insertOne":
-            self.operation = try container.decode(InsertOne.self, forKey: .arguments)
+            self.operation = try container.decode(UnifiedInsertOne.self, forKey: .arguments)
         case "iterateUntilDocumentOrError":
             self.operation = IterateUntilDocumentOrError()
         default:
