@@ -40,5 +40,3 @@
 # conflicts with our Swiftlint explicit ACL rule
 --disable extensionAccessControl
 
-# conflicts with Swiftlint opening_brace rule
---disable wrapMultilineStatementBraces

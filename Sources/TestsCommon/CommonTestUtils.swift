@@ -148,7 +148,8 @@ public enum TestTopologyConfiguration: String, Decodable {
         // Check for symptoms of different topologies
         if isMasterReply["msg"] != "isdbgrid" &&
             isMasterReply["setName"] == nil &&
-            isMasterReply["isreplicaset"] != true {
+            isMasterReply["isreplicaset"] != true
+        {
             self = .single
         } else if isMasterReply["msg"] == "isdbgrid" {
             guard !shards.isEmpty else {
@@ -381,7 +382,8 @@ public func unsupportedTopologyMessage(
     testName: String,
     topology: TopologyDescription.TopologyType = MongoSwiftTestCase.topologyType
 )
-    -> String {
+    -> String
+{
     "Skipping \(testName) due to unsupported topology type \(topology)"
 }
 

@@ -351,7 +351,8 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: BSONDocume
     do {
         var writeError: MongoError.WriteFailure?
         if let writeErrors = serverReply["writeErrors"]?.arrayValue?.compactMap(\.documentValue),
-           !writeErrors.isEmpty {
+           !writeErrors.isEmpty
+        {
             writeError = try BSONDecoder().decode(MongoError.WriteFailure.self, from: writeErrors[0])
         }
         let wcError = try extractWriteConcernError(from: serverReply)
@@ -443,7 +444,8 @@ internal func extractBulkWriteError<T: Codable>(
         // omit the "other" error.
         if let commandError = other as? MongoError.CommandError,
            let wErr = bulkWriteErrors.first,
-           wErr.code == commandError.code {
+           wErr.code == commandError.code
+        {
             other = nil
         }
 
@@ -462,7 +464,8 @@ internal func extractBulkWriteError<T: Codable>(
 /// Extracts a `WriteConcernError` from a server reply.
 private func extractWriteConcernError(from reply: BSONDocument) throws -> MongoError.WriteConcernFailure? {
     if let writeConcernErrors = reply["writeConcernErrors"]?.arrayValue?.compactMap(\.documentValue),
-       !writeConcernErrors.isEmpty {
+       !writeConcernErrors.isEmpty
+    {
         return try BSONDecoder().decode(MongoError.WriteConcernFailure.self, from: writeConcernErrors[0])
     } else if let writeConcernError = reply["writeConcernError"]?.documentValue {
         return try BSONDecoder().decode(MongoError.WriteConcernFailure.self, from: writeConcernError)

@@ -665,7 +665,8 @@ private struct _BSONUnkeyedEncodingContainer: UnkeyedEncodingContainer {
     }
 
     public mutating func nestedContainer<NestedKey>(keyedBy _: NestedKey.Type)
-        -> KeyedEncodingContainer<NestedKey> {
+        -> KeyedEncodingContainer<NestedKey>
+    {
         self.codingPath.append(_BSONKey(index: self.count))
         defer { self.codingPath.removeLast() }
 
