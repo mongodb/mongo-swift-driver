@@ -226,7 +226,8 @@ extension SpecTestFile {
             // before the tests run to prevent certain errors from ocurring. (SERVER-39704)
             if MongoSwiftTestCase.topologyType == .sharded,
                let collName = self.collectionName,
-               test.description.contains("distinct") {
+               test.description.contains("distinct")
+            {
                 for address in MongoSwiftTestCase.getHosts() {
                     _ = try setupClient.db(self.databaseName)
                         .runCommand(["distinct": .string(collName), "key": "_id"], on: address)

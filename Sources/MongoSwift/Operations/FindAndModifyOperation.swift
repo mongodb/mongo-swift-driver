@@ -33,7 +33,8 @@ internal class FindAndModifyOptions {
         self._options = mongoc_find_and_modify_opts_new()
 
         if let bypass = bypassDocumentValidation,
-           !mongoc_find_and_modify_opts_set_bypass_document_validation(self._options, bypass) {
+           !mongoc_find_and_modify_opts_set_bypass_document_validation(self._options, bypass)
+        {
             throw MongoError.InvalidArgumentError(message: "Error setting bypassDocumentValidation to \(bypass)")
         }
 
@@ -53,7 +54,8 @@ internal class FindAndModifyOptions {
         let mongocFlags = mongoc_find_and_modify_flags_t(rawValue: flags)
 
         if mongocFlags != MONGOC_FIND_AND_MODIFY_NONE
-            && !mongoc_find_and_modify_opts_set_flags(self._options, mongocFlags) {
+            && !mongoc_find_and_modify_opts_set_flags(self._options, mongocFlags)
+        {
             let remStr = String(describing: remove)
             let upsStr = String(describing: upsert)
             let retStr = String(describing: returnDocument)
