@@ -51,25 +51,26 @@ struct UnifiedOperation: Decodable {
 
         let name = try container.decode(String.self, forKey: .name)
         switch name {
-        case "createChangeStream":
-            self.operation = try container.decode(CreateChangeStream.self, forKey: .arguments)
-        case "insertOne":
-            self.operation = try container.decode(InsertOne.self, forKey: .arguments)
-        case "iterateUntilDocumentOrError":
-            self.operation = IterateUntilDocumentOrError()
-        case "failPoint":
-            self.operation = try container.decode(UnifiedFailPoint.self, forKey: .arguments)
+        case "assertDifferentLsidOnLastTwoCommands":
+            self.operation = try container.decode(AssertDifferentLsidOnLastTwoCommands.self, forKey: .arguments)
+        case "assertSameLsidOnLastTwoCommands":
+            self.operation = try container.decode(AssertSameLsidOnLastTwoCommands.self, forKey: .arguments)
         case "assertSessionNotDirty":
             self.operation = try container.decode(AssertSessionNotDirty.self, forKey: .arguments)
+        case "createChangeStream":
+            self.operation = try container.decode(CreateChangeStream.self, forKey: .arguments)
         case "endSession":
             self.operation = EndSession()
         case "find":
             self.operation = try container.decode(Find.self, forKey: .arguments)
-        case "assertSameLsidOnLastTwoCommands":
-            self.operation = try container.decode(AssertSameLsidOnLastTwoCommands.self, forKey: .arguments)
-        case "assertDifferentLsidOnLastTwoCommands":
-            self.operation = try container.decode(AssertDifferentLsidOnLastTwoCommands.self, forKey: .arguments)
+        case "failPoint":
+            self.operation = try container.decode(UnifiedFailPoint.self, forKey: .arguments)
+        case "insertOne":
+            self.operation = try container.decode(InsertOne.self, forKey: .arguments)
+        case "iterateUntilDocumentOrError":
+            self.operation = IterateUntilDocumentOrError()
         default:
+            // this is temporary so the tests compile/pass even though we don't have all the operations yet
             self.operation = Placeholder()
         }
 
