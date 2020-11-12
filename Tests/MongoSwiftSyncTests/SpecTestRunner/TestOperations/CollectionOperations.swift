@@ -1,6 +1,6 @@
 import Foundation
-import MongoSwiftSync
 @testable import struct MongoSwift.FindOptions
+import MongoSwiftSync
 import TestsCommon
 
 // File containing the TestOperations executed on a collections.
