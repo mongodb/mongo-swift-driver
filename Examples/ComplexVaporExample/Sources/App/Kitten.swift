@@ -5,10 +5,10 @@ import Vapor
 /// Possible cat food choices.
 enum CatFood: String, Codable {
     case salmon,
-        tuna,
-        chicken,
-        turkey,
-        beef
+         tuna,
+         chicken,
+         turkey,
+         beef
 }
 
 /// The structure of a food update request.

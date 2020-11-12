@@ -33,7 +33,7 @@ internal class FindAndModifyOptions {
         self._options = mongoc_find_and_modify_opts_new()
 
         if let bypass = bypassDocumentValidation,
-            !mongoc_find_and_modify_opts_set_bypass_document_validation(self._options, bypass) {
+           !mongoc_find_and_modify_opts_set_bypass_document_validation(self._options, bypass) {
             throw MongoError.InvalidArgumentError(message: "Error setting bypassDocumentValidation to \(bypass)")
         }
 

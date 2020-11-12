@@ -16,7 +16,7 @@ extension StrictDecodable {
     static func checkKeys(using decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let rawKeys = try container.decode(BSONDocument.self).keys
-        let supportedKeys = Set(Self.CodingKeysType.allCases.map { $0.rawValue })
+        let supportedKeys = Set(Self.CodingKeysType.allCases.map(\.rawValue))
         for key in rawKeys {
             guard supportedKeys.contains(key) else {
                 throw TestError(message: "Unsupported key \(key) found while decoding instance of \(Self.self)")

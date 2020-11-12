@@ -25,15 +25,15 @@ then
 
 elif [[ $1 = "sourcery" ]]
 then
-	install_from_gh sourcery https://github.com/krzysztofzablocki/Sourcery/releases/download/0.16.1/Sourcery-0.16.1.zip
+	install_from_gh sourcery https://github.com/krzysztofzablocki/Sourcery/releases/download/1.0.0/Sourcery-1.0.0.zip
 
 elif [[ $1 = "swiftlint" ]]
 then
-	install_from_gh swiftlint https://github.com/realm/SwiftLint/releases/download/0.39.1/portable_swiftlint.zip
+	install_from_gh swiftlint https://github.com/realm/SwiftLint/releases/download/0.41.0/portable_swiftlint.zip
 
 elif [[ $1 = "swiftformat" ]]
 then
-  git clone https://github.com/nicklockwood/SwiftFormat --branch="0.44.16"
+  git clone https://github.com/nicklockwood/SwiftFormat --branch="0.47.3"
   pushd SwiftFormat
   swift build -c release
   popd

@@ -340,12 +340,12 @@ public struct BulkWriteResult: Decodable {
 
     private enum CodingKeys: String, CodingKey {
         case deletedCount,
-            insertedCount,
-            insertedIDs = "insertedIds",
-            matchedCount,
-            modifiedCount,
-            upsertedCount,
-            upsertedIDs = "upsertedIds"
+             insertedCount,
+             insertedIDs = "insertedIds",
+             matchedCount,
+             modifiedCount,
+             upsertedCount,
+             upsertedIDs = "upsertedIds"
     }
 
     // The key names libmongoc uses for its bulk write results.

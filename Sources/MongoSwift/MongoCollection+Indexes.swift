@@ -150,9 +150,9 @@ public struct IndexOptions: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case background, expireAfterSeconds, name, sparse, storageEngine, unique, version = "v",
-            defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
-            sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression,
-            collation
+             defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
+             sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression,
+             collation
     }
 }
 

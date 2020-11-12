@@ -62,9 +62,9 @@ internal struct FailPoint: Decodable {
 
             // Need to convert error codes to int32's due to c driver bug (CDRIVER-3121)
             if k == "data",
-                var data = v.documentValue,
-                var wcErr = data["writeConcernError"]?.documentValue,
-                let code = wcErr["code"] {
+               var data = v.documentValue,
+               var wcErr = data["writeConcernError"]?.documentValue,
+               let code = wcErr["code"] {
                 wcErr["code"] = .int32(code.toInt32()!)
                 data["writeConcernError"] = .document(wcErr)
                 commandDoc["data"] = .document(data)

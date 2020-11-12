@@ -75,7 +75,7 @@ private struct CMTestFile: Decodable {
 
     enum CodingKeys: String, CodingKey {
         case data, collectionName = "collection_name",
-            databaseName = "database_name", tests, namespace
+             databaseName = "database_name", tests, namespace
     }
 }
 
@@ -102,12 +102,12 @@ private struct CMTest: Decodable {
     // `context` dictionary so we can access it in future events for the same test
     var context = [String: Any]()
 
-    var expectations: [ExpectationType] { try! expectationDocs.map { try makeExpectation($0) } }
+    var expectations: [ExpectationType] { try! self.expectationDocs.map { try makeExpectation($0) } }
 
     enum CodingKeys: String, CodingKey {
         case description, op = "operation", expectationDocs = "expectations",
-            minServerVersion = "ignore_if_server_version_less_than",
-            maxServerVersion = "ignore_if_server_version_greater_than"
+             minServerVersion = "ignore_if_server_version_less_than",
+             maxServerVersion = "ignore_if_server_version_greater_than"
     }
 
     // Given a collection, perform the operation specified for this test on it.
@@ -154,7 +154,7 @@ private struct CMTest: Decodable {
             } catch {}
 
         case "insertMany":
-            let documents = (self.op.args["documents"]?.arrayValue?.compactMap { $0.documentValue })!
+            let documents = (self.op.args["documents"]?.arrayValue?.compactMap(\.documentValue))!
             let options = InsertManyOptions(ordered: self.op.args["ordered"]?.boolValue)
             _ = try? collection.insertMany(documents, options: options)
 
@@ -214,8 +214,8 @@ private struct CommandStartedExpectation: ExpectationType, Decodable {
 
     enum CodingKeys: String, CodingKey {
         case command,
-            commandName = "command_name",
-            databaseName = "database_name"
+             commandName = "command_name",
+             databaseName = "database_name"
     }
 
     func compare(to receivedEvent: CommandEvent, testContext: inout [String: Any]) {
@@ -228,7 +228,7 @@ private struct CommandStartedExpectation: ExpectationType, Decodable {
         expect(event.databaseName).to(equal(self.databaseName))
 
         // if it's a getMore, we can't directly compare the results
-        if commandName == "getMore" {
+        if self.commandName == "getMore" {
             // verify that the getMore ID matches the stored cursor ID for this test
             expect(event.command["getMore"]).to(equal(testContext["cursorId"] as? BSON))
             // compare collection and batchSize fields
@@ -305,9 +305,9 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
     let originalReply: BSONDocument
     let commandName: String
 
-    var reply: BSONDocument { normalizeExpectedReply(originalReply) }
-    var writeErrors: [BSONDocument]? { originalReply["writeErrors"]?.arrayValue?.compactMap { $0.documentValue } }
-    var cursor: BSONDocument? { originalReply["cursor"]?.documentValue }
+    var reply: BSONDocument { normalizeExpectedReply(self.originalReply) }
+    var writeErrors: [BSONDocument]? { self.originalReply["writeErrors"]?.arrayValue?.compactMap(\.documentValue) }
+    var cursor: BSONDocument? { self.originalReply["cursor"]?.documentValue }
 
     enum CodingKeys: String, CodingKey {
         case commandName = "command_name", originalReply = "reply"
@@ -325,10 +325,10 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
         expect(event.commandName).to(equal(self.commandName))
 
         // compare writeErrors, if any
-        let receivedWriteErrs = event.reply["writeErrors"]?.arrayValue?.compactMap { $0.documentValue }
+        let receivedWriteErrs = event.reply["writeErrors"]?.arrayValue?.compactMap(\.documentValue)
         if let expectedErrs = self.writeErrors {
             expect(receivedWriteErrs).toNot(beNil())
-            checkWriteErrors(expected: expectedErrs, actual: receivedWriteErrs!)
+            self.checkWriteErrors(expected: expectedErrs, actual: receivedWriteErrs!)
         } else {
             expect(receivedWriteErrs).to(beNil())
         }
@@ -346,7 +346,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
                     expect(storedId).to(equal(id))
                 }
             }
-            compareCursors(expected: expectedCursor, actual: receivedCursor!)
+            self.compareCursors(expected: expectedCursor, actual: receivedCursor!)
         } else {
             expect(receivedCursor).to(beNil())
         }

@@ -231,7 +231,7 @@ public final class ClientSession {
                     self.id = BSONDocument(copying: mongoc_client_session_get_lsid(sessionPtr)!) // never returns nil
                 }
         case .started:
-            return self.client.operationExecutor.makeSucceededFuture(Void())
+            return self.client.operationExecutor.makeSucceededFuture(())
         case .ended:
             return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
         }
@@ -267,7 +267,7 @@ public final class ClientSession {
         switch self.state {
         case .notStarted, .ended:
             self.state = .ended
-            return self.client.operationExecutor.makeSucceededFuture(Void())
+            return self.client.operationExecutor.makeSucceededFuture(())
         case let .started(session, _):
             return self.client.operationExecutor.execute {
                 mongoc_client_session_destroy(session)

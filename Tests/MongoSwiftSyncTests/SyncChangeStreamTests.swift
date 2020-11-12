@@ -214,10 +214,10 @@ internal struct ChangeStreamTest: Decodable, FailPointConfigured {
 private struct ChangeStreamTestFile: Decodable {
     private enum CodingKeys: String, CodingKey {
         case databaseName = "database_name",
-            collectionName = "collection_name",
-            database2Name = "database2_name",
-            collection2Name = "collection2_name",
-            tests
+             collectionName = "collection_name",
+             database2Name = "database2_name",
+             collection2Name = "collection2_name",
+             tests
     }
 
     /// The default database.
@@ -266,7 +266,8 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase {
                 }
 
                 guard !(test.description == "Change Stream should error when _id is projected out" &&
-                    version >= ServerVersion(major: 4, minor: 3, patch: 3)) else {
+                    version >= ServerVersion(major: 4, minor: 3, patch: 3))
+                else {
                     print("Skipping test case \"\(test.description)\"; see SWIFT-722")
                     continue
                 }
@@ -426,8 +427,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let originalCommand = events[0].commandStartedValue!.command
         let resumeCommand = events[1].commandStartedValue!.command
 
-        let originalPipeline = originalCommand["pipeline"]!.arrayValue!.compactMap { $0.documentValue }
-        let resumePipeline = resumeCommand["pipeline"]!.arrayValue!.compactMap { $0.documentValue }
+        let originalPipeline = originalCommand["pipeline"]!.arrayValue!.compactMap(\.documentValue)
+        let resumePipeline = resumeCommand["pipeline"]!.arrayValue!.compactMap(\.documentValue)
 
         // verify the $changeStream stage is identical except for resume options.
         let filteredStreamStage = { (pipeline: [BSONDocument]) -> BSONDocument in
