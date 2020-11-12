@@ -149,7 +149,8 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
                 // if it's invalid, or a case where libmongoc errors instead of warning, expect an error.
                 guard testCase.valid &&
-                    !(shouldWarnButLibmongocErrors[filename]?.contains(testCase.description) ?? false) else {
+                    !(shouldWarnButLibmongocErrors[filename]?.contains(testCase.description) ?? false)
+                else {
                     expect(try ConnectionString(testCase.uri)).to(
                         throwError(
                             errorType: MongoError.InvalidArgumentError.self

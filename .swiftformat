@@ -36,3 +36,9 @@
 
 # the ordering doesn't match linter's
 --disable specifiers
+
+# conflicts with our Swiftlint explicit ACL rule
+--disable extensionAccessControl
+
+# conflicts with Swiftlint opening_brace rule
+--disable wrapMultilineStatementBraces

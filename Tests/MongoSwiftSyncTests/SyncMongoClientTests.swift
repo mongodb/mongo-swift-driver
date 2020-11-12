@@ -29,20 +29,20 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         try client.db("db3").collection("c").insertOne(["a": 1])
 
         let dbInfo = try client.listDatabases()
-        expect(dbInfo.map { $0.name }).to(contain(databases))
-        expect(Set(dbInfo.map { $0.name }).count).to(equal(dbInfo.count))
+        expect(dbInfo.map(\.name)).to(contain(databases))
+        expect(Set(dbInfo.map(\.name)).count).to(equal(dbInfo.count))
 
         let dbNames = try client.listDatabaseNames()
         expect(dbNames).to(contain(databases))
         expect(Set(dbNames).count).to(equal(dbNames.count))
 
         let dbObjects = try client.listMongoDatabases()
-        expect(dbObjects.map { $0.name }).to(contain(databases))
-        expect(Set(dbObjects.map { $0.name }).count).to(equal(dbObjects.count))
+        expect(dbObjects.map(\.name)).to(contain(databases))
+        expect(Set(dbObjects.map(\.name)).count).to(equal(dbObjects.count))
 
         expect(try client.listDatabaseNames(["name": "db1"])).to(equal(["db1"]))
 
-        let topSize = dbInfo.map { $0.sizeOnDisk }.max()!
+        let topSize = dbInfo.map(\.sizeOnDisk).max()!
         expect(try client.listDatabases(["sizeOnDisk": ["$gt": BSON(topSize)]])).to(beEmpty())
 
         if MongoSwiftTestCase.topologyType == .sharded {

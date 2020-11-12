@@ -501,7 +501,7 @@ extension _BSONEncoder {
         if let bsonValue = value as? BSONValue {
             return bsonValue
         } else if let bsonArray = value as? [BSONValue] {
-            return bsonArray.map { $0.bson }
+            return bsonArray.map(\.bson)
         }
 
         // The value should request a container from the _BSONEncoder.

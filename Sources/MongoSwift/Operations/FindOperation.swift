@@ -204,8 +204,8 @@ public struct FindOptions: Codable {
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
     private enum CodingKeys: String, CodingKey {
         case allowDiskUse, allowPartialResults, awaitData, batchSize, collation, comment, hint, limit, max,
-            maxAwaitTimeMS, maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey,
-            showRecordID = "showRecordId", tailable, skip, sort
+             maxAwaitTimeMS, maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey,
+             showRecordID = "showRecordId", tailable, skip, sort
     }
 }
 
@@ -290,7 +290,7 @@ public struct FindOneOptions: Codable {
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
     private enum CodingKeys: String, CodingKey {
         case allowPartialResults, collation, comment, hint, max, maxTimeMS, min, projection, readConcern, returnKey,
-            showRecordID = "showRecordId", skip, sort
+             showRecordID = "showRecordId", skip, sort
     }
 }
 

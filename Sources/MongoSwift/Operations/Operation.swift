@@ -40,7 +40,7 @@ internal class OperationExecutor {
                 promise.fail(error)
                 return
             }
-            promise.succeed(Void())
+            promise.succeed(())
         }
         return promise.futureResult
     }
@@ -61,7 +61,8 @@ internal class OperationExecutor {
             // if available.
             guard let connection =
                 try session?.getConnection(forUseWith: client) ??
-                client.connectionPool.tryCheckOut() else {
+                client.connectionPool.tryCheckOut()
+            else {
                 return .resubmit
             }
             return try .success(operation.execute(using: connection, session: session))
