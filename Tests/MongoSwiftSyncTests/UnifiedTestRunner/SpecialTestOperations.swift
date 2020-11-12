@@ -26,7 +26,7 @@ struct AssertDifferentLsidOnLastTwoCommands: UnifiedOperationProtocol {
     let client: String
 
     static var knownArguments: Set<String> {
-        Set(["client"])
+        ["client"]
     }
 }
 
@@ -35,6 +35,6 @@ struct AssertSameLsidOnLastTwoCommands: UnifiedOperationProtocol {
     let client: String
 
     static var knownArguments: Set<String> {
-        Set(["client"])
+        ["client"]
     }
 }
