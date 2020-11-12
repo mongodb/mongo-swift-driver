@@ -73,10 +73,9 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
     }
 
     func testIndexOptions() throws {
-        let options = IndexOptions(
+        var options = IndexOptions(
             background: true,
             bits: 32,
-            bucketSize: 10,
             collation: ["locale": "fr"],
             defaultLanguage: "english",
             languageOverride: "cat",
@@ -91,6 +90,11 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             version: 2,
             weights: ["cat": 0.5, "_id": 0.5]
         )
+
+        // option is no longer supported as of SERVER-47081
+        if try _client!.serverVersion() < ServerVersion("4.9.0") {
+            options.bucketSize = 10
+        }
 
         let model = IndexModel(keys: ["cat": 1, "_id": -1], options: options)
         expect(try self.coll.createIndex(model)).to(equal("testOptions"))
