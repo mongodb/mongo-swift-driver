@@ -45,6 +45,7 @@ extension MongoDatabase {
 public func retrieveSpecTestFiles<T: Decodable>(
     specName: String,
     subdirectory: String? = nil,
+    excludeFiles: [String] = [],
     asType _: T.Type
 ) throws -> [(String, T)] {
     var path = "\(MongoSwiftTestCase.specsPath)/\(specName)/tests"
@@ -54,7 +55,10 @@ public func retrieveSpecTestFiles<T: Decodable>(
     return try FileManager.default
         .contentsOfDirectory(atPath: path)
         .filter { $0.hasSuffix(".json") }
-        .map { filename in
+        .compactMap { filename in
+            guard !excludeFiles.contains(filename) else {
+                return nil
+            }
             let url = URL(fileURLWithPath: "\(path)/\(filename)")
             var doc = try BSONDocument(fromJSONFile: url)
             doc["name"] = .string(filename)

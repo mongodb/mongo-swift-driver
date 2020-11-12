@@ -63,7 +63,7 @@ public struct AggregateOptions: Codable {
         self.writeConcern = writeConcern
     }
 
-    private enum CodingKeys: String, CodingKey {
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
         case allowDiskUse, batchSize, bypassDocumentValidation, collation, maxTimeMS, comment, hint, readConcern,
              writeConcern
     }

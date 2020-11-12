@@ -53,27 +53,78 @@ struct UnifiedOperation: Decodable {
 
         let name = try container.decode(String.self, forKey: .name)
         switch name {
+        case "abortTransaction":
+            self.operation = UnifiedAbortTransaction()
+        case "aggregate":
+            self.operation = try container.decode(UnifiedAggregate.self, forKey: .arguments)
+        case "assertCollectionExists":
+            self.operation = try container.decode(UnifiedAssertCollectionExists.self, forKey: .arguments)
+        case "assertCollectionNotExists":
+            self.operation = try container.decode(UnifiedAssertCollectionNotExists.self, forKey: .arguments)
+        case "assertIndexExists":
+            self.operation = try container.decode(UnifiedAssertIndexExists.self, forKey: .arguments)
+        case "assertIndexNotExists":
+            self.operation = try container.decode(UnifiedAssertIndexNotExists.self, forKey: .arguments)
         case "assertDifferentLsidOnLastTwoCommands":
             self.operation = try container.decode(AssertDifferentLsidOnLastTwoCommands.self, forKey: .arguments)
         case "assertSameLsidOnLastTwoCommands":
             self.operation = try container.decode(AssertSameLsidOnLastTwoCommands.self, forKey: .arguments)
+        case "assertSessionDirty":
+            self.operation = try container.decode(AssertSessionDirty.self, forKey: .arguments)
         case "assertSessionNotDirty":
             self.operation = try container.decode(AssertSessionNotDirty.self, forKey: .arguments)
+        case "assertSessionPinned":
+            self.operation = try container.decode(UnifiedAssertSessionPinned.self, forKey: .arguments)
+        case "assertSessionUnpinned":
+            self.operation = try container.decode(UnifiedAssertSessionUnpinned.self, forKey: .arguments)
+        case "assertSessionTransactionState":
+            self.operation = try container.decode(UnifiedAssertSessionTransactionState.self, forKey: .arguments)
+        case "bulkWrite":
+            self.operation = try container.decode(UnifiedBulkWrite.self, forKey: .arguments)
+        case "commitTransaction":
+            self.operation = UnifiedCommitTransaction()
         case "createChangeStream":
             self.operation = try container.decode(CreateChangeStream.self, forKey: .arguments)
+        case "createCollection":
+            self.operation = try container.decode(UnifiedCreateCollection.self, forKey: .arguments)
+        case "createIndex":
+            self.operation = try container.decode(UnifiedCreateIndex.self, forKey: .arguments)
+        case "deleteOne":
+            self.operation = try container.decode(UnifiedDeleteOne.self, forKey: .arguments)
+        case "dropCollection":
+            self.operation = try container.decode(UnifiedDropCollection.self, forKey: .arguments)
         case "endSession":
             self.operation = EndSession()
         case "find":
             self.operation = try container.decode(UnifiedFind.self, forKey: .arguments)
+        case "findOneAndReplace":
+            self.operation = try container.decode(UnifiedFindOneAndReplace.self, forKey: .arguments)
+        case "findOneAndUpdate":
+            self.operation = try container.decode(UnifiedFindOneAndUpdate.self, forKey: .arguments)
         case "failPoint":
             self.operation = try container.decode(UnifiedFailPoint.self, forKey: .arguments)
         case "insertOne":
             self.operation = try container.decode(UnifiedInsertOne.self, forKey: .arguments)
+        case "insertMany":
+            self.operation = try container.decode(UnifiedInsertMany.self, forKey: .arguments)
         case "iterateUntilDocumentOrError":
             self.operation = IterateUntilDocumentOrError()
-        default:
-            // this is temporary so the tests compile/pass even though we don't have all the operations yet
+        case "listDatabases":
+            self.operation = UnifiedListDatabases()
+        case "replaceOne":
+            self.operation = try container.decode(UnifiedReplaceOne.self, forKey: .arguments)
+        case "startTransaction":
+            self.operation = UnifiedStartTransaction()
+        case "targetedFailPoint":
+            self.operation = try container.decode(UnifiedTargetedFailPoint.self, forKey: .arguments)
+        // GridFS ops
+        case "delete", "download", "upload":
             self.operation = Placeholder()
+        // convenient txn API
+        case "withTransaction":
+            self.operation = Placeholder()
+        default:
+            throw TestError(message: "unrecognized operation name \(name)")
         }
 
         if type(of: self.operation) != Placeholder.self,
@@ -102,6 +153,7 @@ struct UnifiedOperation: Decodable {
     }
 }
 
+/// Placeholder for an unsupported operation.
 struct Placeholder: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 }

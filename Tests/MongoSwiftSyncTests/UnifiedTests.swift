@@ -43,9 +43,17 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             asType: UnifiedTestFile.self
         )).toNot(throwError())
 
+        let skipValidFailTests = [
+            // Because we use an enum to represent ReturnDocument, the invalid string present in this file "Invalid"
+            // gives us a decoding error, and therefore we cannot decode it. Other drivers may not report an error
+            // until runtime.
+            "returnDocument-enum-invalid.json"
+        ]
+
         expect(try retrieveSpecTestFiles(
             specName: "unified-test-format",
             subdirectory: "valid-fail",
+            excludeFiles: skipValidFailTests,
             asType: UnifiedTestFile.self
         )).toNot(throwError())
     }
