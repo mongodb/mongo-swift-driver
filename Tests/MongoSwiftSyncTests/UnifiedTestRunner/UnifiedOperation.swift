@@ -2,7 +2,9 @@ import Foundation
 import MongoSwiftSync
 import TestsCommon
 
+/// Protocol which all operations supported by the unified test runner conform to.
 protocol UnifiedOperationProtocol: Decodable {
+    /// Set of supported arguments for the operation.
     static var knownArguments: Set<String> { get }
 }
 
