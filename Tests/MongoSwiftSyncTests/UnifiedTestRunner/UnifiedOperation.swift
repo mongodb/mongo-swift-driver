@@ -77,7 +77,8 @@ struct UnifiedOperation: Decodable {
         }
 
         if type(of: self.operation) != Placeholder.self,
-            let rawArgs = try container.decodeIfPresent(BSONDocument.self, forKey: .arguments)?.keys {
+           let rawArgs = try container.decodeIfPresent(BSONDocument.self, forKey: .arguments)?.keys
+        {
             let knownArgsForType = type(of: self.operation).knownArguments
             for arg in rawArgs {
                 guard knownArgsForType.contains(arg) else {

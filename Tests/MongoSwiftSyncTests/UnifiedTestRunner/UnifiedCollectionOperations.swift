@@ -18,8 +18,8 @@ struct UnifiedFind: UnifiedOperationProtocol {
 
     static var knownArguments: Set<String> {
         Set(
-            CodingKeys.allCases.map { $0.rawValue } +
-                FindOptions.CodingKeys.allCases.map { $0.rawValue }
+            CodingKeys.allCases.map(\.rawValue) +
+                FindOptions.CodingKeys.allCases.map(\.rawValue)
         )
     }
 
@@ -47,7 +47,7 @@ struct UnifiedInsertOne: UnifiedOperationProtocol {
 
     static var knownArguments: Set<String> {
         Set(
-            CodingKeys.allCases.map { $0.rawValue } +
+            CodingKeys.allCases.map(\.rawValue) +
                 Mirror(reflecting: InsertOneOptions()).children.map { $0.label! }
         )
     }
