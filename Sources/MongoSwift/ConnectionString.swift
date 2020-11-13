@@ -378,7 +378,8 @@ internal class ConnectionString {
         if let rp = options?.readPreference {
             self.readPreference = rp
         } else if let maxStaleness = self.options?[MONGOC_URI_MAXSTALENESSSECONDS]?.int32Value,
-            maxStaleness < MONGOC_SMALLEST_MAX_STALENESS_SECONDS {
+                  maxStaleness < MONGOC_SMALLEST_MAX_STALENESS_SECONDS
+        {
             throw MongoError.InvalidArgumentError(
                 message: "Invalid \(MONGOC_URI_MAXSTALENESSSECONDS) \(maxStaleness): " +
                     "must be at least \(MONGOC_SMALLEST_MAX_STALENESS_SECONDS)"

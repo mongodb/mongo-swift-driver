@@ -80,7 +80,7 @@ public enum MongoError {
 
         public var errorDescription: String? {
             var descriptions: [String] = []
-            if let messages = self.writeFailures?.map({ $0.message }) {
+            if let messages = self.writeFailures?.map(\.message) {
                 descriptions.append("Write errors: \(messages)")
             }
 
@@ -337,9 +337,10 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: BSONDocume
     // if the reply is nil or writeErrors or writeConcernErrors aren't present, use the mongoc error to determine
     // what to throw.
     guard let serverReply: BSONDocument = reply,
-        !(serverReply["writeErrors"]?.arrayValue ?? []).isEmpty ||
-        !(serverReply["writeConcernError"]?.documentValue?.keys ?? []).isEmpty ||
-        !(serverReply["writeConcernErrors"]?.arrayValue ?? []).isEmpty else {
+          !(serverReply["writeErrors"]?.arrayValue ?? []).isEmpty ||
+          !(serverReply["writeConcernError"]?.documentValue?.keys ?? []).isEmpty ||
+          !(serverReply["writeConcernErrors"]?.arrayValue ?? []).isEmpty
+    else {
         return parseMongocError(bsonError, reply: reply)
     }
 
@@ -349,8 +350,9 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: BSONDocume
 
     do {
         var writeError: MongoError.WriteFailure?
-        if let writeErrors = serverReply["writeErrors"]?.arrayValue?.compactMap({ $0.documentValue }),
-            !writeErrors.isEmpty {
+        if let writeErrors = serverReply["writeErrors"]?.arrayValue?.compactMap(\.documentValue),
+           !writeErrors.isEmpty
+        {
             writeError = try BSONDecoder().decode(MongoError.WriteFailure.self, from: writeErrors[0])
         }
         let wcError = try extractWriteConcernError(from: serverReply)
@@ -395,7 +397,7 @@ internal func extractBulkWriteError<T: Codable>(
 
     do {
         var bulkWriteErrors: [MongoError.BulkWriteFailure] = []
-        if let writeErrors = reply["writeErrors"]?.arrayValue?.compactMap({ $0.documentValue }) {
+        if let writeErrors = reply["writeErrors"]?.arrayValue?.compactMap(\.documentValue) {
             bulkWriteErrors = try writeErrors.map {
                 try BSONDecoder().decode(MongoError.BulkWriteFailure.self, from: $0)
             }
@@ -414,7 +416,7 @@ internal func extractBulkWriteError<T: Codable>(
                 let maxIndex = result.insertedIDs.keys.sorted()[result.insertedCount - 1]
                 filteredIDs = result.insertedIDs.filter { $0.key <= maxIndex }
             } else { // if unordered, just remove those that have write errors associated with them
-                let errs = Set(bulkWriteErrors.map { $0.index })
+                let errs = Set(bulkWriteErrors.map(\.index))
                 filteredIDs = result.insertedIDs.filter { !errs.contains($0.key) }
             }
         }
@@ -441,8 +443,9 @@ internal func extractBulkWriteError<T: Codable>(
         // first write error and the concatenated error messages of all the write errors. in that case, we just want to
         // omit the "other" error.
         if let commandError = other as? MongoError.CommandError,
-            let wErr = bulkWriteErrors.first,
-            wErr.code == commandError.code {
+           let wErr = bulkWriteErrors.first,
+           wErr.code == commandError.code
+        {
             other = nil
         }
 
@@ -460,8 +463,9 @@ internal func extractBulkWriteError<T: Codable>(
 
 /// Extracts a `WriteConcernError` from a server reply.
 private func extractWriteConcernError(from reply: BSONDocument) throws -> MongoError.WriteConcernFailure? {
-    if let writeConcernErrors = reply["writeConcernErrors"]?.arrayValue?.compactMap({ $0.documentValue }),
-        !writeConcernErrors.isEmpty {
+    if let writeConcernErrors = reply["writeConcernErrors"]?.arrayValue?.compactMap(\.documentValue),
+       !writeConcernErrors.isEmpty
+    {
         return try BSONDecoder().decode(MongoError.WriteConcernFailure.self, from: writeConcernErrors[0])
     } else if let writeConcernError = reply["writeConcernError"]?.documentValue {
         return try BSONDecoder().decode(MongoError.WriteConcernFailure.self, from: writeConcernError)

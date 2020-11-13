@@ -65,7 +65,7 @@ public struct AggregateOptions: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case allowDiskUse, batchSize, bypassDocumentValidation, collation, maxTimeMS, comment, hint, readConcern,
-            writeConcern
+             writeConcern
     }
 }
 

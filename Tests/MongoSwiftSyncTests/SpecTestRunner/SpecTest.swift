@@ -1,3 +1,4 @@
+// swiftlint:disable duplicate_imports
 import Foundation
 @testable import struct MongoSwift.ReadPreference
 import MongoSwiftSync
@@ -85,7 +86,7 @@ internal enum TestData: Decodable {
         } else if let document = try? BSONDocument(from: decoder) {
             var mapping: [String: [BSONDocument]] = [:]
             for (k, v) in document {
-                guard let documentArray = v.arrayValue?.compactMap({ $0.documentValue }) else {
+                guard let documentArray = v.arrayValue?.compactMap(\.documentValue) else {
                     throw DecodingError.typeMismatch(
                         [BSONDocument].self,
                         DecodingError.Context(
@@ -224,8 +225,9 @@ extension SpecTestFile {
             // Due to strange behavior in mongos, a "distinct" command needs to be run against each mongos
             // before the tests run to prevent certain errors from ocurring. (SERVER-39704)
             if MongoSwiftTestCase.topologyType == .sharded,
-                let collName = self.collectionName,
-                test.description.contains("distinct") {
+               let collName = self.collectionName,
+               test.description.contains("distinct")
+            {
                 for address in MongoSwiftTestCase.getHosts() {
                     _ = try setupClient.db(self.databaseName)
                         .runCommand(["distinct": .string(collName), "key": "_id"], on: address)

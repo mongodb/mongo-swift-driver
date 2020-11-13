@@ -63,7 +63,7 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
 
     private enum CodingKeys: String, CodingKey {
         case capped, size, max, storageEngine, validator, validationLevel, validationAction,
-            indexOptionDefaults, viewOn, pipeline, collation, writeConcern
+             indexOptionDefaults, viewOn, pipeline, collation, writeConcern
     }
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.

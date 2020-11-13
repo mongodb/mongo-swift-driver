@@ -21,12 +21,12 @@ public class TestCommandMonitor: CommandEventHandler {
 
     /// Retrieve all the command started events seen so far, clearing the event cache.
     public func commandStartedEvents(withNames namesFilter: [String]? = nil) -> [CommandStartedEvent] {
-        self.events(withNames: namesFilter).compactMap { $0.commandStartedValue }
+        self.events(withNames: namesFilter).compactMap(\.commandStartedValue)
     }
 
     /// Retrieve all the command started events seen so far, clearing the event cache.
     public func commandSucceededEvents(withNames namesFilter: [String]? = nil) -> [CommandSucceededEvent] {
-        self.events(withNames: namesFilter).compactMap { $0.commandSucceededValue }
+        self.events(withNames: namesFilter).compactMap(\.commandSucceededValue)
     }
 
     /// Retrieve all the events seen so far that match the optionally provided filters, clearing the event cache.

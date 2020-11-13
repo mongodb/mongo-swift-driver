@@ -799,7 +799,8 @@ private struct _BSONUnkeyedDecodingContainer: UnkeyedDecodingContainer {
 
     /// Decodes a nested container keyed by the given type.
     public mutating func nestedContainer<NestedKey: CodingKey>(keyedBy _: NestedKey.Type)
-        throws -> KeyedDecodingContainer<NestedKey> {
+        throws -> KeyedDecodingContainer<NestedKey>
+    {
         try self.decoder.with(pushedKey: _BSONKey(index: self.currentIndex)) {
             try self.checkAtEnd()
             let doc = try self.decodeBSONType(BSONDocument.self)
