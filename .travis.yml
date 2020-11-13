@@ -7,34 +7,6 @@ env:
 
 jobs:
   include:
-    - stage: pre-tests
-      name: verify Sourcery has been run
-      os: osx
-      install: ./etc/install_dependencies.sh sourcery
-      before_script: skip
-      script:
-        - make linuxmain SOURCERY=${PWD}/sourcery/bin/sourcery
-        - git diff --exit-code Tests/LinuxMain.swift
-        - make exports SOURCERY=${PWD}/sourcery/bin/sourcery
-        - git diff --exit-code Sources/MongoSwiftSync/Exports.swift
-
-    - stage: pre-tests
-      name: lint
-      os: osx
-      osx_image: xcode11.3
-      install: pushd etc && ./install_dependencies.sh swiftlint && ./install_dependencies.sh swiftformat && popd
-      before_script: skip
-      script: ./etc/swiftlint/swiftlint --strict && ./etc/SwiftFormat/CommandLineTool/swiftformat --verbose --lint .
-
-    - stage: tests
-      os: osx
-      osx_image: xcode11.3
-      env: SWIFT_VERSION=5.2
-
-    - stage: tests
-      os: linux
-      env: SWIFT_VERSION=5.2
-
     - stage: post-tests
       name: code coverage
       os: osx
@@ -51,7 +23,3 @@ before_script:
   - MONGODIR=${PWD}/mongodb-${MONGODB_VERSION}
   - mkdir ${MONGODIR}/data
   - ${MONGODIR}/bin/mongod --dbpath ${MONGODIR}/data --logpath ${MONGODIR}/mongodb.log --fork
-
-script:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then make test-pretty; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then make test; fi
