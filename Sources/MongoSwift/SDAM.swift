@@ -237,7 +237,7 @@ public struct TopologyDescription: Equatable {
     /// of the `logicalSessionTimeoutMinutes` values across all the servers in `servers`,
     /// or `nil` if any of them are `nil`.
     public var logicalSessionTimeoutMinutes: Int? {
-        let timeoutValues = self.servers.map(\.logicalSessionTimeoutMinutes)
+        let timeoutValues = self.servers.map { $0.logicalSessionTimeoutMinutes }
         if timeoutValues.contains(where: { $0 == nil }) {
             return nil
         }

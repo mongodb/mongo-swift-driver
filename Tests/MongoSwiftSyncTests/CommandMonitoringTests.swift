@@ -154,7 +154,7 @@ private struct CMTest: Decodable {
             } catch {}
 
         case "insertMany":
-            let documents = (self.op.args["documents"]?.arrayValue?.compactMap(\.documentValue))!
+            let documents = (self.op.args["documents"]?.arrayValue?.compactMap { $0.documentValue })!
             let options = InsertManyOptions(ordered: self.op.args["ordered"]?.boolValue)
             _ = try? collection.insertMany(documents, options: options)
 
@@ -306,7 +306,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
     let commandName: String
 
     var reply: BSONDocument { normalizeExpectedReply(self.originalReply) }
-    var writeErrors: [BSONDocument]? { self.originalReply["writeErrors"]?.arrayValue?.compactMap(\.documentValue) }
+    var writeErrors: [BSONDocument]? { self.originalReply["writeErrors"]?.arrayValue?.compactMap { $0.documentValue } }
     var cursor: BSONDocument? { self.originalReply["cursor"]?.documentValue }
 
     enum CodingKeys: String, CodingKey {
@@ -325,7 +325,7 @@ private struct CommandSucceededExpectation: ExpectationType, Decodable {
         expect(event.commandName).to(equal(self.commandName))
 
         // compare writeErrors, if any
-        let receivedWriteErrs = event.reply["writeErrors"]?.arrayValue?.compactMap(\.documentValue)
+        let receivedWriteErrs = event.reply["writeErrors"]?.arrayValue?.compactMap { $0.documentValue }
         if let expectedErrs = self.writeErrors {
             expect(receivedWriteErrs).toNot(beNil())
             self.checkWriteErrors(expected: expectedErrs, actual: receivedWriteErrs!)

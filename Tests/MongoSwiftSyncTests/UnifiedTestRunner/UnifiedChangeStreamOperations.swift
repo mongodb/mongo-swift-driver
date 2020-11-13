@@ -17,7 +17,7 @@ struct CreateChangeStream: UnifiedOperationProtocol {
 
     static var knownArguments: Set<String> {
         Set(
-            CodingKeys.allCases.map(\.rawValue) +
+            CodingKeys.allCases.map { $0.rawValue } +
                 Mirror(reflecting: ChangeStreamOptions()).children.map { $0.label! }
         )
     }

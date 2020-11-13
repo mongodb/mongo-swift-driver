@@ -86,7 +86,7 @@ internal enum TestData: Decodable {
         } else if let document = try? BSONDocument(from: decoder) {
             var mapping: [String: [BSONDocument]] = [:]
             for (k, v) in document {
-                guard let documentArray = v.arrayValue?.compactMap(\.documentValue) else {
+                guard let documentArray = v.arrayValue?.compactMap({ $0.documentValue }) else {
                     throw DecodingError.typeMismatch(
                         [BSONDocument].self,
                         DecodingError.Context(

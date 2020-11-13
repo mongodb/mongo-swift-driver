@@ -320,7 +320,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testDistinct() throws {
         let distinct1 = try coll.distinct(fieldName: "cat", filter: [:])
-        expect(BSON.array(distinct1).arrayValue?.compactMap(\.stringValue).sorted()).to(equal(["cat", "dog"]))
+        expect(BSON.array(distinct1).arrayValue?.compactMap { $0.stringValue }.sorted()).to(equal(["cat", "dog"]))
         // nonexistent field
         expect(try self.coll.distinct(fieldName: "abc", filter: [:])).to(beEmpty())
 

@@ -35,7 +35,7 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
             asType: BSONDocument.self
         )
         for (_, asDocument) in testFiles {
-            let tests: [BSONDocument] = asDocument["tests"]!.arrayValue!.compactMap(\.documentValue)
+            let tests: [BSONDocument] = asDocument["tests"]!.arrayValue!.compactMap { $0.documentValue }
             for test in tests {
                 let description: String = try test.get("description")
                 // skipping because C driver does not comply with these; see CDRIVER-2621
@@ -78,7 +78,7 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
         )
 
         for (_, asDocument) in testFiles {
-            let tests = asDocument["tests"]!.arrayValue!.compactMap(\.documentValue)
+            let tests = asDocument["tests"]!.arrayValue!.compactMap { $0.documentValue }
             for test in tests {
                 let valid: Bool = try test.get("valid")
                 if let rcToUse = test["readConcern"]?.documentValue {

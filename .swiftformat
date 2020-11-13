@@ -40,3 +40,5 @@
 # conflicts with our Swiftlint explicit ACL rule
 --disable extensionAccessControl
 
+# creates non-compiling code on Swift 5.1
+--disable preferKeyPath

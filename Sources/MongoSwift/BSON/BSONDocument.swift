@@ -255,7 +255,7 @@ extension BSONDocument {
             throw BSONError.InternalError(message: "No keys to exclude, use 'bson_copy' instead")
         }
 
-        let cStrings: [ContiguousArray<CChar>] = keys.map(\.utf8CString)
+        let cStrings: [ContiguousArray<CChar>] = keys.map { $0.utf8CString }
 
         var cPtrs: [UnsafePointer<CChar>] = try cStrings.map { cString in
             let bufferPtr: UnsafeBufferPointer<CChar> = cString.withUnsafeBufferPointer { $0 }
@@ -347,7 +347,7 @@ extension BSONDocument {
 
     internal init(keyValuePairs: [(String, BSON)]) {
         // make sure all keys are unique
-        guard Set(keyValuePairs.map(\.0)).count == keyValuePairs.count else {
+        guard Set(keyValuePairs.map { $0.0 }).count == keyValuePairs.count else {
             fatalError("Dictionary literal \(keyValuePairs) contains duplicate keys")
         }
 

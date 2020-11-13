@@ -427,8 +427,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let originalCommand = events[0].commandStartedValue!.command
         let resumeCommand = events[1].commandStartedValue!.command
 
-        let originalPipeline = originalCommand["pipeline"]!.arrayValue!.compactMap(\.documentValue)
-        let resumePipeline = resumeCommand["pipeline"]!.arrayValue!.compactMap(\.documentValue)
+        let originalPipeline = originalCommand["pipeline"]!.arrayValue!.compactMap { $0.documentValue }
+        let resumePipeline = resumeCommand["pipeline"]!.arrayValue!.compactMap { $0.documentValue }
 
         // verify the $changeStream stage is identical except for resume options.
         let filteredStreamStage = { (pipeline: [BSONDocument]) -> BSONDocument in

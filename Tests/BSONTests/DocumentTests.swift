@@ -746,7 +746,7 @@ final class DocumentTests: MongoSwiftTestCase {
         let customArr = try encoder.encode(noSecondsDate)
         expect(dateFormatter.date(from: (customArr["date"]?
                 .arrayValue?
-                .compactMap(\.stringValue)
+                .compactMap { $0.stringValue }
                 .joined(separator: "/"))!)
         ).to(equal(noSecondsDate.date))
 
@@ -863,7 +863,7 @@ final class DocumentTests: MongoSwiftTestCase {
         encoder.dataEncodingStrategy = .deferredToData
         decoder.dataDecodingStrategy = .deferredToData
         let deferredDoc = try encoder.encode(dataStruct)
-        expect(deferredDoc["data"]?.arrayValue?.compactMap(\.int32Value)).to(equal(arrData))
+        expect(deferredDoc["data"]?.arrayValue?.compactMap { $0.int32Value }).to(equal(arrData))
         let roundTripDeferred = try decoder.decode(DataWrapper.self, from: deferredDoc)
         expect(roundTripDeferred.data).to(equal(data))
         expect(try decoder.decode(DataWrapper.self, from: defaultDoc)).to(throwError(CodecTests.typeMismatchErr))
