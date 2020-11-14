@@ -72,7 +72,8 @@ struct UnifiedBulkWrite: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(BulkWriteOptions.self)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.requests = try container.decode([WriteModel<BSONDocument>].self, forKey: .requests)
+        let decodedRequests = try container.decode([TestWriteModel].self, forKey: .requests)
+        self.requests = decodedRequests.map { $0.toWriteModel() }
     }
 }
 
