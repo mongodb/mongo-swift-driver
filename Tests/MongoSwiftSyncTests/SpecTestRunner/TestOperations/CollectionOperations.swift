@@ -1,5 +1,4 @@
 import Foundation
-@testable import struct MongoSwift.FindOptions
 import MongoSwiftSync
 import TestsCommon
 
@@ -268,6 +267,10 @@ struct InsertMany: TestOperation {
 
 /// Extension of `WriteModel` adding `Decodable` conformance.
 extension WriteModel: Decodable {
+    private enum CodingKeys: CodingKey {
+        case name, arguments
+    }
+
     private enum InsertOneKeys: CodingKey {
         case document
     }
@@ -282,10 +285,6 @@ extension WriteModel: Decodable {
 
     private enum UpdateKeys: CodingKey {
         case filter, update
-    }
-
-    private enum CodingKeys: CodingKey {
-        case name, arguments
     }
 
     public init(from decoder: Decoder) throws {
