@@ -188,19 +188,56 @@ functions:
             perl -p -i -e "s|ABSOLUTE_PATH_REPLACEMENT_TOKEN|${DRIVERS_TOOLS}|g" $filename
           done
 
-  "install dependencies":
+  "install swift":
     - command: shell.exec
       params:
         working_dir: "src"
         script: |
           ${PREPARE_SHELL}
-
           SWIFT_VERSION=${SWIFT_VERSION} \
-            sh ${PROJECT_DIRECTORY}/.evergreen/install-dependencies.sh
+            sh ${PROJECT_DIRECTORY}/.evergreen/install-swift.sh
+  
+  "format":
+    - command: shell.exec
+      type: test
+      params:
+        working_dir: "src"
+        script: |
+          ${PREPARE_SHELL}
+          SWIFT_VERSION=${SWIFT_VERSION} \
+            bash ${PROJECT_DIRECTORY}/.evergreen/install-tools.sh swiftformat
+          SWIFT_VERSION=${SWIFT_VERSION} \
+          ${PROJECT_DIRECTORY}/opt/swiftformat/.build/release/swiftformat --verbose --lint .
+  
+  "lint":
+    - command: shell.exec
+      type: test
+      params:
+        working_dir: "src"
+        script: |
+          ${PREPARE_SHELL}
+          SWIFT_VERSION=${SWIFT_VERSION} \
+            bash ${PROJECT_DIRECTORY}/.evergreen/install-tools.sh swiftlint
+          LINUX_SOURCEKIT_LIB_PATH=${PROJECT_DIRECTORY}/opt/swiftenv/versions/${SWIFT_VERSION}/usr/lib \
+            ${PROJECT_DIRECTORY}/opt/swiftlint/.build/release/swiftlint --strict --quiet
+  
+  "sourcery":
+    - command: shell.exec
+      type: test
+      params:
+        working_dir: "src"
+        script: |
+          ${PREPARE_SHELL}
+          SWIFT_VERSION=${SWIFT_VERSION} \
+            bash ${PROJECT_DIRECTORY}/.evergreen/install-tools.sh sourcery
+          make linuxmain SOURCERY=${PROJECT_DIRECTORY}/opt/sourcery/bin/sourcery
+          git diff --exit-code Tests/LinuxMain.swift
+          make exports SOURCERY=${PROJECT_DIRECTORY}/opt/sourcery/bin/sourcery
+          git diff --exit-code Sources/MongoSwiftSync/Exports.swift
 
 pre:
   - func: "fetch source"
-  - func: "install dependencies"
+  - func: "install swift"
 
 post:
   - func: "stop mongo-orchestration"
@@ -379,6 +416,18 @@ tasks:
       commands:
         - func: "run atlas tests"
 
+    - name: "check-format"
+      commands:
+      - func: "format"
+
+    - name: "check-lint"
+      commands:
+        - func: "lint"
+    
+    - name: "check-sourcery"
+      commands:
+        - func: "sourcery"
+
 axes:
   - id: versions
     display_name: MongoDB Version
@@ -541,3 +590,20 @@ buildvariants:
   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
   tasks:
     - ".atlas-connect"
+
+- matrix_name: "format-lint"
+  display_name: "Format and Lint"
+  matrix_spec:
+    os-fully-featured: "ubuntu-18.04"
+    swift-version: "5.3"
+  tasks:
+    - name: "check-format"
+    - name: "check-lint"
+
+- matrix_name: "check-sourcery"
+  display_name: "Check Sourcery"
+  matrix_spec:
+    os-fully-featured: "macos-10.14"
+    swift-version: "5.2"
+  tasks:
+    - name: "check-sourcery"
