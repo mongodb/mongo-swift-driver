@@ -272,19 +272,19 @@ extension WriteModel: Decodable {
     }
 
     private enum InsertOneKeys: CodingKey {
-        case session, document
+        case document
     }
 
     private enum DeleteKeys: CodingKey {
-        case session, filter
+        case filter
     }
 
     private enum ReplaceOneKeys: CodingKey {
-        case session, filter, replacement
+        case filter, replacement
     }
 
     private enum UpdateKeys: CodingKey {
-        case session, filter, update
+        case filter, update
     }
 
     public init(from decoder: Decoder) throws {
