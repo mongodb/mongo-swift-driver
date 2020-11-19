@@ -22,20 +22,12 @@ struct UnifiedTestRunner {
         case .single:
             return
         case .replicaSet:
-            let admin = self.internalClient.db("admin")
-            for address in MongoSwiftTestCase.getHosts() {
-                let isMaster = try admin.runCommand(["isMaster": 1], on: address)["ismaster"]!.boolValue!
-                if isMaster {
-                    // The test runner MAY ignore any command failure with error Interrupted(11601) to work around
-                    // SERVER-38335.
-                    do {
-                        _ = try admin.runCommand(["killAllSessions": []], on: address)
-                    } catch let commandError as MongoError.CommandError where commandError.code == 11601 {
-                        continue
-                    }
-                    return
-                }
-            }
+            // The test runner MAY ignore any command failure with error Interrupted(11601) to work around
+            // SERVER-38335.
+            do {
+                let opts = RunCommandOptions(readPreference: .secondary)
+                _ = try self.internalClient.db("admin").runCommand(["killAllSessions": []], options: opts)
+            } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
         case .sharded, .shardedReplicaSet:
             for address in MongoSwiftTestCase.getHosts() {
                 do {
@@ -101,8 +93,9 @@ struct UnifiedTestRunner {
                 if let initialData = file.initialData {
                     for collData in initialData {
                         let db = self.internalClient.db(collData.databaseName)
-                        let coll = db.collection(collData.collectionName)
-                        try coll.drop(options: DropCollectionOptions(writeConcern: .majority))
+                        let collOpts = MongoCollectionOptions(writeConcern: .majority)
+                        let coll = db.collection(collData.collectionName, options: collOpts)
+                        try coll.drop()
 
                         guard !collData.documents.isEmpty else {
                             _ = try db.createCollection(
@@ -112,7 +105,7 @@ struct UnifiedTestRunner {
                             continue
                         }
 
-                        try coll.insertMany(collData.documents, options: InsertManyOptions(writeConcern: .majority))
+                        try coll.insertMany(collData.documents)
                     }
                 }
 
