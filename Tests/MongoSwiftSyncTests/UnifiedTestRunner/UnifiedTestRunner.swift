@@ -25,7 +25,7 @@ struct UnifiedTestRunner {
             // The test runner MAY ignore any command failure with error Interrupted(11601) to work around
             // SERVER-38335.
             do {
-                let opts = RunCommandOptions(readPreference: .secondary)
+                let opts = RunCommandOptions(readPreference: .primary)
                 _ = try self.internalClient.db("admin").runCommand(["killAllSessions": []], options: opts)
             } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
         case .sharded, .shardedReplicaSet:
