@@ -417,7 +417,7 @@ extension TransactionsTests {
 extension UnifiedRunnerTests {
     static var allTests = [
         ("testSchemaVersion", testSchemaVersion),
-        ("testUnifiedTestDecoding", testUnifiedTestDecoding),
+        ("testSampleUnifiedTests", testSampleUnifiedTests),
         ("testStrictDecodableTypes", testStrictDecodableTypes),
     ]
 }
