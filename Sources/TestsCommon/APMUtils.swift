@@ -59,10 +59,10 @@ public class TestCommandMonitor: CommandEventHandler {
 }
 
 extension CommandEvent {
-    public enum EventType {
-        case commandStarted
-        case commandSucceeded
-        case commandFailed
+    public enum EventType: String, Decodable {
+        case commandStarted = "commandStartedEvent"
+        case commandSucceeded = "commandSucceededEvent"
+        case commandFailed = "commandFailedEvent"
     }
 
     /// The "type" of this event. Used for filtering events by their type.

@@ -36,14 +36,23 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         }
     }
 
-    func testUnifiedTestDecoding() throws {
-        expect(try retrieveSpecTestFiles(
+    func testSampleUnifiedTests() throws {
+        // unsupported driver APIs
+        let skipValidPassFiles = [
+            "poc-gridfs.json",
+            "poc-transactions-convenient-api.json"
+        ]
+        let validPassTests = try retrieveSpecTestFiles(
             specName: "unified-test-format",
             subdirectory: "valid-pass",
+            excludeFiles: skipValidPassFiles,
             asType: UnifiedTestFile.self
-        )).toNot(throwError())
+        ).map { $0.1 }
 
-        let skipValidFailTests = [
+        let runner = try UnifiedTestRunner()
+        try runner.runFiles(validPassTests)
+
+        let skipValidFailFiles = [
             // Because we use an enum to represent ReturnDocument, the invalid string present in this file "Invalid"
             // gives us a decoding error, and therefore we cannot decode it. Other drivers may not report an error
             // until runtime.
@@ -53,9 +62,11 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         expect(try retrieveSpecTestFiles(
             specName: "unified-test-format",
             subdirectory: "valid-fail",
-            excludeFiles: skipValidFailTests,
+            excludeFiles: skipValidFailFiles,
             asType: UnifiedTestFile.self
         )).toNot(throwError())
+
+        // TODO: run and assert valid fail tests fail
     }
 
     func testStrictDecodableTypes() throws {
