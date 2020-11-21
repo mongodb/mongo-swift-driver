@@ -202,6 +202,8 @@ enum Entity {
     case database(MongoDatabase)
     case collection(MongoCollection<BSONDocument>)
     case session(ClientSession)
+    case changeStream(ChangeStream<BSONDocument>)
+    case bson(BSON)
 
     func asTestClient() throws -> UnifiedTestClient {
         guard case let .client(client) = self else {
@@ -230,12 +232,28 @@ enum Entity {
         }
         return session
     }
+
+    func asChangeStream() throws -> ChangeStream<BSONDocument> {
+        guard case let .changeStream(cs) = self else {
+            throw TestError(message: "Failed to return entity \(self) as a change stream")
+        }
+        return cs
+    }
+
+    func asBSON() throws -> BSON {
+        guard case let .bson(bson) = self else {
+            throw TestError(message: "Failed to return entity \(self) as a BSON")
+        }
+        return bson
+    }
 }
+
+typealias EntityMap = [String: Entity]
 
 extension Array where Element == EntityDescription {
     /// Converts an array of entity descriptions from a test file into an entity map.
-    func toEntityMap() throws -> [String: Entity] {
-        var map = [String: Entity]()
+    func toEntityMap() throws -> EntityMap {
+        var map = EntityMap()
         for desc in self {
             switch desc {
             case let .client(clientDesc):
@@ -266,5 +284,41 @@ extension Array where Element == EntityDescription {
             }
         }
         return map
+    }
+}
+
+extension EntityMap {
+    func getEntity(from object: UnifiedOperation.Object) throws -> Entity {
+        try self.getEntity(id: object.asEntityId())
+    }
+
+    func getEntity(id: String) throws -> Entity {
+        guard let entity = self[id] else {
+            throw TestError(message: "No entity with id \(id) found in entity map")
+        }
+        return entity
+    }
+
+    func getEntityAsCollection(from object: UnifiedOperation.Object) throws -> MongoCollection<BSONDocument> {
+        try self.getEntity(from: object).asCollection()
+    }
+
+    func getEntityAsChangeStream(from object: UnifiedOperation.Object) throws -> ChangeStream<BSONDocument> {
+        try self.getEntity(from: object).asChangeStream()
+    }
+
+    func getEntityAsBSON(from object: UnifiedOperation.Object) throws -> BSON {
+        try self.getEntity(from: object).asBSON()
+    }
+
+    func getEntityAsSession(from object: UnifiedOperation.Object) throws -> ClientSession {
+        try self.getEntity(from: object).asSession()
+    }
+
+    func resolveSession(id: String?) throws -> ClientSession? {
+        guard let id = id else {
+            return nil
+        }
+        return try self.getEntity(id: id).asSession()
     }
 }

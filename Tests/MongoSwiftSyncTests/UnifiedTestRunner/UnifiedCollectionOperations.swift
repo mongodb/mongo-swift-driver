@@ -228,6 +228,15 @@ struct UnifiedInsertOne: UnifiedOperationProtocol {
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.options = try decoder.singleValueContainer().decode(InsertOneOptions.self)
     }
+
+    func execute(on object: UnifiedOperation.Object, entities: EntityMap) throws -> UnifiedOperationResult {
+        let collection = try entities.getEntityAsCollection(from: object)
+        let session = try entities.resolveSession(id: self.session)
+        guard let result = try collection.insertOne(self.document, options: self.options, session: session) else {
+            return .none
+        }
+        return .bson(.document(try BSONEncoder().encode(result)))
+    }
 }
 
 struct UnifiedInsertMany: UnifiedOperationProtocol {

@@ -61,8 +61,8 @@ struct UnifiedTestRunner {
                     continue
                 }
             }
-
-            for test in file.tests {
+            // TODO: SWIFT-913: run all tests
+            for test in file.tests[0..<1] {
                 // If test.skipReason is specified, the test runner MUST skip this test and MAY use the string value to
                 // log a message.
                 if let skipReason = test.skipReason {
@@ -109,7 +109,7 @@ struct UnifiedTestRunner {
                     }
                 }
 
-                let entityMap = try file.createEntities?.toEntityMap() ?? [:]
+                var entityMap = try file.createEntities?.toEntityMap() ?? [:]
 
                 // Workaround for SERVER-39704:  a test runners MUST execute a non-transactional distinct command on
                 // each mongos server before running any test that might execute distinct within a transaction. To ease
@@ -126,7 +126,39 @@ struct UnifiedTestRunner {
                     }
                 }
 
-                // TODO: execute operations here and perform assertions
+                for operation in test.operations {
+                    try operation.executeAndCheckResult(entities: &entityMap)
+                }
+
+                var clientEvents = [String: [CommandEvent]]()
+                // If any event listeners were enabled on any client entities, the test runner MUST now disable those
+                // event listeners.
+                for (id, client) in entityMap.compactMapValues({ try? $0.asTestClient() }) {
+                    clientEvents[id] = try client.stopCapturingEvents()
+                }
+
+                // TODO: disable fail points
+
+                if let expectEvents = test.expectEvents {
+                    for expectedEventList in expectEvents {
+                        let clientId = expectedEventList.client
+
+                        guard let actualEvents = clientEvents[clientId] else {
+                            throw TestError(message: "No client entity found with id \(clientId)")
+                        }
+
+                        guard try eventsMatch(
+                            expected: expectedEventList.events,
+                            actual: actualEvents,
+                            entities: entityMap
+                        ) else {
+                            throw TestError(
+                                message: "Events for client \(clientId) did not match: expected " +
+                                    "\(expectedEventList.events), actual: \(actualEvents)"
+                            )
+                        }
+                    }
+                }
             }
         }
     }
