@@ -85,7 +85,7 @@ func matchesInner(
 
         return true
     case .int32, .int64, .double:
-        return matchNumbers(expected: expected, actual: actual)
+        return matchesNumber(expected: expected, actual: actual)
     default:
         return actual == expected
     }
@@ -93,7 +93,7 @@ func matchesInner(
 
 /// When comparing numeric types (excluding Decimal128), test runners MUST consider 32-bit, 64-bit, and floating point
 /// numbers to be equal if their values are numerically equivalent.
-func matchNumbers(expected: BSON, actual: BSON?) -> Bool {
+func matchesNumber(expected: BSON, actual: BSON?) -> Bool {
     guard let actualDouble = actual?.toDouble() else {
         return false
     }
@@ -114,7 +114,7 @@ func matchesSpecial(operatorDoc: BSONDocument, actual: BSON?, entities: EntityMa
     case "$$exists":
         return value.boolValue! == (actual != nil)
     case "$$type":
-        return try typeMatches(expectedType: value, actual: actual)
+        return try matchesType(expectedType: value, actual: actual)
     case "$$matchesEntity":
         guard let id = value.stringValue else {
             throw TestError(
@@ -141,7 +141,7 @@ func matchesSpecial(operatorDoc: BSONDocument, actual: BSON?, entities: EntityMa
 }
 
 /// Determines whether `actual` satisfies the $$type operator value `expectedType`.
-func typeMatches(expectedType: BSON, actual: BSON?) throws -> Bool {
+func matchesType(expectedType: BSON, actual: BSON?) throws -> Bool {
     guard let actual = actual else {
         return false
     }
@@ -200,7 +200,7 @@ func typeMatches(expectedType: BSON, actual: BSON?) throws -> Bool {
 }
 
 /// Determiens the events in `actual` match the events in `expected`.
-func eventsMatch(expected: [ExpectedEvent], actual: [CommandEvent], entities: EntityMap) throws -> Bool {
+func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], entities: EntityMap) throws -> Bool {
     guard actual.count == expected.count else {
         return false
     }

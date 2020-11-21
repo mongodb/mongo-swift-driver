@@ -147,7 +147,7 @@ struct UnifiedTestRunner {
                             throw TestError(message: "No client entity found with id \(clientId)")
                         }
 
-                        guard try eventsMatch(
+                        guard try matchesEvents(
                             expected: expectedEventList.events,
                             actual: actualEvents,
                             entities: entityMap
