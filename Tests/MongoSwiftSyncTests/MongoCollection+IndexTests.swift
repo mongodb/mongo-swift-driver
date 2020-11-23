@@ -96,6 +96,10 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             options.bucketSize = 10
         }
 
+        if try _client!.serverVersion() >= ServerVersion(major: 4, minor: 4, patch: 0) {
+            options.hidden = false
+        }
+
         let model = IndexModel(keys: ["cat": 1, "_id": -1], options: options)
         expect(try self.coll.createIndex(model)).to(equal("testOptions"))
 
@@ -259,6 +263,7 @@ extension IndexOptions: Equatable {
             lhs.unique == rhs.unique &&
             lhs.version == rhs.version &&
             lhs.defaultLanguage == rhs.defaultLanguage &&
+            lhs.hidden == rhs.hidden &&
             lhs.languageOverride == rhs.languageOverride &&
             lhs.textIndexVersion == rhs.textIndexVersion &&
             lhs.weights == rhs.weights &&
