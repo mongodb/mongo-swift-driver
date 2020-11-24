@@ -97,7 +97,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         }
 
         if try _client!.serverVersion() >= ServerVersion(major: 4, minor: 4, patch: 0) {
-            options.hidden = false
+            options.hidden = true
         }
 
         let model = IndexModel(keys: ["cat": 1, "_id": -1], options: options)
