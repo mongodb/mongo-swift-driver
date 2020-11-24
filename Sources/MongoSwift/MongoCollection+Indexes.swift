@@ -59,6 +59,10 @@ public struct IndexOptions: Codable {
     /// Optionally specifies the length in time, in seconds, for documents to remain in a collection.
     public var expireAfterSeconds: Int?
 
+    /// Optionally specifies that the index should exist on the target collection but should not be used by the query
+    /// planner when executing operations. This option is only supported by servers >= 4.4.
+    public var hidden: Bool?
+
     /// Optionally specifies the field in the document to override the language.
     public var languageOverride: String?
 
@@ -114,6 +118,7 @@ public struct IndexOptions: Codable {
         bucketSize: Int? = nil,
         collation: BSONDocument? = nil,
         defaultLanguage: String? = nil,
+        hidden: Bool? = nil,
         expireAfterSeconds: Int? = nil,
         languageOverride: String? = nil,
         max: Double? = nil,
@@ -134,6 +139,7 @@ public struct IndexOptions: Codable {
         self.collation = collation
         self.defaultLanguage = defaultLanguage
         self.expireAfterSeconds = expireAfterSeconds
+        self.hidden = hidden
         self.languageOverride = languageOverride
         self.max = max
         self.min = min
@@ -149,7 +155,7 @@ public struct IndexOptions: Codable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case background, expireAfterSeconds, name, sparse, storageEngine, unique, version = "v",
+        case background, expireAfterSeconds, hidden, name, sparse, storageEngine, unique, version = "v",
              defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
              sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression,
              collation
