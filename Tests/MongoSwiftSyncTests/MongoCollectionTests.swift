@@ -275,9 +275,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     func testRenamed() throws {
         let encoder = BSONEncoder()
         let client = try MongoClient.makeTestClient()
-        let db = client.db("testRenxcgamedDB")
+        let db = client.db("testRenamedDB")
         defer { try? db.drop() }
-        let coll = try db.createCollection("testRenamesdfdColl")
+        let coll = try db.createCollection("testRenamedColl")
         let to = "newName"
         let expectedWriteConcern: WriteConcern = try WriteConcern(journal: true, w: .number(1))
 
