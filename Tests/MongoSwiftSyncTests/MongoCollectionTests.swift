@@ -272,6 +272,28 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(deleteManyResult).to(beNil())
     }
 
+    func testRenamed() throws {
+        let encoder = BSONEncoder()
+        let client = try MongoClient.makeTestClient()
+        let db = client.db("testRenxcgamedDB")
+        defer { try? db.drop() }
+        let coll = try db.createCollection("testRenamesdfdColl")
+        let to = "newName"
+        let expectedWriteConcern: WriteConcern = try WriteConcern(journal: true, w: .number(1))
+
+        let monitor = client.addCommandMonitor()
+        try monitor.captureEvents {
+            let opts = RenamedCollectionOptions(writeConcern: expectedWriteConcern)
+            expect(try coll.renamed(to, dropTarget: true, options: opts)).toNot(throwError())
+        }
+
+        let event = monitor.commandStartedEvents().first
+        expect(event).toNot(beNil())
+        expect(event?.command["renameCollection"]).toNot(beNil())
+        expect(event?.command["writeConcern"]?.documentValue).to(sortedEqual(try? encoder.encode(expectedWriteConcern)))
+        expect(event?.command["dropTarget"]).to(equal(true))
+    }
+
     func testReplaceOne() throws {
         let replaceOneResult = try coll.replaceOne(filter: ["_id": 1], replacement: ["apple": "banana"])
         expect(replaceOneResult?.matchedCount).to(equal(1))

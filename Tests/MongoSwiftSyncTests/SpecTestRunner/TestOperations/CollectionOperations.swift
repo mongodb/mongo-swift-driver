@@ -460,20 +460,14 @@ struct ReplaceOne: TestOperation {
 }
 
 struct RenameCollection: TestOperation {
-    let session: String?
     let to: String
 
     func execute(
         on collection: MongoCollection<BSONDocument>,
-        sessions: [String: ClientSession]
+        sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
-        let databaseName = collection.namespace.db
-        let cmd: BSONDocument = [
-            "renameCollection": .string(databaseName + "." + collection.name),
-            "to": .string(databaseName + "." + self.to)
-        ]
-        let reply = try collection._client.db("admin").runCommand(cmd, session: sessions[self.session ?? ""])
-        return TestOperationResult(from: reply)
+        try collection.renamed(self.to)
+        return nil
     }
 }
 

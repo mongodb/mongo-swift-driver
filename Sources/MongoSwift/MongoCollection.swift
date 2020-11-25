@@ -12,6 +12,21 @@ public struct DropCollectionOptions: Codable {
     }
 }
 
+/// Options to use when renaming a collection.
+public struct RenamedCollectionOptions: Codable {
+    /// Specifies a collation.
+    public var collation: BSONDocument?
+
+    /// An optional `WriteConcern` to use for the command.
+    public var writeConcern: WriteConcern?
+
+    /// Initializer allowing any/all parameters to be omitted.
+    public init(writeConcern: WriteConcern? = nil, collation: BSONDocument? = nil) {
+        self.collation = collation
+        self.writeConcern = writeConcern
+    }
+}
+
 // sourcery: skipSyncExport
 /// A MongoDB collection.
 public struct MongoCollection<T: Codable> {
@@ -48,6 +63,9 @@ public struct MongoCollection<T: Codable> {
         self.namespace.collection! // swiftlint:disable:this force_unwrapping
     }
 
+    /// The options used to initialize this `MongoCollection`.
+    public let options: MongoCollectionOptions?
+
     /// The `ReadConcern` set on this collection, or `nil` if one is not set.
     public let readConcern: ReadConcern?
 
@@ -62,6 +80,7 @@ public struct MongoCollection<T: Codable> {
     internal init(name: String, database: MongoDatabase, options: MongoCollectionOptions?) {
         self.namespace = MongoNamespace(db: database.name, collection: name)
         self._client = database._client
+        self.options = options
 
         // for both read concern and write concern, we look for a read concern in the following order:
         // 1. options provided for this collection
@@ -100,6 +119,41 @@ public struct MongoCollection<T: Codable> {
      */
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
         let operation = DropCollectionOperation(collection: self, options: options)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+    }
+
+    /**
+     * Renames this collection with the specified options.
+     *
+     * - Parameters:
+     *   - to: A `String`, the new name for the collection
+     *   - dropTarget: A `Bool`, indicating whether the target collection should be dropped prior to renaming it.
+     *                 The default value is false.
+     *   - options: Optional `RenamedCollectionOptions` to use for the collection
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns:
+     *    An `EventLoopFuture<MongoCollection>` evaluating to a copy of the target `MongoCollection` with the new name.
+     *
+     *    If the future evaluates to an error, it is likely one of the following:
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this databases's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
+     */
+    public func renamed(
+        _ to: String,
+        dropTarget: Bool = false,
+        options: RenamedCollectionOptions? = nil,
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<MongoCollection> {
+        let operation = RenamedCollectionOperation(
+            collection: self,
+            to: to,
+            dropTarget: dropTarget,
+            options: options
+        )
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 

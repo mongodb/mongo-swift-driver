@@ -209,6 +209,7 @@ extension MongoCollectionTests {
         ("testDeleteOneWithUnacknowledgedWriteConcern", testDeleteOneWithUnacknowledgedWriteConcern),
         ("testDeleteMany", testDeleteMany),
         ("testDeleteManyWithUnacknowledgedWriteConcern", testDeleteManyWithUnacknowledgedWriteConcern),
+        ("testRenamed", testRenamed),
         ("testReplaceOne", testReplaceOne),
         ("testReplaceOneWithUnacknowledgedWriteConcern", testReplaceOneWithUnacknowledgedWriteConcern),
         ("testUpdateOne", testUpdateOne),

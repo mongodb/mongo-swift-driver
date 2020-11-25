@@ -63,4 +63,40 @@ public struct MongoCollection<T: Codable> {
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) throws {
         try self.asyncColl.drop(options: options, session: session?.asyncSession).wait()
     }
+
+    /**
+     * Renames this collection with the specified options.
+     *
+     * - Parameters:
+     *   - to: A `String`, the new name for the collection
+     *   - dropTarget: A `Bool`, indicating whether the target collection should be dropped prior to renaming it.
+     *                 The default value is false.
+     *   - options: Optional `RenamedCollectionOptions` to use for the collection
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns:
+     *    An `EventLoopFuture<MongoCollection>` evaluating to a copy of the target `MongoCollection` with the new name.
+     *
+     *    If the future evaluates to an error, it is likely one of the following:
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this databases's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
+     */
+    public func renamed(
+        _ to: String,
+        dropTarget: Bool = false,
+        options: RenamedCollectionOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> MongoCollection {
+        let newAsyncColl = try self.asyncColl.renamed(
+            to,
+            dropTarget: dropTarget,
+            options: options,
+            session: session?.asyncSession
+        )
+        .wait()
+        return MongoCollection(client: self.client, asyncCollection: newAsyncColl)
+    }
 }
