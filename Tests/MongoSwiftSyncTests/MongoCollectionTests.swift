@@ -280,7 +280,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         try self.withTestNamespace { client, db, coll in
             let encoder = BSONEncoder()
-            let to = "newName"
+            let to = self.getCollectionName(suffix: "renamed")
             let expectedWriteConcern = try WriteConcern(journal: true, w: .number(1))
 
             // insert before rename
@@ -311,21 +311,19 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             print("Skipping test case \(self.name) because renameCollection is not compatible with sharded collections")
             return
         }
-        try self.withTestNamespace { _, db, _ in
-            let collName1 = self.getCollectionName(suffix: "renamed1")
-            let coll1 = try db.createCollection(collName1)
-            let to = "existingColl"
+        try self.withTestNamespace { _, db, coll in
+            let to = self.getCollectionName(suffix: "exists")
             let existingColl = try db.createCollection(to)
             try existingColl.insertMany([["doc1": "test1"], ["doc2": "test2"], ["doc1": "test3"]])
 
             let opts1 = RenameCollectionOptions(dropTarget: true)
             // renaming with an existing collection name but dropTarget set to true should not throw an error
-            expect(try coll1.renamed(to: to, options: opts1)).toNot(throwError())
+            expect(try coll.renamed(to: to, options: opts1)).toNot(throwError())
 
             // the existing collection should be dropped at this point
             expect(try existingColl.countDocuments()).to(equal(0))
 
-            let collName2 = self.getCollectionName(suffix: "renamed2")
+            let collName2 = self.getCollectionName(suffix: "coll2")
             let coll2 = try db.createCollection(collName2)
             let opts2 = RenameCollectionOptions(dropTarget: false)
             // test with drop target set to false and new collection name to existing collection throws an error
