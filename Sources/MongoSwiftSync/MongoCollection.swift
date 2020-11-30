@@ -65,10 +65,10 @@ public struct MongoCollection<T: Codable> {
     }
 
     /**
-     * Renames this collection with the specified options on the server. This method will return a handle to the
-     * renamed collection. The handle which this method is invoked on will continue to refer to the old collection,
-     * which will then be empty. The server will throw an error if the new name matches an existing collection unless
-     * the `dropTarget` option is set to true.
+     * Renames this collection on the server. This method will return a handle to the renamed collection. The handle
+     * which this method is invoked on will continue to refer to the old collection, which will then be empty.
+     * The server will throw an error if the new name matches an existing collection unless the `dropTarget` option
+     * is set to true.
      *
      * Note: This method is not supported on sharded collections.
      *

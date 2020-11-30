@@ -1,5 +1,31 @@
 import CLibMongoC
 
+/// Options to use when renaming a collection. These options will be used for `MongoCollection.renamed`.
+public struct RenameCollectionOptions: Codable {
+    /// Specifies whether an existing collection matching the new name should be dropped before the rename.
+    /// If this is not set to true and a collection with the new collection name exists, the server will throw an error.
+    public let dropTarget: Bool?
+
+    /// An optional `WriteConcern` to use for the command.
+    public var writeConcern: WriteConcern?
+
+    private enum CodingKeys: String, CodingKey {
+        case writeConcern
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.writeConcern = try container.decode(WriteConcern.self, forKey: .writeConcern)
+        self.dropTarget = false
+    }
+
+    /// Initializer allowing any/all parameters to be omitted.
+    public init(dropTarget: Bool = false, writeConcern: WriteConcern? = nil) {
+        self.dropTarget = dropTarget
+        self.writeConcern = writeConcern
+    }
+}
+
 /// An operation corresponding to a "createIndexes" command.
 internal struct RenameCollectionOperation<T: Codable>: Operation {
     private var collection: MongoCollection<T>

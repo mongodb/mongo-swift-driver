@@ -273,54 +273,52 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testRenamed() throws {
-        let encoder = BSONEncoder()
-        let client = try MongoClient.makeTestClient()
-        let db = client.db("testRenamedDB")
-        defer { try? db.drop() }
-        let coll = try db.createCollection("testRenamedColl")
-        let to = "newName"
-        let expectedWriteConcern = try WriteConcern(journal: true, w: .number(1))
+        try self.withTestNamespace { client, db, coll in
+            let encoder = BSONEncoder()
+            let to = "newName"
+            let expectedWriteConcern = try WriteConcern(journal: true, w: .number(1))
 
-        // insert before rename
-        try coll.insertMany([["doc1": "test1"], ["doc2": "test2"], ["doc1": "test3"]])
+            // insert before rename
+            try coll.insertMany([["doc1": "test1"], ["doc2": "test2"], ["doc1": "test3"]])
 
-        let monitor = client.addCommandMonitor()
-        try monitor.captureEvents {
-            let opts = RenameCollectionOptions(writeConcern: expectedWriteConcern)
-            expect(try coll.renamed(to: to, options: opts)).toNot(throwError())
+            let monitor = client.addCommandMonitor()
+            try monitor.captureEvents {
+                let opts = RenameCollectionOptions(writeConcern: expectedWriteConcern)
+                expect(try coll.renamed(to: to, options: opts)).toNot(throwError())
+            }
+
+            // ensure a collection with the new name exists with the documents
+            expect(try db.collection(to).countDocuments()).to(equal(3))
+
+            let event = monitor.commandStartedEvents().first
+            expect(event).toNot(beNil())
+            expect(event?.command["renameCollection"]).toNot(beNil())
+            expect(event?.command["writeConcern"]?.documentValue)
+                .to(sortedEqual(try? encoder.encode(expectedWriteConcern)))
         }
-
-        // ensure a collection with the new name exists with the documents
-        expect(try db.collection(to).countDocuments()).to(equal(3))
-
-        let event = monitor.commandStartedEvents().first
-        expect(event).toNot(beNil())
-        expect(event?.command["renameCollection"]).toNot(beNil())
-        expect(event?.command["writeConcern"]?.documentValue).to(sortedEqual(try? encoder.encode(expectedWriteConcern)))
     }
 
     func testRenamedWithDropTarget() throws {
-        let client = try MongoClient.makeTestClient()
-        let db = client.db("testRenamedDB")
-        defer { try? db.drop() }
-        let collName1 = "testRenamedColl1"
-        let coll1 = try db.createCollection(collName1)
-        let to = "existingColl"
-        let existingColl = try db.createCollection(to)
-        try existingColl.insertMany([["doc1": "test1"], ["doc2": "test2"], ["doc1": "test3"]])
+        try self.withTestNamespace { _, db, _ in
+            let collName1 = self.getCollectionName(suffix: "renamed1")
+            let coll1 = try db.createCollection(collName1)
+            let to = "existingColl"
+            let existingColl = try db.createCollection(to)
+            try existingColl.insertMany([["doc1": "test1"], ["doc2": "test2"], ["doc1": "test3"]])
 
-        let opts1 = RenameCollectionOptions(dropTarget: true)
-        // renaming with an existing collection name but dropTarget set to true should not throw an error
-        expect(try coll1.renamed(to: to, options: opts1)).toNot(throwError())
+            let opts1 = RenameCollectionOptions(dropTarget: true)
+            // renaming with an existing collection name but dropTarget set to true should not throw an error
+            expect(try coll1.renamed(to: to, options: opts1)).toNot(throwError())
 
-        // the existing collection should be dropped at this point
-        expect(try existingColl.countDocuments()).to(equal(0))
+            // the existing collection should be dropped at this point
+            expect(try existingColl.countDocuments()).to(equal(0))
 
-        let collName2 = "testRenamedColl2"
-        let coll2 = try db.createCollection(collName2)
-        let opts2 = RenameCollectionOptions(dropTarget: false)
-        // test with drop target set to false and new collection name to existing collection throws an error
-        expect(try coll2.renamed(to: to, options: opts2)).to(throwError(errorType: MongoError.CommandError.self))
+            let collName2 = self.getCollectionName(suffix: "renamed2")
+            let coll2 = try db.createCollection(collName2)
+            let opts2 = RenameCollectionOptions(dropTarget: false)
+            // test with drop target set to false and new collection name to existing collection throws an error
+            expect(try coll2.renamed(to: to, options: opts2)).to(throwError(errorType: MongoError.CommandError.self))
+        }
     }
 
     func testReplaceOne() throws {

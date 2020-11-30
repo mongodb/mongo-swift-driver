@@ -12,33 +12,6 @@ public struct DropCollectionOptions: Codable {
     }
 }
 
-/// Options to use when renaming a collection.
-public struct RenameCollectionOptions: Codable {
-    /// Specifies whether an existing collection matching the new name should be dropped before the rename.
-    /// If this is not set to true and a collection with the new collection name exists, the server will throw an error.
-    /// The default value is false.
-    public let dropTarget: Bool
-
-    /// An optional `WriteConcern` to use for the command.
-    public var writeConcern: WriteConcern?
-
-    private enum CodingKeys: String, CodingKey {
-        case writeConcern
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.writeConcern = try container.decode(WriteConcern.self, forKey: .writeConcern)
-        self.dropTarget = false
-    }
-
-    /// Initializer allowing any/all parameters to be omitted.
-    public init(dropTarget: Bool = false, writeConcern: WriteConcern? = nil) {
-        self.dropTarget = dropTarget
-        self.writeConcern = writeConcern
-    }
-}
-
 // sourcery: skipSyncExport
 /// A MongoDB collection.
 public struct MongoCollection<T: Codable> {
@@ -141,10 +114,10 @@ public struct MongoCollection<T: Codable> {
     }
 
     /**
-     * Renames this collection with the specified options on the server. This method will return a handle to the
-     * renamed collection. The handle which this method is invoked on will continue to refer to the old collection,
-     * which will then be empty. The server will throw an error if the new name matches an existing collection unless
-     * the `dropTarget` option is set to true.
+     * Renames this collection on the server. This method will return a handle to the renamed collection. The handle
+     * which this method is invoked on will continue to refer to the old collection, which will then be empty.
+     * The server will throw an error if the new name matches an existing collection unless the `dropTarget` option
+     * is set to true.
      *
      * Note: This method is not supported on sharded collections.
      *
