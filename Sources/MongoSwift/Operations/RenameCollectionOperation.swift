@@ -4,7 +4,7 @@ import CLibMongoC
 public struct RenameCollectionOptions: Codable {
     /// Specifies whether an existing collection matching the new name should be dropped before the rename.
     /// If this is not set to true and a collection with the new collection name exists, the server will throw an error.
-    public let dropTarget: Bool?
+    public var dropTarget: Bool?
 
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
@@ -28,34 +28,31 @@ public struct RenameCollectionOptions: Codable {
 
 /// An operation corresponding to a "createIndexes" command.
 internal struct RenameCollectionOperation<T: Codable>: Operation {
-    private var collection: MongoCollection<T>
-    private let to: String
+    private let collection: MongoCollection<T>
+    private let newName: String
     private let options: RenameCollectionOptions?
 
     internal init(
         collection: MongoCollection<T>,
-        to: String,
+        newName: String,
         options: RenameCollectionOptions? = nil
     ) {
         self.collection = collection
-        self.to = to
+        self.newName = newName
         self.options = options
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> MongoCollection<T> {
         let opts = try encodeOptions(options: options, session: session)
         var error = bson_error_t()
-        var dropTarget = false
-        if let dt = options?.dropTarget {
-            dropTarget = dt
-        }
+        let dropTarget = self.options?.dropTarget ?? false
 
         return try self.collection.withMongocCollection(from: connection) { collPtr in
             try withOptionalBSONPointer(to: opts) { optsPtr in
                 let success = mongoc_collection_rename_with_opts(
                     collPtr,
                     self.collection.namespace.db,
-                    self.to,
+                    self.newName,
                     dropTarget,
                     optsPtr,
                     &error
@@ -65,7 +62,7 @@ internal struct RenameCollectionOperation<T: Codable>: Operation {
                     throw extractMongoError(error: error)
                 }
 
-                return MongoCollection(copying: self.collection, name: self.to)
+                return MongoCollection(copying: self.collection, name: self.newName)
             }
         }
     }

@@ -84,16 +84,16 @@ public struct MongoCollection<T: Codable> {
      *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
      *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `MongoError.LogicError` if the provided session is inactive.
-     *    - `MongoError.LogicError` if this databases's parent client has already been closed.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func renamed(
-        to: String,
+        to newName: String,
         options: RenameCollectionOptions? = nil,
         session: ClientSession? = nil
     ) throws -> MongoCollection {
         let newAsyncColl = try self.asyncColl.renamed(
-            to: to,
+            to: newName,
             options: options,
             session: session?.asyncSession
         )

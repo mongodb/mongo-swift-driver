@@ -273,6 +273,11 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testRenamed() throws {
+        guard MongoSwiftTestCase.topologyType != .sharded else {
+            print("Skipping test case \(self.name) because renameCollection is not compatible with sharded collections")
+            return
+        }
+
         try self.withTestNamespace { client, db, coll in
             let encoder = BSONEncoder()
             let to = "newName"
@@ -290,6 +295,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             // ensure a collection with the new name exists with the documents
             expect(try db.collection(to).countDocuments()).to(equal(3))
 
+            // the old collection should be empty
+            expect(try coll.countDocuments()).to(equal(0))
+
             let event = monitor.commandStartedEvents().first
             expect(event).toNot(beNil())
             expect(event?.command["renameCollection"]).toNot(beNil())
@@ -299,6 +307,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
     }
 
     func testRenamedWithDropTarget() throws {
+        guard MongoSwiftTestCase.topologyType != .sharded else {
+            print("Skipping test case \(self.name) because renameCollection is not compatible with sharded collections")
+            return
+        }
         try self.withTestNamespace { _, db, _ in
             let collName1 = self.getCollectionName(suffix: "renamed1")
             let coll1 = try db.createCollection(collName1)

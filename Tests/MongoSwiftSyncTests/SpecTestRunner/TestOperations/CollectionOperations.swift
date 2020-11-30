@@ -460,13 +460,14 @@ struct ReplaceOne: TestOperation {
 }
 
 struct RenameCollection: TestOperation {
+    let session: String?
     let to: String
 
     func execute(
         on collection: MongoCollection<BSONDocument>,
-        sessions _: [String: ClientSession]
+        sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
-        _ = try collection.renamed(to: self.to)
+        _ = try collection.renamed(to: self.to, session: sessions[self.session ?? ""])
         return nil
     }
 }
