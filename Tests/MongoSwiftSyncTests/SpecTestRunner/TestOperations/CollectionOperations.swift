@@ -466,7 +466,7 @@ struct RenameCollection: TestOperation {
         on collection: MongoCollection<BSONDocument>,
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
-        try collection.renamed(self.to)
+        _ = try collection.renamed(to: self.to)
         return nil
     }
 }

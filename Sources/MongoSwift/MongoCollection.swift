@@ -13,16 +13,28 @@ public struct DropCollectionOptions: Codable {
 }
 
 /// Options to use when renaming a collection.
-public struct RenamedCollectionOptions: Codable {
-    /// Specifies a collation.
-    public var collation: BSONDocument?
+public struct RenameCollectionOptions: Codable {
+    /// Specifies whether an existing collection matching the new name should be dropped before the rename.
+    /// If this is not set to true and a collection with the new collection name exists, the server will throw an error.
+    /// The default value is false.
+    public let dropTarget: Bool
 
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
 
+    private enum CodingKeys: String, CodingKey {
+        case writeConcern
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.writeConcern = try container.decode(WriteConcern.self, forKey: .writeConcern)
+        self.dropTarget = false
+    }
+
     /// Initializer allowing any/all parameters to be omitted.
-    public init(writeConcern: WriteConcern? = nil, collation: BSONDocument? = nil) {
-        self.collation = collation
+    public init(dropTarget: Bool = false, writeConcern: WriteConcern? = nil) {
+        self.dropTarget = dropTarget
         self.writeConcern = writeConcern
     }
 }
@@ -63,9 +75,6 @@ public struct MongoCollection<T: Codable> {
         self.namespace.collection! // swiftlint:disable:this force_unwrapping
     }
 
-    /// The options used to initialize this `MongoCollection`.
-    public let options: MongoCollectionOptions?
-
     /// The `ReadConcern` set on this collection, or `nil` if one is not set.
     public let readConcern: ReadConcern?
 
@@ -80,7 +89,6 @@ public struct MongoCollection<T: Codable> {
     internal init(name: String, database: MongoDatabase, options: MongoCollectionOptions?) {
         self.namespace = MongoNamespace(db: database.name, collection: name)
         self._client = database._client
-        self.options = options
 
         // for both read concern and write concern, we look for a read concern in the following order:
         // 1. options provided for this collection
@@ -103,6 +111,16 @@ public struct MongoCollection<T: Codable> {
         self.decoder = BSONDecoder(copies: database.decoder, options: options)
     }
 
+    internal init(copying other: MongoCollection<T>, name: String) {
+        self.namespace = MongoNamespace(db: other.namespace.db, collection: name)
+        self._client = other._client
+        self.readConcern = other.readConcern
+        self.writeConcern = other.writeConcern
+        self.readPreference = other.readPreference
+        self.encoder = other.encoder
+        self.decoder = other.decoder
+    }
+
     /**
      *   Drops this collection from its parent database.
      * - Parameters:
@@ -123,13 +141,16 @@ public struct MongoCollection<T: Codable> {
     }
 
     /**
-     * Renames this collection with the specified options.
+     * Renames this collection with the specified options on the server. This method will return a handle to the
+     * renamed collection. The handle which this method is invoked on will continue to refer to the old collection,
+     * which will then be empty. The server will throw an error if the new name matches an existing collection unless
+     * the `dropTarget` option is set to true.
+     *
+     * Note: This method is not supported on sharded collections.
      *
      * - Parameters:
      *   - to: A `String`, the new name for the collection
-     *   - dropTarget: A `Bool`, indicating whether the target collection should be dropped prior to renaming it.
-     *                 The default value is false.
-     *   - options: Optional `RenamedCollectionOptions` to use for the collection
+     *   - options: Optional `RenameCollectionOptions` to use for the collection
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns:
@@ -143,15 +164,13 @@ public struct MongoCollection<T: Codable> {
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      */
     public func renamed(
-        _ to: String,
-        dropTarget: Bool = false,
-        options: RenamedCollectionOptions? = nil,
+        to: String,
+        options: RenameCollectionOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<MongoCollection> {
-        let operation = RenamedCollectionOperation(
+        let operation = RenameCollectionOperation(
             collection: self,
             to: to,
-            dropTarget: dropTarget,
             options: options
         )
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
