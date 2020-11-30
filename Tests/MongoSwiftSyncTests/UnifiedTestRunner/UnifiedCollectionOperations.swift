@@ -230,7 +230,7 @@ struct UnifiedInsertOne: UnifiedOperationProtocol {
     }
 
     func execute(on object: UnifiedOperation.Object, entities: EntityMap) throws -> UnifiedOperationResult {
-        let collection = try entities.getEntityAsCollection(from: object)
+        let collection = try entities.getEntity(from: object).asCollection()
         let session = try entities.resolveSession(id: self.session)
         guard let result = try collection.insertOne(self.document, options: self.options, session: session) else {
             return .none

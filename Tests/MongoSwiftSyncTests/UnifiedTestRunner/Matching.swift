@@ -1,16 +1,51 @@
 import MongoSwiftSync
 import TestsCommon
 
+/// Enum representing types that can be matched against expected values.
+enum MatchableResult {
+    /// A root document. i.e. a documents where extra keys are ignored when matching against an expected document.
+    case rootDocument(BSONDocument)
+    /// An array of root documents.
+    case rootDocumentArray([BSONDocument])
+    /// A (non-root) document.
+    case document(BSONDocument)
+    /// An array of BSONs.
+    case array([BSON])
+    /// A non-document, non-array BSON.
+    case scalar(BSON)
+    /// A nil result.
+    case none
+
+    /// Initializes an instance of `MatchableResult` from a `BSON`.
+    init(from bson: BSON?) {
+        guard let bson = bson else {
+            self = .none
+            return
+        }
+        switch bson {
+        case let .document(doc):
+            self = .document(doc)
+        case let .array(arr):
+            self = .array(arr)
+        default:
+            self = .scalar(bson)
+        }
+    }
+}
+
 extension UnifiedOperationResult {
-    /// Determines whether this result matches `expected`. `opReturnsRootDocs` should be set to `true` if this result
-    /// was obtained from an operation that returns root documents.
-    func matches(expected: BSON, entities: EntityMap, opReturnsRootDocs: Bool) throws -> Bool {
-        let actual: BSON?
+    /// Determines whether this result matches `expected`.
+    func matches(expected: BSON, entities: EntityMap) throws -> Bool {
+        let actual: MatchableResult
         switch self {
         case let .bson(bson):
-            actual = bson
+            actual = MatchableResult(from: bson)
+        case let .rootDocument(doc):
+            actual = .rootDocument(doc)
+        case let .rootDocumentArray(arr):
+            actual = .rootDocumentArray(arr)
         case .none:
-            actual = nil
+            actual = .none
         default:
             return false
         }
@@ -18,22 +53,16 @@ extension UnifiedOperationResult {
         return try matchesInner(
             expected: expected,
             actual: actual,
-            entities: entities,
-            isRoot: true,
-            containsRootDocs: opReturnsRootDocs
+            entities: entities
         )
     }
 }
 
-/// Determines whether `actual` matches `expected`, recursing if needed for nested documents and arrays. `isRoot`
-/// should be set to `true` if `expected` is a root document per the spec. `containsRootDocs` should be set to true if
-/// `expected` is a top-level array which contains root documents.
-func matchesInner(
+/// Determines whether `actual` matches `expected`, recursing if needed for nested documents and arrays.
+private func matchesInner(
     expected: BSON,
-    actual: BSON?,
-    entities: EntityMap,
-    isRoot: Bool = false,
-    containsRootDocs: Bool = false
+    actual: MatchableResult,
+    entities: EntityMap
 ) throws -> Bool {
     switch expected {
     case let .document(expectedDoc):
@@ -41,20 +70,20 @@ func matchesInner(
             return try matchesSpecial(operatorDoc: expectedDoc, actual: actual, entities: entities)
         }
 
-        // The only case in which nil is an acceptable value is if the expected document is a special operator;
-        // otherwise, the two documents do not match.
-        guard let actualDoc = actual?.documentValue else {
+        switch actual {
+        case let .rootDocument(actualDoc), let .document(actualDoc):
+            for (k, v) in expectedDoc {
+                let actualValue = MatchableResult(from: actualDoc[k])
+                guard try matchesInner(expected: v, actual: actualValue, entities: entities) else {
+                    return false
+                }
+            }
+        default:
             return false
         }
 
-        for (k, v) in expectedDoc {
-            guard try matchesInner(expected: v, actual: actualDoc[k], entities: entities) else {
-                return false
-            }
-        }
-
         // Documents that are not the root-level document should not contain extra keys.
-        if !isRoot {
+        if case let .document(actualDoc) = actual {
             for k in actualDoc.keys {
                 guard expectedDoc.keys.contains(k) else {
                     return false
@@ -64,21 +93,23 @@ func matchesInner(
 
         return true
     case let .array(expectedArray):
-        guard let actualArray = actual?.arrayValue else {
+        let actualElts: [MatchableResult]
+
+        switch actual {
+        case let .rootDocumentArray(rootArray):
+            actualElts = rootArray.map { .rootDocument($0) }
+        case let .array(array):
+            actualElts = array.map { MatchableResult(from: $0) }
+        default:
             return false
         }
 
-        guard actualArray.count == expectedArray.count else {
+        guard actualElts.count == expectedArray.count else {
             return false
         }
 
-        for (actualElt, expectedElt) in zip(actualArray, expectedArray) {
-            guard try matchesInner(
-                expected: expectedElt,
-                actual: actualElt,
-                entities: entities,
-                isRoot: containsRootDocs
-            ) else {
+        for (actualElt, expectedElt) in zip(actualElts, expectedArray) {
+            guard try matchesInner(expected: expectedElt, actual: actualElt, entities: entities) else {
                 return false
             }
         }
@@ -87,17 +118,27 @@ func matchesInner(
     case .int32, .int64, .double:
         return matchesNumber(expected: expected, actual: actual)
     default:
-        return actual == expected
+        // if we made it here, the expected value is a non-document, non-array BSON, so we should expect `actual` to be
+        // a scalar value too.
+        guard case let .scalar(bson) = actual else {
+            return false
+        }
+        return bson == expected
     }
 }
 
 /// When comparing numeric types (excluding Decimal128), test runners MUST consider 32-bit, 64-bit, and floating point
 /// numbers to be equal if their values are numerically equivalent.
-func matchesNumber(expected: BSON, actual: BSON?) -> Bool {
-    guard let actualDouble = actual?.toDouble() else {
+func matchesNumber(expected: BSON, actual: MatchableResult) -> Bool {
+    guard case let .scalar(bson) = actual else {
         return false
     }
-    return actualDouble == expected.toDouble()!
+    guard let actualDouble = bson.toDouble() else {
+        return false
+    }
+
+    // fuzzy equals in case of e.g. rounding errors
+    return abs(actualDouble - expected.toDouble()!) < 0.0001
 }
 
 extension BSONDocument {
@@ -108,98 +149,107 @@ extension BSONDocument {
 }
 
 /// Determines whether `actual` satisfies the special matching operator in the provided `operatorDoc`.
-func matchesSpecial(operatorDoc: BSONDocument, actual: BSON?, entities: EntityMap) throws -> Bool {
+func matchesSpecial(operatorDoc: BSONDocument, actual: MatchableResult, entities: EntityMap) throws -> Bool {
     let (op, value) = operatorDoc.first!
     switch op {
     case "$$exists":
-        return value.boolValue! == (actual != nil)
-    case "$$type":
-        return try matchesType(expectedType: value, actual: actual)
-    case "$$matchesEntity":
-        guard let id = value.stringValue else {
-            throw TestError(
-                message: "Expected $$matchesEntity to be a string, got \(value) with type \(type(of: value))"
-            )
+        let shouldExist = value.boolValue!
+        switch actual {
+        case .none:
+            return !shouldExist
+        default:
+            return shouldExist
         }
+    case "$$type":
+        return matchesType(expectedType: value, actual: actual)
+    case "$$matchesEntity":
+        let id = value.stringValue!
         let entity = try entities.getEntity(id: id).asBSON()
         return try matchesInner(expected: entity, actual: actual, entities: entities)
     case "$$matchesHexBytes":
         throw TestError(message: "Unsupported special operator $$matchesHexBytes")
     case "$$unsetOrMatches":
-        return try actual == nil || matchesInner(expected: value, actual: actual, entities: entities)
-    case "$$sessionLsid":
-        guard let id = value.stringValue else {
-            throw TestError(
-                message: "Expected $$sessionLsid to be a string, got \(value) with type \(type(of: value))"
-            )
+        if case .none = actual {
+            return true
         }
+        return try matchesInner(expected: value, actual: actual, entities: entities)
+    case "$$sessionLsid":
+        guard case let .document(actualDoc) = actual else {
+            return false
+        }
+        let id = value.stringValue!
         let session = try entities.getEntity(id: id).asSession()
-        return actual?.documentValue == session.id
+        return actualDoc == session.id
     default:
-        throw TestError(message: "Unrecognized special operator \(op)")
+        fatalError("Unrecognized special operator \(op)")
     }
 }
 
 /// Determines whether `actual` satisfies the $$type operator value `expectedType`.
-func matchesType(expectedType: BSON, actual: BSON?) throws -> Bool {
-    guard let actual = actual else {
+func matchesType(expectedType: BSON, actual: MatchableResult) -> Bool {
+    let actualType: BSONType
+    switch actual {
+    case .none:
         return false
+    case .document, .rootDocument:
+        actualType = .document
+    case .array, .rootDocumentArray:
+        actualType = .array
+    case let .scalar(bson):
+        actualType = bson.type
     }
-    guard let typeString = expectedType.stringValue else {
-        throw TestError(
-            message: "Expected $$type to be a string, got \(expectedType) with type \(type(of: expectedType))"
-        )
-    }
+
+    let typeString = expectedType.stringValue!
     // aliases from https://docs.mongodb.com/manual/reference/operator/query/type/#available-types
     switch typeString {
     case "double":
-        return actual.type == .double
+        return actualType == .double
     case "string":
-        return actual.type == .string
+        return actualType == .string
     case "object":
-        return actual.type == .document
+        return actualType == .document
     case "array":
-        return actual.type == .array
+        return actualType == .array
     case "binData":
-        return actual.type == .binary
+        return actualType == .binary
     case "undefined":
-        return actual.type == .undefined
+        return actualType == .undefined
     case "objectId":
-        return actual.type == .objectID
+        return actualType == .objectID
     case "bool":
-        return actual.type == .bool
+        return actualType == .bool
     case "date":
-        return actual.type == .datetime
+        return actualType == .datetime
     case "null":
-        return actual.type == .null
+        return actualType == .null
     case "regex":
-        return actual.type == .regex
+        return actualType == .regex
     case "dbPointer":
-        return actual.type == .dbPointer
+        return actualType == .dbPointer
     case "javascript":
-        return actual.type == .code
+        return actualType == .code
     case "symbol":
-        return actual.type == .symbol
+        return actualType == .symbol
     case "javascriptWithScope":
-        return actual.type == .codeWithScope
+        return actualType == .codeWithScope
     case "int":
-        return actual.type == .int32
+        return actualType == .int32
     case "timestamp":
-        return actual.type == .timestamp
+        return actualType == .timestamp
     case "long":
-        return actual.type == .int64
+        return actualType == .int64
     case "decimal":
-        return actual.type == .decimal128
+        return actualType == .decimal128
     case "minKey":
-        return actual.type == .minKey
+        return actualType == .minKey
     case "maxKey":
-        return actual.type == .maxKey
+        return actualType == .maxKey
     default:
-        throw TestError(message: "Unrecognized $$typeMatches value \(typeString)")
+        fatalError("Unrecognized $$typeMatches value \(typeString)")
     }
 }
 
-/// Determiens the events in `actual` match the events in `expected`.
+/// Determines if the events in `actual` match the events in `expected`.
 func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], entities: EntityMap) throws -> Bool {
     guard actual.count == expected.count else {
         return false
@@ -217,9 +267,8 @@ func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], entities: 
             if let expectedCommand = expectedStarted.command {
                 guard try matchesInner(
                     expected: .document(expectedCommand),
-                    actual: .document(actualStarted.command),
-                    entities: entities,
-                    isRoot: true
+                    actual: .rootDocument(actualStarted.command),
+                    entities: entities
                 ) else {
                     return false
                 }
@@ -240,9 +289,8 @@ func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], entities: 
             if let expectedReply = expectedSucceeded.reply {
                 guard try matchesInner(
                     expected: .document(expectedReply),
-                    actual: .document(actualSucceeded.reply),
-                    entities: entities,
-                    isRoot: true
+                    actual: .rootDocument(actualSucceeded.reply),
+                    entities: entities
                 ) else {
                     return false
                 }

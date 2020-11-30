@@ -7,17 +7,11 @@ protocol UnifiedOperationProtocol: Decodable {
     /// Set of supported arguments for the operation.
     static var knownArguments: Set<String> { get }
 
-    /// Indicates whether this operation returns an array of root documents. This is used when determining how to match
-    /// against the operation's expected result.
-    static var returnsRootDocuments: Bool { get }
-
     /// Executes this operation on the provided object, using entities from `entities`.
     func execute(on object: UnifiedOperation.Object, entities: EntityMap) throws -> UnifiedOperationResult
 }
 
 extension UnifiedOperationProtocol {
-    static var returnsRootDocuments: Bool { false }
-
     // TODO: SWIFT-913: remove once this method is implemented for all operations
     func execute(on _: UnifiedOperation.Object, entities _: EntityMap) throws -> UnifiedOperationResult {
         throw TestError(message: "operation type \(Self.self) unimplemented")
@@ -27,6 +21,8 @@ extension UnifiedOperationProtocol {
 enum UnifiedOperationResult {
     case changeStream(ChangeStream<BSONDocument>)
     case bson(BSON)
+    case rootDocument(BSONDocument)
+    case rootDocumentArray([BSONDocument])
     case none
 
     func asEntity() throws -> Entity {
@@ -35,6 +31,10 @@ enum UnifiedOperationResult {
             return .changeStream(cs)
         case let .bson(bson):
             return .bson(bson)
+        case let .rootDocument(document):
+            return .bson(.document(document))
+        case let .rootDocumentArray(arr):
+            return .bson(.array(arr.map { .document($0) }))
         case .none:
             throw TestError(message: "Cannot convert result type .none to an entity")
         }
@@ -94,11 +94,7 @@ struct UnifiedOperation: Decodable {
                 entities[entityId] = try actualResult.asEntity()
             }
             if let expected = expected {
-                guard try actualResult.matches(
-                    expected: expected,
-                    entities: entities,
-                    opReturnsRootDocs: type(of: self.operation).returnsRootDocuments
-                ) else {
+                guard try actualResult.matches(expected: expected, entities: entities) else {
                     throw TestError(message: "Results did not match. Actual: \(actualResult), expected: \(expected)")
                 }
             }

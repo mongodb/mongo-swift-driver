@@ -299,22 +299,6 @@ extension EntityMap {
         return entity
     }
 
-    func getEntityAsCollection(from object: UnifiedOperation.Object) throws -> MongoCollection<BSONDocument> {
-        try self.getEntity(from: object).asCollection()
-    }
-
-    func getEntityAsChangeStream(from object: UnifiedOperation.Object) throws -> ChangeStream<BSONDocument> {
-        try self.getEntity(from: object).asChangeStream()
-    }
-
-    func getEntityAsBSON(from object: UnifiedOperation.Object) throws -> BSON {
-        try self.getEntity(from: object).asBSON()
-    }
-
-    func getEntityAsSession(from object: UnifiedOperation.Object) throws -> ClientSession {
-        try self.getEntity(from: object).asSession()
-    }
-
     func resolveSession(id: String?) throws -> ClientSession? {
         guard let id = id else {
             return nil

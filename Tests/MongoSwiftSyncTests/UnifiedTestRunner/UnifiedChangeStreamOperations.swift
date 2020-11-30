@@ -52,10 +52,10 @@ struct IterateUntilDocumentOrError: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
     func execute(on object: UnifiedOperation.Object, entities: EntityMap) throws -> UnifiedOperationResult {
-        let cs = try entities.getEntityAsChangeStream(from: object)
+        let cs = try entities.getEntity(from: object).asChangeStream()
         guard let next = cs.next() else {
             throw TestError(message: "Change stream unexpectedly exhausted")
         }
-        return .bson(.document(try next.get()))
+        return .rootDocument(try next.get())
     }
 }
