@@ -359,7 +359,7 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
 // Write command results structs
 
 /// The result of an `insertOne` command on a `MongoCollection`.
-public struct InsertOneResult: Decodable {
+public struct InsertOneResult: Codable {
     /// The identifier that was inserted. If the document doesn't have an identifier, this value
     /// will be generated and added to the document before insertion.
     public let insertedID: BSON

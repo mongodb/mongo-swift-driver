@@ -6,6 +6,39 @@ import TestsCommon
 protocol UnifiedOperationProtocol: Decodable {
     /// Set of supported arguments for the operation.
     static var knownArguments: Set<String> { get }
+
+    /// Executes this operation on the provided object, using entities from `entities`.
+    func execute(on object: UnifiedOperation.Object, entities: EntityMap) throws -> UnifiedOperationResult
+}
+
+extension UnifiedOperationProtocol {
+    // TODO: SWIFT-913: remove once this method is implemented for all operations
+    func execute(on _: UnifiedOperation.Object, entities _: EntityMap) throws -> UnifiedOperationResult {
+        throw TestError(message: "operation type \(Self.self) unimplemented")
+    }
+}
+
+enum UnifiedOperationResult {
+    case changeStream(ChangeStream<BSONDocument>)
+    case bson(BSON)
+    case rootDocument(BSONDocument)
+    case rootDocumentArray([BSONDocument])
+    case none
+
+    func asEntity() throws -> Entity {
+        switch self {
+        case let .changeStream(cs):
+            return .changeStream(cs)
+        case let .bson(bson):
+            return .bson(bson)
+        case let .rootDocument(document):
+            return .bson(.document(document))
+        case let .rootDocumentArray(arr):
+            return .bson(.array(arr.map { .document($0) }))
+        case .none:
+            throw TestError(message: "Cannot convert result type .none to an entity")
+        }
+    }
 }
 
 struct UnifiedOperation: Decodable {
@@ -33,6 +66,13 @@ struct UnifiedOperation: Decodable {
                 self = .entity(rawValue)
             }
         }
+
+        func asEntityId() throws -> String {
+            guard case let .entity(id) = self else {
+                throw TestError(message: "Expected object to be an entity, but got testRunner")
+            }
+            return id
+        }
     }
 
     /// Object on which to perform the operation.
@@ -42,7 +82,26 @@ struct UnifiedOperation: Decodable {
     let operation: UnifiedOperationProtocol
 
     /// Expected result of the operation.
-    let result: UnifiedOperationResult?
+    let expectedResult: ExpectedOperationResult?
+
+    func executeAndCheckResult(entities: inout EntityMap) throws {
+        let actualResult = try self.operation.execute(on: self.object, entities: entities)
+        switch self.expectedResult {
+        case let .error(expectedError):
+            throw TestError(message: "I dont know how to compare errors yet")
+        case let .result(expected, saveAsEntity):
+            if let entityId = saveAsEntity {
+                entities[entityId] = try actualResult.asEntity()
+            }
+            if let expected = expected {
+                guard try actualResult.matches(expected: expected, entities: entities) else {
+                    throw TestError(message: "Results did not match. Actual: \(actualResult), expected: \(expected)")
+                }
+            }
+        case .none:
+            return
+        }
+    }
 
     private enum CodingKeys: String, CodingKey {
         case name, object, arguments
@@ -143,13 +202,13 @@ struct UnifiedOperation: Decodable {
         self.object = try container.decode(Object.self, forKey: .object)
 
         let singleContainer = try decoder.singleValueContainer()
-        let result = try singleContainer.decode(UnifiedOperationResult.self)
+        let result = try singleContainer.decode(ExpectedOperationResult.self)
         guard !result.isEmpty else {
-            self.result = nil
+            self.expectedResult = nil
             return
         }
 
-        self.result = result
+        self.expectedResult = result
     }
 }
 
@@ -159,7 +218,7 @@ struct Placeholder: UnifiedOperationProtocol {
 }
 
 /// Represents the expected result of an operation.
-enum UnifiedOperationResult: Decodable {
+enum ExpectedOperationResult: Decodable {
     /// One or more assertions for an error expected to be raised by the operation.
     case error(ExpectedError)
     /// - result: A value corresponding to the expected result of the operation.

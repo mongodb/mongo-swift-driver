@@ -3,6 +3,10 @@ import Nimble
 import TestsCommon
 
 final class UnifiedRunnerTests: MongoSwiftTestCase {
+    override func setUp() {
+        self.continueAfterFailure = false
+    }
+
     func testSchemaVersion() {
         let oneTwoThree = SchemaVersion(rawValue: "1.2.3")
         expect(oneTwoThree).toNot(beNil())
@@ -47,10 +51,10 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             subdirectory: "valid-pass",
             excludeFiles: skipValidPassFiles,
             asType: UnifiedTestFile.self
-        ).map { $0.1 }
+        ).map { $0.1 }.prefix(1)
 
         let runner = try UnifiedTestRunner()
-        try runner.runFiles(validPassTests)
+        try runner.runFiles(Array(validPassTests))
 
         let skipValidFailFiles = [
             // Because we use an enum to represent ReturnDocument, the invalid string present in this file "Invalid"
