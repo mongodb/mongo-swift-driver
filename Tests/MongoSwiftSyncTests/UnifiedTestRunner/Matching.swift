@@ -118,6 +118,7 @@ enum MatchableResult {
         }
     }
 
+    /// Determines whether `self` matches the provided BSON number.
     /// When comparing numeric types (excluding Decimal128), test runners MUST consider 32-bit, 64-bit, and floating
     /// point numbers to be equal if their values are numerically equivalent.
     private func matchesNumber(_ expected: BSON) -> Bool {
@@ -132,7 +133,7 @@ enum MatchableResult {
         return abs(actualDouble - expected.toDouble()!) < 0.0001
     }
 
-    /// Determines whether `self` satisfies the special matching operator in the provided `operatorDoc`.
+    /// Determines whether `self` satisfies the provided special operator.
     private func matchesSpecial(_ specialOperator: BSONDocument, entities: EntityMap) throws -> Bool {
         let op = SpecialOperator(from: specialOperator)
         switch op {
