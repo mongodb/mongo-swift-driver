@@ -84,6 +84,16 @@ public struct MongoCollection<T: Codable> {
         self.decoder = BSONDecoder(copies: database.decoder, options: options)
     }
 
+    internal init(copying other: MongoCollection<T>, name: String) {
+        self.namespace = MongoNamespace(db: other.namespace.db, collection: name)
+        self._client = other._client
+        self.readConcern = other.readConcern
+        self.writeConcern = other.writeConcern
+        self.readPreference = other.readPreference
+        self.encoder = other.encoder
+        self.decoder = other.decoder
+    }
+
     /**
      *   Drops this collection from its parent database.
      * - Parameters:
@@ -100,6 +110,42 @@ public struct MongoCollection<T: Codable> {
      */
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
         let operation = DropCollectionOperation(collection: self, options: options)
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+    }
+
+    /**
+     * Renames this collection on the server. This method will return a handle to the renamed collection. The handle
+     * which this method is invoked on will continue to refer to the old collection, which will then be empty.
+     * The server will throw an error if the new name matches an existing collection unless the `dropTarget` option
+     * is set to true.
+     *
+     * Note: This method is not supported on sharded collections.
+     *
+     * - Parameters:
+     *   - to: A `String`, the new name for the collection
+     *   - options: Optional `RenameCollectionOptions` to use for the collection
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns:
+     *    An `EventLoopFuture<MongoCollection>` evaluating to a copy of the target `MongoCollection` with the new name.
+     *
+     *    If the future evaluates to an error, it is likely one of the following:
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
+     */
+    public func renamed(
+        to newName: String,
+        options: RenameCollectionOptions? = nil,
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<MongoCollection> {
+        let operation = RenameCollectionOperation(
+            collection: self,
+            newName: newName,
+            options: options
+        )
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 

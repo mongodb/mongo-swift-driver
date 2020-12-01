@@ -77,6 +77,7 @@
 @_exported import enum MongoSwift.OperationType
 @_exported import struct MongoSwift.ReadConcern
 @_exported import struct MongoSwift.ReadPreference
+@_exported import struct MongoSwift.RenameCollectionOptions
 @_exported import struct MongoSwift.ReplaceOneModelOptions
 @_exported import struct MongoSwift.ReplaceOptions
 @_exported import struct MongoSwift.ResumeToken

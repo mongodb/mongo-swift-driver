@@ -272,6 +272,65 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(deleteManyResult).to(beNil())
     }
 
+    func testRenamed() throws {
+        guard MongoSwiftTestCase.topologyType != .sharded else {
+            print("Skipping test case \(self.name) because renameCollection is not compatible with sharded collections")
+            return
+        }
+
+        try self.withTestNamespace { client, db, coll in
+            let encoder = BSONEncoder()
+            let to = self.getCollectionName(suffix: "renamed")
+            let expectedWriteConcern = try WriteConcern(journal: true, w: .number(1))
+
+            // insert before rename
+            try coll.insertMany([["doc1": "test1"], ["doc2": "test2"], ["doc1": "test3"]])
+
+            let monitor = client.addCommandMonitor()
+            try monitor.captureEvents {
+                let opts = RenameCollectionOptions(writeConcern: expectedWriteConcern)
+                expect(try coll.renamed(to: to, options: opts)).toNot(throwError())
+            }
+
+            // ensure a collection with the new name exists with the documents
+            expect(try db.collection(to).countDocuments()).to(equal(3))
+
+            // the old collection should be empty
+            expect(try coll.countDocuments()).to(equal(0))
+
+            let event = monitor.commandStartedEvents().first
+            expect(event).toNot(beNil())
+            expect(event?.command["renameCollection"]).toNot(beNil())
+            expect(event?.command["writeConcern"]?.documentValue)
+                .to(sortedEqual(try? encoder.encode(expectedWriteConcern)))
+        }
+    }
+
+    func testRenamedWithDropTarget() throws {
+        guard MongoSwiftTestCase.topologyType != .sharded else {
+            print("Skipping test case \(self.name) because renameCollection is not compatible with sharded collections")
+            return
+        }
+        try self.withTestNamespace { _, db, coll in
+            let to = self.getCollectionName(suffix: "exists")
+            let existingColl = try db.createCollection(to)
+            try existingColl.insertMany([["doc1": "test1"], ["doc2": "test2"], ["doc1": "test3"]])
+
+            let opts1 = RenameCollectionOptions(dropTarget: true)
+            // renaming with an existing collection name but dropTarget set to true should not throw an error
+            expect(try coll.renamed(to: to, options: opts1)).toNot(throwError())
+
+            // the existing collection should be dropped at this point
+            expect(try existingColl.countDocuments()).to(equal(0))
+
+            let collName2 = self.getCollectionName(suffix: "coll2")
+            let coll2 = try db.createCollection(collName2)
+            let opts2 = RenameCollectionOptions(dropTarget: false)
+            // test with drop target set to false and new collection name to existing collection throws an error
+            expect(try coll2.renamed(to: to, options: opts2)).to(throwError(errorType: MongoError.CommandError.self))
+        }
+    }
+
     func testReplaceOne() throws {
         let replaceOneResult = try coll.replaceOne(filter: ["_id": 1], replacement: ["apple": "banana"])
         expect(replaceOneResult?.matchedCount).to(equal(1))

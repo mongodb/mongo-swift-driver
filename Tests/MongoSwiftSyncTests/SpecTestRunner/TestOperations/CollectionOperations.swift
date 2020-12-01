@@ -467,13 +467,8 @@ struct RenameCollection: TestOperation {
         on collection: MongoCollection<BSONDocument>,
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
-        let databaseName = collection.namespace.db
-        let cmd: BSONDocument = [
-            "renameCollection": .string(databaseName + "." + collection.name),
-            "to": .string(databaseName + "." + self.to)
-        ]
-        let reply = try collection._client.db("admin").runCommand(cmd, session: sessions[self.session ?? ""])
-        return TestOperationResult(from: reply)
+        _ = try collection.renamed(to: self.to, session: sessions[self.session ?? ""])
+        return nil
     }
 }
 
