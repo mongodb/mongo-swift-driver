@@ -183,9 +183,7 @@ enum MatchableResult {
                 )
             }
             let session = try entities.getEntity(id: id).asSession()
-            guard actualDoc == session.id else {
-                throw NonMatchingError(expected: session.id, actual: self, context: context)
-            }
+            try equals(expected: session.id, actual: actualDoc, context: context)
         }
     }
 
