@@ -97,7 +97,7 @@ enum MatchableResult {
                 for k in actualDoc.keys {
                     try context.withPushedElt(k) {
                         guard expectedDoc.keys.contains(k) else {
-                            throw NonMatchingError(expected: "nil", actual: actualDoc[k], context: context)
+                            throw NonMatchingError(expected: nil, actual: actualDoc[k], context: context)
                         }
                     }
                 }

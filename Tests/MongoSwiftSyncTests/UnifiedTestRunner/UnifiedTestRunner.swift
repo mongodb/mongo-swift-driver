@@ -127,7 +127,7 @@ struct UnifiedTestRunner {
                 }
 
                 for (i, operation) in test.operations.enumerated() {
-                    let context = Context(["Operation \(i)"])
+                    let context = Context(["Operation \(i) (\(operation.name))"])
                     try operation.executeAndCheckResult(entities: &entityMap, context: context)
                 }
 
