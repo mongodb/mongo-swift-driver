@@ -14,8 +14,8 @@ struct NonMatchingError: LocalizedError {
     }
 
     init(expected: Any?, actual: Any?, context: Context) {
-        self.expected = expected == nil ? "nil" : String(describing: expected!)
-        self.actual = actual == nil ? "nil" : String(describing: actual!)
+        self.expected = expected == nil ? "nil" : String(reflecting: expected!)
+        self.actual = actual == nil ? "nil" : String(reflecting: actual!)
         self.path = context.path
     }
 }
