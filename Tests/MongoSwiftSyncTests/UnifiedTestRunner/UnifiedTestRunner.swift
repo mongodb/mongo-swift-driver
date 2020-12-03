@@ -126,8 +126,9 @@ struct UnifiedTestRunner {
                     }
                 }
 
-                for operation in test.operations {
-                    try operation.executeAndCheckResult(entities: &entityMap)
+                for (i, operation) in test.operations.enumerated() {
+                    let context = Context(["Operation \(i)"])
+                    try operation.executeAndCheckResult(entities: &entityMap, context: context)
                 }
 
                 var clientEvents = [String: [CommandEvent]]()
@@ -147,16 +148,13 @@ struct UnifiedTestRunner {
                             throw TestError(message: "No client entity found with id \(clientId)")
                         }
 
-                        guard try matchesEvents(
+                        let context = Context(["Expected events for client \(clientId)"])
+                        try matchesEvents(
                             expected: expectedEventList.events,
                             actual: actualEvents,
-                            entities: entityMap
-                        ) else {
-                            throw TestError(
-                                message: "Events for client \(clientId) did not match: expected " +
-                                    "\(expectedEventList.events), actual: \(actualEvents)"
-                            )
-                        }
+                            entities: entityMap,
+                            context: context
+                        )
                     }
                 }
             }

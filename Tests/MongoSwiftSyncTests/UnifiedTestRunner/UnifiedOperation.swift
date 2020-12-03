@@ -84,7 +84,7 @@ struct UnifiedOperation: Decodable {
     /// Expected result of the operation.
     let expectedResult: ExpectedOperationResult?
 
-    func executeAndCheckResult(entities: inout EntityMap) throws {
+    func executeAndCheckResult(entities: inout EntityMap, context: Context) throws {
         let actualResult = try self.operation.execute(on: self.object, entities: entities)
         switch self.expectedResult {
         case let .error(expectedError):
@@ -94,8 +94,8 @@ struct UnifiedOperation: Decodable {
                 entities[entityId] = try actualResult.asEntity()
             }
             if let expected = expected {
-                guard try actualResult.matches(expected: expected, entities: entities) else {
-                    throw TestError(message: "Results did not match. Actual: \(actualResult), expected: \(expected)")
+                try context.withPushedElt("expectResult") {
+                    try actualResult.matches(expected: expected, entities: entities, context: context)
                 }
             }
         case .none:
