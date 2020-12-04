@@ -121,7 +121,11 @@ extension MongoCollection {
         session: ClientSession? = nil,
         withOutputType _: OutputType.Type
     ) -> EventLoopFuture<MongoCursor<OutputType>> {
-        let operation = AggregateOperation<T, OutputType>(collection: self, pipeline: pipeline, options: options)
+        let operation = AggregateOperation<T, OutputType>(
+            target: .collection(self),
+            pipeline: pipeline,
+            options: options
+        )
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 

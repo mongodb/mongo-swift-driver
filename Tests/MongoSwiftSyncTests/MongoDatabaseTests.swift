@@ -175,6 +175,75 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(listNamesEvents[2].command["nameOnly"]).to(equal(false))
         expect(listNamesEvents[3].command["nameOnly"]).to(equal(false))
     }
+
+    func testAggregate() throws {
+        let client = try MongoClient.makeTestClient()
+        // $currentOp must be run on the admin database
+        let db = client.db("admin")
+        let result = try db.aggregate([["$currentOp": ["allUsers": true]]]).all()
+        let op = result.filter {
+            $0.command?.documentValue != nil && $0.command?.documentValue?["aggregate"] != nil
+        }[0]
+        expect(op.command?.documentValue?["aggregate"]?.int32Value).to(equal(Int32(1)))
+        expect(op.command?.documentValue?["pipeline"]).to(equal([["$currentOp": ["allUsers": true]]]))
+    }
+
+    func testAggregateWithOutputType() throws {
+        struct AggregationOutput: Codable, Equatable {
+            let kitty: String
+            let puppy: String
+        }
+        let client = try MongoClient.makeTestClient()
+        let db = client.db(Self.testDatabase)
+        let result = try db.aggregate(
+            [
+                ["$listLocalSessions": [:]],
+                ["$limit": 1],
+                ["$addFields": ["kitty": "cat", "puppy": "pup", "foo": "bar"]],
+                ["$project": ["_id": 0, "kitty": 1, "puppy": 1]]
+            ],
+            withOutputType: AggregationOutput.self
+        ).all()
+        expect(result).to(equal([AggregationOutput(kitty: "cat", puppy: "pup")]))
+
+        // with invalid output type
+        expect(try db.aggregate(
+            [
+                ["$listLocalSessions": [:]],
+                ["$limit": 1],
+                ["$project": ["_id": 0, "foo": 1]]
+            ],
+            withOutputType: AggregationOutput.self
+        ).all()).to(throwError(errorType: DecodingError.self))
+    }
+
+    // TODO: remove with SWIFT-780
+    func testAggregateWithListLocalSessions() throws {
+        let client = try MongoClient.makeTestClient()
+        let db = client.db(Self.testDatabase)
+        let result1 = try db.aggregate([
+            ["$listLocalSessions": [:]],
+            ["$limit": 1],
+            ["$addFields": ["dummy": "dummy field"]],
+            ["$project": ["_id": 0, "dummy": 1]]
+        ]).all()
+        expect(result1).to(equal([["dummy": "dummy field"]]))
+
+        // with allowDiskUse
+        try db.drop()
+        let opts = AggregateOptions(allowDiskUse: true)
+        let result2 = try db.aggregate(
+            [
+                ["$listLocalSessions": [:]],
+                ["$limit": 1],
+                ["$addFields": ["dummy": "dummy field"]],
+                ["$project": ["_id": 0, "dummy": 1]]
+            ],
+            options: opts
+        ).all()
+
+        expect(result2).to(equal([["dummy": "dummy field"]]))
+    }
 }
 
 extension CreateCollectionOptions: Equatable {
@@ -183,7 +252,8 @@ extension CreateCollectionOptions: Equatable {
     // and is not a property of the collection.
     public static func == (lhs: CreateCollectionOptions, rhs: CreateCollectionOptions) -> Bool {
         rhs.capped == lhs.capped &&
-            lhs.size == rhs.size &&
+            lhs.size == rhs.size
+            &&
             lhs.max == rhs.max &&
             lhs.storageEngine == rhs.storageEngine &&
             lhs.validator == rhs.validator &&

@@ -1,6 +1,15 @@
 import CLibMongoC
 import Foundation
 
+/// The entity on which to execute the `aggregate` command against.
+internal enum AggregateTarget<CollectionType: Codable> {
+    /// Indicates `aggregate` command will be executed against a database.
+    case database(MongoDatabase)
+
+    ///  Indicates `aggregate` command will be executed against a collection.
+    case collection(MongoCollection<CollectionType>)
+}
+
 /// Options to use when executing an `aggregate` command on a `MongoCollection`.
 public struct AggregateOptions: Codable {
     /// Enables the server to write to temporary files. When set to true, the aggregate operation
@@ -69,14 +78,14 @@ public struct AggregateOptions: Codable {
     }
 }
 
-/// An operation corresponding to an "aggregate" command on a collection.
+/// An operation corresponding to an "aggregate" command on either a database or a collection.
 internal struct AggregateOperation<CollectionType: Codable, OutputType: Codable>: Operation {
-    private let collection: MongoCollection<CollectionType>
+    private let target: AggregateTarget<CollectionType>
     private let pipeline: [BSONDocument]
     private let options: AggregateOptions?
 
-    internal init(collection: MongoCollection<CollectionType>, pipeline: [BSONDocument], options: AggregateOptions?) {
-        self.collection = collection
+    internal init(target: AggregateTarget<CollectionType>, pipeline: [BSONDocument], options: AggregateOptions?) {
+        self.target = target
         self.pipeline = pipeline
         self.options = options
     }
@@ -85,33 +94,56 @@ internal struct AggregateOperation<CollectionType: Codable, OutputType: Codable>
         let opts = try encodeOptions(options: self.options, session: session)
         let pipeline: BSONDocument = ["pipeline": .array(self.pipeline.map { .document($0) })]
 
-        let result: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
-            pipeline.withBSONPointer { pipelinePtr in
-                withOptionalBSONPointer(to: opts) { optsPtr in
-                    ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
-                        guard let result = mongoc_collection_aggregate(
-                            collPtr,
-                            MONGOC_QUERY_NONE,
-                            pipelinePtr,
-                            optsPtr,
-                            rpPtr
-                        ) else {
-                            fatalError(failedToRetrieveCursorMessage)
+        return try pipeline.withBSONPointer { pipelinePtr in
+            try withOptionalBSONPointer(to: opts) { optsPtr in
+                try ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr ->
+                    MongoCursor<OutputType> in
+                    var result: OpaquePointer
+                    var client: MongoClient
+                    var decoder: BSONDecoder
+                    switch self.target {
+                    case let .database(db):
+                        client = db._client
+                        decoder = db.decoder
+                        result = db.withMongocDatabase(from: connection) { dbPtr in
+                            guard let result = mongoc_database_aggregate(
+                                dbPtr,
+                                pipelinePtr,
+                                optsPtr,
+                                rpPtr
+                            ) else {
+                                fatalError(failedToRetrieveCursorMessage)
+                            }
+                            return result
                         }
-                        return result
+                    case let .collection(coll):
+                        client = coll._client
+                        decoder = coll.decoder
+                        result = coll.withMongocCollection(from: connection) { collPtr in
+                            guard let result = mongoc_collection_aggregate(
+                                collPtr,
+                                MONGOC_QUERY_NONE,
+                                pipelinePtr,
+                                optsPtr,
+                                rpPtr
+                            ) else {
+                                fatalError(failedToRetrieveCursorMessage)
+                            }
+                            return result
+                        }
                     }
+
+                    // since mongoc_collection_aggregate and mongoc_database_aggregate don't do any I/O, use forceIO
+                    // to ensure this operation fails if we can not successfully get a cursor from the server.
+                    return try MongoCursor<OutputType>(
+                        stealing: result,
+                        connection: connection,
+                        client: client,
+                        decoder: decoder,
+                        session: session
+                    )
                 }
             }
         }
-
-        // since mongoc_collection_aggregate doesn't do any I/O, use forceIO to ensure this operation fails if we
-        // can not successfully get a cursor from the server.
-        return try MongoCursor<OutputType>(
-            stealing: result,
-            connection: connection,
-            client: self.collection._client,
-            decoder: self.collection.decoder,
-            session: session
-        )
     }
 }
