@@ -197,7 +197,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let db = client.db(Self.testDatabase)
         let result = try db.aggregate(
             [
-                ["$listLocalSessions": [:]],
+                ["$listLocalSessions": ["allUsers": "true"]],
                 ["$limit": 1],
                 ["$addFields": ["kitty": "cat", "puppy": "pup", "foo": "bar"]],
                 ["$project": ["_id": 0, "kitty": 1, "puppy": 1]]
@@ -209,7 +209,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         // with invalid output type
         expect(try db.aggregate(
             [
-                ["$listLocalSessions": [:]],
+                ["$listLocalSessions": ["allUsers": "true"]],
                 ["$limit": 1],
                 ["$project": ["_id": 0, "foo": 1]]
             ],
