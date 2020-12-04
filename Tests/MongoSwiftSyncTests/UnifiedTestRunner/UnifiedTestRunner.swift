@@ -1,4 +1,5 @@
 import MongoSwiftSync
+import Nimble
 import TestsCommon
 
 struct UnifiedTestRunner {
@@ -16,7 +17,12 @@ struct UnifiedTestRunner {
         self.topologyType = try self.internalClient.topologyType()
 
         // The test runner SHOULD terminate any open transactions using the internal MongoClient before executing any
-        // tests. Using the internal MongoClient, execute the killAllSessions command on either the primary or, if
+        // tests.
+        try self.terminateOpenTransactions()
+    }
+
+    func terminateOpenTransactions() throws {
+        // Using the internal MongoClient, execute the killAllSessions command on either the primary or, if
         // connected to a sharded cluster, all mongos servers.
         switch self.topologyType {
         case .single:
@@ -43,7 +49,21 @@ struct UnifiedTestRunner {
         requirement.getUnmetRequirement(givenCurrent: self.serverVersion, self.topologyType)
     }
 
-    func runFiles(_ files: [UnifiedTestFile]) throws {
+    /// Runs the provided files. `skipTestCases` is a map of file description strings to arrays of test description
+    /// strings indicating cases to skip. If the array contains a single string "*" all tests in the file will be
+    /// skipped.
+    func runFiles(_ files: [UnifiedTestFile], skipTests: [String: [String]] = [:]) throws {
+        // Test runners SHOULD terminate all open transactions after each failed test by killing all sessions in the
+        // cluster. Since we stop running the provided files as soon we encounter a failure, we just always run this on
+        // method exit for simplicity.
+        defer {
+            do {
+                try self.terminateOpenTransactions()
+            } catch {
+                print("Failed to terminate open transactions: \(error)")
+            }
+        }
+
         for file in files {
             // Upon loading a file, the test runner MUST read the schemaVersion field and determine if the test file
             // can be processed further.
@@ -61,13 +81,28 @@ struct UnifiedTestRunner {
                     continue
                 }
             }
+
+            let skippedTestsForFile = skipTests[file.description] ?? []
+            if skippedTestsForFile == ["*"] {
+                fileLevelLog("Skipping all tests from file \"\(file.description)\", was included in skip list")
+                continue
+            }
+
             // TODO: SWIFT-913: run all tests
-            for test in file.tests[0..<1] {
+            for test in file.tests {
                 // If test.skipReason is specified, the test runner MUST skip this test and MAY use the string value to
                 // log a message.
                 if let skipReason = test.skipReason {
                     fileLevelLog(
                         "Skipping test \"\(test.description)\" from file \"\(file.description)\": \(skipReason)."
+                    )
+                    continue
+                }
+
+                if skippedTestsForFile.contains(test.description) {
+                    fileLevelLog(
+                        "Skipping test \"\(test.description)\" from file \"\(file.description)\", " +
+                            "was included in skip list"
                     )
                     continue
                 }
@@ -109,13 +144,17 @@ struct UnifiedTestRunner {
                     }
                 }
 
-                var entityMap = try file.createEntities?.toEntityMap() ?? [:]
+                let context = Context(
+                    path: [],
+                    entities: try file.createEntities?.toEntityMap() ?? [:],
+                    internalClient: self.internalClient
+                )
 
                 // Workaround for SERVER-39704:  a test runners MUST execute a non-transactional distinct command on
                 // each mongos server before running any test that might execute distinct within a transaction. To ease
                 // the implementation, test runners MAY execute distinct before every test.
                 if self.topologyType == .sharded || self.topologyType == .shardedReplicaSet {
-                    let collEntities = entityMap.values.compactMap { try? $0.asCollection() }
+                    let collEntities = context.entities.values.compactMap { try? $0.asCollection() }
                     for address in MongoSwiftTestCase.getHosts() {
                         for entity in collEntities {
                             _ = try self.internalClient.db(entity.namespace.db).runCommand(
@@ -126,19 +165,36 @@ struct UnifiedTestRunner {
                     }
                 }
 
+                // Ensure that even if we encounter an error in the process of executing operations, we will disable
+                // any failpoints set by clients and terminate open transactions.
+                defer {
+                    let db = self.internalClient.db("admin")
+                    for (failPointName, serverAddress) in context.enabledFailPoints {
+                        let disableCmd: BSONDocument = ["configureFailPoint": .string(failPointName), "mode": "off"]
+                        do {
+                            if let addr = serverAddress {
+                                try db.runCommand(disableCmd, on: addr)
+                            } else {
+                                try db.runCommand(disableCmd)
+                            }
+                        } catch {
+                            print("Failed to disable failpoint: \(error)")
+                        }
+                    }
+                }
+
                 for (i, operation) in test.operations.enumerated() {
-                    let context = Context(["Operation \(i) (\(operation.name))"])
-                    try operation.executeAndCheckResult(entities: &entityMap, context: context)
+                    try context.withPushedElt("Operation \(i) (\(operation.name))") {
+                        try operation.executeAndCheckResult(context: context)
+                    }
                 }
 
                 var clientEvents = [String: [CommandEvent]]()
                 // If any event listeners were enabled on any client entities, the test runner MUST now disable those
                 // event listeners.
-                for (id, client) in entityMap.compactMapValues({ try? $0.asTestClient() }) {
+                for (id, client) in context.entities.compactMapValues({ try? $0.asTestClient() }) {
                     clientEvents[id] = try client.stopCapturingEvents()
                 }
-
-                // TODO: disable fail points
 
                 if let expectEvents = test.expectEvents {
                     for expectedEventList in expectEvents {
@@ -148,13 +204,30 @@ struct UnifiedTestRunner {
                             throw TestError(message: "No client entity found with id \(clientId)")
                         }
 
-                        let context = Context(["Expected events for client \(clientId)"])
-                        try matchesEvents(
-                            expected: expectedEventList.events,
-                            actual: actualEvents,
-                            entities: entityMap,
-                            context: context
+                        try context.withPushedElt("Expected events for client \(clientId)") {
+                            try matchesEvents(
+                                expected: expectedEventList.events,
+                                actual: actualEvents,
+                                context: context
+                            )
+                        }
+                    }
+                }
+
+                if let expectedOutcome = test.outcome {
+                    for cd in expectedOutcome {
+                        let collection = self.internalClient.db(cd.databaseName).collection(cd.collectionName)
+                        let opts = FindOptions(
+                            readConcern: .local,
+                            readPreference: .primary,
+                            sort: ["_id": 1]
                         )
+                        let documents = try collection.find(options: opts).map { try $0.get() }
+
+                        expect(documents.count).to(equal(cd.documents.count))
+                        for (expected, actual) in zip(cd.documents, documents) {
+                            expect(actual).to(sortedEqual(expected), description: "Test outcome did not match expected")
+                        }
                     }
                 }
             }

@@ -380,7 +380,7 @@ public struct InsertOneResult: Codable {
 }
 
 /// The result of a multi-document insert operation on a `MongoCollection`.
-public struct InsertManyResult {
+public struct InsertManyResult: Codable {
     /// Number of documents inserted.
     public let insertedCount: Int
 
@@ -395,10 +395,14 @@ public struct InsertManyResult {
         self.insertedCount = result.insertedCount
         self.insertedIDs = result.insertedIDs
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case insertedCount, insertedIDs = "insertedIds"
+    }
 }
 
 /// The result of a `delete` command on a `MongoCollection`.
-public struct DeleteResult: Decodable {
+public struct DeleteResult: Codable {
     /// The number of documents that were deleted.
     public let deletedCount: Int
 
@@ -411,7 +415,7 @@ public struct DeleteResult: Decodable {
 }
 
 /// The result of an `update` operation on a `MongoCollection`.
-public struct UpdateResult: Decodable {
+public struct UpdateResult: Codable {
     /// The number of documents that matched the filter.
     public let matchedCount: Int
 

@@ -144,10 +144,10 @@ public final class ClientSession {
     }
 
     /// The transaction state of this session.
-    internal var transactionState: TransactionState? {
+    internal var transactionState: TransactionState {
         switch self.state {
         case .notStarted, .ended:
-            return nil
+            return .none
         case let .started(session, _):
             return TransactionState(mongocTransactionState: mongoc_client_session_get_transaction_state(session))
         }
@@ -155,10 +155,7 @@ public final class ClientSession {
 
     /// Indicates whether or not the session is in a transaction.
     internal var inTransaction: Bool {
-        if let transactionState = self.transactionState {
-            return transactionState != .none
-        }
-        return false
+        self.transactionState != .none
     }
 
     /// The most recent cluster time seen by this session. This value will be nil if either of the following are true:

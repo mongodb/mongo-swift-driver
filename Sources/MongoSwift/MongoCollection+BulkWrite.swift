@@ -316,7 +316,7 @@ public struct BulkWriteOptions: Codable {
 }
 
 /// The result of a bulk write operation on a `MongoCollection`.
-public struct BulkWriteResult: Decodable {
+public struct BulkWriteResult: Codable {
     /// Number of documents deleted.
     public let deletedCount: Int
 

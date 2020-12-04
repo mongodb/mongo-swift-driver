@@ -122,7 +122,7 @@ enum EntityDescription: Decodable {
 struct UnifiedTestClient {
     let client: MongoClient
 
-    fileprivate let commandMonitor: UnifiedTestCommandMonitor
+    let commandMonitor: UnifiedTestCommandMonitor
 
     init(_ clientDescription: EntityDescription.Client) throws {
         let connStr = MongoSwiftTestCase.getConnectionString(
@@ -153,9 +153,9 @@ struct UnifiedTestClient {
 }
 
 /// Command observer used to collect a specified subset of events for a client.
-private class UnifiedTestCommandMonitor: CommandEventHandler {
+class UnifiedTestCommandMonitor: CommandEventHandler {
     private var monitoring: Bool
-    fileprivate var events: [CommandEvent]
+    var events: [CommandEvent]
     private let observeEvents: [CommandEvent.EventType]
     private let ignoreEvents: [String]
 
