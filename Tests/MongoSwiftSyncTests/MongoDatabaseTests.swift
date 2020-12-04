@@ -252,8 +252,7 @@ extension CreateCollectionOptions: Equatable {
     // and is not a property of the collection.
     public static func == (lhs: CreateCollectionOptions, rhs: CreateCollectionOptions) -> Bool {
         rhs.capped == lhs.capped &&
-            lhs.size == rhs.size
-            &&
+            lhs.size == rhs.size &&
             lhs.max == rhs.max &&
             lhs.storageEngine == rhs.storageEngine &&
             lhs.validator == rhs.validator &&
