@@ -1,9 +1,28 @@
+import Foundation
 import MongoSwiftSync
 import TestsCommon
 
+/// Generic error thrown when matching fails, containing the expected and actual values as well as the path taken to
+/// get to them for nested assertions.
+struct NonMatchingError: LocalizedError {
+    let expected: String
+    let actual: String
+    let path: [String]
+
+    public var errorDescription: String? {
+        "Element at path \(self.path) did not match: expected \(self.expected), actual: \(self.actual)"
+    }
+
+    init(expected: Any?, actual: Any?, context: Context) {
+        self.expected = expected == nil ? "nil" : String(reflecting: expected!)
+        self.actual = actual == nil ? "nil" : String(reflecting: actual!)
+        self.path = context.path
+    }
+}
+
 extension UnifiedOperationResult {
     /// Determines whether this result matches `expected`.
-    func matches(expected: BSON, entities: EntityMap) throws -> Bool {
+    func matches(expected: BSON, entities: EntityMap, context: Context) throws {
         let actual: MatchableResult
         switch self {
         case let .bson(bson):
@@ -14,11 +33,11 @@ extension UnifiedOperationResult {
             actual = .rootDocumentArray(arr)
         case .none:
             actual = .none
-        default:
-            return false
+        case let .changeStream(cs):
+            throw NonMatchingError(expected: expected, actual: cs, context: context)
         }
 
-        return try actual.matches(expected, entities: entities)
+        try actual.matches(expected, entities: entities, context: context)
     }
 }
 
@@ -54,35 +73,36 @@ enum MatchableResult {
     }
 
     /// Determines whether `self` matches `expected`, recursing if needed for nested documents and arrays.
-    fileprivate func matches(_ expected: BSON, entities: EntityMap) throws -> Bool {
+    fileprivate func matches(_ expected: BSON, entities: EntityMap, context: Context) throws {
         switch expected {
         case let .document(expectedDoc):
             if expectedDoc.isSpecialOperator {
-                return try self.matchesSpecial(expectedDoc, entities: entities)
+                try self.matchesSpecial(expectedDoc, entities: entities, context: context)
+                return
             }
 
             switch self {
             case let .rootDocument(actualDoc), let .subDocument(actualDoc):
                 for (k, v) in expectedDoc {
                     let actualValue = MatchableResult(from: actualDoc[k])
-                    guard try actualValue.matches(v, entities: entities) else {
-                        return false
+                    try context.withPushedElt(k) {
+                        try actualValue.matches(v, entities: entities, context: context)
                     }
                 }
             default:
-                return false
+                throw NonMatchingError(expected: expected, actual: self, context: context)
             }
 
-            // Documents that are not the root-level document should not contain extra keys.
             if case let .subDocument(actualDoc) = self {
                 for k in actualDoc.keys {
-                    guard expectedDoc.keys.contains(k) else {
-                        return false
+                    try context.withPushedElt(k) {
+                        guard expectedDoc.keys.contains(k) else {
+                            throw NonMatchingError(expected: nil, actual: actualDoc[k], context: context)
+                        }
                     }
                 }
             }
 
-            return true
         case let .array(expectedArray):
             let actualElts: [MatchableResult]
 
@@ -92,83 +112,93 @@ enum MatchableResult {
             case let .array(array):
                 actualElts = array.map { MatchableResult(from: $0) }
             default:
-                return false
+                throw NonMatchingError(expected: expectedArray, actual: self, context: context)
             }
 
             guard actualElts.count == expectedArray.count else {
-                return false
+                throw NonMatchingError(expected: expectedArray, actual: actualElts, context: context)
             }
 
-            for (actualElt, expectedElt) in zip(actualElts, expectedArray) {
-                guard try actualElt.matches(expectedElt, entities: entities) else {
-                    return false
+            for i in 0..<actualElts.count {
+                try context.withPushedElt(String(i)) {
+                    try actualElts[i].matches(expectedArray[i], entities: entities, context: context)
                 }
             }
 
-            return true
         case .int32, .int64, .double:
-            return self.matchesNumber(expected)
+            try self.matchesNumber(expected, context: context)
         default:
             // if we made it here, the expected value is a non-document, non-array BSON, so we should expect `self` to
             // be a scalar value too.
-            guard case let .scalar(bson) = self else {
-                return false
+            guard case let .scalar(bson) = self, bson == expected else {
+                throw NonMatchingError(expected: expected, actual: self, context: context)
             }
-            return bson == expected
         }
     }
 
     /// Determines whether `self` matches the provided BSON number.
     /// When comparing numeric types (excluding Decimal128), test runners MUST consider 32-bit, 64-bit, and floating
     /// point numbers to be equal if their values are numerically equivalent.
-    private func matchesNumber(_ expected: BSON) -> Bool {
-        guard case let .scalar(bson) = self else {
-            return false
+    private func matchesNumber(_ expected: BSON, context: Context) throws {
+        guard case let .scalar(bson) = self,
+              let actualDouble = bson.toDouble(),
+              // fuzzy equals in case of e.g. rounding errors
+              abs(actualDouble - expected.toDouble()!) < 0.0001
+        else {
+            throw NonMatchingError(expected: expected, actual: self, context: context)
         }
-        guard let actualDouble = bson.toDouble() else {
-            return false
-        }
-
-        // fuzzy equals in case of e.g. rounding errors
-        return abs(actualDouble - expected.toDouble()!) < 0.0001
     }
 
     /// Determines whether `self` satisfies the provided special operator.
-    private func matchesSpecial(_ specialOperator: BSONDocument, entities: EntityMap) throws -> Bool {
+    private func matchesSpecial(_ specialOperator: BSONDocument, entities: EntityMap, context: Context) throws {
         let op = SpecialOperator(from: specialOperator)
         switch op {
         case let .exists(shouldExist):
             switch self {
             case .none:
-                return !shouldExist
+                guard !shouldExist else {
+                    throw NonMatchingError(expected: "element to exist", actual: self, context: context)
+                }
             default:
-                return shouldExist
+                guard shouldExist else {
+                    throw NonMatchingError(expected: "element to not exist", actual: self, context: context)
+                }
             }
         case let .type(expectedTypes):
-            return self.matchesType(expectedTypes)
+            try self.matchesType(expectedTypes, context: context)
         case let .matchesEntity(id):
             let entity = try entities.getEntity(id: id).asBSON()
-            return try self.matches(entity, entities: entities)
+            try self.matches(entity, entities: entities, context: context)
         case let .unsetOrMatches(value):
             if case .none = self {
-                return true
+                return
             }
-            return try self.matches(value, entities: entities)
+            try self.matches(value, entities: entities, context: context)
         case let .sessionLsid(id):
             guard case let .subDocument(actualDoc) = self else {
-                return false
+                throw NonMatchingError(
+                    expected: "type subdocument",
+                    actual: "\(self) (type: \(type(of: self)))",
+                    context: context
+                )
             }
             let session = try entities.getEntity(id: id).asSession()
-            return actualDoc == session.id
+            try equals(expected: session.id, actual: actualDoc, context: context)
         }
     }
 
     /// Determines whether `self` satisfies the $$type operator value `expectedType`.
-    private func matchesType(_ expectedTypes: [String]) -> Bool {
+    private func matchesType(_ expectedTypes: [String], context: Context) throws {
+        let error = NonMatchingError(
+            expected: "element to have one of the following types: \(expectedTypes)",
+            actual: self,
+            context: context
+        )
+
         let actualType: BSONType
         switch self {
         case .none:
-            return false
+            throw error
         case .subDocument, .rootDocument:
             actualType = .document
         case .array, .rootDocumentArray:
@@ -177,7 +207,9 @@ enum MatchableResult {
             actualType = bson.type
         }
 
-        return expectedTypes.contains { actualType.matchesTypeString($0) }
+        guard expectedTypes.contains(where: { actualType.matchesTypeString($0) }) else {
+            throw error
+        }
     }
 }
 
@@ -273,56 +305,64 @@ enum SpecialOperator {
 }
 
 /// Determines if the events in `actual` match the events in `expected`.
-func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], entities: EntityMap) throws -> Bool {
+func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], entities: EntityMap, context: Context) throws {
     guard actual.count == expected.count else {
-        return false
+        throw NonMatchingError(expected: expected, actual: actual, context: context)
     }
 
-    for (expectedEvent, actualEvent) in zip(expected, actual) {
-        switch (expectedEvent, actualEvent) {
-        case let (.commandStarted(expectedStarted), .started(actualStarted)):
-            if let expectedName = expectedStarted.commandName {
-                guard actualStarted.commandName == expectedName else {
-                    return false
-                }
-            }
+    for i in 0..<actual.count {
+        try context.withPushedElt(String(i)) {
+            let expectedEvent = expected[i]
+            let actualEvent = actual[i]
 
-            if let expectedCommand = expectedStarted.command {
-                let actual = MatchableResult.rootDocument(actualStarted.command)
-                guard try actual.matches(.document(expectedCommand), entities: entities) else {
-                    return false
+            switch (expectedEvent, actualEvent) {
+            case let (.commandStarted(expectedStarted), .started(actualStarted)):
+                if let expectedName = expectedStarted.commandName {
+                    try context.withPushedElt("commandName") {
+                        try equals(expected: expectedName, actual: actualStarted.commandName, context: context)
+                    }
                 }
-            }
 
-            if let expectedDb = expectedStarted.databaseName {
-                guard actualStarted.databaseName == expectedDb else {
-                    return false
+                if let expectedCommand = expectedStarted.command {
+                    let actual = MatchableResult.rootDocument(actualStarted.command)
+                    try context.withPushedElt("command") {
+                        try actual.matches(.document(expectedCommand), entities: entities, context: context)
+                    }
                 }
-            }
-        case let (.commandSucceeded(expectedSucceeded), .succeeded(actualSucceeded)):
-            if let expectedName = expectedSucceeded.commandName {
-                guard actualSucceeded.commandName == expectedName else {
-                    return false
-                }
-            }
 
-            if let expectedReply = expectedSucceeded.reply {
-                let actual = MatchableResult.rootDocument(actualSucceeded.reply)
-                guard try actual.matches(.document(expectedReply), entities: entities) else {
-                    return false
+                if let expectedDb = expectedStarted.databaseName {
+                    try context.withPushedElt("databaseName") {
+                        try equals(expected: expectedDb, actual: actualStarted.databaseName, context: context)
+                    }
                 }
-            }
-        case let (.commandFailed(expectedFailed), .failed(actualFailed)):
-            if let expectedName = expectedFailed.commandName {
-                guard actualFailed.commandName == expectedName else {
-                    return false
+            case let (.commandSucceeded(expectedSucceeded), .succeeded(actualSucceeded)):
+                if let expectedName = expectedSucceeded.commandName {
+                    try context.withPushedElt("commandName") {
+                        try equals(expected: expectedName, actual: actualSucceeded.commandName, context: context)
+                    }
                 }
+
+                if let expectedReply = expectedSucceeded.reply {
+                    let actual = MatchableResult.rootDocument(actualSucceeded.reply)
+                    try context.withPushedElt("reply") {
+                        try actual.matches(.document(expectedReply), entities: entities, context: context)
+                    }
+                }
+            case let (.commandFailed(expectedFailed), .failed(actualFailed)):
+                if let expectedName = expectedFailed.commandName {
+                    try context.withPushedElt("commandName") {
+                        try equals(expected: expectedName, actual: actualFailed.commandName, context: context)
+                    }
+                }
+            default:
+                throw NonMatchingError(expected: expectedEvent, actual: actualEvent, context: context)
             }
-        default:
-            // event types don't match
-            return false
         }
     }
+}
 
-    return true
+func equals<T: Equatable>(expected: T, actual: T, context: Context) throws {
+    guard actual == expected else {
+        throw NonMatchingError(expected: expected, actual: actual, context: context)
+    }
 }

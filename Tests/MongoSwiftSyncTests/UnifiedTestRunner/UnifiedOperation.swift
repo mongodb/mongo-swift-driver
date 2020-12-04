@@ -81,10 +81,13 @@ struct UnifiedOperation: Decodable {
     /// Specific operation to execute.
     let operation: UnifiedOperationProtocol
 
+    /// The name of the operation.
+    let name: String
+
     /// Expected result of the operation.
     let expectedResult: ExpectedOperationResult?
 
-    func executeAndCheckResult(entities: inout EntityMap) throws {
+    func executeAndCheckResult(entities: inout EntityMap, context: Context) throws {
         let actualResult = try self.operation.execute(on: self.object, entities: entities)
         switch self.expectedResult {
         case let .error(expectedError):
@@ -94,8 +97,8 @@ struct UnifiedOperation: Decodable {
                 entities[entityId] = try actualResult.asEntity()
             }
             if let expected = expected {
-                guard try actualResult.matches(expected: expected, entities: entities) else {
-                    throw TestError(message: "Results did not match. Actual: \(actualResult), expected: \(expected)")
+                try context.withPushedElt("expectResult") {
+                    try actualResult.matches(expected: expected, entities: entities, context: context)
                 }
             }
         case .none:
@@ -110,8 +113,8 @@ struct UnifiedOperation: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        let name = try container.decode(String.self, forKey: .name)
-        switch name {
+        self.name = try container.decode(String.self, forKey: .name)
+        switch self.name {
         case "abortTransaction":
             self.operation = UnifiedAbortTransaction()
         case "aggregate":
@@ -183,7 +186,7 @@ struct UnifiedOperation: Decodable {
         case "withTransaction":
             self.operation = Placeholder()
         default:
-            throw TestError(message: "unrecognized operation name \(name)")
+            throw TestError(message: "unrecognized operation name \(self.name)")
         }
 
         if type(of: self.operation) != Placeholder.self,
