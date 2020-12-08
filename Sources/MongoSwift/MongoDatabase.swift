@@ -478,6 +478,81 @@ public struct MongoDatabase {
         return self._client.operationExecutor.execute(operation, client: self._client, session: session)
     }
 
+    /**
+     * Runs an aggregation framework pipeline against this database for pipeline stages that do not require an
+     * underlying collection, such as `$currentOp` and `$listLocalSessions`.
+     *
+     * - Parameters:
+     *   - pipeline: an `[BSONDocument]` containing the pipeline of aggregation operations to perform.
+     *   - options: Optional `AggregateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Warning:
+     *    If the returned cursor is alive when it goes out of scope, it will leak resources. To ensure the cursor
+     *    is dead before it leaves scope, invoke `MongoCursor.kill(...)` on it.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<MongoCursor>`. On success, contains a cursor over the resulting documents.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `MongoError.CommandError` if an error occurs on the server while executing the aggregation
+     *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this database's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/#db-aggregate-stages
+     */
+    public func aggregate(
+        _ pipeline: [BSONDocument],
+        options: AggregateOptions? = nil,
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<MongoCursor<BSONDocument>> {
+        self.aggregate(pipeline, options: options, session: session, withOutputType: BSONDocument.self)
+    }
+
+    /**
+     * Runs an aggregation framework pipeline against this database for pipeline stages that do not require an
+     * underlying collection, such as `$currentOp` and `$listLocalSessions`.
+     * Associates the specified `Codable` type `OutputType` with the returned `MongoCursor`
+     *
+     * - Parameters:
+     *   - pipeline: an `[BSONDocument]` containing the pipeline of aggregation operations to perform.
+     *   - options: Optional `AggregateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *   - withOutputType: the type that each resulting document of the output
+     *     of the aggregation operation will be decoded to
+     *
+     * - Warning:
+     *    If the returned cursor is alive when it goes out of scope, it will leak resources. To ensure the cursor
+     *    is dead before it leaves scope, invoke `MongoCursor.kill(...)` on it.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<MongoCursor>`over the resulting `OutputType`s
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `MongoError.CommandError` if an error occurs on the server while executing the aggregation
+     *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this database's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/#db-aggregate-stages
+     */
+    public func aggregate<OutputType: Codable>(
+        _ pipeline: [BSONDocument],
+        options: AggregateOptions? = nil,
+        session: ClientSession? = nil,
+        withOutputType _: OutputType.Type
+    ) -> EventLoopFuture<MongoCursor<OutputType>> {
+        let operation = AggregateOperation<BSONDocument, OutputType>(
+            target: .database(self),
+            pipeline: pipeline,
+            options: options
+        )
+        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+    }
+
     /// Uses the provided `Connection` to get a pointer to a `mongoc_database_t` corresponding to this
     /// `MongoDatabase`, and uses it to execute the given closure. The `mongoc_database_t` is only valid for the
     /// body of the closure. The caller is *not responsible* for cleaning up the `mongoc_database_t`.

@@ -358,4 +358,72 @@ public struct MongoDatabase {
         ).wait()
         return ChangeStream(wrapping: asyncStream, client: self.client)
     }
+
+    /**
+     * Runs an aggregation framework pipeline against this database for pipeline stages that do not require an
+     * underlying collection, such as `$currentOp` and `$listLocalSessions`.
+     *
+     * - Parameters:
+     *   - pipeline: an `[BSONDocument]` containing the pipeline of aggregation operations to perform
+     *   - options: Optional `AggregateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns:
+     *    A `MongoCursor` over the resulting documents.
+     *
+     *    Throws:
+     *    - `MongoError.CommandError` if an error occurs on the server while executing the aggregation
+     *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this database's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/#db-aggregate-stages
+     */
+    public func aggregate(
+        _ pipeline: [BSONDocument],
+        options: AggregateOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> MongoCursor<BSONDocument> {
+        try self.aggregate(pipeline, options: options, session: session, withOutputType: BSONDocument.self)
+    }
+
+    /**
+     * Runs an aggregation framework pipeline against this database for pipeline stages that do not require an
+     * underlying collection, such as `$currentOp` and `$listLocalSessions`.
+     * Associates the specified `Codable` type `OutputType` with the returned `MongoCursor`
+     *
+     * - Parameters:
+     *   - pipeline: an `[BSONDocument]` containing the pipeline of aggregation operations to perform
+     *   - options: Optional `AggregateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *   - withOutputType: the type that each resulting document of the output
+     *     of the aggregation operation will be decoded to
+     *
+     * - Returns:
+     *    A `MongoCursor` over the resulting `OutputType`s
+     *
+     *    Throws:
+     *    - `MongoError.CommandError` if an error occurs on the server while executing the aggregation
+     *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this database's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/#db-aggregate-stages
+     */
+    public func aggregate<OutputType: Codable>(
+        _ pipeline: [BSONDocument],
+        options: AggregateOptions? = nil,
+        session: ClientSession? = nil,
+        withOutputType: OutputType.Type
+    ) throws -> MongoCursor<OutputType> {
+        let asyncCursor = try self.asyncDB.aggregate(
+            pipeline,
+            options: options,
+            session: session?.asyncSession,
+            withOutputType: withOutputType
+        ).wait()
+        return MongoCursor(wrapping: asyncCursor, client: self.client)
+    }
 }
