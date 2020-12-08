@@ -66,7 +66,7 @@ extension MongoCollection {
      * Runs an aggregation framework pipeline against this collection.
      *
      * - Parameters:
-     *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform
+     *   - pipeline: an `[BSONDocument]` containing the pipeline of aggregation operations to perform
      *   - options: Optional `AggregateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -96,7 +96,7 @@ extension MongoCollection {
      * Associates the specified `Codable` type `OutputType` with the returned `MongoCursor`
      *
      * - Parameters:
-     *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform
+     *   - pipeline: an `[BSONDocument]` containing the pipeline of aggregation operations to perform
      *   - options: Optional `AggregateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *   - withOutputType: the type that each resulting document of the output

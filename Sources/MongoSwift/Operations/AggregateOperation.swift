@@ -96,11 +96,10 @@ internal struct AggregateOperation<CollectionType: Codable, OutputType: Codable>
 
         return try pipeline.withBSONPointer { pipelinePtr in
             try withOptionalBSONPointer(to: opts) { optsPtr in
-                try ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr ->
-                    MongoCursor<OutputType> in
-                    var result: OpaquePointer
-                    var client: MongoClient
-                    var decoder: BSONDecoder
+                try ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
+                    let result: OpaquePointer
+                    let client: MongoClient
+                    let decoder: BSONDecoder
                     switch self.target {
                     case let .database(db):
                         client = db._client

@@ -483,7 +483,7 @@ public struct MongoDatabase {
      * underlying collection, such as `$currentOp` and `$listLocalSessions`.
      *
      * - Parameters:
-     *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform.
+     *   - pipeline: an `[BSONDocument]` containing the pipeline of aggregation operations to perform.
      *   - options: Optional `AggregateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -495,12 +495,13 @@ public struct MongoDatabase {
      *    An `EventLoopFuture<MongoCursor>`. On success, contains a cursor over the resulting documents.
      *
      *    If the future fails, the error is likely one of the following:
+     *    - `MongoError.CommandError` if an error occurs on the server while executing the aggregation
      *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
      *    - `MongoError.LogicError` if the provided session is inactive.
      *    - `MongoError.LogicError` if this database's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      *
-     * - SeeAlso: https://docs.mongodb.com/manual/reference/method/db.aggregate/
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/#db-aggregate-stages
      */
     public func aggregate(
         _ pipeline: [BSONDocument],
@@ -516,7 +517,7 @@ public struct MongoDatabase {
      * Associates the specified `Codable` type `OutputType` with the returned `MongoCursor`
      *
      * - Parameters:
-     *   - pipeline: an `[Document]` containing the pipeline of aggregation operations to perform.
+     *   - pipeline: an `[BSONDocument]` containing the pipeline of aggregation operations to perform.
      *   - options: Optional `AggregateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *   - withOutputType: the type that each resulting document of the output
@@ -530,12 +531,13 @@ public struct MongoDatabase {
      *    An `EventLoopFuture<MongoCursor>`over the resulting `OutputType`s
      *
      *    If the future fails, the error is likely one of the following:
+     *    - `MongoError.CommandError` if an error occurs on the server while executing the aggregation
      *    - `MongoError.InvalidArgumentError` if the options passed are an invalid combination.
      *    - `MongoError.LogicError` if the provided session is inactive.
      *    - `MongoError.LogicError` if this database's parent client has already been closed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
      *
-     * - SeeAlso: https://docs.mongodb.com/manual/reference/method/db.aggregate/
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/#db-aggregate-stages
      */
     public func aggregate<OutputType: Codable>(
         _ pipeline: [BSONDocument],

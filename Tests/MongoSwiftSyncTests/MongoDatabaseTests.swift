@@ -180,12 +180,15 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
         // $currentOp must be run on the admin database
         let db = client.db("admin")
-        let result = try db.aggregate([["$currentOp": ["allUsers": true]]]).all()
-        let op = result.filter {
-            $0.command?.documentValue != nil && $0.command?.documentValue?["aggregate"] != nil
-        }[0]
-        expect(op.command?.documentValue?["aggregate"]?.int32Value).to(equal(Int32(1)))
-        expect(op.command?.documentValue?["pipeline"]).to(equal([["$currentOp": ["allUsers": true]]]))
+        let pipeline: [BSONDocument] = [["$currentOp": [:]]]
+        let result = try db.aggregate(pipeline).all()
+        let op = result.first {
+            $0.command?.documentValue != nil
+                && $0.command?.documentValue?["aggregate"] != nil
+        }
+
+        expect(op?.command?.documentValue?["aggregate"]?.int32Value).to(equal(Int32(1)))
+        expect(op?.command?.documentValue?["pipeline"]).toNot(beNil())
     }
 
     func testAggregateWithOutputType() throws {
@@ -194,10 +197,10 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             let puppy: String
         }
         let client = try MongoClient.makeTestClient()
-        let db = client.db(Self.testDatabase)
+        let db = client.db("admin")
         let result = try db.aggregate(
             [
-                ["$listLocalSessions": ["allUsers": "true"]],
+                ["$listLocalSessions": [:]],
                 ["$limit": 1],
                 ["$addFields": ["kitty": "cat", "puppy": "pup", "foo": "bar"]],
                 ["$project": ["_id": 0, "kitty": 1, "puppy": 1]]
@@ -209,7 +212,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         // with invalid output type
         expect(try db.aggregate(
             [
-                ["$listLocalSessions": ["allUsers": "true"]],
+                ["$listLocalSessions": ["allUsers": true]],
                 ["$limit": 1],
                 ["$project": ["_id": 0, "foo": 1]]
             ],
@@ -220,7 +223,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     // TODO: remove with SWIFT-780
     func testAggregateWithListLocalSessions() throws {
         let client = try MongoClient.makeTestClient()
-        let db = client.db(Self.testDatabase)
+        let db = client.db("admin")
         let result1 = try db.aggregate([
             ["$listLocalSessions": [:]],
             ["$limit": 1],
@@ -230,7 +233,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(result1).to(equal([["dummy": "dummy field"]]))
 
         // with allowDiskUse
-        try db.drop()
         let opts = AggregateOptions(allowDiskUse: true)
         let result2 = try db.aggregate(
             [
