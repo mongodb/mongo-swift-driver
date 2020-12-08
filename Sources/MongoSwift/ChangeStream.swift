@@ -110,9 +110,10 @@ public class ChangeStream<T: Codable>: CursorProtocol {
         self.decoder = BSONDecoder(copies: decoder, options: nil)
         self.decoder.userInfo[changeStreamNamespaceKey] = namespace
 
-        // TODO: SWIFT-519 - Starting 4.2, update resumeToken to startAfter (if set).
         // startAfter takes precedence over resumeAfter.
-        if let resumeAfter = options?.resumeAfter {
+        if let startAfter = options?.startAfter {
+            self.resumeToken = startAfter
+        } else if let resumeAfter = options?.resumeAfter {
             self.resumeToken = resumeAfter
         }
     }

@@ -957,6 +957,17 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
 
         // expect this change stream to have more events after resuming
         expect(try changeStream2.nextWithTimeout()).toNot(beNil())
+
+        // test with startAfter
+        let newColl = try coll.renamed(to: self.getCollectionName(suffix: "2"))
+
+        _ = try changeStream2.nextWithTimeout()
+        expect(try changeStream2.nextWithTimeout()?.operationType).to(equal(.invalidate))
+
+        let opts = ChangeStreamOptions(startAfter: changeStream2.resumeToken)
+
+        // resuming (with startAfter) after an invalidate event should work
+        expect(try newColl.watch(options: opts)).toNot(throwError())
     }
 
     struct MyFullDocumentType: Codable, Equatable {
