@@ -132,8 +132,6 @@ internal struct AggregateOperation<CollectionType: Codable, OutputType: Codable>
                         }
                     }
 
-                    // since mongoc_collection_aggregate and mongoc_database_aggregate don't do any I/O, use forceIO
-                    // to ensure this operation fails if we can not successfully get a cursor from the server.
                     return try MongoCursor<OutputType>(
                         stealing: result,
                         connection: connection,
