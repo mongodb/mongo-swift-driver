@@ -958,6 +958,11 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         // expect this change stream to have more events after resuming
         expect(try changeStream2.nextWithTimeout()).toNot(beNil())
 
+        guard try client.serverVersion() >= ServerVersion(major: 4, minor: 2) else {
+            print("Skipping test case for server version \(try client.serverVersion())")
+            return
+        }
+
         // test with startAfter
         let newColl = try coll.renamed(to: self.getCollectionName(suffix: "2"))
 
