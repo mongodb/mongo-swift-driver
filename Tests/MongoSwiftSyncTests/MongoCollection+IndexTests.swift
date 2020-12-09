@@ -131,7 +131,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             return
         }
 
-        let projection: BSONDocument = ["cat": 1, "_id": 0]
+        let projection: BSONDocument = ["cat": true, "_id": false]
         let options = IndexOptions(wildcardProjection: projection)
         let model = IndexModel(keys: ["$**": 1], options: options)
         expect(try self.coll.createIndex(model)).to(equal("$**_1"))
