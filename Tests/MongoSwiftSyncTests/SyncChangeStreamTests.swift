@@ -972,7 +972,6 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         let opts = ChangeStreamOptions(startAfter: changeStream2.resumeToken)
 
         // resuming (with startAfter) after an invalidate event should work
-        expect(try coll.watch(options: opts)).toNot(throwError())
         let changeStream3 = try coll.watch(options: opts)
 
         try coll.insertOne(["kitty": "cat"])
