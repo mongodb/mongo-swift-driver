@@ -969,14 +969,18 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
         _ = try changeStream2.nextWithTimeout()
         expect(try changeStream2.nextWithTimeout()?.operationType).to(equal(.invalidate))
 
-        let opts = ChangeStreamOptions(startAfter: changeStream2.resumeToken)
+        // insert before starting a new change stream with this resumeToken
+        try coll.insertOne(["kitty": "cat"])
 
+        let opts = ChangeStreamOptions(startAfter: changeStream2.resumeToken)
         // resuming (with startAfter) after an invalidate event should work
         let changeStream3 = try coll.watch(options: opts)
 
-        try coll.insertOne(["kitty": "cat"])
+        try coll.findOneAndUpdate(filter: ["kitty": "cat"], update: ["$set": ["kitty": "kat"]])
 
+        // the new change stream should pick up where the last change stream left off
         expect(try changeStream3.nextWithTimeout()?.operationType).to(equal(.insert))
+        expect(try changeStream3.nextWithTimeout()?.operationType).to(equal(.update))
     }
 
     struct MyFullDocumentType: Codable, Equatable {
