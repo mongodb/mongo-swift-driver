@@ -656,6 +656,20 @@ public class MongoClient {
     }
 
     /**
+     * Returns an `EventLoopBoundMongoClient`, a wrapper around this `MongoClient` that will use only the specified
+     * `EventLoop` for executing commands.
+     *
+     * - Parameters:
+     *   - eventLoop: An `EventLoop` which the returned `EventLoopBoundMongoClient` will be bound to.
+     *
+     * - Returns:
+     *    An `EventLoopBoundMongoClient` with the specified `EventLoop` bound to it.
+     */
+    public func bound(to eventLoop: EventLoop) -> EventLoopBoundMongoClient {
+        EventLoopBoundMongoClient(client: self, eventLoop: eventLoop)
+    }
+
+    /**
      * Attach a `CommandEventHandler` that will receive `CommandEvent`s emitted by this client.
      *
      * Note: the client stores a weak reference to this handler, so it must be kept alive separately in order for it

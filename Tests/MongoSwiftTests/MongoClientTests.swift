@@ -82,6 +82,22 @@ final class MongoClientTests: MongoSwiftTestCase {
         expect(ids[2]).to(equal(ids[1] + 1))
     }
 
+    func testBound() throws {
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        let expectedEventLoop = TestEventLoop(elg.next())
+        try self.withTestClient { client in
+            let eventLoopBoundClient = client.bound(to: expectedEventLoop.eventLoop)
+
+            // test EventLoopBoundMongoClient.listDatabases()
+            let resultEventLoop1 = TestEventLoop(eventLoopBoundClient.listDatabases().eventLoop)
+            expect(resultEventLoop1).to(equal(expectedEventLoop))
+
+            // test EventLoopBoundMongoClient.listDatabaseNames()
+            let resultEventLoop2 = TestEventLoop(eventLoopBoundClient.listDatabaseNames().eventLoop)
+            expect(resultEventLoop2).to(equal(expectedEventLoop))
+        }
+    }
+
     // tests that when no connections are available operations won't block the thread pool.
     func testResubmittingToThreadPool() throws {
         try self.withTestNamespace { _, _, coll in
@@ -148,5 +164,17 @@ final class MongoClientTests: MongoSwiftTestCase {
 
         // wait to ensure all resource cleanup happens correctly
         try closeFuture.wait()
+    }
+}
+
+class TestEventLoop: Equatable {
+    let eventLoop: EventLoop
+
+    init(_ eventLoop: EventLoop) {
+        self.eventLoop = eventLoop
+    }
+
+    public static func == (lhs: TestEventLoop, rhs: TestEventLoop) -> Bool {
+        lhs.eventLoop === rhs.eventLoop
     }
 }
