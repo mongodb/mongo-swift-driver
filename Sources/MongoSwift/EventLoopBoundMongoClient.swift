@@ -19,7 +19,7 @@ public struct EventLoopBoundMongoClient {
      *
      * - Parameters:
      *   - filter: Optional `BSONDocument` specifying a filter that the listed databases must pass. This filter can be
-     *      based on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
+     *     based on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
@@ -33,7 +33,7 @@ public struct EventLoopBoundMongoClient {
      *    - `MongoError.LogicError` if this client has already been closed.
      *    - `EncodingError` if an error is encountered while encoding the options to BSON.
      *    - `MongoError.CommandError` if options.authorizedDatabases is false and the user does not have listDatabases
-     *      permissions.
+     *       permissions.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/command/listDatabases/
      */
@@ -74,7 +74,7 @@ public struct EventLoopBoundMongoClient {
      *    - `MongoError.LogicError` if the provided session is inactive.
      *    - `MongoError.LogicError` if this client has already been closed.
      *    - `MongoError.CommandError` if options.authorizedDatabases is false and the user does not have listDatabases
-     *      permissions.
+     *       permissions.
      */
     public func listDatabaseNames(
         _ filter: BSONDocument? = nil,
