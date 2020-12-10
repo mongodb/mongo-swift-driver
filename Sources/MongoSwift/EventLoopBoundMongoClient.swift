@@ -1,5 +1,6 @@
 import NIO
 
+// sourcery: skipSyncExport
 /// An event loop bound MongoDB Client.
 public struct EventLoopBoundMongoClient {
     /// The underlying `MongoClient`.
