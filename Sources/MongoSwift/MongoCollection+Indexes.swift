@@ -111,6 +111,11 @@ public struct IndexOptions: Codable {
     /// Optionally specifies fields in the index and their corresponding weight values.
     public var weights: BSONDocument?
 
+    /// Optionally specifies a projection document used to determine which fields are indexed by a wildcard index.
+    /// - Note: Supported in MongoDB version 4.2+ only.
+    /// - SeeAlso: https://docs.mongodb.com/manual/core/index-wildcard/
+    public var wildcardProjection: BSONDocument?
+
     /// Convenience initializer allowing any/all parameters to be omitted.
     public init(
         background: Bool? = nil,
@@ -131,7 +136,8 @@ public struct IndexOptions: Codable {
         textIndexVersion: Int? = nil,
         unique: Bool? = nil,
         version: Int? = nil,
-        weights: BSONDocument? = nil
+        weights: BSONDocument? = nil,
+        wildcardProjection: BSONDocument? = nil
     ) {
         self.background = background
         self.bits = bits
@@ -152,13 +158,14 @@ public struct IndexOptions: Codable {
         self.unique = unique
         self.version = version
         self.weights = weights
+        self.wildcardProjection = wildcardProjection
     }
 
     private enum CodingKeys: String, CodingKey {
         case background, expireAfterSeconds, hidden, name, sparse, storageEngine, unique, version = "v",
              defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
-             sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize, partialFilterExpression,
-             collation
+             wildcardProjection, sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize,
+             partialFilterExpression, collation
     }
 }
 

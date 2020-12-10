@@ -125,6 +125,22 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(indexOptions[2]).to(equal(expectedTtlOptions))
     }
 
+    func testIndexWithWildCard() throws {
+        guard try _client!.serverVersion() >= ServerVersion(major: 4, minor: 2) else {
+            print("Skipping tests from file \(self.name) for server version \(try _client!.serverVersion())")
+            return
+        }
+
+        let projection: BSONDocument = ["cat": true, "_id": false]
+        let options = IndexOptions(wildcardProjection: projection)
+        let model = IndexModel(keys: ["$**": 1], options: options)
+        expect(try self.coll.createIndex(model)).to(equal("$**_1"))
+
+        let indexes = try coll.listIndexes()
+        expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
+        expect(try indexes.next()?.get().options?.wildcardProjection).to(equal(projection))
+    }
+
     func testCreateIndexesFromModels() throws {
         let model1 = IndexModel(keys: ["cat": 1])
         let model2 = IndexModel(keys: ["cat": -1])
@@ -267,6 +283,7 @@ extension IndexOptions: Equatable {
             lhs.languageOverride == rhs.languageOverride &&
             lhs.textIndexVersion == rhs.textIndexVersion &&
             lhs.weights == rhs.weights &&
+            lhs.wildcardProjection == rhs.wildcardProjection &&
             lhs.sphereIndexVersion == rhs.sphereIndexVersion &&
             lhs.bits == rhs.bits &&
             lhs.max == rhs.max &&

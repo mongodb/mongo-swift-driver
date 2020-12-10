@@ -248,6 +248,7 @@ extension MongoCollection_IndexTests {
     static var allTests = [
         ("testCreateIndexFromModel", testCreateIndexFromModel),
         ("testIndexOptions", testIndexOptions),
+        ("testIndexWithWildCard", testIndexWithWildCard),
         ("testCreateIndexesFromModels", testCreateIndexesFromModels),
         ("testCreateIndexFromKeys", testCreateIndexFromKeys),
         ("testDropIndexByName", testDropIndexByName),
