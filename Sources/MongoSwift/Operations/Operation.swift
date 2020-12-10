@@ -53,6 +53,7 @@ internal class OperationExecutor {
     internal func execute<T: Operation>(
         _ operation: T,
         client: MongoClient,
+        on eventLoop: EventLoop? = nil,
         session: ClientSession?
     ) -> EventLoopFuture<T.OperationResult> {
         // closure containing the work to run in the thread pool: obtain a connection and execute the operation.
@@ -78,7 +79,7 @@ internal class OperationExecutor {
         let resubmitIfNeeded = { (result: ExecuteResult<T.OperationResult>) -> EventLoopFuture<T.OperationResult> in
             switch result {
             case let .success(res):
-                return self.makeSucceededFuture(res)
+                return self.makeSucceededFuture(res, on: eventLoop)
             case .resubmit:
                 return self.execute(operation, client: client, session: session)
             }
@@ -87,28 +88,31 @@ internal class OperationExecutor {
         if let session = session {
             // start the session if needed (which generates a new operation itself), and then execute the operation.
             return session.startIfNeeded()
-                .flatMap { self.execute(doOperation) }
+                .flatMap { self.execute(on: eventLoop, doOperation) }
                 .flatMap { resubmitIfNeeded($0) }
         }
 
         // no session was provided, so we can just jump to executing the operation.
-        return self.execute(doOperation).flatMap { resubmitIfNeeded($0) }
+        return self.execute(on: eventLoop, doOperation).flatMap { resubmitIfNeeded($0) }
     }
 
-    internal func execute<T>(_ body: @escaping () throws -> T) -> EventLoopFuture<T> {
-        self.threadPool.runIfActive(eventLoop: self.eventLoopGroup.next(), body)
+    internal func execute<T>(on eventLoop: EventLoop? = nil, _ body: @escaping () throws -> T) -> EventLoopFuture<T> {
+        self.threadPool.runIfActive(eventLoop: eventLoop ?? self.eventLoopGroup.next(), body)
     }
 
-    internal func makeFailedFuture<T>(_ error: Error) -> EventLoopFuture<T> {
-        self.eventLoopGroup.next().makeFailedFuture(error)
+    internal func makeFailedFuture<T>(_ error: Error, on eventLoop: EventLoop? = nil) -> EventLoopFuture<T> {
+        let ev = eventLoop ?? self.eventLoopGroup.next()
+        return ev.makeFailedFuture(error)
     }
 
-    internal func makeSucceededFuture<T>(_ value: T) -> EventLoopFuture<T> {
-        self.eventLoopGroup.next().makeSucceededFuture(value)
+    internal func makeSucceededFuture<T>(_ value: T, on eventLoop: EventLoop? = nil) -> EventLoopFuture<T> {
+        let ev = eventLoop ?? self.eventLoopGroup.next()
+        return ev.makeSucceededFuture(value)
     }
 
-    internal func makePromise<T>(of type: T.Type) -> EventLoopPromise<T> {
-        self.eventLoopGroup.next().makePromise(of: type)
+    internal func makePromise<T>(of type: T.Type, on eventLoop: EventLoop? = nil) -> EventLoopPromise<T> {
+        let ev = eventLoop ?? self.eventLoopGroup.next()
+        return ev.makePromise(of: type)
     }
 }
 
