@@ -83,18 +83,18 @@ final class MongoClientTests: MongoSwiftTestCase {
     }
 
     func testBound() throws {
-        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        let expectedEventLoop = TestEventLoop(elg.next())
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+        let expectedEventLoop = elg.next()
         try self.withTestClient { client in
-            let eventLoopBoundClient = client.bound(to: expectedEventLoop.eventLoop)
+            let eventLoopBoundClient = client.bound(to: expectedEventLoop)
 
             // test EventLoopBoundMongoClient.listDatabases()
-            let resultEventLoop1 = TestEventLoop(eventLoopBoundClient.listDatabases().eventLoop)
-            expect(resultEventLoop1).to(equal(expectedEventLoop))
+            let resultEventLoop1 = eventLoopBoundClient.listDatabases().eventLoop
+            expect(resultEventLoop1) === expectedEventLoop
 
             // test EventLoopBoundMongoClient.listDatabaseNames()
-            let resultEventLoop2 = TestEventLoop(eventLoopBoundClient.listDatabaseNames().eventLoop)
-            expect(resultEventLoop2).to(equal(expectedEventLoop))
+            let resultEventLoop2 = eventLoopBoundClient.listDatabaseNames().eventLoop
+            expect(resultEventLoop2) === expectedEventLoop
         }
     }
 
@@ -164,17 +164,5 @@ final class MongoClientTests: MongoSwiftTestCase {
 
         // wait to ensure all resource cleanup happens correctly
         try closeFuture.wait()
-    }
-}
-
-class TestEventLoop: Equatable {
-    let eventLoop: EventLoop
-
-    init(_ eventLoop: EventLoop) {
-        self.eventLoop = eventLoop
-    }
-
-    public static func == (lhs: TestEventLoop, rhs: TestEventLoop) -> Bool {
-        lhs.eventLoop === rhs.eventLoop
     }
 }

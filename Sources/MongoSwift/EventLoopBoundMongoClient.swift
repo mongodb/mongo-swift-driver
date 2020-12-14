@@ -1,12 +1,12 @@
 import NIO
 
 // sourcery: skipSyncExport
-/// An event loop bound MongoDB Client.
+/// A wrapper around a `MongoClient` that will use only the specified `EventLoop` for executing commands.
 public struct EventLoopBoundMongoClient {
     /// The underlying `MongoClient`.
     internal let client: MongoClient
 
-    /// The `EventLoop` bound to this `EventLoopBoundMongoClient`.
+    /// The `EventLoop` this `EventLoopBoundMongoClient` will be bound to.
     internal let eventLoop: EventLoop
 
     internal init(client: MongoClient, eventLoop: EventLoop) {

@@ -663,7 +663,7 @@ public class MongoClient {
      *   - eventLoop: An `EventLoop` which the returned `EventLoopBoundMongoClient` will be bound to.
      *
      * - Returns:
-     *    An `EventLoopBoundMongoClient` with the specified `EventLoop` bound to it.
+     *    An `EventLoopBoundMongoClient` bound to the specified `EventLoop`.
      */
     public func bound(to eventLoop: EventLoop) -> EventLoopBoundMongoClient {
         EventLoopBoundMongoClient(client: self, eventLoop: eventLoop)
