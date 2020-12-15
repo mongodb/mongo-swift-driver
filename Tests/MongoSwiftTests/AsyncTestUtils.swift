@@ -73,7 +73,7 @@ extension MongoSwiftTestCase {
     internal func withTestClient<T>(
         _ uri: String = MongoSwiftTestCase.getConnectionString().toString(),
         options: MongoClientOptions? = nil,
-        eventLoopGroup: MultiThreadedEventLoopGroup? = nil,
+        eventLoopGroup: EventLoopGroup? = nil,
         f: (MongoClient) throws -> T
     ) throws -> T {
         let elg = eventLoopGroup ?? MultiThreadedEventLoopGroup(numberOfThreads: 1)
@@ -128,12 +128,12 @@ extension MongoSwiftTestCase {
     }
 }
 
-extension MultiThreadedEventLoopGroup {
+extension EventLoopGroup {
     internal func syncShutdownOrFail() {
         do {
             try self.syncShutdownGracefully()
         } catch {
-            XCTFail("Error shutting down test MultiThreadedEventLoopGroup: \(error)")
+            XCTFail("Error shutting down test EventLoopGroup: \(error)")
         }
     }
 }
