@@ -85,7 +85,7 @@ final class MongoClientTests: MongoSwiftTestCase {
     func testBound() throws {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let expectedEventLoop = elg.next()
-        try self.withTestClient { client in
+        try self.withTestClient(eventLoopGroup: elg) { client in
             let eventLoopBoundClient = client.bound(to: expectedEventLoop)
 
             // test EventLoopBoundMongoClient.listDatabases()
