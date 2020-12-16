@@ -135,6 +135,11 @@ internal struct CreateCollectionOperation<T: Codable>: Operation {
             uuidCodingStrategy: self.options?.uuidCodingStrategy
         )
 
-        return MongoCollection(name: self.name, database: self.database, options: collectionOptions)
+        return MongoCollection(
+            name: self.name,
+            database: self.database,
+            eventLoop: self.database.eventLoop,
+            options: collectionOptions
+        )
     }
 }

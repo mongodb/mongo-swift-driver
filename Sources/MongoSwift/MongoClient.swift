@@ -519,7 +519,7 @@ public class MongoClient {
      * - Returns: a `MongoDatabase` corresponding to the provided database name.
      */
     public func db(_ name: String, options: MongoDatabaseOptions? = nil) -> MongoDatabase {
-        MongoDatabase(name: name, client: self, options: options)
+        MongoDatabase(name: name, client: self, eventLoop: nil, options: options)
     }
 
     /**

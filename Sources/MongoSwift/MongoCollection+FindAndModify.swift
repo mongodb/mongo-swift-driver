@@ -66,7 +66,7 @@ extension MongoCollection {
             let update = try self.encoder.encode(replacement)
             return self.findAndModify(filter: filter, update: update, options: options, session: session)
         } catch {
-            return self._client.operationExecutor.makeFailedFuture(error)
+            return self._client.operationExecutor.makeFailedFuture(error, on: self.eventLoop)
         }
     }
 
@@ -121,7 +121,12 @@ extension MongoCollection {
         session: ClientSession?
     ) -> EventLoopFuture<CollectionType?> {
         let operation = FindAndModifyOperation(collection: self, filter: filter, update: update, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 }
 

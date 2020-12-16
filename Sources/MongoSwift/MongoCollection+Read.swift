@@ -155,7 +155,12 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) -> EventLoopFuture<Int> {
         let operation = CountDocumentsOperation(collection: self, filter: filter, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /**
@@ -176,7 +181,12 @@ extension MongoCollection {
      */
     public func estimatedDocumentCount(options: EstimatedDocumentCountOptions? = nil) -> EventLoopFuture<Int> {
         let operation = EstimatedDocumentCountOperation(collection: self, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: nil)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: nil
+        )
     }
 
     /**
@@ -206,6 +216,11 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) -> EventLoopFuture<[BSON]> {
         let operation = DistinctOperation(collection: self, fieldName: fieldName, filter: filter, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 }

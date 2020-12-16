@@ -96,4 +96,23 @@ public struct EventLoopBoundMongoClient {
             return names
         }
     }
+
+    /**
+     * Gets a `MongoDatabase` instance for the given database name that will return `EventLoopFuture`s on this
+     * `EventLoopBoundMongoClient`'s `EventLoop`. If an option is not specified in the optional `MongoDatabaseOptions`
+     * param, the database will inherit the value from this `EventLoopBoundMongoClient`'s underlying `MongoClient`
+     * or the default if the client’s option is not set.
+     * To override an option inherited from the client (e.g. a read concern) with the default value, it must be
+     * explicitly specified in the options param (e.g. ReadConcern.serverDefault, not nil).
+     *
+     * - Parameters:
+     *   - name: the name of the database to retrieve
+     *   - options: Optional `MongoDatabaseOptions` to use for the retrieved database
+     *
+     * - Returns:
+     *     A `MongoDatabase` that is bound to this `EventLoopBoundMongoClient`'s `EventLoop`.
+     */
+    public func db(_ name: String, options: MongoDatabaseOptions? = nil) -> MongoDatabase {
+        MongoDatabase(name: name, client: self.client, eventLoop: self.eventLoop, options: options)
+    }
 }

@@ -28,6 +28,9 @@ public struct MongoCollection<T: Codable> {
     /// Decoder used by this collection for BSON conversions (e.g. converting documents to `CollectionType`s).
     public let decoder: BSONDecoder
 
+    /// The `EventLoop` this `MongoCollection` is bound to.
+    public let eventLoop: EventLoop?
+
     /**
      * A `Codable` type associated with this `MongoCollection` instance.
      * This allows `CollectionType` values to be directly inserted into and retrieved from the collection, by
@@ -59,9 +62,15 @@ public struct MongoCollection<T: Codable> {
 
     /// Initializes a new `MongoCollection` instance corresponding to a collection with name `name` in database with
     /// the provided options.
-    internal init(name: String, database: MongoDatabase, options: MongoCollectionOptions?) {
+    internal init(
+        name: String,
+        database: MongoDatabase,
+        eventLoop: EventLoop?,
+        options: MongoCollectionOptions?
+    ) {
         self.namespace = MongoNamespace(db: database.name, collection: name)
         self._client = database._client
+        self.eventLoop = eventLoop
 
         // for both read concern and write concern, we look for a read concern in the following order:
         // 1. options provided for this collection
@@ -92,6 +101,7 @@ public struct MongoCollection<T: Codable> {
         self.readPreference = other.readPreference
         self.encoder = other.encoder
         self.decoder = other.decoder
+        self.eventLoop = other.eventLoop
     }
 
     /**
@@ -110,7 +120,12 @@ public struct MongoCollection<T: Codable> {
      */
     public func drop(options: DropCollectionOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
         let operation = DropCollectionOperation(collection: self, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /**
@@ -146,7 +161,12 @@ public struct MongoCollection<T: Codable> {
             newName: newName,
             options: options
         )
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /// Uses the provided `Connection` to get a pointer to a `mongoc_collection_t` corresponding to this
