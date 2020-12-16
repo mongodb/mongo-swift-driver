@@ -81,7 +81,7 @@ internal class OperationExecutor {
             case let .success(res):
                 return self.makeSucceededFuture(res, on: eventLoop)
             case .resubmit:
-                return self.execute(operation, client: client, session: session)
+                return self.execute(operation, client: client, on: eventLoop, session: session)
             }
         }
 
