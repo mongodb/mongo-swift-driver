@@ -1,13 +1,14 @@
 import NIO
 
 // sourcery: skipSyncExport
-/// A wrapper around a `MongoClient` that will use only the specified `EventLoop` for executing commands.
+/// A wrapper around a `MongoClient` that will return `EventLoopFuture`s on the specified `EventLoop`.
+/// - SeeAlso: https://apple.github.io/swift-nio/docs/current/NIO/Classes/EventLoopFuture.html
 public struct EventLoopBoundMongoClient {
     /// The underlying `MongoClient`.
     internal let client: MongoClient
 
     /// The `EventLoop` this `EventLoopBoundMongoClient` will be bound to.
-    internal let eventLoop: EventLoop
+    public let eventLoop: EventLoop
 
     internal init(client: MongoClient, eventLoop: EventLoop) {
         self.client = client
@@ -15,7 +16,7 @@ public struct EventLoopBoundMongoClient {
     }
 
     /**
-     * Retrieves a list of databases in this client's MongoDB deployment. The returned future will be bound to the
+     * Retrieves a list of databases in this client's MongoDB deployment. The returned future will be on the
      * `EventLoop` specified on this `EventLoopBoundMongoClient`.
      *
      * - Parameters:
@@ -25,7 +26,7 @@ public struct EventLoopBoundMongoClient {
      *   - session: Optional `ClientSession` to use when executing this command.
      *
      * - Returns:
-     *    An `EventLoopFuture<[DatabaseSpecification]>` bound to the `EventLoop` specified on this
+     *    An `EventLoopFuture<[DatabaseSpecification]>` on  the `EventLoop` specified on this
      *   `EventLoopBoundMongoClient`. On success, the future contains an array of the specifications of databases
      *    matching the provided criteria.
      *
@@ -59,7 +60,7 @@ public struct EventLoopBoundMongoClient {
     }
 
     /**
-     * Gets the names of databases in this client's MongoDB deployment. The returned future will be bound to the
+     * Gets the names of databases in this client's MongoDB deployment. The returned future will be on the
      * `EventLoop` specified on this `EventLoopBoundMongoClient`.
      *
      * - Parameters:
@@ -68,7 +69,7 @@ public struct EventLoopBoundMongoClient {
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns:
-     *    An `EventLoopFuture<[String]>` bound to the `EventLoop` specified on this `EventLoopBoundMongoClient`.
+     *    An `EventLoopFuture<[String]>` on the `EventLoop` specified on this `EventLoopBoundMongoClient`.
      *    On success, the future contains an array of names of databases that match the provided filter.
      *
      *    If the future fails, the error is likely one of the following:

@@ -656,8 +656,10 @@ public class MongoClient {
     }
 
     /**
-     * Returns an `EventLoopBoundMongoClient`, a wrapper around this `MongoClient` that will use only the specified
-     * `EventLoop` for executing commands.
+     * Returns an `EventLoopBoundMongoClient`, a wrapper around this `MongoClient` that will return `EventLoopFuture`s
+     * on the specified `EventLoop`.
+     *
+     * - Note: This `MongoClient` must be kept alive in order to use the `EventLoopBoundMongoClient`.
      *
      * - Parameters:
      *   - eventLoop: An `EventLoop` which the returned `EventLoopBoundMongoClient` will be bound to.
