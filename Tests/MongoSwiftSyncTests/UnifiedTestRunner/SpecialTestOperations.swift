@@ -18,7 +18,7 @@ struct UnifiedFailPoint: UnifiedOperationProtocol {
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let testClient = try context.entities.getEntity(id: self.client).asTestClient()
         let opts = RunCommandOptions(readPreference: .primary)
-        let fpGuard = try self.failPoint.enable(using: testClient.client, options: opts)
+        let fpGuard = try self.failPoint.enableWithGuard(using: testClient.client, options: opts)
         context.enabledFailPoints.append(fpGuard)
         return .none
     }
@@ -280,7 +280,7 @@ struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
         // The test runner SHOULD use the client entity associated with the session to execute the configureFailPoint
         // command.
         let client = session.client
-        let fpGuard = try self.failPoint.enable(using: client, on: pinnedMongos)
+        let fpGuard = try self.failPoint.enableWithGuard(using: client, on: pinnedMongos)
         // add to context's list of enabled failpoints to ensure we disable it later.
         context.enabledFailPoints.append(fpGuard)
         return .none
