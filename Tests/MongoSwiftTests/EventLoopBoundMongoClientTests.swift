@@ -15,11 +15,22 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             expect(db.eventLoop) === expectedEventLoop
 
             // test the MongoDatabase operations return futures on the expected event loop
-            expect(db.createCollection("test").eventLoop) === expectedEventLoop
             expect(db.collection("test").eventLoop) === expectedEventLoop
-            expect(db.listMongoCollections().eventLoop) === expectedEventLoop
             expect(db.listCollectionNames().eventLoop) === expectedEventLoop
             expect(db.runCommand(["insert": "coll", "documents": [["foo": "bar"]]]).eventLoop) === expectedEventLoop
+
+            let res1 = db.createCollection("test")
+            expect(res1.eventLoop) === expectedEventLoop
+            // test the returned MongoCollection has the expected event loop
+            expect(try res1.wait().eventLoop) === expectedEventLoop
+
+            let res2 = db.listMongoCollections()
+            expect(res2.eventLoop) === expectedEventLoop
+            let collections = try res2.wait()
+            // test the returned MongoCollections have the expected event loop
+            for coll in collections {
+                expect(coll.eventLoop) === expectedEventLoop
+            }
         }
     }
 

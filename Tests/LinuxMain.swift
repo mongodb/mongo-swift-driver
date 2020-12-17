@@ -181,7 +181,6 @@ extension Document_SequenceTests {
 extension EventLoopBoundMongoClientTests {
     static var allTests = [
         ("testEventLoopBoundDb", testEventLoopBoundDb),
-        ("testCollection", testCollection),
         ("testEventLoopBoundCollection", testEventLoopBoundCollection),
         ("testEventLoopBoundCollectionReads", testEventLoopBoundCollectionReads),
         ("testEventLoopBoundCollectionIndexes", testEventLoopBoundCollectionIndexes),
