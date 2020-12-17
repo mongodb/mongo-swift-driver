@@ -12,6 +12,7 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             // TODO: SWIFT-1030 - add tests for database operations that return ChangeStream and MongoCursor
             let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
             let db = elBoundClient.db(Self.testDatabase)
+            defer { try? db.drop().wait() }
             expect(db.eventLoop) === expectedEventLoop
 
             // test the MongoDatabase operations return futures on the expected event loop
