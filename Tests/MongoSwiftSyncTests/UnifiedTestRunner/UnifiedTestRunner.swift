@@ -88,7 +88,6 @@ struct UnifiedTestRunner {
                 continue
             }
 
-            // TODO: SWIFT-913: run all tests
             for test in file.tests {
                 // If test.skipReason is specified, the test runner MUST skip this test and MAY use the string value to
                 // log a message.
@@ -165,24 +164,6 @@ struct UnifiedTestRunner {
                     }
                 }
 
-                // Ensure that even if we encounter an error in the process of executing operations, we will disable
-                // any failpoints set by clients and terminate open transactions.
-                defer {
-                    let db = self.internalClient.db("admin")
-                    for (failPointName, serverAddress) in context.enabledFailPoints {
-                        let disableCmd: BSONDocument = ["configureFailPoint": .string(failPointName), "mode": "off"]
-                        do {
-                            if let addr = serverAddress {
-                                try db.runCommand(disableCmd, on: addr)
-                            } else {
-                                try db.runCommand(disableCmd)
-                            }
-                        } catch {
-                            print("Failed to disable failpoint: \(error)")
-                        }
-                    }
-                }
-
                 for (i, operation) in test.operations.enumerated() {
                     try context.withPushedElt("Operation \(i) (\(operation.name))") {
                         try operation.executeAndCheckResult(context: context)
@@ -215,8 +196,10 @@ struct UnifiedTestRunner {
                 }
 
                 if let expectedOutcome = test.outcome {
-                    for cd in expectedOutcome {
-                        let collection = self.internalClient.db(cd.databaseName).collection(cd.collectionName)
+                    for collectionData in expectedOutcome {
+                        let collection = self.internalClient
+                            .db(collectionData.databaseName)
+                            .collection(collectionData.collectionName)
                         let opts = FindOptions(
                             readConcern: .local,
                             readPreference: .primary,
@@ -224,8 +207,8 @@ struct UnifiedTestRunner {
                         )
                         let documents = try collection.find(options: opts).map { try $0.get() }
 
-                        expect(documents.count).to(equal(cd.documents.count))
-                        for (expected, actual) in zip(cd.documents, documents) {
+                        expect(documents.count).to(equal(collectionData.documents.count))
+                        for (expected, actual) in zip(collectionData.documents, documents) {
                             expect(actual).to(sortedEqual(expected), description: "Test outcome did not match expected")
                         }
                     }

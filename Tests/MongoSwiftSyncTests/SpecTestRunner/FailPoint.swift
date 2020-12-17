@@ -33,6 +33,26 @@ extension FailPointConfigured {
     }
 }
 
+/// Convenience class which wraps a `FailPoint` and disables it upon deinitialization.
+class FailPointGuard {
+    /// The failpoint.
+    let failPoint: FailPoint
+    /// Client to use when disabling the failpoint.
+    let client: MongoClient
+    /// Optional server address to disable the failpoint on.
+    let address: ServerAddress?
+
+    init(failPoint: FailPoint, client: MongoClient, address: ServerAddress?) {
+        self.failPoint = failPoint
+        self.client = client
+        self.address = address
+    }
+
+    deinit {
+        self.failPoint.disable(using: client, on: address)
+    }
+}
+
 /// Struct modeling a MongoDB fail point.
 ///
 /// - Note: if a fail point results in a connection being closed / interrupted, libmongoc built in debug mode will print
@@ -53,31 +73,19 @@ internal struct FailPoint: Decodable {
         self.failPoint = try BSONDocument(from: decoder)
     }
 
-    internal func enable(using client: MongoClient, on serverAddress: ServerAddress? = nil) throws {
-        var commandDoc = ["configureFailPoint": self.failPoint["configureFailPoint"]!] as BSONDocument
-        for (k, v) in self.failPoint {
-            guard k != "configureFailPoint" else {
-                continue
-            }
-
-            // Need to convert error codes to int32's due to c driver bug (CDRIVER-3121)
-            if k == "data",
-               var data = v.documentValue,
-               var wcErr = data["writeConcernError"]?.documentValue,
-               let code = wcErr["code"]
-            {
-                wcErr["code"] = .int32(code.toInt32()!)
-                data["writeConcernError"] = .document(wcErr)
-                commandDoc["data"] = .document(data)
-            } else {
-                commandDoc[k] = v
-            }
-        }
+    @discardableResult
+    internal func enable(
+        using client: MongoClient,
+        on serverAddress: ServerAddress? = nil,
+        options: RunCommandOptions? = nil
+    ) throws -> FailPointGuard {
         if let address = serverAddress {
-            try client.db("admin").runCommand(commandDoc, on: address)
+            try client.db("admin").runCommand(self.failPoint, on: address, options: options)
         } else {
-            try client.db("admin").runCommand(commandDoc)
+            try client.db("admin").runCommand(self.failPoint, options: options)
         }
+
+        return FailPointGuard(failPoint: self, client: client, address: serverAddress)
     }
 
     internal func enable() throws {

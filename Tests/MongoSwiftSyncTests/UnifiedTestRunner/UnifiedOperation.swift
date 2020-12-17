@@ -106,8 +106,15 @@ struct UnifiedOperation: Decodable {
                     message: "Expected operation to succeed, but got error: \(error). Path: \(context.path)"
                 )
             }
+
+            guard let mongoError = error as? MongoErrorProtocol else {
+                throw TestError(
+                    message: "Expected operation to throw an error conforming to MongoErrorProtocol, but got \(error)"
+                )
+            }
+
             try context.withPushedElt("expectError") {
-                try error.matches(expectedError, context: context)
+                try mongoError.matches(expectedError, context: context)
             }
         }
     }

@@ -5,8 +5,8 @@ import MongoSwiftSync
 import Nimble
 
 struct UnifiedFailPoint: UnifiedOperationProtocol {
-    /// The configureFailpoint command to be executed.
-    let failPoint: BSONDocument
+    /// The failpoint to set.
+    let failPoint: FailPoint
 
     /// The client entity to use for setting the failpoint.
     let client: String
@@ -18,10 +18,8 @@ struct UnifiedFailPoint: UnifiedOperationProtocol {
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let testClient = try context.entities.getEntity(id: self.client).asTestClient()
         let opts = RunCommandOptions(readPreference: .primary)
-        try testClient.client.db("admin").runCommand(self.failPoint, options: opts)
-        // When executing this operation, the test runner MUST keep a record of the fail point so that it can be
-        // disabled after the test.
-        context.enabledFailPoints.append((failPoint["configureFailPoint"]!.stringValue!, nil))
+        let fpGuard = try self.failPoint.enable(using: testClient.client, options: opts)
+        context.enabledFailPoints.append(fpGuard)
         return .none
     }
 }
@@ -258,8 +256,8 @@ func makeLsidAssertion(client: UnifiedTestClient, same: Bool, context: Context) 
 }
 
 struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
-    /// The configureFailPoint command to be executed.
-    let failPoint: BSONDocument
+    /// The failpoint to set.
+    let failPoint: FailPoint
 
     /// Identifier for the session entity with which to set the fail point.
     let session: String
@@ -282,8 +280,9 @@ struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
         // The test runner SHOULD use the client entity associated with the session to execute the configureFailPoint
         // command.
         let client = session.client
-        try client.db("admin").runCommand(self.failPoint, on: pinnedMongos)
-        context.enabledFailPoints.append((failPoint["configureFailPoint"]!.stringValue!, pinnedMongos))
+        let fpGuard = try self.failPoint.enable(using: client, on: pinnedMongos)
+        // add to context's list of enabled failpoints to ensure we disable it later.
+        context.enabledFailPoints.append(fpGuard)
         return .none
     }
 }

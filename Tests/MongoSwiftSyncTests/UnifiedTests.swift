@@ -50,9 +50,7 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         let skipRunningValid: [String: [String]] = [
             // unsupported APIs
             "poc-transactions-convenient-api": ["*"],
-            "poc-gridfs": ["*"],
-            // requires DB-level aggregate. TODO SWIFT-577: unskip
-            "poc-crud": ["Aggregate with $listLocalSessions"]
+            "poc-gridfs": ["*"]
         ]
 
         let runner = try UnifiedTestRunner()

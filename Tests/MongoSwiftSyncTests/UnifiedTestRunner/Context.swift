@@ -8,8 +8,8 @@ class Context {
     /// Entities created for the test.
     var entities: EntityMap
 
-    /// List of (fail point name, server address fail point was set on).
-    var enabledFailPoints: [(String, ServerAddress?)] = []
+    /// Fail points that have been set during test execution and should be disabled on completion.
+    var enabledFailPoints: [FailPointGuard] = []
 
     let internalClient: MongoClient
 

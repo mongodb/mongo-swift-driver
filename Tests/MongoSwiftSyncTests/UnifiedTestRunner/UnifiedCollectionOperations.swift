@@ -2,6 +2,7 @@ import Foundation
 @testable import struct MongoSwift.AggregateOptions
 @testable import struct MongoSwift.FindOptions
 import MongoSwiftSync
+import TestsCommon
 
 struct UnifiedAggregate: UnifiedOperationProtocol {
     /// Aggregation pipeline.
@@ -32,9 +33,19 @@ struct UnifiedAggregate: UnifiedOperationProtocol {
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
-        let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        let cursor = try collection.aggregate(self.pipeline, options: self.options, session: session)
+        let entity = try context.entities.getEntity(from: object)
+
+        let cursor: MongoCursor<BSONDocument>
+        switch entity {
+        case let .collection(coll):
+            cursor = try coll.aggregate(self.pipeline, options: self.options, session: session)
+        case let .database(db):
+            cursor = try db.aggregate(self.pipeline, options: self.options, session: session)
+        default:
+            throw TestError(message: "Unsupported entity \(entity) for aggregate")
+        }
+
         let docs = try cursor.map { try $0.get() }
         return .rootDocumentArray(docs)
     }

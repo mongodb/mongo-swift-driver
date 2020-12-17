@@ -413,44 +413,26 @@ extension MongoError.BulkWriteError: HasErrorCodes {
     }
 }
 
-extension Error {
+extension MongoErrorProtocol {
     func matches(_ expected: ExpectedError, context: Context) throws {
         if let isClientError = expected.isClientError {
-            let actualIsClientError = self is MongoUserError || self is MongoRuntimeError
             try context.withPushedElt("isClientError") {
-                if isClientError {
-                    guard actualIsClientError else {
-                        throw NonMatchingError(
-                            expected: "Error to be a client error",
-                            actual: self,
-                            context: context
-                        )
-                    }
-                } else {
-                    guard !actualIsClientError else {
-                        throw NonMatchingError(
-                            expected: "Error to not be a client error",
-                            actual: self,
-                            context: context
-                        )
-                    }
+                guard isClientError == self.isClientError else {
+                    throw NonMatchingError(
+                        expected: "Error \(isClientError ? "" : "not") to be a client error",
+                        actual: self,
+                        context: context
+                    )
                 }
             }
         }
 
         if let errorContains = expected.errorContains {
             try context.withPushedElt("errorContains") {
-                guard let mongoError = self as? MongoErrorProtocol else {
-                    throw NonMatchingError(
-                        expected: "error to conform to MongoErrorProtocol",
-                        actual: self,
-                        context: context
-                    )
-                }
-                guard mongoError.errorDescription!.lowercased().contains(errorContains.lowercased()) else {
+                guard self.errorDescription!.lowercased().contains(errorContains.lowercased()) else {
                     throw NonMatchingError(
                         expected: "error message to contain \(errorContains)",
-                        actual: mongoError,
+                        actual: self,
                         context: context
                     )
                 }
