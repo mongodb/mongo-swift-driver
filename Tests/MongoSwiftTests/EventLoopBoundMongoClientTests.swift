@@ -8,22 +8,18 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let expectedEventLoop = elg.next()
 
-        try self.withTestClient { client in
+        try self.withTestClient(eventLoopGroup: elg) { client in
+            // TODO: SWIFT-1030 - add tests for database operations that return ChangeStream and MongoCursor
             let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
-            expect(elBoundClient.db(Self.testDatabase).eventLoop) === expectedEventLoop
-        }
-    }
-
-    func testCollection() throws {
-        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
-        let expectedEventLoop = elg.next()
-
-        try self.withTestClient { client in
-            let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
-
             let db = elBoundClient.db(Self.testDatabase)
-            defer { try? db.drop().wait() }
+            expect(db.eventLoop) === expectedEventLoop
+
+            // test the MongoDatabase operations return futures on the expected event loop
+            expect(db.createCollection("test").eventLoop) === expectedEventLoop
             expect(db.collection("test").eventLoop) === expectedEventLoop
+            expect(db.listMongoCollections().eventLoop) === expectedEventLoop
+            expect(db.listCollectionNames().eventLoop) === expectedEventLoop
+            expect(db.runCommand(["insert": "coll", "documents": [["foo": "bar"]]]).eventLoop) === expectedEventLoop
         }
     }
 
@@ -31,7 +27,7 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let expectedEventLoop = elg.next()
 
-        try self.withTestClient { client in
+        try self.withTestClient(eventLoopGroup: elg) { client in
             let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
 
             let db = elBoundClient.db(Self.testDatabase)
@@ -39,14 +35,13 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             let coll1 = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
 
             // test renamed
-            let res1 = coll1.renamed(to: self.getCollectionName(suffix: "2"))
-            let coll2 = try res1.wait()
-            expect(res1.eventLoop) === expectedEventLoop
+            let res = coll1.renamed(to: self.getCollectionName(suffix: "2"))
+            let coll2 = try res.wait()
+            expect(res.eventLoop) === expectedEventLoop
             expect(coll2.eventLoop) === expectedEventLoop
 
             // test drop
-            let res2 = coll2.drop()
-            expect(res2.eventLoop) === expectedEventLoop
+            expect(coll2.drop().eventLoop) === expectedEventLoop
         }
     }
 
@@ -54,7 +49,8 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let expectedEventLoop = elg.next()
 
-        try self.withTestClient { client in
+        try self.withTestClient(eventLoopGroup: elg) { client in
+            // TODO: SWIFT-1030 - add tests for collection operations that return MongoCursor
             let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
 
             let db = elBoundClient.db(Self.testDatabase)
@@ -76,10 +72,11 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
     }
 
     func testEventLoopBoundCollectionIndexes() throws {
+        // TODO: SWIFT-1030 - add tests for collection operations that return MongoCursor
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let expectedEventLoop = elg.next()
 
-        try self.withTestClient { client in
+        try self.withTestClient(eventLoopGroup: elg) { client in
             let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
 
             let db = elBoundClient.db(Self.testDatabase)
@@ -109,7 +106,7 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let expectedEventLoop = elg.next()
 
-        try self.withTestClient { client in
+        try self.withTestClient(eventLoopGroup: elg) { client in
             let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
 
             let db = elBoundClient.db(Self.testDatabase)
@@ -125,7 +122,7 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let expectedEventLoop = elg.next()
 
-        try self.withTestClient { client in
+        try self.withTestClient(eventLoopGroup: elg) { client in
             let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
 
             let db = elBoundClient.db(Self.testDatabase)
