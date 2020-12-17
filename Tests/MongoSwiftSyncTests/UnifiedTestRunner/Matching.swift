@@ -22,7 +22,7 @@ struct NonMatchingError: LocalizedError {
 
 extension UnifiedOperationResult {
     /// Determines whether this result matches `expected`.
-    func matches(expected: BSON, entities: EntityMap, context: Context) throws {
+    func matches(expected: BSON, context: Context) throws {
         let actual: MatchableResult
         switch self {
         case let .bson(bson):
@@ -37,7 +37,7 @@ extension UnifiedOperationResult {
             throw NonMatchingError(expected: expected, actual: cs, context: context)
         }
 
-        try actual.matches(expected, entities: entities, context: context)
+        try actual.matches(expected, context: context)
     }
 }
 
@@ -73,11 +73,11 @@ enum MatchableResult {
     }
 
     /// Determines whether `self` matches `expected`, recursing if needed for nested documents and arrays.
-    fileprivate func matches(_ expected: BSON, entities: EntityMap, context: Context) throws {
+    fileprivate func matches(_ expected: BSON, context: Context) throws {
         switch expected {
         case let .document(expectedDoc):
             if expectedDoc.isSpecialOperator {
-                try self.matchesSpecial(expectedDoc, entities: entities, context: context)
+                try self.matchesSpecial(expectedDoc, context: context)
                 return
             }
 
@@ -86,7 +86,7 @@ enum MatchableResult {
                 for (k, v) in expectedDoc {
                     let actualValue = MatchableResult(from: actualDoc[k])
                     try context.withPushedElt(k) {
-                        try actualValue.matches(v, entities: entities, context: context)
+                        try actualValue.matches(v, context: context)
                     }
                 }
             default:
@@ -95,10 +95,12 @@ enum MatchableResult {
 
             if case let .subDocument(actualDoc) = self {
                 for k in actualDoc.keys {
-                    try context.withPushedElt(k) {
-                        guard expectedDoc.keys.contains(k) else {
-                            throw NonMatchingError(expected: nil, actual: actualDoc[k], context: context)
-                        }
+                    guard expectedDoc.keys.contains(k) else {
+                        throw NonMatchingError(
+                            expected: "doc to not have key \(k)",
+                            actual: actualDoc,
+                            context: context
+                        )
                     }
                 }
             }
@@ -121,7 +123,7 @@ enum MatchableResult {
 
             for i in 0..<actualElts.count {
                 try context.withPushedElt(String(i)) {
-                    try actualElts[i].matches(expectedArray[i], entities: entities, context: context)
+                    try actualElts[i].matches(expectedArray[i], context: context)
                 }
             }
 
@@ -150,7 +152,7 @@ enum MatchableResult {
     }
 
     /// Determines whether `self` satisfies the provided special operator.
-    private func matchesSpecial(_ specialOperator: BSONDocument, entities: EntityMap, context: Context) throws {
+    private func matchesSpecial(_ specialOperator: BSONDocument, context: Context) throws {
         let op = SpecialOperator(from: specialOperator)
         switch op {
         case let .exists(shouldExist):
@@ -167,13 +169,13 @@ enum MatchableResult {
         case let .type(expectedTypes):
             try self.matchesType(expectedTypes, context: context)
         case let .matchesEntity(id):
-            let entity = try entities.getEntity(id: id).asBSON()
-            try self.matches(entity, entities: entities, context: context)
+            let entity = try context.entities.getEntity(id: id).asBSON()
+            try self.matches(entity, context: context)
         case let .unsetOrMatches(value):
             if case .none = self {
                 return
             }
-            try self.matches(value, entities: entities, context: context)
+            try self.matches(value, context: context)
         case let .sessionLsid(id):
             guard case let .subDocument(actualDoc) = self else {
                 throw NonMatchingError(
@@ -182,7 +184,7 @@ enum MatchableResult {
                     context: context
                 )
             }
-            let session = try entities.getEntity(id: id).asSession()
+            let session = try context.entities.getEntity(id: id).asSession()
             try equals(expected: session.id, actual: actualDoc, context: context)
         }
     }
@@ -305,7 +307,7 @@ enum SpecialOperator {
 }
 
 /// Determines if the events in `actual` match the events in `expected`.
-func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], entities: EntityMap, context: Context) throws {
+func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], context: Context) throws {
     guard actual.count == expected.count else {
         throw NonMatchingError(expected: expected, actual: actual, context: context)
     }
@@ -326,7 +328,7 @@ func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], entities: 
                 if let expectedCommand = expectedStarted.command {
                     let actual = MatchableResult.rootDocument(actualStarted.command)
                     try context.withPushedElt("command") {
-                        try actual.matches(.document(expectedCommand), entities: entities, context: context)
+                        try actual.matches(.document(expectedCommand), context: context)
                     }
                 }
 
@@ -345,7 +347,7 @@ func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], entities: 
                 if let expectedReply = expectedSucceeded.reply {
                     let actual = MatchableResult.rootDocument(actualSucceeded.reply)
                     try context.withPushedElt("reply") {
-                        try actual.matches(.document(expectedReply), entities: entities, context: context)
+                        try actual.matches(.document(expectedReply), context: context)
                     }
                 }
             case let (.commandFailed(expectedFailed), .failed(actualFailed)):
@@ -356,6 +358,208 @@ func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], entities: 
                 }
             default:
                 throw NonMatchingError(expected: expectedEvent, actual: actualEvent, context: context)
+            }
+        }
+    }
+}
+
+/// Test protocol used to indicate an error has one or more error codes and codenames. We use an array since
+/// BulkWriteErrors may have multiple failures and we need to be able to check if any of them match.
+protocol HasErrorCodes: MongoErrorProtocol {
+    var errorCodes: [MongoError.ServerErrorCode] { get }
+    var errorCodeNames: [String] { get }
+}
+
+extension MongoError.CommandError: HasErrorCodes {
+    var errorCodes: [MongoError.ServerErrorCode] { [self.code] }
+    var errorCodeNames: [String] { [self.codeName] }
+}
+
+extension MongoError.WriteError: HasErrorCodes {
+    var errorCodes: [MongoError.ServerErrorCode] {
+        if let code = self.writeFailure?.code {
+            return [code]
+        } else if let code = self.writeConcernFailure?.code {
+            return [code]
+        }
+        return []
+    }
+
+    var errorCodeNames: [String] {
+        if let codeName = self.writeFailure?.codeName {
+            return [codeName]
+        } else if let codeName = self.writeConcernFailure?.codeName {
+            return [codeName]
+        }
+        return []
+    }
+}
+
+extension MongoError.BulkWriteError: HasErrorCodes {
+    var errorCodes: [MongoError.ServerErrorCode] {
+        var codes = self.writeFailures?.map { $0.code } ?? []
+        if let wcCode = self.writeConcernFailure?.code {
+            codes.append(wcCode)
+        }
+        return codes
+    }
+
+    var errorCodeNames: [String] {
+        var codeNames = self.writeFailures?.map { $0.codeName } ?? []
+        if let wcCodeName = self.writeConcernFailure?.codeName {
+            codeNames.append(wcCodeName)
+        }
+        return codeNames
+    }
+}
+
+extension MongoErrorProtocol {
+    func matches(_ expected: ExpectedError, context: Context) throws {
+        if let isClientError = expected.isClientError {
+            try context.withPushedElt("isClientError") {
+                guard isClientError == self.isClientError else {
+                    throw NonMatchingError(
+                        expected: "Error \(isClientError ? "" : "not") to be a client error",
+                        actual: self,
+                        context: context
+                    )
+                }
+            }
+        }
+
+        if let errorContains = expected.errorContains {
+            try context.withPushedElt("errorContains") {
+                guard self.errorDescription!.lowercased().contains(errorContains.lowercased()) else {
+                    throw NonMatchingError(
+                        expected: "error message to contain \(errorContains)",
+                        actual: self,
+                        context: context
+                    )
+                }
+            }
+        }
+
+        if let errorCode = expected.errorCode {
+            try context.withPushedElt("errorCode") {
+                guard let actualWithCodes = self as? HasErrorCodes else {
+                    throw NonMatchingError(
+                        expected: "error to have error code(s)",
+                        actual: self,
+                        context: context
+                    )
+                }
+
+                guard actualWithCodes.errorCodes.contains(errorCode) else {
+                    throw NonMatchingError(
+                        expected: "error to have error code \(errorCode)",
+                        actual: actualWithCodes,
+                        context: context
+                    )
+                }
+            }
+        }
+
+        if let codeName = expected.errorCodeName {
+            try context.withPushedElt("errorCodeName") {
+                guard let actualWithCodeNames = self as? HasErrorCodes else {
+                    throw NonMatchingError(
+                        expected: "error to have error code(s)",
+                        actual: self,
+                        context: context
+                    )
+                }
+                // TODO: SWIFT-1022: Due to CDRIVER-3147 many of our errors are currently missing code names, so we
+                // have to accept an empty string (i.e. unset) here as well as an actual code name.
+                let actualCodes = actualWithCodeNames.errorCodeNames
+                guard actualCodes.contains(codeName) || actualCodes.contains("") else {
+                    throw NonMatchingError(
+                        expected: "error to have codeName \"\(codeName)\" or \"\"",
+                        actual: self,
+                        context: context
+                    )
+                }
+            }
+        }
+
+        if let errorLabelsContain = expected.errorLabelsContain {
+            try context.withPushedElt("errorLabelsContain") {
+                guard let actualLabeled = self as? MongoLabeledError else {
+                    throw NonMatchingError(
+                        expected: "error to conform to MongoLabeledError",
+                        actual: self,
+                        context: context
+                    )
+                }
+
+                guard let actualLabels = actualLabeled.errorLabels else {
+                    throw NonMatchingError(
+                        expected: "error to have error labels",
+                        actual: actualLabeled,
+                        context: context
+                    )
+                }
+
+                for (i, expectedLabel) in errorLabelsContain.enumerated() {
+                    try context.withPushedElt(String(i)) {
+                        guard actualLabels.contains(expectedLabel) else {
+                            throw NonMatchingError(
+                                expected: "error to have error label \(expectedLabel)",
+                                actual: actualLabeled,
+                                context: context
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        if let errorLabelsOmit = expected.errorLabelsOmit {
+            try context.withPushedElt("errorLabelsOmit") {
+                guard let actualLabeled = self as? MongoLabeledError else {
+                    throw NonMatchingError(
+                        expected: "error to conform to MongoLabeledError",
+                        actual: self,
+                        context: context
+                    )
+                }
+
+                let actualLabels = actualLabeled.errorLabels ?? []
+
+                for (i, shouldOmitLabel) in errorLabelsOmit.enumerated() {
+                    try context.withPushedElt(String(i)) {
+                        guard !actualLabels.contains(shouldOmitLabel) else {
+                            throw NonMatchingError(
+                                expected: "error to not have error label \(shouldOmitLabel)",
+                                actual: actualLabeled,
+                                context: context
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        if let expectResult = expected.expectResult {
+            try context.withPushedElt("expectResult") {
+                // currently the only type of error with a nested result.
+                guard let bulkError = self as? MongoError.BulkWriteError else {
+                    throw NonMatchingError(
+                        expected: "error to be a BulkWriteError",
+                        actual: self,
+                        context: context
+                    )
+                }
+
+                guard let result = bulkError.result else {
+                    throw NonMatchingError(
+                        expected: "BulkWriteError to have a result",
+                        actual: bulkError,
+                        context: context
+                    )
+                }
+
+                let encodedResult = try BSONEncoder().encode(result)
+                try MatchableResult.rootDocument(encodedResult).matches(expectResult, context: context)
             }
         }
     }

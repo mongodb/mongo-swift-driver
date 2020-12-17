@@ -1,10 +1,22 @@
+import MongoSwiftSync
+
 /// Context passed around while executing tests.
 class Context {
     /// Path taken to get to the current state.
     var path: [String]
 
-    init(_ path: [String]) {
+    /// Entities created for the test.
+    var entities: EntityMap
+
+    /// Fail points that have been set during test execution and should be disabled on completion.
+    var enabledFailPoints: [FailPointGuard] = []
+
+    let internalClient: MongoClient
+
+    init(path: [String], entities: EntityMap, internalClient: MongoClient) {
         self.path = path
+        self.entities = entities
+        self.internalClient = internalClient
     }
 
     /// Executes a closure with the given path element added to the path, removing it after the closure is complete.

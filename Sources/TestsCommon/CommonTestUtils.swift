@@ -458,6 +458,13 @@ extension MongoLabeledError {
     }
 }
 
+extension MongoErrorProtocol {
+    /// Returns a boolean indicating if this error occurred on the client.
+    public var isClientError: Bool {
+        self is MongoUserError || self is MongoRuntimeError
+    }
+}
+
 extension CollectionSpecificationInfo {
     public static func new(readOnly: Bool, uuid: UUID? = nil) -> CollectionSpecificationInfo {
         CollectionSpecificationInfo(readOnly: readOnly, uuid: uuid)

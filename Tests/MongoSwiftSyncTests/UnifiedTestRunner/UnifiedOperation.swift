@@ -7,15 +7,8 @@ protocol UnifiedOperationProtocol: Decodable {
     /// Set of supported arguments for the operation.
     static var knownArguments: Set<String> { get }
 
-    /// Executes this operation on the provided object, using entities from `entities`.
-    func execute(on object: UnifiedOperation.Object, entities: EntityMap) throws -> UnifiedOperationResult
-}
-
-extension UnifiedOperationProtocol {
-    // TODO: SWIFT-913: remove once this method is implemented for all operations
-    func execute(on _: UnifiedOperation.Object, entities _: EntityMap) throws -> UnifiedOperationResult {
-        throw TestError(message: "operation type \(Self.self) unimplemented")
-    }
+    /// Executes this operation on the provided object, using the provided context.
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult
 }
 
 enum UnifiedOperationResult {
@@ -87,22 +80,42 @@ struct UnifiedOperation: Decodable {
     /// Expected result of the operation.
     let expectedResult: ExpectedOperationResult?
 
-    func executeAndCheckResult(entities: inout EntityMap, context: Context) throws {
-        let actualResult = try self.operation.execute(on: self.object, entities: entities)
-        switch self.expectedResult {
-        case let .error(expectedError):
-            throw TestError(message: "I dont know how to compare errors yet")
-        case let .result(expected, saveAsEntity):
-            if let entityId = saveAsEntity {
-                entities[entityId] = try actualResult.asEntity()
-            }
-            if let expected = expected {
-                try context.withPushedElt("expectResult") {
-                    try actualResult.matches(expected: expected, entities: entities, context: context)
+    func executeAndCheckResult(context: Context) throws {
+        do {
+            let actualResult = try self.operation.execute(on: self.object, context: context)
+            switch self.expectedResult {
+            case .error:
+                throw TestError(
+                    message: "Expected operation to error, but got result: \(actualResult). Path: \(context.path)"
+                )
+            case let .result(expected, saveAsEntity):
+                if let entityId = saveAsEntity {
+                    context.entities[entityId] = try actualResult.asEntity()
                 }
+                if let expected = expected {
+                    try context.withPushedElt("expectResult") {
+                        try actualResult.matches(expected: expected, context: context)
+                    }
+                }
+            case .none:
+                return
             }
-        case .none:
-            return
+        } catch {
+            guard case let .error(expectedError) = self.expectedResult else {
+                throw TestError(
+                    message: "Expected operation to succeed, but got error: \(error). Path: \(context.path)"
+                )
+            }
+
+            guard let mongoError = error as? MongoErrorProtocol else {
+                throw TestError(
+                    message: "Expected operation to throw an error conforming to MongoErrorProtocol, but got \(error)"
+                )
+            }
+
+            try context.withPushedElt("expectError") {
+                try mongoError.matches(expectedError, context: context)
+            }
         }
     }
 
@@ -218,6 +231,10 @@ struct UnifiedOperation: Decodable {
 /// Placeholder for an unsupported operation.
 struct Placeholder: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
+
+    func execute(on _: UnifiedOperation.Object, context _: Context) throws -> UnifiedOperationResult {
+        fatalError("Unexpectedly tried to execute placeholder operation")
+    }
 }
 
 /// Represents the expected result of an operation.
@@ -227,7 +244,6 @@ enum ExpectedOperationResult: Decodable {
     /// - result: A value corresponding to the expected result of the operation.
     /// - saveAsEntity: If specified, the actual result returned by the operation (if any) will be saved with this
     ///       name in the Entity Map.
-    // TODO: SWIFT-913: consider using custom type to represent results
     case result(result: BSON?, saveAsEntity: String?)
 
     private enum CodingKeys: String, CodingKey {
@@ -283,6 +299,5 @@ struct ExpectedError: Decodable {
     let errorLabelsOmit: [String]?
 
     /// This field is only used in cases where the error includes a result (e.g. bulkWrite).
-    // TODO: SWIFT-913: consider using custom type to represent results
     let expectResult: BSON?
 }

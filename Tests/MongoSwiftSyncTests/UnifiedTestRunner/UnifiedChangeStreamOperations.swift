@@ -30,29 +30,45 @@ struct CreateChangeStream: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(ChangeStreamOptions.self)
     }
 
-    func execute(on object: UnifiedOperation.Object, entities: EntityMap) throws -> UnifiedOperationResult {
-        let entity = try entities.getEntity(from: object)
-        let session = try entities.resolveSession(id: self.session)
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let entity = try context.entities.getEntity(from: object)
+        let session = try context.entities.resolveSession(id: self.session)
+        let changeStream: ChangeStream<BSONDocument>
         switch entity {
         case let .client(testClient):
-            let changeStream = try testClient.client.watch(
+            changeStream = try testClient.client.watch(
                 self.pipeline,
                 options: self.options,
                 session: session,
                 withEventType: BSONDocument.self
             )
-            return .changeStream(changeStream)
+        case let .database(db):
+            changeStream = try db.watch(
+                self.pipeline,
+                options: self.options,
+                session: session,
+                withEventType: BSONDocument.self
+            )
+        case let .collection(coll):
+            changeStream = try coll.watch(
+                self.pipeline,
+                options: self.options,
+                session: session,
+                withEventType: BSONDocument.self
+            )
         default:
             throw TestError(message: "Unsupported entity type \(entity) for createChangeStream operation")
         }
+
+        return .changeStream(changeStream)
     }
 }
 
 struct IterateUntilDocumentOrError: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
-    func execute(on object: UnifiedOperation.Object, entities: EntityMap) throws -> UnifiedOperationResult {
-        let cs = try entities.getEntity(from: object).asChangeStream()
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let cs = try context.entities.getEntity(from: object).asChangeStream()
         guard let next = cs.next() else {
             throw TestError(message: "Change stream unexpectedly exhausted")
         }
