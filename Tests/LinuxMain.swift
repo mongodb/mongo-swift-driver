@@ -182,7 +182,8 @@ extension EventLoopBoundMongoClientTests {
     static var allTests = [
         ("testEventLoopBoundDb", testEventLoopBoundDb),
         ("testEventLoopBoundCollection", testEventLoopBoundCollection),
-        ("testEventLoopBoundChangeStreams", testEventLoopBoundChangeStreams),
+        ("testEventLoopBoundDatabaseChangeStreams", testEventLoopBoundDatabaseChangeStreams),
+        ("testEventLoopBoundCollectionChangeStreams", testEventLoopBoundCollectionChangeStreams),
         ("testEventLoopBoundCollectionReads", testEventLoopBoundCollectionReads),
         ("testEventLoopBoundCollectionIndexes", testEventLoopBoundCollectionIndexes),
         ("testEventLoopBoundCollectionFindAndModify", testEventLoopBoundCollectionFindAndModify),

@@ -78,7 +78,36 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         }
     }
 
-    func testEventLoopBoundChangeStreams() throws {
+    func testEventLoopBoundDatabaseChangeStreams() throws {
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+        let expectedEventLoop = elg.next()
+
+        try self.withTestClient(eventLoopGroup: elg) { client in
+            let testRequirements = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 0, patch: 0),
+                acceptableTopologies: [.replicaSet, .sharded]
+            )
+
+            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
+            let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
+
+            let db = elBoundClient.db(Self.testDatabase)
+            defer { try? db.drop().wait() }
+
+            let res = db.watch()
+            let changeStream = try res.wait()
+            defer { try? changeStream.kill().wait() }
+            expect(res.eventLoop) === expectedEventLoop
+            expect(changeStream.eventLoop) === expectedEventLoop
+        }
+    }
+
+    func testEventLoopBoundCollectionChangeStreams() throws {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let expectedEventLoop = elg.next()
 
@@ -99,25 +128,17 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             defer { try? db.drop().wait() }
             let coll = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
 
-            // test MongoDatabase.watch
-            let res1 = db.watch()
-            let changeStream1 = try res1.wait()
-            defer { try? changeStream1.kill().wait() }
-            expect(res1.eventLoop) === expectedEventLoop
-            expect(changeStream1.eventLoop) === expectedEventLoop
-
-            // test MongoCollection.watch
-            let res2 = coll.watch()
-            let changeStream2 = try res2.wait()
-            defer { try? changeStream2.kill().wait() }
-            expect(res2.eventLoop) === expectedEventLoop
-            expect(changeStream2.eventLoop) === expectedEventLoop
+            let res = coll.watch()
+            let changeStream = try res.wait()
+            defer { try? changeStream.kill().wait() }
+            expect(res.eventLoop) === expectedEventLoop
+            expect(changeStream.eventLoop) === expectedEventLoop
 
             // test ChangeStream methods
-            expect(changeStream2.isAlive().eventLoop) === expectedEventLoop
-            expect(changeStream2.next().eventLoop) === expectedEventLoop
-            expect(changeStream2.tryNext().eventLoop) === expectedEventLoop
-            expect(changeStream2.toArray().eventLoop) === expectedEventLoop
+            expect(changeStream.isAlive().eventLoop) === expectedEventLoop
+            expect(changeStream.next().eventLoop) === expectedEventLoop
+            expect(changeStream.tryNext().eventLoop) === expectedEventLoop
+            expect(changeStream.toArray().eventLoop) === expectedEventLoop
         }
     }
 
