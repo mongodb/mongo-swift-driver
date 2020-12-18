@@ -72,14 +72,17 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             // test countDocuments
             let res1 = coll1.countDocuments()
             expect(res1.eventLoop) === expectedEventLoop
+            _ = try res1.wait()
 
             // test estimatedDocumentCount
             let res2 = coll1.estimatedDocumentCount()
             expect(res2.eventLoop) === expectedEventLoop
+            _ = try res2.wait()
 
             // test distinct
             let res3 = coll1.distinct(fieldName: "foo", filter: [:])
             expect(res3.eventLoop) === expectedEventLoop
+            _ = try res3.wait()
         }
     }
 
@@ -96,21 +99,34 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             let coll = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
 
             // test createIndex
-            expect(coll.createIndex([:]).eventLoop) === expectedEventLoop
+            let res1 = coll.createIndex(IndexModel(keys: ["y": 1]))
+            expect(res1.eventLoop) === expectedEventLoop
+            _ = try res1.wait()
 
             // test createIndexes
-            expect(coll.createIndexes([IndexModel(keys: ["x": 1])]).eventLoop) === expectedEventLoop
+            let res2 = coll.createIndexes([IndexModel(keys: ["x": 1])])
+            expect(res2.eventLoop) === expectedEventLoop
+            _ = try res2.wait()
+
             // test a createIndexes that returns a failed future
-            expect(coll.createIndexes([]).eventLoop) === expectedEventLoop
+            let res3 = coll.createIndexes([])
+            expect(res3.eventLoop) === expectedEventLoop
+            expect(try res3.wait()).to(throwError())
 
             // test listIndexNames
-            expect(coll.listIndexNames().eventLoop) === expectedEventLoop
+            let res4 = coll.listIndexNames()
+            expect(res4.eventLoop) === expectedEventLoop
+            _ = try res4.wait()
 
             // test a dropIndex that returns a failed future
-            expect(coll.dropIndex("*").eventLoop) === expectedEventLoop
+            let res5 = coll.dropIndex("*")
+            expect(res5.eventLoop) === expectedEventLoop
+            expect(try res5.wait()).to(throwError())
 
             // test dropIndexes
-            expect(coll.dropIndexes().eventLoop) === expectedEventLoop
+            let res6 = coll.dropIndexes()
+            expect(res6.eventLoop) === expectedEventLoop
+            _ = try res6.wait()
         }
     }
 
@@ -125,8 +141,10 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             defer { try? db.drop().wait() }
             let coll = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
 
-            coll.insertOne(["x": 1])
-            expect(coll.findOneAndReplace(filter: ["x": 1], replacement: ["x": 2]).eventLoop) === expectedEventLoop
+            _ = try coll.insertOne(["x": 1]).wait()
+            let res = coll.findOneAndReplace(filter: ["x": 1], replacement: ["x": 2])
+            expect(res.eventLoop) === expectedEventLoop
+            _ = try res.wait()
         }
     }
 
@@ -141,9 +159,13 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             defer { try? db.drop().wait() }
             let coll = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
 
-            expect(coll.bulkWrite([WriteModel.insertOne(["y": 1])]).eventLoop) === expectedEventLoop
+            let res1 = coll.bulkWrite([WriteModel.insertOne(["y": 1])])
+            expect(res1.eventLoop) === expectedEventLoop
+            _ = try res1.wait()
             // test a bulkWrite that returns a failed future
-            expect(coll.bulkWrite([]).eventLoop) === expectedEventLoop
+            let res2 = coll.bulkWrite([])
+            expect(res2.eventLoop) === expectedEventLoop
+            expect(try res2.wait()).to(throwError())
         }
     }
 }
