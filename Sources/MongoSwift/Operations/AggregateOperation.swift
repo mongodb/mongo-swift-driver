@@ -1,5 +1,6 @@
 import CLibMongoC
 import Foundation
+import NIO
 
 /// The entity on which to execute the `aggregate` command against.
 internal enum AggregateTarget<CollectionType: Codable> {
@@ -100,10 +101,13 @@ internal struct AggregateOperation<CollectionType: Codable, OutputType: Codable>
                     let result: OpaquePointer
                     let client: MongoClient
                     let decoder: BSONDecoder
+                    let eventLoop: EventLoop?
+
                     switch self.target {
                     case let .database(db):
                         client = db._client
                         decoder = db.decoder
+                        eventLoop = db.eventLoop
                         result = db.withMongocDatabase(from: connection) { dbPtr in
                             guard let result = mongoc_database_aggregate(
                                 dbPtr,
@@ -118,6 +122,7 @@ internal struct AggregateOperation<CollectionType: Codable, OutputType: Codable>
                     case let .collection(coll):
                         client = coll._client
                         decoder = coll.decoder
+                        eventLoop = coll.eventLoop
                         result = coll.withMongocCollection(from: connection) { collPtr in
                             guard let result = mongoc_collection_aggregate(
                                 collPtr,
@@ -137,6 +142,7 @@ internal struct AggregateOperation<CollectionType: Codable, OutputType: Codable>
                         connection: connection,
                         client: client,
                         decoder: decoder,
+                        eventLoop: eventLoop,
                         session: session
                     )
                 }

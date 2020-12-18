@@ -151,6 +151,7 @@ internal struct ListCollectionsOperation: Operation {
             connection: connection,
             client: self.database._client,
             decoder: self.database.decoder,
+            eventLoop: self.database.eventLoop,
             session: session
         )
         return .specs(cursor)

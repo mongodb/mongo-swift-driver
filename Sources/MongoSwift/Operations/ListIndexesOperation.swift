@@ -57,6 +57,7 @@ internal struct ListIndexesOperation<T: Codable>: Operation {
             connection: connection,
             client: self.collection._client,
             decoder: self.collection.decoder,
+            eventLoop: self.collection.eventLoop,
             session: session
         )
         return .models(cursor)

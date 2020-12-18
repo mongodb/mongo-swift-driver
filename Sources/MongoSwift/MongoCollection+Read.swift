@@ -30,7 +30,12 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) -> EventLoopFuture<MongoCursor<CollectionType>> {
         let operation = FindOperation(collection: self, filter: filter, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /**
@@ -126,7 +131,12 @@ extension MongoCollection {
             pipeline: pipeline,
             options: options
         )
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /**

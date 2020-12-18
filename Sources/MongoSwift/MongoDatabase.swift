@@ -499,7 +499,12 @@ public struct MongoDatabase {
             pipeline: pipeline,
             options: options
         )
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /**
@@ -574,7 +579,12 @@ public struct MongoDatabase {
             pipeline: pipeline,
             options: options
         )
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /// Uses the provided `Connection` to get a pointer to a `mongoc_database_t` corresponding to this

@@ -423,13 +423,18 @@ extension MongoCollection {
      */
     public func listIndexes(session: ClientSession? = nil) -> EventLoopFuture<MongoCursor<IndexModel>> {
         let operation = ListIndexesOperation(collection: self, nameOnly: false)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
-            .flatMapThrowing { result in
-                guard case let .models(result) = result else {
-                    throw MongoError.InternalError(message: "Invalid result")
-                }
-                return result
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
+        .flatMapThrowing { result in
+            guard case let .models(result) = result else {
+                throw MongoError.InternalError(message: "Invalid result")
             }
+            return result
+        }
     }
 
     /**
