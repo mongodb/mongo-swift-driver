@@ -112,6 +112,12 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             defer { try? changeStream2.kill().wait() }
             expect(res2.eventLoop) === expectedEventLoop
             expect(changeStream2.eventLoop) === expectedEventLoop
+
+            // test ChangeStream methods
+            expect(changeStream2.isAlive().eventLoop) === expectedEventLoop
+            expect(changeStream2.next().eventLoop) === expectedEventLoop
+            expect(changeStream2.tryNext().eventLoop) === expectedEventLoop
+            expect(changeStream2.toArray().eventLoop) === expectedEventLoop
         }
     }
 
@@ -154,6 +160,12 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             defer { try? cursor2.kill().wait() }
             expect(res5.eventLoop) === expectedEventLoop
             expect(cursor2.eventLoop) === expectedEventLoop
+
+            // test MongoCursor methods
+            expect(cursor2.isAlive().eventLoop) === expectedEventLoop
+            expect(cursor2.next().eventLoop) === expectedEventLoop
+            expect(cursor2.tryNext().eventLoop) === expectedEventLoop
+            expect(cursor2.toArray().eventLoop) === expectedEventLoop
         }
     }
 
