@@ -178,6 +178,17 @@ extension Document_SequenceTests {
     ]
 }
 
+extension EventLoopBoundMongoClientTests {
+    static var allTests = [
+        ("testEventLoopBoundDb", testEventLoopBoundDb),
+        ("testEventLoopBoundCollection", testEventLoopBoundCollection),
+        ("testEventLoopBoundCollectionReads", testEventLoopBoundCollectionReads),
+        ("testEventLoopBoundCollectionIndexes", testEventLoopBoundCollectionIndexes),
+        ("testEventLoopBoundCollectionFindAndModify", testEventLoopBoundCollectionFindAndModify),
+        ("testEventLoopBoundCollectionBulkWrite", testEventLoopBoundCollectionBulkWrite),
+    ]
+}
+
 extension MongoClientTests {
     static var allTests = [
         ("testUsingClosedClient", testUsingClosedClient),
@@ -455,6 +466,7 @@ XCTMain([
     testCase(DocumentTests.allTests),
     testCase(Document_CollectionTests.allTests),
     testCase(Document_SequenceTests.allTests),
+    testCase(EventLoopBoundMongoClientTests.allTests),
     testCase(MongoClientTests.allTests),
     testCase(MongoCollectionTests.allTests),
     testCase(MongoCollection_BulkWriteTests.allTests),

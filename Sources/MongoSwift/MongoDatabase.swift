@@ -69,6 +69,9 @@ public struct MongoDatabase {
     /// from this database.
     public let encoder: BSONEncoder
 
+    /// The `EventLoop` this `MongoDatabase` is bound to.
+    public let eventLoop: EventLoop?
+
     /// Decoder whose options are inherited by collections derived from this database.
     public let decoder: BSONDecoder
 
@@ -85,9 +88,10 @@ public struct MongoDatabase {
     public let writeConcern: WriteConcern?
 
     /// Initializes a new `MongoDatabase` instance, not meant to be instantiated directly.
-    internal init(name: String, client: MongoClient, options: MongoDatabaseOptions?) {
+    internal init(name: String, client: MongoClient, eventLoop: EventLoop?, options: MongoDatabaseOptions?) {
         self.namespace = MongoNamespace(db: name, collection: nil)
         self._client = client
+        self.eventLoop = eventLoop
 
         // for both read concern and write concern, we look for a read concern in the following order:
         // 1. options provided for this collection
@@ -128,7 +132,12 @@ public struct MongoDatabase {
      */
     public func drop(options: DropDatabaseOptions? = nil, session: ClientSession? = nil) -> EventLoopFuture<Void> {
         let operation = DropDatabaseOperation(database: self, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /**
@@ -166,7 +175,7 @@ public struct MongoDatabase {
         withType _: T.Type,
         options: MongoCollectionOptions? = nil
     ) -> MongoCollection<T> {
-        MongoCollection(name: name, database: self, options: options)
+        MongoCollection(name: name, database: self, eventLoop: self.eventLoop, options: options)
     }
 
     /**
@@ -223,7 +232,12 @@ public struct MongoDatabase {
         session: ClientSession? = nil
     ) -> EventLoopFuture<MongoCollection<T>> {
         let operation = CreateCollectionOperation(database: self, name: name, type: type, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /**
@@ -253,7 +267,7 @@ public struct MongoDatabase {
     ) -> EventLoopFuture<MongoCursor<CollectionSpecification>> {
         let operation = ListCollectionsOperation(database: self, nameOnly: false, filter: filter, options: options)
         return self._client.operationExecutor.execute(
-            operation, client: self._client, session: session
+            operation, client: self._client, on: self.eventLoop, session: session
         ).flatMapThrowing { result in
             guard case let .specs(result) = result else {
                 throw MongoError.InternalError(message: "invalid result")
@@ -311,13 +325,18 @@ public struct MongoDatabase {
         session: ClientSession? = nil
     ) -> EventLoopFuture<[String]> {
         let operation = ListCollectionsOperation(database: self, nameOnly: true, filter: filter, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
-            .flatMapThrowing { result in
-                guard case let .names(names) = result else {
-                    throw MongoError.InternalError(message: "Invalid result")
-                }
-                return names
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
+        .flatMapThrowing { result in
+            guard case let .names(names) = result else {
+                throw MongoError.InternalError(message: "Invalid result")
             }
+            return names
+        }
     }
 
     /**
@@ -345,7 +364,12 @@ public struct MongoDatabase {
         session: ClientSession? = nil
     ) -> EventLoopFuture<BSONDocument> {
         let operation = RunCommandOperation(database: self, command: command, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /**

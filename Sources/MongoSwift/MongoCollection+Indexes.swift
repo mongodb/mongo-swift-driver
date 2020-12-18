@@ -260,10 +260,18 @@ extension MongoCollection {
     ) -> EventLoopFuture<[String]> {
         guard !models.isEmpty else {
             return self._client.operationExecutor
-                .makeFailedFuture(MongoError.InvalidArgumentError(message: "models cannot be empty"))
+                .makeFailedFuture(
+                    MongoError.InvalidArgumentError(message: "models cannot be empty"),
+                    on: self.eventLoop
+                )
         }
         let operation = CreateIndexesOperation(collection: self, models: models, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /**
@@ -291,9 +299,12 @@ extension MongoCollection {
         session: ClientSession? = nil
     ) -> EventLoopFuture<Void> {
         guard name != "*" else {
-            return self._client.operationExecutor.makeFailedFuture(MongoError.InvalidArgumentError(
-                message: "Invalid index name '*'; use dropIndexes() to drop all indexes"
-            ))
+            return self._client.operationExecutor.makeFailedFuture(
+                MongoError.InvalidArgumentError(
+                    message: "Invalid index name '*'; use dropIndexes() to drop all indexes"
+                ),
+                on: self.eventLoop
+            )
         }
         return self._dropIndexes(index: .string(name), options: options, session: session)
     }
@@ -385,7 +396,12 @@ extension MongoCollection {
         session: ClientSession?
     ) -> EventLoopFuture<Void> {
         let operation = DropIndexesOperation(collection: self, index: index, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 
     /**
@@ -431,12 +447,17 @@ extension MongoCollection {
      */
     public func listIndexNames(session: ClientSession? = nil) -> EventLoopFuture<[String]> {
         let operation = ListIndexesOperation(collection: self, nameOnly: true)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
-            .flatMapThrowing { result in
-                guard case let .names(names) = result else {
-                    throw MongoError.InternalError(message: "Invalid result")
-                }
-                return names
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
+        .flatMapThrowing { result in
+            guard case let .names(names) = result else {
+                throw MongoError.InternalError(message: "Invalid result")
             }
+            return names
+        }
     }
 }

@@ -30,10 +30,18 @@ extension MongoCollection {
     ) -> EventLoopFuture<BulkWriteResult?> {
         guard !requests.isEmpty else {
             return self._client.operationExecutor
-                .makeFailedFuture(MongoError.InvalidArgumentError(message: "requests cannot be empty"))
+                .makeFailedFuture(
+                    MongoError.InvalidArgumentError(message: "requests cannot be empty"),
+                    on: self.eventLoop
+                )
         }
         let operation = BulkWriteOperation(collection: self, models: requests, options: options)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 }
 
