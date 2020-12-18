@@ -17,17 +17,22 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
 
             // test the MongoDatabase operations return futures on the expected event loop
             expect(db.collection("test").eventLoop) === expectedEventLoop
-            expect(db.listCollectionNames().eventLoop) === expectedEventLoop
-            expect(db.runCommand(["insert": "coll", "documents": [["foo": "bar"]]]).eventLoop) === expectedEventLoop
-
-            let res1 = db.createCollection("test")
+            let res1 = db.listCollectionNames()
             expect(res1.eventLoop) === expectedEventLoop
-            // test the returned MongoCollection has the expected event loop
-            expect(try res1.wait().eventLoop) === expectedEventLoop
+            _ = try res1.wait()
 
-            let res2 = db.listMongoCollections()
+            let res2 = db.runCommand(["insert": "coll", "documents": [["foo": "bar"]]])
             expect(res2.eventLoop) === expectedEventLoop
-            let collections = try res2.wait()
+            _ = try res2.wait()
+
+            let res3 = db.createCollection("test")
+            expect(res3.eventLoop) === expectedEventLoop
+            // test the returned MongoCollection has the expected event loop
+            expect(try res3.wait().eventLoop) === expectedEventLoop
+
+            let res4 = db.listMongoCollections()
+            expect(res4.eventLoop) === expectedEventLoop
+            let collections = try res4.wait()
             // test the returned MongoCollections have the expected event loop
             for coll in collections {
                 expect(coll.eventLoop) === expectedEventLoop
@@ -47,13 +52,15 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             let coll1 = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
 
             // test renamed
-            let res = coll1.renamed(to: self.getCollectionName(suffix: "2"))
-            let coll2 = try res.wait()
-            expect(res.eventLoop) === expectedEventLoop
+            let res1 = coll1.renamed(to: self.getCollectionName(suffix: "2"))
+            let coll2 = try res1.wait()
+            expect(res1.eventLoop) === expectedEventLoop
             expect(coll2.eventLoop) === expectedEventLoop
 
             // test drop
-            expect(coll2.drop().eventLoop) === expectedEventLoop
+            let res2 = coll2.drop()
+            expect(res2.eventLoop) === expectedEventLoop
+            _ = try res2.wait()
         }
     }
 
