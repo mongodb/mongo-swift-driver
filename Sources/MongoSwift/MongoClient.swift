@@ -334,7 +334,7 @@ public class MongoClient {
      * down.
      */
     public func close() -> EventLoopFuture<Void> {
-        let closeResult = self.operationExecutor.execute {
+        let closeResult = self.operationExecutor.execute(on: nil) {
             try self.connectionPool.close()
         }
         .flatMap {
@@ -366,7 +366,7 @@ public class MongoClient {
     /// Starts a new `ClientSession` with the provided options. When you are done using this session, you must call
     /// `ClientSession.end()` on it.
     public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
-        ClientSession(client: self, options: options)
+        ClientSession(client: self, eventLoop: nil, options: options)
     }
 
     /**
@@ -388,7 +388,7 @@ public class MongoClient {
         options: ClientSessionOptions? = nil,
         _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
     ) -> EventLoopFuture<T> {
-        let promise = self.operationExecutor.makePromise(of: T.self)
+        let promise = self.operationExecutor.makePromise(of: T.self, on: nil)
         let session = self.startSession(options: options)
         do {
             let bodyFuture = try sessionBody(session)
@@ -440,7 +440,12 @@ public class MongoClient {
         session: ClientSession? = nil
     ) -> EventLoopFuture<[DatabaseSpecification]> {
         let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: nil, options: options)
-        return self.operationExecutor.execute(operation, client: self, session: session).flatMapThrowing { result in
+        return self.operationExecutor.execute(
+            operation,
+            client: self,
+            on: nil,
+            session: session
+        ).flatMapThrowing { result in
             guard case let .specs(dbs) = result else {
                 throw MongoError.InternalError(message: "Invalid result")
             }
@@ -498,7 +503,12 @@ public class MongoClient {
         session: ClientSession? = nil
     ) -> EventLoopFuture<[String]> {
         let operation = ListDatabasesOperation(client: self, filter: filter, nameOnly: true, options: options)
-        return self.operationExecutor.execute(operation, client: self, session: session).flatMapThrowing { result in
+        return self.operationExecutor.execute(
+            operation,
+            client: self,
+            on: nil,
+            session: session
+        ).flatMapThrowing { result in
             guard case let .names(names) = result else {
                 throw MongoError.InternalError(message: "Invalid result")
             }
@@ -652,7 +662,7 @@ public class MongoClient {
             pipeline: pipeline,
             options: options
         )
-        return self.operationExecutor.execute(operation, client: self, session: session)
+        return self.operationExecutor.execute(operation, client: self, on: nil, session: session)
     }
 
     /**

@@ -71,6 +71,9 @@ public final class ClientSession {
     /// started the libmongoc session.
     internal var id: BSONDocument?
 
+    /// The `EventLoop` this `ClientSession` is bound to.
+    internal let eventLoop: EventLoop?
+
     /// The server ID of the mongos this session is pinned to.
     private var serverID: UInt32? {
         switch self.state {
@@ -201,9 +204,10 @@ public final class ClientSession {
     public let options: ClientSessionOptions?
 
     /// Initializes a new client session.
-    internal init(client: MongoClient, options: ClientSessionOptions? = nil) {
+    internal init(client: MongoClient, eventLoop: EventLoop?, options: ClientSessionOptions? = nil) {
         self.options = options
         self.client = client
+        self.eventLoop = eventLoop
         self.state = .notStarted(opTime: nil, clusterTime: nil)
     }
 
@@ -213,24 +217,32 @@ public final class ClientSession {
         switch self.state {
         case let .notStarted(opTime, clusterTime):
             let operation = StartSessionOperation(session: self)
-            return self.client.operationExecutor.execute(operation, client: self.client, session: nil)
-                .map { sessionPtr, connection in
-                    self.state = .started(session: sessionPtr, connection: connection)
-                    // if we cached opTime or clusterTime, set them now
-                    if let opTime = opTime {
-                        self.advanceOperationTime(to: opTime)
-                    }
-                    if let clusterTime = clusterTime {
-                        self.advanceClusterTime(to: clusterTime)
-                    }
-
-                    // swiftlint:disable:next force_unwrapping
-                    self.id = BSONDocument(copying: mongoc_client_session_get_lsid(sessionPtr)!) // never returns nil
+            return self.client.operationExecutor.execute(
+                operation,
+                client: self.client,
+                on: self.eventLoop,
+                session: nil
+            )
+            .map { sessionPtr, connection in
+                self.state = .started(session: sessionPtr, connection: connection)
+                // if we cached opTime or clusterTime, set them now
+                if let opTime = opTime {
+                    self.advanceOperationTime(to: opTime)
                 }
+                if let clusterTime = clusterTime {
+                    self.advanceClusterTime(to: clusterTime)
+                }
+
+                // swiftlint:disable:next force_unwrapping
+                self.id = BSONDocument(copying: mongoc_client_session_get_lsid(sessionPtr)!) // never returns nil
+            }
         case .started:
-            return self.client.operationExecutor.makeSucceededFuture(())
+            return self.client.operationExecutor.makeSucceededFuture((), on: self.eventLoop)
         case .ended:
-            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
+            return self.client.operationExecutor.makeFailedFuture(
+                ClientSession.SessionInactiveError,
+                on: self.eventLoop
+            )
         }
     }
 
@@ -264,9 +276,9 @@ public final class ClientSession {
         switch self.state {
         case .notStarted, .ended:
             self.state = .ended
-            return self.client.operationExecutor.makeSucceededFuture(())
+            return self.client.operationExecutor.makeSucceededFuture((), on: self.eventLoop)
         case let .started(session, _):
-            return self.client.operationExecutor.execute {
+            return self.client.operationExecutor.execute(on: self.eventLoop) {
                 mongoc_client_session_destroy(session)
                 self.state = .ended
             }
@@ -376,9 +388,17 @@ public final class ClientSession {
         switch self.state {
         case .notStarted, .started:
             let operation = StartTransactionOperation(options: options)
-            return self.client.operationExecutor.execute(operation, client: self.client, session: self)
+            return self.client.operationExecutor.execute(
+                operation,
+                client: self.client,
+                on: self.eventLoop,
+                session: self
+            )
         case .ended:
-            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
+            return self.client.operationExecutor.makeFailedFuture(
+                ClientSession.SessionInactiveError,
+                on: self.eventLoop
+            )
         }
     }
 
@@ -400,9 +420,17 @@ public final class ClientSession {
         switch self.state {
         case .notStarted, .started:
             let operation = CommitTransactionOperation()
-            return self.client.operationExecutor.execute(operation, client: self.client, session: self)
+            return self.client.operationExecutor.execute(
+                operation,
+                client: self.client,
+                on: self.eventLoop,
+                session: self
+            )
         case .ended:
-            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
+            return self.client.operationExecutor.makeFailedFuture(
+                ClientSession.SessionInactiveError,
+                on: self.eventLoop
+            )
         }
     }
 
@@ -423,9 +451,17 @@ public final class ClientSession {
         switch self.state {
         case .notStarted, .started:
             let operation = AbortTransactionOperation()
-            return self.client.operationExecutor.execute(operation, client: self.client, session: self)
+            return self.client.operationExecutor.execute(
+                operation,
+                client: self.client,
+                on: self.eventLoop,
+                session: self
+            )
         case .ended:
-            return self.client.operationExecutor.makeFailedFuture(ClientSession.SessionInactiveError)
+            return self.client.operationExecutor.makeFailedFuture(
+                ClientSession.SessionInactiveError,
+                on: self.eventLoop
+            )
         }
     }
 }

@@ -53,7 +53,7 @@ internal class OperationExecutor {
     internal func execute<T: Operation>(
         _ operation: T,
         client: MongoClient,
-        on eventLoop: EventLoop? = nil,
+        on eventLoop: EventLoop?,
         session: ClientSession?
     ) -> EventLoopFuture<T.OperationResult> {
         // closure containing the work to run in the thread pool: obtain a connection and execute the operation.
@@ -96,21 +96,21 @@ internal class OperationExecutor {
         return self.execute(on: eventLoop, doOperation).flatMap { resubmitIfNeeded($0) }
     }
 
-    internal func execute<T>(on eventLoop: EventLoop? = nil, _ body: @escaping () throws -> T) -> EventLoopFuture<T> {
+    internal func execute<T>(on eventLoop: EventLoop?, _ body: @escaping () throws -> T) -> EventLoopFuture<T> {
         self.threadPool.runIfActive(eventLoop: eventLoop ?? self.eventLoopGroup.next(), body)
     }
 
-    internal func makeFailedFuture<T>(_ error: Error, on eventLoop: EventLoop? = nil) -> EventLoopFuture<T> {
+    internal func makeFailedFuture<T>(_ error: Error, on eventLoop: EventLoop?) -> EventLoopFuture<T> {
         let ev = eventLoop ?? self.eventLoopGroup.next()
         return ev.makeFailedFuture(error)
     }
 
-    internal func makeSucceededFuture<T>(_ value: T, on eventLoop: EventLoop? = nil) -> EventLoopFuture<T> {
+    internal func makeSucceededFuture<T>(_ value: T, on eventLoop: EventLoop?) -> EventLoopFuture<T> {
         let ev = eventLoop ?? self.eventLoopGroup.next()
         return ev.makeSucceededFuture(value)
     }
 
-    internal func makePromise<T>(of type: T.Type, on eventLoop: EventLoop? = nil) -> EventLoopPromise<T> {
+    internal func makePromise<T>(of type: T.Type, on eventLoop: EventLoop?) -> EventLoopPromise<T> {
         let ev = eventLoop ?? self.eventLoopGroup.next()
         return ev.makePromise(of: type)
     }
