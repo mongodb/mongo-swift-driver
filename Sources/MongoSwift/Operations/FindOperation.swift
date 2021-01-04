@@ -332,6 +332,7 @@ internal struct FindOperation<CollectionType: Codable>: Operation {
             connection: connection,
             client: self.collection._client,
             decoder: self.collection.decoder,
+            eventLoop: self.collection.eventLoop,
             session: session,
             cursorType: self.options?.cursorType
         )

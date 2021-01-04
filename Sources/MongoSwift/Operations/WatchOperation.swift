@@ -1,9 +1,13 @@
 import CLibMongoC
+import NIO
 
 /// The entity on which to start a change stream.
 internal enum ChangeStreamTarget<CollectionType: Codable> {
     /// Indicates the change stream will be opened to watch a client.
     case client(MongoClient)
+
+    /// Indicates the change stream will be opened to watch an event loop bound client.
+    case eventLoopBoundClient(EventLoopBoundMongoClient)
 
     /// Indicates the change stream will be opened to watch a database.
     case database(MongoDatabase)
@@ -40,12 +44,24 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
                 let changeStreamPtr: OpaquePointer
                 let client: MongoClient
                 let decoder: BSONDecoder
+                let eventLoop: EventLoop?
                 let namespace: MongoNamespace
 
                 switch self.target {
                 case let .client(c):
                     client = c
                     decoder = c.decoder
+                    eventLoop = nil
+                    // workaround for the need for a namespace as described in SWIFT-981.
+                    namespace = MongoNamespace(db: "", collection: nil)
+                    changeStreamPtr = connection.withMongocConnection { connPtr in
+                        mongoc_client_watch(connPtr, pipelinePtr, optsPtr)
+                    }
+
+                case let .eventLoopBoundClient(elbc):
+                    client = elbc.client
+                    decoder = client.decoder
+                    eventLoop = elbc.eventLoop
                     // workaround for the need for a namespace as described in SWIFT-981.
                     namespace = MongoNamespace(db: "", collection: nil)
                     changeStreamPtr = connection.withMongocConnection { connPtr in
@@ -55,6 +71,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
                 case let .database(db):
                     client = db._client
                     decoder = db.decoder
+                    eventLoop = db.eventLoop
                     namespace = db.namespace
                     changeStreamPtr = db.withMongocDatabase(from: connection) { dbPtr in
                         mongoc_database_watch(dbPtr, pipelinePtr, optsPtr)
@@ -62,6 +79,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
                 case let .collection(coll):
                     client = coll._client
                     decoder = coll.decoder
+                    eventLoop = coll.eventLoop
                     namespace = coll.namespace
                     changeStreamPtr = coll.withMongocCollection(from: connection) { collPtr in
                         mongoc_collection_watch(collPtr, pipelinePtr, optsPtr)
@@ -75,6 +93,7 @@ internal struct WatchOperation<CollectionType: Codable, ChangeStreamType: Codabl
                     namespace: namespace,
                     session: session,
                     decoder: decoder,
+                    eventLoop: eventLoop,
                     options: self.options
                 )
             }

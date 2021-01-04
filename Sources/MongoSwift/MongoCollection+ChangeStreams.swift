@@ -122,6 +122,11 @@ extension MongoCollection {
             pipeline: pipeline,
             options: options
         )
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(
+            operation,
+            client: self._client,
+            on: self.eventLoop,
+            session: session
+        )
     }
 }

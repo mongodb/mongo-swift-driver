@@ -9,7 +9,6 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         let expectedEventLoop = elg.next()
 
         try self.withTestClient(eventLoopGroup: elg) { client in
-            // TODO: SWIFT-1030 - add tests for database operations that return ChangeStream and MongoCursor
             let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
             let db = elBoundClient.db(Self.testDatabase)
             defer { try? db.drop().wait() }
@@ -17,26 +16,41 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
 
             // test the MongoDatabase operations return futures on the expected event loop
             expect(db.collection("test").eventLoop) === expectedEventLoop
-            let res1 = db.listCollectionNames()
-            expect(res1.eventLoop) === expectedEventLoop
-            _ = try res1.wait()
+            let listCollectionNamesFuture = db.listCollectionNames()
+            expect(listCollectionNamesFuture.eventLoop) === expectedEventLoop
+            _ = try listCollectionNamesFuture.wait()
 
-            let res2 = db.runCommand(["insert": "coll", "documents": [["foo": "bar"]]])
-            expect(res2.eventLoop) === expectedEventLoop
-            _ = try res2.wait()
+            let runCommandFuture = db.runCommand(["insert": "coll", "documents": [["foo": "bar"]]])
+            expect(runCommandFuture.eventLoop) === expectedEventLoop
+            _ = try runCommandFuture.wait()
 
-            let res3 = db.createCollection("test")
-            expect(res3.eventLoop) === expectedEventLoop
+            let createCollectionFuture = db.createCollection("test")
+            expect(createCollectionFuture.eventLoop) === expectedEventLoop
             // test the returned MongoCollection has the expected event loop
-            expect(try res3.wait().eventLoop) === expectedEventLoop
+            expect(try createCollectionFuture.wait().eventLoop) === expectedEventLoop
 
-            let res4 = db.listMongoCollections()
-            expect(res4.eventLoop) === expectedEventLoop
-            let collections = try res4.wait()
+            let listMongoCollectionsFuture = db.listMongoCollections()
+            expect(listMongoCollectionsFuture.eventLoop) === expectedEventLoop
+            let collections = try listMongoCollectionsFuture.wait()
             // test the returned MongoCollections have the expected event loop
             for coll in collections {
                 expect(coll.eventLoop) === expectedEventLoop
             }
+
+            // test aggregate
+            let adminDB = elBoundClient.db("admin")
+            let aggregateFuture = adminDB.aggregate([["$currentOp": [:]]])
+            let aggregateCursor = try aggregateFuture.wait()
+            defer { try? aggregateCursor.kill().wait() }
+            expect(aggregateFuture.eventLoop) === expectedEventLoop
+            expect(aggregateCursor.eventLoop) === expectedEventLoop
+
+            // test listCollections
+            let listCollectionsFuture = db.listCollections()
+            let listCollectionsCursor = try listCollectionsFuture.wait()
+            defer { try? listCollectionsCursor.kill().wait() }
+            expect(listCollectionsFuture.eventLoop) === expectedEventLoop
+            expect(listCollectionsCursor.eventLoop) === expectedEventLoop
         }
     }
 
@@ -52,15 +66,79 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             let coll1 = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
 
             // test renamed
-            let res1 = coll1.renamed(to: self.getCollectionName(suffix: "2"))
-            let coll2 = try res1.wait()
-            expect(res1.eventLoop) === expectedEventLoop
+            let renamedFuture = coll1.renamed(to: self.getCollectionName(suffix: "2"))
+            let coll2 = try renamedFuture.wait()
+            expect(renamedFuture.eventLoop) === expectedEventLoop
             expect(coll2.eventLoop) === expectedEventLoop
 
             // test drop
-            let res2 = coll2.drop()
-            expect(res2.eventLoop) === expectedEventLoop
-            _ = try res2.wait()
+            let dropCollectionFuture = coll2.drop()
+            expect(dropCollectionFuture.eventLoop) === expectedEventLoop
+            _ = try dropCollectionFuture.wait()
+        }
+    }
+
+    func testEventLoopBoundDatabaseChangeStreams() throws {
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+        let expectedEventLoop = elg.next()
+
+        try self.withTestClient(eventLoopGroup: elg) { client in
+            let testRequirements = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 0, patch: 0),
+                acceptableTopologies: [.replicaSet, .sharded]
+            )
+
+            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
+            let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
+
+            let db = elBoundClient.db(Self.testDatabase)
+            defer { try? db.drop().wait() }
+
+            let res = db.watch()
+            let changeStream = try res.wait()
+            defer { try? changeStream.kill().wait() }
+            expect(res.eventLoop) === expectedEventLoop
+            expect(changeStream.eventLoop) === expectedEventLoop
+        }
+    }
+
+    func testEventLoopBoundCollectionChangeStreams() throws {
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+        let expectedEventLoop = elg.next()
+
+        try self.withTestClient(eventLoopGroup: elg) { client in
+            let testRequirements = TestRequirement(
+                acceptableTopologies: [.replicaSet, .sharded]
+            )
+
+            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
+            let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
+
+            let db = elBoundClient.db(Self.testDatabase)
+            defer { try? db.drop().wait() }
+            let coll = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
+
+            let res = coll.watch()
+            let changeStream = try res.wait()
+            defer { try? changeStream.kill().wait() }
+            expect(res.eventLoop) === expectedEventLoop
+            expect(changeStream.eventLoop) === expectedEventLoop
+
+            // test ChangeStream methods
+            expect(changeStream.isAlive().eventLoop) === expectedEventLoop
+            expect(changeStream.next().eventLoop) === expectedEventLoop
+            expect(changeStream.tryNext().eventLoop) === expectedEventLoop
+            expect(changeStream.toArray().eventLoop) === expectedEventLoop
         }
     }
 
@@ -69,32 +147,50 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         let expectedEventLoop = elg.next()
 
         try self.withTestClient(eventLoopGroup: elg) { client in
-            // TODO: SWIFT-1030 - add tests for collection operations that return MongoCursor
             let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
 
             let db = elBoundClient.db(Self.testDatabase)
             defer { try? db.drop().wait() }
-            let coll1 = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
+            let coll = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
 
             // test countDocuments
-            let res1 = coll1.countDocuments()
-            expect(res1.eventLoop) === expectedEventLoop
-            _ = try res1.wait()
+            let countFuture = coll.countDocuments()
+            expect(countFuture.eventLoop) === expectedEventLoop
+            _ = try countFuture.wait()
 
             // test estimatedDocumentCount
-            let res2 = coll1.estimatedDocumentCount()
-            expect(res2.eventLoop) === expectedEventLoop
-            _ = try res2.wait()
+            let estimatedCountFuture = coll.estimatedDocumentCount()
+            expect(estimatedCountFuture.eventLoop) === expectedEventLoop
+            _ = try estimatedCountFuture.wait()
 
             // test distinct
-            let res3 = coll1.distinct(fieldName: "foo", filter: [:])
-            expect(res3.eventLoop) === expectedEventLoop
-            _ = try res3.wait()
+            let distinctFuture = coll.distinct(fieldName: "foo", filter: [:])
+            expect(distinctFuture.eventLoop) === expectedEventLoop
+            _ = try distinctFuture.wait()
+
+            // test find
+            let findFuture = coll.find([:])
+            let findCursor = try findFuture.wait()
+            defer { try? findCursor.kill().wait() }
+            expect(findFuture.eventLoop) === expectedEventLoop
+            expect(findCursor.eventLoop) === expectedEventLoop
+
+            // test aggregate
+            let aggregateFuture = coll.aggregate([["$project": ["_id": 0]]])
+            let aggregateCursor = try aggregateFuture.wait()
+            defer { try? aggregateCursor.kill().wait() }
+            expect(aggregateFuture.eventLoop) === expectedEventLoop
+            expect(aggregateCursor.eventLoop) === expectedEventLoop
+
+            // test MongoCursor methods
+            expect(aggregateCursor.isAlive().eventLoop) === expectedEventLoop
+            expect(aggregateCursor.next().eventLoop) === expectedEventLoop
+            expect(aggregateCursor.tryNext().eventLoop) === expectedEventLoop
+            expect(aggregateCursor.toArray().eventLoop) === expectedEventLoop
         }
     }
 
     func testEventLoopBoundCollectionIndexes() throws {
-        // TODO: SWIFT-1030 - add tests for collection operations that return MongoCursor
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let expectedEventLoop = elg.next()
 
@@ -106,34 +202,41 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             let coll = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
 
             // test createIndex
-            let res1 = coll.createIndex(IndexModel(keys: ["y": 1]))
-            expect(res1.eventLoop) === expectedEventLoop
-            _ = try res1.wait()
+            let createIndexFuture = coll.createIndex(IndexModel(keys: ["y": 1]))
+            expect(createIndexFuture.eventLoop) === expectedEventLoop
+            _ = try createIndexFuture.wait()
 
             // test createIndexes
-            let res2 = coll.createIndexes([IndexModel(keys: ["x": 1])])
-            expect(res2.eventLoop) === expectedEventLoop
-            _ = try res2.wait()
+            let createIndexesFuture = coll.createIndexes([IndexModel(keys: ["x": 1])])
+            expect(createIndexesFuture.eventLoop) === expectedEventLoop
+            _ = try createIndexesFuture.wait()
 
             // test a createIndexes that returns a failed future
-            let res3 = coll.createIndexes([])
-            expect(res3.eventLoop) === expectedEventLoop
-            expect(try res3.wait()).to(throwError())
+            let failedCreateIndexesFuture = coll.createIndexes([])
+            expect(failedCreateIndexesFuture.eventLoop) === expectedEventLoop
+            expect(try failedCreateIndexesFuture.wait()).to(throwError())
 
             // test listIndexNames
-            let res4 = coll.listIndexNames()
-            expect(res4.eventLoop) === expectedEventLoop
-            _ = try res4.wait()
+            let listIndexNamesFuture = coll.listIndexNames()
+            expect(listIndexNamesFuture.eventLoop) === expectedEventLoop
+            _ = try listIndexNamesFuture.wait()
 
             // test a dropIndex that returns a failed future
-            let res5 = coll.dropIndex("*")
-            expect(res5.eventLoop) === expectedEventLoop
-            expect(try res5.wait()).to(throwError())
+            let dropIndexFuture = coll.dropIndex("*")
+            expect(dropIndexFuture.eventLoop) === expectedEventLoop
+            expect(try dropIndexFuture.wait()).to(throwError())
 
             // test dropIndexes
-            let res6 = coll.dropIndexes()
-            expect(res6.eventLoop) === expectedEventLoop
-            _ = try res6.wait()
+            let dropIndexesFuture = coll.dropIndexes()
+            expect(dropIndexesFuture.eventLoop) === expectedEventLoop
+            _ = try dropIndexesFuture.wait()
+
+            // test listIndexes
+            let listIndexesFuture = coll.listIndexes()
+            let cursor = try listIndexesFuture.wait()
+            defer { try? cursor.kill().wait() }
+            expect(listIndexesFuture.eventLoop) === expectedEventLoop
+            expect(cursor.eventLoop) === expectedEventLoop
         }
     }
 
@@ -166,13 +269,13 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             defer { try? db.drop().wait() }
             let coll = try db.createCollection(self.getCollectionName(suffix: "1")).wait()
 
-            let res1 = coll.bulkWrite([WriteModel.insertOne(["y": 1])])
-            expect(res1.eventLoop) === expectedEventLoop
-            _ = try res1.wait()
+            let bulkWriteFuture = coll.bulkWrite([WriteModel.insertOne(["y": 1])])
+            expect(bulkWriteFuture.eventLoop) === expectedEventLoop
+            _ = try bulkWriteFuture.wait()
             // test a bulkWrite that returns a failed future
-            let res2 = coll.bulkWrite([])
-            expect(res2.eventLoop) === expectedEventLoop
-            expect(try res2.wait()).to(throwError())
+            let failedBulkWriteFuture = coll.bulkWrite([])
+            expect(failedBulkWriteFuture.eventLoop) === expectedEventLoop
+            expect(try failedBulkWriteFuture.wait()).to(throwError())
         }
     }
 }

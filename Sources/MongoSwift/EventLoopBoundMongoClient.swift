@@ -115,4 +115,149 @@ public struct EventLoopBoundMongoClient {
     public func db(_ name: String, options: MongoDatabaseOptions? = nil) -> MongoDatabase {
         MongoDatabase(name: name, client: self.client, eventLoop: self.eventLoop, options: options)
     }
+
+    /**
+     * Starts a `ChangeStream` on this `EventLoopBoundMongoClient`. The returned future will be on the `EventLoop`
+     * specified on this `EventLoopBoundMongoClient`.
+     * Allows the client to observe all changes in a cluster - excluding system collections and the "config", "local",
+     * and "admin" databases.
+     *
+     * - Parameters:
+     *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
+     *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
+     *   - session: An optional `ClientSession` to use with this change stream.
+     *
+     * - Warning:
+     *    If the returned change stream is alive when it goes out of scope, it will leak resources. To ensure the
+     *    change stream is dead before it leaves scope, invoke `ChangeStream.kill(...)` on it.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<ChangeStream>` on this `EventLoopBoundMongoClient`'s `EventLoop`. On success, contains a
+     *    `ChangeStream` watching all collections in this deployment. The `ChangeStream`'s methods will return futures
+     *    on the `EventLoop` specified on this `EventLoopBoundMongoClient`.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *      pipeline.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/changeStreams/
+     *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
+     *   - https://docs.mongodb.com/manual/reference/system-collections/
+     *
+     * - Note: Supported in MongoDB version 4.0+ only.
+     */
+    public func watch(
+        _ pipeline: [BSONDocument] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<BSONDocument>>> {
+        self.watch(pipeline, options: options, session: session, withFullDocumentType: BSONDocument.self)
+    }
+
+    /**
+     * Starts a `ChangeStream` on this `EventLoopBoundMongoClient`. The returned future will be on the `EventLoop`
+     * specified on this `EventLoopBoundMongoClient`.
+     * Allows the client to observe all changes in a cluster - excluding system collections and the "config", "local",
+     * and "admin" databases. Associates the specified `Codable` type `T` with the `fullDocument` field in the
+     * `ChangeStreamEvent`s emitted by the returned `ChangeStream`.
+     *
+     * - Parameters:
+     *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
+     *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
+     *   - session: An optional `ClientSession` to use with this change stream.
+     *   - withFullDocumentType: The type that the `fullDocument` field of the emitted `ChangeStreamEvent`s will be
+     *                           decoded to.
+     *
+     * - Warning:
+     *    If the returned change stream is alive when it goes out of scope, it will leak resources. To ensure the
+     *    change stream is dead before it leaves scope, invoke `ChangeStream.kill(...)` on it.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<ChangeStream>` on this `EventLoopBoundMongoClient`'s `EventLoop`. On success, contains a
+     *    `ChangeStream` watching all collections in this deployment. The `ChangeStream`'s methods will return futures
+     *    on the `EventLoop` specified on this `EventLoopBoundMongoClient`.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *      pipeline.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/changeStreams/
+     *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
+     *   - https://docs.mongodb.com/manual/reference/system-collections/
+     *
+     * - Note: Supported in MongoDB version 4.0+ only.
+     */
+    public func watch<FullDocType: Codable>(
+        _ pipeline: [BSONDocument] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil,
+        withFullDocumentType _: FullDocType.Type
+    ) -> EventLoopFuture<ChangeStream<ChangeStreamEvent<FullDocType>>> {
+        self.watch(
+            pipeline,
+            options: options,
+            session: session,
+            withEventType: ChangeStreamEvent<FullDocType>.self
+        )
+    }
+
+    /**
+     * Starts a `ChangeStream` on this `EventLoopBoundMongoClient`. The returned future will be on the `EventLoop`
+     * specified on this `EventLoopBoundMongoClient`. Allows the client to observe all changes in a cluster -
+     * excluding system collections and the "config", "local", and "admin" databases. Associates the specified
+     * `Codable` type `T` with the returned `ChangeStream`.
+     *
+     * - Parameters:
+     *   - pipeline: An array of aggregation pipeline stages to apply to the events returned by the change stream.
+     *   - options: An optional `ChangeStreamOptions` to use when constructing the change stream.
+     *   - session: An optional `ClientSession` to use with this change stream.
+     *   - withEventType: The type that the entire change stream response will be decoded to and that will be returned
+     *                    when iterating through the change stream.
+     *
+     * - Warning:
+     *    If the returned change stream is alive when it goes out of scope, it will leak resources. To ensure the
+     *    change stream is dead before it leaves scope, invoke `ChangeStream.kill(...)` on it.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<ChangeStream>` on this `EventLoopBoundMongoClient`'s `EventLoop`. On success, contains a
+     *    `ChangeStream` watching all collections in this deployment. The `ChangeStream`'s methods will return futures
+     *    on the `EventLoop` specified on this `EventLoopBoundMongoClient`.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `MongoError.CommandError` if an error occurs on the server while creating the change stream.
+     *    - `MongoError.InvalidArgumentError` if the options passed formed an invalid combination.
+     *    - `MongoError.InvalidArgumentError` if the `_id` field is projected out of the change stream documents by the
+     *      pipeline.
+     *
+     * - SeeAlso:
+     *   - https://docs.mongodb.com/manual/changeStreams/
+     *   - https://docs.mongodb.com/manual/meta/aggregation-quick-reference/
+     *   - https://docs.mongodb.com/manual/reference/system-collections/
+     *
+     * - Note: Supported in MongoDB version 4.0+ only.
+     */
+    public func watch<EventType: Codable>(
+        _ pipeline: [BSONDocument] = [],
+        options: ChangeStreamOptions? = nil,
+        session: ClientSession? = nil,
+        withEventType _: EventType.Type
+    ) -> EventLoopFuture<ChangeStream<EventType>> {
+        let operation = WatchOperation<BSONDocument, EventType>(
+            target: .eventLoopBoundClient(self),
+            pipeline: pipeline,
+            options: options
+        )
+        return self.client.operationExecutor.execute(
+            operation,
+            client: self.client,
+            on: self.eventLoop,
+            session: session
+        )
+    }
 }

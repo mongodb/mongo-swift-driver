@@ -69,6 +69,9 @@ public class ChangeStream<T: Codable>: CursorProtocol {
     /// Decoder for decoding documents into type `T`.
     private let decoder: BSONDecoder
 
+    /// The `EventLoop` this `ChangeStream` is bound to.
+    internal let eventLoop: EventLoop?
+
     /// The cursor this change stream is wrapping.
     private let wrappedCursor: Cursor<MongocChangeStream>
 
@@ -97,6 +100,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
         namespace: MongoNamespace,
         session: ClientSession?,
         decoder: BSONDecoder,
+        eventLoop: EventLoop?,
         options: ChangeStreamOptions?
     ) throws {
         let mongocChangeStream = MongocChangeStream(stealing: changeStreamPtr)
@@ -109,6 +113,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
         self.client = client
         self.decoder = BSONDecoder(copies: decoder, options: nil)
         self.decoder.userInfo[changeStreamNamespaceKey] = namespace
+        self.eventLoop = eventLoop
 
         // startAfter takes precedence over resumeAfter.
         if let startAfter = options?.startAfter {
@@ -132,7 +137,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *    before it leaves scope, invoke `ChangeStream.kill(...)` on it.
      */
     public func isAlive() -> EventLoopFuture<Bool> {
-        self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute(on: self.eventLoop) {
             self.wrappedCursor.isAlive
         }
     }
@@ -169,7 +174,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *     - `DecodingError` if an error occurs decoding the server's response.
      */
     public func next() -> EventLoopFuture<T?> {
-        self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute(on: self.eventLoop) {
             try self.processEvent(self.wrappedCursor.next())
         }
     }
@@ -197,7 +202,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *      - `DecodingError` if an error occurs decoding the server's response.
      */
     public func tryNext() -> EventLoopFuture<T?> {
-        self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute(on: self.eventLoop) {
             try self.processEvent(self.wrappedCursor.tryNext())
         }
     }
@@ -222,7 +227,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *      - `DecodingError` if an error occurs decoding the server's responses.
      */
     public func toArray() -> EventLoopFuture<[T]> {
-        self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute(on: self.eventLoop) {
             try self.wrappedCursor.toArray().map(self.processEvent)
         }
     }
@@ -250,7 +255,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *     - `DecodingError` if an error occurs decoding the server's responses.
      */
     public func forEach(_ body: @escaping (T) throws -> Void) -> EventLoopFuture<Void> {
-        self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute(on: self.eventLoop) {
             while let next = try self.processEvent(self.wrappedCursor.next()) {
                 try body(next)
             }
@@ -272,7 +277,7 @@ public class ChangeStream<T: Codable>: CursorProtocol {
      *   An `EventLoopFuture` that evaluates when the change stream has completed closing. This future should not fail.
      */
     public func kill() -> EventLoopFuture<Void> {
-        self.client.operationExecutor.execute {
+        self.client.operationExecutor.execute(on: self.eventLoop) {
             self.wrappedCursor.kill()
         }
     }
