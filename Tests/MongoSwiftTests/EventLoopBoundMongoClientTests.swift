@@ -290,6 +290,7 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             defer { try? db.drop().wait() }
 
             let session = elBoundClient.startSession()
+            defer { try? session.end().wait() }
             expect(session.eventLoop) === expectedEventLoop
 
             let startTransactionFuture = session.startTransaction()
@@ -305,10 +306,6 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             let commitTransactionFuture = session.commitTransaction()
             expect(commitTransactionFuture.eventLoop) === expectedEventLoop
             _ = try commitTransactionFuture.wait()
-
-            let endSessionFuture = session.end()
-            expect(endSessionFuture.eventLoop) === expectedEventLoop
-            _ = try endSessionFuture.wait()
         }
     }
 }
