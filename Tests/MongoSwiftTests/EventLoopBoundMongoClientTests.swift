@@ -284,6 +284,16 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         let expectedEventLoop = elg.next()
 
         try self.withTestClient { client in
+            let testRequirements = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 2, patch: 0),
+                acceptableTopologies: [.replicaSet, .sharded]
+            )
+
+            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
             let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
 
             let db = elBoundClient.db(Self.testDatabase)
