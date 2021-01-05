@@ -283,7 +283,7 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
         let expectedEventLoop = elg.next()
 
-        try self.withTestClient { client in
+        try self.withTestClient(eventLoopGroup: elg) { client in
             let testRequirements = TestRequirement(
                 minServerVersion: ServerVersion(major: 4, minor: 2, patch: 0),
                 acceptableTopologies: [.replicaSet, .sharded]
@@ -316,6 +316,23 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             let commitTransactionFuture = session.commitTransaction()
             expect(commitTransactionFuture.eventLoop) === expectedEventLoop
             _ = try commitTransactionFuture.wait()
+        }
+    }
+
+    func testEventLoopBoundWithSession() throws {
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+        let expectedEventLoop = elg.next()
+
+        try self.withTestClient(eventLoopGroup: elg) { client in
+            let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
+            let db = elBoundClient.db(Self.testDatabase)
+            defer { try? db.drop().wait() }
+
+            let wrongEventLoop = MultiThreadedEventLoopGroup(numberOfThreads: 4).next()
+            let withSessionFuture: EventLoopFuture<[String]> = elBoundClient.withSession { session in
+                db.listCollectionNames(session: session).hop(to: wrongEventLoop)
+            }
+            expect(withSessionFuture.eventLoop) === expectedEventLoop
         }
     }
 }

@@ -300,7 +300,7 @@ public struct EventLoopBoundMongoClient {
         let promise = self.client.operationExecutor.makePromise(of: T.self, on: self.eventLoop)
         let session = self.startSession(options: options)
         do {
-            let bodyFuture = try sessionBody(session)
+            let bodyFuture = try sessionBody(session).hop(to: self.eventLoop)
             // regardless of whether body's returned future succeeds we want to call session.end() once its complete.
             // only once session.end() finishes can we fulfill the returned promise. otherwise the user can't tell if
             // it is safe to close the parent client of this session, and they could inadvertently close it before the
