@@ -36,7 +36,7 @@ extension MongoDatabase {
         session: ClientSession? = nil
     ) -> EventLoopFuture<BSONDocument> {
         let operation = RunCommandOperation(database: self, command: command, options: options, serverAddress: server)
-        return self._client.operationExecutor.execute(operation, client: self._client, session: session)
+        return self._client.operationExecutor.execute(operation, client: self._client, on: nil, session: session)
     }
 }
 

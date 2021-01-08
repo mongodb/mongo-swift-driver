@@ -260,4 +260,64 @@ public struct EventLoopBoundMongoClient {
             session: session
         )
     }
+
+    /**
+     * Starts a new `ClientSession` with the provided options. The `ClientSession` will be bound to the `EventLoop`
+     * specified on this `EventLoopBoundMongoClient`. When you are done using this session, you must call
+     * `ClientSession.end()` on it.
+     *
+     * - Parameters:
+     *   - options: The options to use when starting this session.
+     *
+     * - Returns:
+     *   A `ClientSession` that is bound to this `EventLoopBoundMongoClient`'s `EventLoop`.
+     */
+    public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
+        ClientSession(client: self.client, eventLoop: self.eventLoop, options: options)
+    }
+
+    /**
+     * Starts a new `ClientSession` with the provided options and passes it to the provided closure. The returned
+     * future will be on the `EventLoop` specified on this `EventLoopBoundMongoClient`.
+     * The session is only valid within the body of the closure and will be ended after the body completes.
+     *
+     * - Parameters:
+     *   - options: Options to use when creating the session.
+     *   - sessionBody: A closure which takes in a `ClientSession` and returns an `EventLoopFuture<T>`.
+     *
+     * - Returns:
+     *    An `EventLoopFuture<T>`, the return value of the user-provided closure, on this `EventLoopBoundMongoClient`'s
+     *    `EventLoop`.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `CompatibilityError` if the deployment does not support sessions.
+     *    - `MongoError.LogicError` if this client has already been closed.
+     */
+    public func withSession<T>(
+        options: ClientSessionOptions? = nil,
+        _ sessionBody: (ClientSession) throws -> EventLoopFuture<T>
+    ) -> EventLoopFuture<T> {
+        let promise = self.client.operationExecutor.makePromise(of: T.self, on: self.eventLoop)
+        let session = self.startSession(options: options)
+        do {
+            let bodyFuture = try sessionBody(session).hop(to: self.eventLoop)
+            // regardless of whether body's returned future succeeds we want to call session.end() once its complete.
+            // only once session.end() finishes can we fulfill the returned promise. otherwise the user can't tell if
+            // it is safe to close the parent client of this session, and they could inadvertently close it before the
+            // session is actually ended and its parent `mongoc_client_t` is returned to the pool.
+            bodyFuture.flatMap { _ in
+                session.end()
+            }.flatMapError { _ in
+                session.end()
+            }.whenComplete { _ in
+                promise.completeWith(bodyFuture)
+            }
+        } catch {
+            session.end().whenComplete { _ in
+                promise.fail(error)
+            }
+        }
+
+        return promise.futureResult
+    }
 }

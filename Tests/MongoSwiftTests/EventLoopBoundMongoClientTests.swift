@@ -278,4 +278,61 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             expect(try failedBulkWriteFuture.wait()).to(throwError())
         }
     }
+
+    func testEventLoopBoundSessions() throws {
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+        let expectedEventLoop = elg.next()
+
+        try self.withTestClient(eventLoopGroup: elg) { client in
+            let testRequirements = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 2, patch: 0),
+                acceptableTopologies: [.replicaSet, .sharded]
+            )
+
+            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+            let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
+
+            let db = elBoundClient.db(Self.testDatabase)
+            defer { try? db.drop().wait() }
+
+            let session = elBoundClient.startSession()
+            defer { try? session.end().wait() }
+            expect(session.eventLoop) === expectedEventLoop
+
+            let startTransactionFuture = session.startTransaction()
+            expect(startTransactionFuture.eventLoop) === expectedEventLoop
+            _ = try startTransactionFuture.wait()
+
+            let abortTransactionFuture = session.abortTransaction()
+            expect(abortTransactionFuture.eventLoop) === expectedEventLoop
+            _ = try abortTransactionFuture.wait()
+
+            try session.startTransaction().wait()
+
+            let commitTransactionFuture = session.commitTransaction()
+            expect(commitTransactionFuture.eventLoop) === expectedEventLoop
+            _ = try commitTransactionFuture.wait()
+        }
+    }
+
+    func testEventLoopBoundWithSession() throws {
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+        let expectedEventLoop = elg.next()
+
+        try self.withTestClient(eventLoopGroup: elg) { client in
+            let elBoundClient = EventLoopBoundMongoClient(client: client, eventLoop: expectedEventLoop)
+            let db = elBoundClient.db(Self.testDatabase)
+            defer { try? db.drop().wait() }
+
+            let wrongEventLoop = MultiThreadedEventLoopGroup(numberOfThreads: 4).next()
+            let withSessionFuture: EventLoopFuture<[String]> = elBoundClient.withSession { session in
+                db.listCollectionNames(session: session).hop(to: wrongEventLoop)
+            }
+            expect(withSessionFuture.eventLoop) === expectedEventLoop
+        }
+    }
 }

@@ -188,6 +188,8 @@ extension EventLoopBoundMongoClientTests {
         ("testEventLoopBoundCollectionIndexes", testEventLoopBoundCollectionIndexes),
         ("testEventLoopBoundCollectionFindAndModify", testEventLoopBoundCollectionFindAndModify),
         ("testEventLoopBoundCollectionBulkWrite", testEventLoopBoundCollectionBulkWrite),
+        ("testEventLoopBoundSessions", testEventLoopBoundSessions),
+        ("testEventLoopBoundWithSession", testEventLoopBoundWithSession),
     ]
 }
 
