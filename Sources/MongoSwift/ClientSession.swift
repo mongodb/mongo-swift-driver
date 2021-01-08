@@ -72,7 +72,7 @@ public final class ClientSession {
     internal var id: BSONDocument?
 
     /// The `EventLoop` this `ClientSession` is bound to.
-    internal let eventLoop: EventLoop?
+    public let eventLoop: EventLoop?
 
     /// The server ID of the mongos this session is pinned to.
     private var serverID: UInt32? {
