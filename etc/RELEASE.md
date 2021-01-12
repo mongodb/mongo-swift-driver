@@ -2,6 +2,7 @@ MongoSwift release process
 ============================
 
 1. Ensure all the JIRA tickets for this release are resolved. You can find the releases on [this page](https://jira.mongodb.org/projects/SWIFT?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page&status=unreleased).
+1. File a DOCSP ticket in JIRA highlighting changes in server version and Swift version compatibility, or lack thereof. This will be used by the Docs team to update the compatibility matrices in the documentation. [Example](https://jira.mongodb.org/browse/DOCSP-13536)
 1. From the base directory of the project, run `etc/release.sh` with the new version, e.g. `./etc/release.sh 1.0.0`.
 1. The release script should have taken you to the GitHub page for the tag.
     - Click "Edit Tag".
