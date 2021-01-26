@@ -23,12 +23,6 @@ internal func convertingBSONErrors<T>(_ body: () throws -> T) rethrows -> T {
 }
 
 extension BSONDecoder {
-    /// Initializes `self`.
-    public convenience init(options: CodingStrategyProvider?) {
-        self.init()
-        self.configureWithOptions(options: options)
-    }
-
     /// Initializes `self` by using the options of another `BSONDecoder` and the provided options, with preference
     /// going to the provided options in the case of conflicts.
     internal convenience init(copies other: BSONDecoder, options: CodingStrategyProvider?) {
@@ -48,12 +42,6 @@ extension BSONDecoder {
 }
 
 extension BSONEncoder {
-    /// Initializes `self`.
-    public convenience init(options: CodingStrategyProvider?) {
-        self.init()
-        self.configureWithOptions(options: options)
-    }
-
     /// Initializes `self` by using the options of another `BSONEncoder` and the provided options, with preference
     /// going to the provided options in the case of conflicts.
     internal convenience init(copies other: BSONEncoder, options: CodingStrategyProvider?) {
@@ -78,14 +66,6 @@ extension Date {
     /// since the Unix epoch.
     internal init(msSinceEpoch: Int64) {
         self.init(timeIntervalSince1970: TimeInterval(msSinceEpoch) / 1000.0)
-    }
-}
-
-extension BSONTimestamp {
-    /// Initializes a new  `BSONTimestamp` with the provided `timestamp` and `increment` values. Assumes
-    /// the values can successfully be converted to `UInt32`s without loss of precision.
-    internal init(timestamp: Int, inc: Int) {
-        self.init(timestamp: UInt32(timestamp), inc: UInt32(inc))
     }
 }
 
