@@ -2,7 +2,7 @@ import CLibMongoC
 import Foundation
 @testable import MongoSwift
 import Nimble
-@testable import TestsCommon
+import TestsCommon
 import XCTest
 
 final class BSONPointerUtilsTests: MongoSwiftTestCase {
