@@ -222,8 +222,4 @@ extension WriteConcern: CustomStringConvertible {
 }
 
 /// An extension of `WriteConcern` to make it `Equatable`.
-extension WriteConcern: Equatable {
-    public static func == (lhs: WriteConcern, rhs: WriteConcern) -> Bool {
-        lhs.description == rhs.description
-    }
-}
+extension WriteConcern: Equatable {}
