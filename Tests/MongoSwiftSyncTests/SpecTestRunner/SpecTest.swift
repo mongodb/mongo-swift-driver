@@ -212,6 +212,15 @@ extension SpecTestFile {
                 continue
             }
 
+            // abort any open transactions from previous test runs
+            do {
+                try setupClient.db("admin").runCommand(["killAllSessions": []])
+            } catch {
+                guard let commandError = error as? MongoError.CommandError, commandError.code == 11601 else {
+                    throw error
+                }
+                continue
+            }
 
             try self.populateData(using: setupClient)
 
