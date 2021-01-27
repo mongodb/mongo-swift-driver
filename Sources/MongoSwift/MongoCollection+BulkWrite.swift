@@ -412,29 +412,54 @@ public struct BulkWriteResult: Codable {
      *   - `MongoError.InternalError` if an unexpected error occurs reading the reply from the server.
      */
     fileprivate init?(reply: BSONDocument, insertedIDs: [Int: BSON]) throws {
-        guard reply.keys.contains(where: { MongocKeys(rawValue: $0) != nil }) else {
-            return nil
-        }
-
-        self.deletedCount = reply[MongocKeys.deletedCount.rawValue]?.toInt() ?? 0
-
-        self.insertedCount = reply[MongocKeys.insertedCount.rawValue]?.toInt() ?? 0
-        self.insertedIDs = insertedIDs
-        self.matchedCount = reply[MongocKeys.matchedCount.rawValue]?.toInt() ?? 0
-        self.modifiedCount = reply[MongocKeys.modifiedCount.rawValue]?.toInt() ?? 0
-        self.upsertedCount = reply[MongocKeys.upsertedCount.rawValue]?.toInt() ?? 0
-
+        var deletedCount: Int?
+        var insertedCount: Int?
+        var matchedCount: Int?
+        var modifiedCount: Int?
+        var upsertedCount: Int?
         var upsertedIDs = [Int: BSON]()
 
-        if let upserted = reply[MongocKeys.upserted.rawValue]?.arrayValue {
-            for upsert in upserted.compactMap({ $0.documentValue }) {
-                guard let index = upsert["index"]?.toInt() else {
-                    throw MongoError.InternalError(message: "Could not cast upserted index to `Int`")
+        var seenKey = true
+        for (k, v) in reply {
+            guard let key = MongocKeys(rawValue: k) else {
+                continue
+            }
+
+            seenKey = true
+
+            switch key {
+            case .deletedCount:
+                deletedCount = v.toInt()
+            case .insertedCount:
+                insertedCount = v.toInt()
+            case .matchedCount:
+                matchedCount = v.toInt()
+            case .modifiedCount:
+                modifiedCount = v.toInt()
+            case .upsertedCount:
+                upsertedCount = v.toInt()
+            case .upserted:
+                if let upserted = reply[MongocKeys.upserted.rawValue]?.arrayValue?.compactMap({ $0.documentValue }) {
+                    for upsert in upserted {
+                        guard let index = upsert["index"]?.toInt() else {
+                            throw MongoError.InternalError(message: "Could not cast upserted index to `Int`")
+                        }
+                        upsertedIDs[index] = upsert["_id"]
+                    }
                 }
-                upsertedIDs[index] = upsert["_id"]
             }
         }
 
+        guard seenKey else {
+            return nil
+        }
+
+        self.deletedCount = deletedCount ?? 0
+        self.insertedCount = insertedCount ?? 0
+        self.insertedIDs = insertedIDs
+        self.matchedCount = matchedCount ?? 0
+        self.modifiedCount = modifiedCount ?? 0
+        self.upsertedCount = upsertedCount ?? 0
         self.upsertedIDs = upsertedIDs
     }
 
