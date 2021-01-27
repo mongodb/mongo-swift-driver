@@ -72,7 +72,7 @@ extension Data {
 
 extension bson_oid_t {
     /// This `bson_oid_t`'s data represented as a `String`.
-    public var hex: String {
+    internal var hex: String {
         var str = Data(count: 25)
         return str.withUnsafeMutableCStringPointer { strPtr in
             withUnsafePointer(to: self) { oidPtr in
