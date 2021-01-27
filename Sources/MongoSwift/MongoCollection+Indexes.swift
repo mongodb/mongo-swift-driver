@@ -16,8 +16,13 @@ public struct IndexModel: Codable {
     }
 
     /// Gets the default name for this index.
-    internal var defaultName: String {
-        self.keys.map { k, v in "\(k)_\(v.toInt()?.description ?? "invalid")" }.joined(separator: "_")
+    internal func getDefaultName() throws -> String {
+        try self.keys.map { k, v in
+            guard let vInt = v.toInt() else {
+                throw MongoError.InvalidArgumentError(message: "Invalid index value for key: \"\(k)\"=\(v)")
+            }
+            return "\(k)_\(vInt)"
+        }.joined(separator: "_")
     }
 
     // Encode own data as well as nested options data
