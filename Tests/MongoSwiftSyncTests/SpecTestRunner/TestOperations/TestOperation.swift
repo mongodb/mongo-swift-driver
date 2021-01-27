@@ -100,11 +100,8 @@ struct TestOperationDescription: Decodable {
     /// The parameters to pass to the collection used for this operation.
     let collectionOptions: MongoCollectionOptions?
 
-    /// Present only when the operation is `runCommand`. The name of the command to run.
-    let commandName: String?
-
     public enum CodingKeys: String, CodingKey {
-        case object, result, error, databaseOptions, collectionOptions, commandName = "command_name"
+        case object, result, error, databaseOptions, collectionOptions
     }
 
     public init(from decoder: Decoder) throws {
@@ -116,7 +113,6 @@ struct TestOperationDescription: Decodable {
         self.error = try container.decodeIfPresent(Bool.self, forKey: .error)
         self.databaseOptions = try container.decodeIfPresent(MongoDatabaseOptions.self, forKey: .databaseOptions)
         self.collectionOptions = try container.decodeIfPresent(MongoCollectionOptions.self, forKey: .collectionOptions)
-        self.commandName = try container.decodeIfPresent(String.self, forKey: .commandName)
     }
 
     // swiftlint:disable cyclomatic_complexity
@@ -186,7 +182,7 @@ struct AnyTestOperation: Decodable {
     let op: TestOperation
 
     private enum CodingKeys: String, CodingKey {
-        case name, arguments
+        case name, arguments, commandName = "command_name"
     }
 
     // swiftlint:disable:next cyclomatic_complexity
@@ -240,7 +236,8 @@ struct AnyTestOperation: Decodable {
         case "createIndex":
             self.op = try container.decode(CreateIndex.self, forKey: .arguments)
         case "runCommand":
-            self.op = try container.decode(RunCommand.self, forKey: .arguments)
+            let commandName = try container.decode(String.self, forKey: .commandName)
+            self.op = try container.decode(RunCommand.self, forKey: .arguments).withCommandName(commandName)
         case "assertCollectionExists":
             self.op = try container.decode(AssertCollectionExists.self, forKey: .arguments)
         case "assertCollectionNotExists":

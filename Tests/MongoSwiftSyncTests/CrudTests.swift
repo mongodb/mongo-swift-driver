@@ -45,12 +45,12 @@ final class CrudTests: MongoSwiftTestCase {
                 // 4) verify that expected data is present
                 // 5) drop the collection to clean up
                 let collection = db.collection(self.getCollectionName(suffix: "\(filename)_\(i)"))
+                defer { try? collection.drop() }
                 if !file.data.isEmpty {
                     try collection.insertMany(file.data)
                 }
                 try test.execute(usingCollection: collection)
                 try test.verifyData(testCollection: collection, db: db)
-                try collection.drop()
             }
         }
         print() // for readability of results
@@ -86,8 +86,8 @@ private struct CrudTestFile: Decodable {
 
 /// Initializes a new `CrudTest` of the appropriate subclass from a `Document`
 private func makeCrudTest(_ doc: BSONDocument) throws -> CrudTest {
-    let operation: BSONDocument = try doc.get("operation")
-    let opName: String = try operation.get("name")
+    let operation = doc["operation"]!.documentValue!
+    let opName = operation["name"]!.stringValue!
     guard let type = testTypeMap[opName] else {
         throw TestError(message: "Unknown operation name \(opName)")
     }
@@ -143,11 +143,11 @@ private class CrudTest {
 
     /// Initializes a new `CrudTest` from a `Document`.
     required init(_ test: BSONDocument) throws {
-        self.description = try test.get("description")
-        let operation: BSONDocument = try test.get("operation")
-        self.operationName = try operation.get("name")
-        self.args = try operation.get("arguments")
-        let outcome: BSONDocument = try test.get("outcome")
+        self.description = test["description"]!.stringValue!
+        let operation = test["operation"]!.documentValue!
+        self.operationName = operation["name"]!.stringValue!
+        self.args = operation["arguments"]!.documentValue!
+        let outcome = test["outcome"]!.documentValue!
         self.error = outcome["error"]?.boolValue
         self.result = outcome["result"]
         self.collection = outcome["collection"]?.documentValue
@@ -168,7 +168,7 @@ private class CrudTest {
         if let name = collection["name"]?.stringValue {
             collToCheck = db.collection(name)
         }
-        expect(BSON.array(try collToCheck.find([:]).all().map { .document($0) })).to(equal(collection["data"]))
+        try self.verifyCursorContents(try collToCheck.find([:]), result: collection["data"])
     }
 
     // Given an `UpdateResult`, verify that it matches the expected results in this `CrudTest`.
@@ -196,7 +196,22 @@ private class CrudTest {
         if self.result == .null {
             expect(result).to(beNil())
         } else {
-            expect(result).to(equal(self.result?.documentValue))
+            expect(result).to(sortedEqual(self.result?.documentValue))
+        }
+    }
+
+    /// Given a cursor and a `BSON` containing an array of documents, verify that the cursors result
+    /// set is equivalent to the array of documents.
+    ///
+    /// This compares documents without considering key ordering.
+    func verifyCursorContents(_ cursor: MongoCursor<BSONDocument>, result: BSON?) throws {
+        guard let expectedResults = result?.arrayValue?.compactMap({ $0.documentValue }) else {
+            return
+        }
+        let results = try cursor.all()
+        expect(results.count).to(equal(expectedResults.count))
+        for (actual, expected) in zip(results, expectedResults) {
+            expect(actual).to(sortedEqual(expected), description: self.description)
         }
     }
 }
@@ -215,7 +230,7 @@ private class AggregateTest: CrudTest {
             expect(cursor.next()).to(beNil())
         } else {
             // if not $out, verify that the cursor contains the expected documents.
-            expect(BSON.array(try cursor.all().map { .document($0) })).to(equal(self.result))
+            try self.verifyCursorContents(cursor, result: self.result)
         }
     }
 }
@@ -288,7 +303,7 @@ private class CountTest: CrudTest {
 /// A class for executing `countDocuments` tests
 private class CountDocumentsTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
-        let filter: BSONDocument = try self.args.get("filter")
+        let filter = self.args["filter"]!.documentValue!
         let options = CountDocumentsOptions(collation: self.collation, limit: self.limit, skip: self.skip)
         let result = try coll.countDocuments(filter, options: options)
         expect(result).to(equal(self.result?.toInt()))
@@ -307,7 +322,7 @@ private class EstimatedDocumentCountTest: CrudTest {
 /// A class for executing `deleteOne` and `deleteMany` tests
 private class DeleteTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
-        let filter: BSONDocument = try self.args.get("filter")
+        let filter = self.args["filter"]!.documentValue!
         let options = DeleteOptions(collation: self.collation)
         let result: DeleteResult?
         if self.operationName == "deleteOne" {
@@ -325,7 +340,7 @@ private class DeleteTest: CrudTest {
 private class DistinctTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
         let filter = self.args["filter"]?.documentValue
-        let fieldName: String = try self.args.get("fieldName")
+        let fieldName = self.args["fieldName"]!.stringValue!
         let options = DistinctOptions(collation: self.collation)
         // rather than casting to all the possible BSON types, just wrap the arrays in documents to compare them
         let resultDoc: BSONDocument = [
@@ -341,7 +356,7 @@ private class DistinctTest: CrudTest {
 /// A class for executing `find` tests
 private class FindTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
-        let filter: BSONDocument = try self.args.get("filter")
+        let filter = self.args["filter"]!.documentValue!
         let options = FindOptions(
             batchSize: self.batchSize,
             collation: self.collation,
@@ -349,15 +364,14 @@ private class FindTest: CrudTest {
             skip: self.skip,
             sort: self.sort
         )
-        let result = BSON.array(try coll.find(filter, options: options).all().map { .document($0) })
-        expect(result).to(equal(self.result))
+        try self.verifyCursorContents(try coll.find(filter, options: options), result: self.result)
     }
 }
 
 /// A class for executing `findOneAndDelete` tests
 private class FindOneAndDeleteTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
-        let filter: BSONDocument = try self.args.get("filter")
+        let filter = self.args["filter"]!.documentValue!
         let opts = FindOneAndDeleteOptions(collation: self.collation, projection: self.projection, sort: self.sort)
 
         let result = try coll.findOneAndDelete(filter, options: opts)
@@ -368,8 +382,8 @@ private class FindOneAndDeleteTest: CrudTest {
 /// A class for executing `findOneAndUpdate` tests
 private class FindOneAndReplaceTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
-        let filter: BSONDocument = try self.args.get("filter")
-        let replacement: BSONDocument = try self.args.get("replacement")
+        let filter = self.args["filter"]!.documentValue!
+        let replacement = self.args["replacement"]!.documentValue!
 
         let opts = FindOneAndReplaceOptions(
             collation: self.collation,
@@ -387,8 +401,8 @@ private class FindOneAndReplaceTest: CrudTest {
 /// A class for executing `findOneAndReplace` tests
 private class FindOneAndUpdateTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
-        let filter: BSONDocument = try self.args.get("filter")
-        let update: BSONDocument = try self.args.get("update")
+        let filter = self.args["filter"]!.documentValue!
+        let update = self.args["update"]!.documentValue!
 
         let opts = FindOneAndUpdateOptions(
             arrayFilters: self.arrayFilters,
@@ -462,7 +476,7 @@ private class InsertManyTest: CrudTest {
 /// A Class for executing `insertOne` tests
 private class InsertOneTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
-        let doc: BSONDocument = try self.args.get("document")
+        let doc = self.args["document"]!.documentValue!
         let result = try coll.insertOne(doc)
         expect(doc["_id"]).to(equal(result?.insertedID))
     }
@@ -471,8 +485,8 @@ private class InsertOneTest: CrudTest {
 /// A class for executing `replaceOne` tests
 private class ReplaceOneTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
-        let filter: BSONDocument = try self.args.get("filter")
-        let replacement: BSONDocument = try self.args.get("replacement")
+        let filter = self.args["filter"]!.documentValue!
+        let replacement = self.args["replacement"]!.documentValue!
         let options = ReplaceOptions(collation: self.collation, upsert: self.upsert)
         let result = try coll.replaceOne(filter: filter, replacement: replacement, options: options)
         try self.verifyUpdateResult(result)
@@ -482,8 +496,8 @@ private class ReplaceOneTest: CrudTest {
 /// A class for executing `updateOne` and `updateMany` tests
 private class UpdateTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
-        let filter: BSONDocument = try self.args.get("filter")
-        let update: BSONDocument = try self.args.get("update")
+        let filter = self.args["filter"]!.documentValue!
+        let update = self.args["update"]!.documentValue!
         let options = UpdateOptions(arrayFilters: self.arrayFilters, collation: self.collation, upsert: self.upsert)
         let result: UpdateResult?
         if self.operationName == "updateOne" {

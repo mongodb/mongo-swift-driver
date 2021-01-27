@@ -11,7 +11,7 @@ import XCTest
 internal struct TestCommandStartedEvent: Decodable, Matchable {
     let command: BSONDocument
 
-    let commandName: String
+    let commandName: String?
 
     let databaseName: String?
 
@@ -48,16 +48,7 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
         let container = try decoder.container(keyedBy: TopLevelCodingKeys.self)
         let eventContainer = try container.nestedContainer(keyedBy: CodingKeys.self, forKey: .type)
         self.command = try eventContainer.decode(BSONDocument.self, forKey: .command)
-        if let commandName = try eventContainer.decodeIfPresent(String.self, forKey: .commandName) {
-            self.commandName = commandName
-        } else if let firstKey = self.command.keys.first {
-            self.commandName = firstKey
-        } else {
-            throw DecodingError.keyNotFound(
-                CodingKeys.commandName,
-                DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "commandName not found")
-            )
-        }
+        self.commandName = try eventContainer.decodeIfPresent(String.self, forKey: .commandName)
         self.databaseName = try eventContainer.decodeIfPresent(String.self, forKey: .databaseName)
     }
 
@@ -67,8 +58,8 @@ internal struct TestCommandStartedEvent: Decodable, Matchable {
                 return false
             }
         }
-        return self.commandName.matches(expected: expected.commandName)
-            && self.command.matches(expected: expected.command)
+
+        return self.command.matches(expected: expected.command)
     }
 }
 
@@ -81,9 +72,10 @@ internal enum TestData: Decodable {
     case single([BSONDocument])
 
     public init(from decoder: Decoder) throws {
-        if let array = try? [BSONDocument](from: decoder) {
+        let container = try decoder.singleValueContainer()
+        if let array = try? container.decode([BSONDocument].self) {
             self = .single(array)
-        } else if let document = try? BSONDocument(from: decoder) {
+        } else if let document = try? container.decode(BSONDocument.self) {
             var mapping: [String: [BSONDocument]] = [:]
             for (k, v) in document {
                 guard let documentArray = v.arrayValue?.compactMap({ $0.documentValue }) else {
@@ -190,6 +182,30 @@ extension SpecTestFile {
         }
     }
 
+    func terminateOpenTransactions(using client: MongoSwiftSync.MongoClient) throws {
+        // Using the provided MongoClient, execute the killAllSessions command on either the primary or, if
+        // connected to a sharded cluster, all mongos servers.
+        switch try client.topologyType() {
+        case .single:
+            return
+        case .replicaSet:
+            // The test runner MAY ignore any command failure with error Interrupted(11601) to work around
+            // SERVER-38335.
+            do {
+                let opts = RunCommandOptions(readPreference: .primary)
+                _ = try client.db("admin").runCommand(["killAllSessions": []], options: opts)
+            } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
+        case .sharded, .shardedReplicaSet:
+            for address in MongoSwiftTestCase.getHosts() {
+                do {
+                    _ = try client.db("admin").runCommand(["killAllSessions": []], on: address)
+                } catch let commandError as MongoError.CommandError where commandError.code == 11601 {
+                    continue
+                }
+            }
+        }
+    }
+
     /// Run all the tests specified in this file, optionally specifying keywords that, if included in a test's
     /// description, will cause certain tests to be skipped.
     internal func runTests() throws {
@@ -220,6 +236,7 @@ extension SpecTestFile {
                 continue
             }
 
+            try self.terminateOpenTransactions(using: setupClient)
             try self.populateData(using: setupClient)
 
             // Due to strange behavior in mongos, a "distinct" command needs to be run against each mongos
