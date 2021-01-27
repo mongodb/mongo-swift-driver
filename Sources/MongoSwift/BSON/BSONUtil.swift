@@ -71,9 +71,10 @@ extension Date {
 
 extension BSONDocument {
     /**
-     * Initializes a `BSONDocument` using an array where the values are optional
-     * `BSON`s. Values are stored under a string of their index in the
-     * array.
+     * Initializes a `BSONDocument` from the provided array by mapping the stringified version of each array index to
+     * value in the array at that index.
+     *
+     * e.g. `BSONDocument([1, true, "x"])` => `["0": 1, "1": true, "2": "x"]`
      *
      * - Parameters:
      *   - elements: a `[BSON]`
