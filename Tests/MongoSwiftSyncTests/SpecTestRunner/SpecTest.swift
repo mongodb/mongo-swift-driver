@@ -182,6 +182,30 @@ extension SpecTestFile {
         }
     }
 
+    func terminateOpenTransactions(using client: MongoSwiftSync.MongoClient) throws {
+        // Using the provided MongoClient, execute the killAllSessions command on either the primary or, if
+        // connected to a sharded cluster, all mongos servers.
+        switch try client.topologyType() {
+        case .single:
+            return
+        case .replicaSet:
+            // The test runner MAY ignore any command failure with error Interrupted(11601) to work around
+            // SERVER-38335.
+            do {
+                let opts = RunCommandOptions(readPreference: .primary)
+                _ = try client.db("admin").runCommand(["killAllSessions": []], options: opts)
+            } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
+        case .sharded, .shardedReplicaSet:
+            for address in MongoSwiftTestCase.getHosts() {
+                do {
+                    _ = try client.db("admin").runCommand(["killAllSessions": []], on: address)
+                } catch let commandError as MongoError.CommandError where commandError.code == 11601 {
+                    continue
+                }
+            }
+        }
+    }
+
     /// Run all the tests specified in this file, optionally specifying keywords that, if included in a test's
     /// description, will cause certain tests to be skipped.
     internal func runTests() throws {
@@ -212,16 +236,7 @@ extension SpecTestFile {
                 continue
             }
 
-            // abort any open transactions from previous test runs
-            do {
-                try setupClient.db("admin").runCommand(["killAllSessions": []])
-            } catch {
-                guard let commandError = error as? MongoError.CommandError, commandError.code == 11601 else {
-                    throw error
-                }
-                continue
-            }
-
+            try self.terminateOpenTransactions(using: setupClient)
             try self.populateData(using: setupClient)
 
             // Due to strange behavior in mongos, a "distinct" command needs to be run against each mongos
