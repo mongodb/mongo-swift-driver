@@ -419,7 +419,10 @@ public struct BulkWriteResult: Codable {
         var upsertedCount: Int?
         var upsertedIDs = [Int: BSON]()
 
-        var seenKey = true
+        // To improve the performance of this initializer, we perform only a single walk over the entire document and
+        // record the values as they are encountered instead of doing repeated random lookups, since each lookup
+        // would result in a traversal of the document.
+        var seenKey = false
         for (k, v) in reply {
             guard let key = MongocKeys(rawValue: k) else {
                 continue
