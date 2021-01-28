@@ -1,8 +1,12 @@
 import CLibMongoC
 import Foundation
+import NIO
 
 internal typealias BSONPointer = UnsafePointer<bson_t>
 internal typealias MutableBSONPointer = UnsafeMutablePointer<bson_t>
+
+/// This shared allocator instance should be used for all `ByteBuffer` creations.
+internal let MONGOSWIFT_ALLOCATOR = ByteBufferAllocator()
 
 /**
  * Executes the given closure with a read-only `BSONPointer` to the provided `BSONDocument` if non-nil.
@@ -45,7 +49,8 @@ extension SwiftBSON.BSONDocument {
         }
         let bufferPtr = UnsafeBufferPointer(start: ptr, count: Int(bsonPtr.pointee.len))
         do {
-            try self.init(fromBSON: Data(bufferPtr))
+            let buf = MONGOSWIFT_ALLOCATOR.buffer(bytes: bufferPtr)
+            try self.init(fromBSONWithoutValidatingElements: buf)
         } catch {
             fatalError("Failed initializing BSONDocument from bson_t: \(error)")
         }
