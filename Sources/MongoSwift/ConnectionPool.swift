@@ -107,8 +107,8 @@ internal class ConnectionPool {
     }
 
     /// Execute the provided closure with the pointer to the created `mongoc_client_pool_t`, potentially waiting
-    /// for it to finish starting up. The closure will be executed while the stateLock is held, so it MUST NOT
-    /// be acquired within the closure.
+    /// for the pool to finish starting up first. The closure will be executed while the stateLock is held, so
+    /// closure MUST NOT attempt to acquire the lock.
     ///
     /// Throws an error if the pool is closed or closing.
     private func withResolvedPool<T>(body: (OpaquePointer) throws -> T) throws -> T {
@@ -250,6 +250,9 @@ internal class ConnectionPool {
     /// may only be called before any connections are checked out of the pool.** Ideally this code would just live in
     /// `ConnectionPool.init`. However, the client we accept here has to be fully initialized before we can pass it
     /// as the context. In order for it to be fully initialized its pool must exist already.
+    ///
+    /// This method takes ownership of the provided `mongoc_apm_callbacks_t`, so the pointer MUST NOT be used or freed
+    /// after it is passed to this method.
     internal func setAPMCallbacks(callbacks: OpaquePointer, client: MongoClient) {
         // lock isn't needed as this is called before pool is in use.
         switch self.state {
