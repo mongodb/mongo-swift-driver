@@ -255,20 +255,26 @@ internal class ConnectionPool {
     /// after it is passed to this method.
     internal func setAPMCallbacks(callbacks: OpaquePointer, client: MongoClient) {
         // lock isn't needed as this is called before pool is in use.
-        switch self.state {
-        case let .opening(future):
-            future.whenSuccess { pool in
-                mongoc_client_pool_set_apm_callbacks(pool, callbacks, Unmanaged.passUnretained(client).toOpaque())
-                mongoc_apm_callbacks_destroy(callbacks)
-            }
-            // this shouldn't be reached but just in case we still free the memory
-            future.whenFailure { _ in
-                mongoc_apm_callbacks_destroy(callbacks)
-            }
-        case .closing, .closed, .open:
+        guard case let .opening(future) = self.state else {
             // this method is called via `initializeMonitoring()`, which is called from `MongoClient.init`.
             // unless we have a bug it's impossible that the pool is already closed.
             fatalError("ConnectionPool in unexpected state \(self.state) while setting APM callbacks")
         }
+
+        // to ensure the callbacks get set before any waiting on this future becomes unblocked, use
+        // `map` to create a new future instead of .whenSuccess
+        let newFut = future.map { pool -> OpaquePointer in
+            mongoc_client_pool_set_apm_callbacks(pool, callbacks, Unmanaged.passUnretained(client).toOpaque())
+            mongoc_apm_callbacks_destroy(callbacks)
+            return pool
+        }
+
+        // this shouldn't be reached but just in case we still free the memory
+        newFut.whenFailure { _ in
+            mongoc_apm_callbacks_destroy(callbacks)
+        }
+
+        // update the stored future to refer to the one that sets the callbacks
+        self.state = .opening(future: newFut)
     }
 }
