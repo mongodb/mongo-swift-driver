@@ -742,7 +742,6 @@ extension ConnectionPool {
         guard let callbacks = mongoc_apm_callbacks_new() else {
             fatalError("failed to initialize new mongoc_apm_callbacks_t")
         }
-        defer { mongoc_apm_callbacks_destroy(callbacks) }
 
         mongoc_apm_set_command_started_cb(callbacks, commandStarted)
         mongoc_apm_set_command_succeeded_cb(callbacks, commandSucceeded)
