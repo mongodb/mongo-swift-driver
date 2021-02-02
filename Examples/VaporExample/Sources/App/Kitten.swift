@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwift
+import MongoDBVapor
 import Vapor
 
 /// Possible cat food choices.
@@ -31,4 +31,11 @@ struct Kitten: Content {
 /// Context struct for the index page.
 struct IndexContext: Encodable {
     let kittens: [Kitten]
+}
+
+extension Request {
+    /// Convenience extension for obtaining a collection which uses the same event loop as a request.
+    var kittenCollection: MongoCollection<Kitten> {
+        self.mongoDB.client.db("home").collection("kittens", withType: Kitten.self)
+    }
 }

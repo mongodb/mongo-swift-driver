@@ -1,4 +1,4 @@
-import MongoSwift
+import MongoDBVapor
 import Vapor
 
 /// Constructs a document using the name from the specified request which can be used a filter
@@ -14,31 +14,23 @@ func getNameFilter(from request: Request) throws -> BSONDocument {
 
 /// Adds a collection of routes to the application.
 func routes(_ app: Application) throws {
-    /// A collection with type `Kitten`. This allows us to directly retrieve instances of
-    /// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.
-    let collection = app.mongoClient.db("home").collection("kittens", withType: Kitten.self)
-
     /// Handles a request to load the main index page containing a list of kittens.
     app.get { req -> EventLoopFuture<View> in
-        collection.find().flatMap { cursor in
+        req.kittenCollection.find().flatMap { cursor in
             cursor.toArray()
-            // Hop to ensure that the final response future happens on the request's event loop.
-        }.hop(to: req.eventLoop)
-            .flatMap { kittens in
-                // Return the corresponding Leaf view, providing the list of kittens as context.
-                req.view.render("index.leaf", IndexContext(kittens: kittens))
-            }
-            .flatMapErrorThrowing { error in
-                throw Abort(.internalServerError, reason: "Failed to load kittens: \(error)")
-            }
+        }.flatMap { kittens in
+            // Return the corresponding Leaf view, providing the list of kittens as context.
+            req.view.render("index.leaf", IndexContext(kittens: kittens))
+        }
+        .flatMapErrorThrowing { error in
+            throw Abort(.internalServerError, reason: "Failed to load kittens: \(error)")
+        }
     }
 
     /// Handles a request to add a new kitten.
     app.post { req -> EventLoopFuture<Response> in
         let newKitten = try req.content.decode(Kitten.self)
-        return collection.insertOne(newKitten)
-            // Hop to ensure that the final response future happens on the request's event loop.
-            .hop(to: req.eventLoop)
+        return req.kittenCollection.insertOne(newKitten)
             .map { _ in
                 // On success, redirect to the index to reload the updated list.
                 req.redirect(to: "/")
@@ -55,9 +47,7 @@ func routes(_ app: Application) throws {
     /// Handles a request to load info about a particular kitten.
     app.get("kittens", ":name") { req -> EventLoopFuture<View> in
         let nameFilter = try getNameFilter(from: req)
-        return collection.findOne(nameFilter)
-            // Hop to ensure that the final response future happens on the request's event loop.
-            .hop(to: req.eventLoop)
+        return req.kittenCollection.findOne(nameFilter)
             .unwrap(or: Abort(.notFound, reason: "No kitten with matching name"))
             .flatMap { kitten in
                 // Return the corresponding Leaf view, providing the kitten as context.
@@ -67,9 +57,7 @@ func routes(_ app: Application) throws {
 
     app.delete("kittens", ":name") { req -> EventLoopFuture<Response> in
         let nameFilter = try getNameFilter(from: req)
-        return collection.deleteOne(nameFilter)
-            // Hop to ensure that the final response future happens on the request's event loop.
-            .hop(to: req.eventLoop)
+        return req.kittenCollection.deleteOne(nameFilter)
             .flatMapErrorThrowing { error in
                 throw Abort(.internalServerError, reason: "Failed to delete kitten: \(error)")
             }
@@ -91,9 +79,7 @@ func routes(_ app: Application) throws {
         /// Create a document using MongoDB update syntax that specifies we want to set a field.
         let updateDocument: BSONDocument = ["$set": .document(try BSONEncoder().encode(update))]
 
-        return collection.updateOne(filter: nameFilter, update: updateDocument)
-            // Hop to ensure that the final response future happens on the request's event loop.
-            .hop(to: req.eventLoop)
+        return req.kittenCollection.updateOne(filter: nameFilter, update: updateDocument)
             .flatMapErrorThrowing { error in
                 throw Abort(.internalServerError, reason: "Failed to update kitten: \(error)")
             }
