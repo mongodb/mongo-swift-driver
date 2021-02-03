@@ -271,15 +271,7 @@ public protocol SortedEquatable {
 
 extension BSONDocument: SortedEquatable {
     public func sortedEquals(_ other: BSONDocument) -> Bool {
-        guard self.buffer.readableBytes == other.buffer.readableBytes else {
-            return false
-        }
-        for (k, v) in self {
-            guard let otherValue = other[k], v.sortedEquals(otherValue) else {
-                return false
-            }
-        }
-        return true
+        self.equalsIgnoreKeyOrder(other)
     }
 }
 
