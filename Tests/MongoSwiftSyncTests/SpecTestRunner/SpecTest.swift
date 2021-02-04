@@ -182,7 +182,10 @@ extension SpecTestFile {
         }
     }
 
-    func terminateOpenTransactions(using client: MongoSwiftSync.MongoClient, mongosClients: [MongoSwiftSync.MongoClient]?) throws {
+    func terminateOpenTransactions(
+        using client: MongoSwiftSync.MongoClient,
+        mongosClients: [MongoSwiftSync.MongoClient]?
+    ) throws {
         // if connected to a replica set, use the provided client to execute killAllSessions on the primary.
         // if connected to a sharded cluster, use the per-mongos clients to execute killAllSessions on each mongos.
         switch try client.topologyType() {
@@ -199,7 +202,7 @@ extension SpecTestFile {
             for mongosClient in mongosClients! {
                 do {
                     _ = try mongosClient.db("admin").runCommand(["killAllSessions": []])
-                break
+                    break
                 } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
             }
         }
@@ -222,7 +225,7 @@ extension SpecTestFile {
         let setupClient = try MongoClient.makeTestClient(connString, options: setupClientOptions)
         let topologyType = try setupClient.topologyType()
 
-        var mongosClients: [MongoClient]? = nil
+        var mongosClients: [MongoClient]?
         switch topologyType {
         case .sharded, .shardedReplicaSet:
             var opts = setupClientOptions
@@ -256,7 +259,7 @@ extension SpecTestFile {
                test.description.contains("distinct")
             {
                 for client in mongosClients! {
-                     _ = try client.db(self.databaseName).runCommand(["distinct": .string(collName), "key": "_id"])
+                    _ = try client.db(self.databaseName).runCommand(["distinct": .string(collName), "key": "_id"])
                 }
             }
 
