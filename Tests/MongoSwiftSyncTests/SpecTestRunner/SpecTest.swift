@@ -244,7 +244,6 @@ extension SpecTestFile {
             break
         }
 
-
         fileLevelLog("Executing tests from file \(self.name)...")
         for var test in self.tests {
             if let keyword = Self.TestType.skippedTestKeywords.first(where: { test.description.contains($0) }) {
