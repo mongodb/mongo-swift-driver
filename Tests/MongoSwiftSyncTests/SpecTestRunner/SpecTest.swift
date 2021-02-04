@@ -223,6 +223,14 @@ extension SpecTestFile {
         setupClientOptions.minHeartbeatFrequencyMS = 50
         setupClientOptions.heartbeatFrequencyMS = 50
         let setupClient = try MongoClient.makeTestClient(connString, options: setupClientOptions)
+
+        if let requirements = self.runOn {
+            guard try requirements.contains(where: { try setupClient.getUnmetRequirement($0) == nil }) else {
+                fileLevelLog("Skipping tests from file \(self.name), deployment requirements not met.")
+                return
+            }
+        }
+
         let topologyType = try setupClient.topologyType()
 
         var mongosClients: [MongoClient]?
@@ -236,12 +244,6 @@ extension SpecTestFile {
             break
         }
 
-        if let requirements = self.runOn {
-            guard try requirements.contains(where: { try setupClient.getUnmetRequirement($0) == nil }) else {
-                fileLevelLog("Skipping tests from file \(self.name), deployment requirements not met.")
-                return
-            }
-        }
 
         fileLevelLog("Executing tests from file \(self.name)...")
         for var test in self.tests {
