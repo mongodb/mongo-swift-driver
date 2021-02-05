@@ -23,14 +23,15 @@ jazzy_args=(--clean
             --module-version "${version}")
 
 # Generate MongoSwift docs
+sourcekitten doc --spm --module-name MongoSwift > mongoswift-docs.json
 args=("${jazzy_args[@]}"  --output "docs-temp/MongoSwift" --module "MongoSwift" --config ".jazzy.yml" 
+        --sourcekitten-sourcefile mongoswift-docs.json
         --root-url "https://mongodb.github.io/mongo-swift-driver/docs/MongoSwift/")
 jazzy "${args[@]}"
 
 # Generate MongoSwiftSync docs
 
 # we have to do some extra work to get re-exported symbols to show up
-sourcekitten doc --spm --module-name MongoSwift > mongoswift-docs.json
 python3 etc/filter_sourcekitten_output.py
 
 sourcekitten doc --spm --module-name MongoSwiftSync > mongoswiftsync-docs.json
