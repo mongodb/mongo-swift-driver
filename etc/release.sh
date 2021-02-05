@@ -23,7 +23,7 @@ cp -r docs-temp docs/current
 mv docs-temp docs/${version}
 
 # build up documentation index
-python3 ./etc/update-index.py
+python3 ./_scripts/update-index.py
 
 git add docs/
 git commit -m "${version} docs"
