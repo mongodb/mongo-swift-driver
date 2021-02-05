@@ -2,7 +2,7 @@ import os
 
 first=True
 with open('./docs/index.md', 'w') as f:
-    f.write('# MongoSwift Documentation Index\n')
+    f.write('# mongo-swift-driver Documentation Index\n')
 
     for dir in sorted(os.listdir('./docs'), reverse=True):
         if not dir[0].isdigit():
