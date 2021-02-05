@@ -3,7 +3,7 @@
 set -eou pipefail
 
 PWD=`pwd`
-LIBMONGOC_VERSION=1.17.0
+LIBMONGOC_VERSION=1.17.4
 TARBALL_URL=https://github.com/mongodb/mongo-c-driver/releases/download/$LIBMONGOC_VERSION/mongo-c-driver-$LIBMONGOC_VERSION.tar.gz
 TARBALL_NAME=`basename $TARBALL_URL`
 TARBALL_DIR=`basename -s .tar.gz $TARBALL_NAME`
