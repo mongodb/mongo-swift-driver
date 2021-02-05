@@ -18,9 +18,12 @@ version=${1}
 # commit/push docs to the gh-pages branch
 git checkout gh-pages
 
-rm -rf docs/*
-mv docs-temp/* docs/
-rm -d docs-temp
+rm -r docs/current
+cp -r docs-temp docs/current
+mv docs-temp docs/${version}
+
+# build up documentation index
+python3 ./etc/update-index.py
 
 git add docs/
 git commit -m "${version} docs"
