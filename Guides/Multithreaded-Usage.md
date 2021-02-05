@@ -16,4 +16,4 @@ Each `MongoClient` uses its own background thread to monitor the MongoDB topolog
 **In order to share the connection pool across threads and minimize the number of background monitoring threads, we recommend sharing `MongoClient`s across threads.**
 
 ## Usage With Server-side Swift Frameworks
-See the [`Examples/`](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples) directory in the driver GitHub repository for examples of how to integrate the driver in multithreaded frameworks.
+See the [`Examples/`](https://github.com/mongodb/mongo-swift-driver/tree/main/Examples) directory in the driver GitHub repository for examples of how to integrate the driver in multithreaded frameworks.

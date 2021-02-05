@@ -1,6 +1,5 @@
-[![Build Status](https://travis-ci.org/mongodb/mongo-swift-driver.svg?branch=master)](https://travis-ci.org/mongodb/mongo-swift-driver)
-[![Code Coverage](https://codecov.io/gh/mongodb/mongo-swift-driver/branch/master/graph/badge.svg)](https://codecov.io/gh/mongodb/mongo-swift-driver/branch/master)
-[![sswg:sandbox|94x20](https://img.shields.io/badge/sswg-sandbox-lightgrey.svg)](https://github.com/swift-server/sswg/blob/master/process/incubation.md#sandbox-level)
+[![Code Coverage](https://codecov.io/gh/mongodb/mongo-swift-driver/branch/main/graph/badge.svg)](https://codecov.io/gh/mongodb/mongo-swift-driver/branch/main)
+[![sswg:sandbox|94x20](https://img.shields.io/badge/sswg-sandbox-lightgrey.svg)](https://github.com/swift-server/sswg/blob/main/process/incubation.md#sandbox-level)
 
 # MongoSwift
 The official [MongoDB](https://www.mongodb.com/) driver for Swift applications on macOS and Linux.
@@ -191,11 +190,11 @@ all available. However, runtime guarantees are not yet met for many of these
 methods.
 
 ### Usage With Kitura, Vapor, and Perfect
-The `Examples/` directory contains sample projects that use the driver with [Kitura](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/KituraExample), [Vapor](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/ComplexVaporExample), and [Perfect](https://github.com/mongodb/mongo-swift-driver/tree/master/Examples/PerfectExample).
+The `Examples/` directory contains sample projects that use the driver with [Kitura](https://github.com/mongodb/mongo-swift-driver/tree/main/Examples/KituraExample), [Vapor](https://github.com/mongodb/mongo-swift-driver/tree/main/Examples/ComplexVaporExample), and [Perfect](https://github.com/mongodb/mongo-swift-driver/tree/main/Examples/PerfectExample).
 
 Please note that the driver is built using SwiftNIO 2, and therefore is incompatible with frameworks built upon SwiftNIO 1. SwiftNIO 2 is used as of Vapor 4.0 and Kitura 2.5.
 
 ## Development Instructions
 
-See our [development guide](https://github.com/mongodb/mongo-swift-driver/blob/master/Guides/Development.md) for instructions for building and testing the driver.
+See our [development guide](https://github.com/mongodb/mongo-swift-driver/blob/main/Guides/Development.md) for instructions for building and testing the driver.
 
