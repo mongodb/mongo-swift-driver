@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Development  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+    <script src="js/lunr.min.js" defer></script>
+    <script src="js/typeahead.jquery.js" defer></script>
+    <script src="js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+
+    <a title="Development  Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="index.html">
+          MongoSwift 1.0.1 Docs
+        </a>
+         (99% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/mongodb/mongo-swift-driver">
+            <img class="header-icon" src="img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwift%2Fdocsets%2FMongoSwift.xml">
+            <img class="header-icon" src="img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="index.html">MongoSwift Reference</a>
+      <img class="carat" src="img/carat.png" />
+      Development  Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="General%20Guides.html">General Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="development.html">Development</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="multithreaded-usage.html">Multithreaded-Usage</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Core%20Types.html">Core Types</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoClientOptions.html">MongoClientOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoDatabaseOptions.html">MongoDatabaseOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCollectionOptions.html">MongoCollectionOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="BSON%20Types.html">BSON Types</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSON.html">BSON</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="bson.html">BSON</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONType.html">BSONType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONBinary.html">BSONBinary</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONBinary/Subtype.html">– Subtype</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONCode.html">BSONCode</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONCodeWithScope.html">BSONCodeWithScope</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONDBPointer.html">BSONDBPointer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONDecimal128.html">BSONDecimal128</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONDocument.html">BSONDocument</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONObjectID.html">BSONObjectID</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONRegularExpression.html">BSONRegularExpression</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONSymbol.html">BSONSymbol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONTimestamp.html">BSONTimestamp</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Replica%20Set%20%26%20Sharded%20Cluster-Related%20Settings.html">Replica Set &amp; Sharded Cluster-Related Settings</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReadConcern.html">ReadConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReadPreference/Mode.html">– Mode</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/WriteConcern.html">WriteConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/WriteConcern/W.html">– W</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Authentication%20%26%20TLS.html">Authentication &amp; TLS</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCredential.html">MongoCredential</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoCredential/Mechanism.html">– Mechanism</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Reading%20Data.html">Reading Data</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CountDocumentsOptions.html">CountDocumentsOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DistinctOptions.html">DistinctOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/EstimatedDocumentCountOptions.html">EstimatedDocumentCountOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FindOneOptions.html">FindOneOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FindOptions.html">FindOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/AggregateOptions.html">AggregateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/IndexHint.html">IndexHint</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Cursors.html">Cursors</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/MongoCursor.html">MongoCursor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoCursorType.html">MongoCursorType</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Writing%20Data.html">Writing Data</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/InsertOneOptions.html">InsertOneOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/InsertOneResult.html">InsertOneResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Writing%20Data.html#/s:10MongoSwift17InsertManyOptionsa">InsertManyOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/InsertManyResult.html">InsertManyResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReplaceOptions.html">ReplaceOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/UpdateOptions.html">UpdateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/UpdateResult.html">UpdateResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DeleteOptions.html">DeleteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DeleteResult.html">DeleteResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FindOneAndDeleteOptions.html">FindOneAndDeleteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FindOneAndReplaceOptions.html">FindOneAndReplaceOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FindOneAndUpdateOptions.html">FindOneAndUpdateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/ReturnDocument.html">ReturnDocument</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Bulk%20Writes.html">Bulk Writes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BulkWriteOptions.html">BulkWriteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BulkWriteResult.html">BulkWriteResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/WriteModel.html">WriteModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/UpdateModelOptions.html">UpdateModelOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DeleteModelOptions.html">DeleteModelOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ReplaceOneModelOptions.html">ReplaceOneModelOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Errors.html">Errors</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Errors.html#/s:10MongoSwift0A13ErrorProtocolP">MongoErrorProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/MongoLabeledError.html">MongoLabeledError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Errors.html#/s:10MongoSwift0A12RuntimeErrorP">MongoRuntimeError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Errors.html#/s:10MongoSwift0A11ServerErrorP">MongoServerError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Errors.html#/s:10MongoSwift0A9UserErrorP">MongoUserError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError.html">MongoError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/CommandError.html">– CommandError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/WriteError.html">– WriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/BulkWriteError.html">– BulkWriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/ConnectionError.html">– ConnectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/AuthenticationError.html">– AuthenticationError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/CompatibilityError.html">– CompatibilityError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/ServerSelectionError.html">– ServerSelectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/WriteFailure.html">– WriteFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/WriteConcernFailure.html">– WriteConcernFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/MongoError/BulkWriteFailure.html">– BulkWriteFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError.html">BSONError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/BSONError/DocumentTooLargeError.html">– DocumentTooLargeError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Errors.html#/s:10MongoSwift17BSONErrorProtocolP">BSONErrorProtocol</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Encoding%20and%20Decoding%20BSON.html">Encoding and Decoding BSON</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONEncoder.html">BSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONEncoder/DateEncodingStrategy.html">– DateEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONEncoder/UUIDEncodingStrategy.html">– UUIDEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONEncoder/DataEncodingStrategy.html">– DataEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONDecoder.html">BSONDecoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONDecoder/DateDecodingStrategy.html">– DateDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONDecoder/UUIDDecodingStrategy.html">– UUIDDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONDecoder/DataDecodingStrategy.html">– DataDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/DataCodingStrategy.html">DataCodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/DateCodingStrategy.html">DateCodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/UUIDCodingStrategy.html">UUIDCodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/BSONCoderOptions.html">BSONCoderOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Change%20Streams.html">Change Streams</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ChangeStream.html">ChangeStream</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ChangeStreamEvent.html">ChangeStreamEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ChangeStreamOptions.html">ChangeStreamOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/OperationType.html">OperationType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ResumeToken.html">ResumeToken</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/FullDocument.html">FullDocument</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/UpdateDescription.html">UpdateDescription</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Index%20Management.html">Index Management</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/IndexModel.html">IndexModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/IndexOptions.html">IndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CreateIndexOptions.html">CreateIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DropIndexOptions.html">DropIndexOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Database%2FCollection%20Management.html">Database/Collection Management</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DatabaseSpecification.html">DatabaseSpecification</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DropDatabaseOptions.html">DropDatabaseOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CollectionSpecification.html">CollectionSpecification</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CollectionSpecificationInfo.html">CollectionSpecificationInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/CollectionType.html">CollectionType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CreateCollectionOptions.html">CreateCollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/DropCollectionOptions.html">DropCollectionOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Sessions%20%26%20Transactions.html">Sessions &amp; Transactions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ClientSession.html">ClientSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ClientSessionOptions.html">ClientSessionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TransactionOptions.html">TransactionOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Command%20Monitoring.html">Command Monitoring</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/CommandEvent.html">CommandEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/CommandEventHandler.html">CommandEventHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CommandStartedEvent.html">CommandStartedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CommandSucceededEvent.html">CommandSucceededEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CommandFailedEvent.html">CommandFailedEvent</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Server%20Discovery%20and%20Monitoring%20%28SDAM%29%20Monitoring.html">Server Discovery and Monitoring (SDAM) Monitoring</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/SDAMEvent.html">SDAMEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Protocols/SDAMEventHandler.html">SDAMEventHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerClosedEvent.html">ServerClosedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerAddress.html">ServerAddress</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerDescription.html">ServerDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerDescription/ServerType.html">– ServerType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerDescriptionChangedEvent.html">ServerDescriptionChangedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerHeartbeatStartedEvent.html">ServerHeartbeatStartedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerHeartbeatFailedEvent.html">ServerHeartbeatFailedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ServerHeartbeatSucceededEvent.html">ServerHeartbeatSucceededEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TopologyClosedEvent.html">TopologyClosedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TopologyDescriptionChangedEvent.html">TopologyDescriptionChangedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TopologyDescription.html">TopologyDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/TopologyDescription/TopologyType.html">– TopologyType</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Other%20Guides.html">Other Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="change-streams.html">Change-Streams</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="error-handling.html">Error-Handling</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="tls.html">TLS</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="transactions.html">Transactions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Other%20Classes.html">Other Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/BSONDocumentIterator.html">BSONDocumentIterator</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Other%20Functions.html">Other Functions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Other%20Functions.html#/s:10MongoSwift07cleanupaB0yyF">cleanupMongoSwift()</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Other%20Structs.html">Other Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoNamespace.html">MongoNamespace</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/RunCommandOptions.html">RunCommandOptions</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content top-matter">
+            
+            <h1 id='swift-driver-development-guide' class='heading'>Swift Driver Development Guide</h1>
+<h2 id='index' class='heading'>Index</h2>
+
+<ul>
+<li><a href="#things-to-install">Things to Install</a></li>
+<li><a href="#the-code">The Code</a></li>
+<li><a href="#building">Building</a></li>
+<li><a href="#running-tests">Running Tests</a></li>
+<li><a href="#writing-and-generating-documentation">Writing and Generating Documentation</a></li>
+<li><a href="#linting-and-style">Linting and Style</a></li>
+<li><a href="#workflow">Workflow</a></li>
+<li><a href="#code-review">Code Review</a></li>
+<li><a href="#resources">Resources</a></li>
+</ul>
+<h2 id='things-to-install' class='heading'>Things to install</h2>
+
+<ul>
+<li><a href="https://swiftenv.fuller.li/en/latest/installation.html">swiftenv</a>: a command-line tool that allows easy installation of and switching between versions of Swift.</li>
+<li><a href="https://github.com/realm/jazzy#installation">Jazzy</a>: the tool we use to generate documentation.</li>
+<li><a href="https://github.com/nicklockwood/SwiftFormat#how-do-i-install-it">SwiftFormat</a>: the Swift formatter we use.</li>
+<li><a href="https://github.com/realm/SwiftLint#using-homebrew">SwiftLint</a>: the Swift linter we use.</li>
+<li><a href="https://github.com/krzysztofzablocki/Sourcery/#installation">Sourcery</a>: the tool we use for code generation.</li>
+</ul>
+<h2 id='the-code' class='heading'>The code</h2>
+
+<p>You should clone this repository, as well as the <a href="https://github.com/mongodb/specifications">MongoDB Driver specifications</a>.</p>
+<h2 id='building' class='heading'>Building</h2>
+<h3 id='from-the-command-line' class='heading'>From the Command line</h3>
+
+<p>Run <code>swift build</code> or simply <code>make</code> in the project&rsquo;s root directory.</p>
+
+<p>If you add symbols you may need to run <code>make exports</code> which will generate <a href="Sources/MongoSwiftSync/Exports.swift">Sources/MongoSwiftSync/Exports.swift</a>. This makes symbols declared in <code>MongoSwift</code> available to importers of <code>MongoSwiftSync</code>.</p>
+<h3 id='in-xcode' class='heading'>In Xcode</h3>
+
+<p>We do not provide or maintain an already-generated <code>.xcodeproj</code> in our repository. Instead, you must generate it locally.</p>
+
+<p><strong>To generate the <code>.xcodeproj</code> file</strong>:</p>
+
+<ol>
+<li>Install the Ruby gem <code>xcodeproj</code> with <code>gem install xcodeproj</code> (you may need to <code>sudo</code>)</li>
+<li>Run <code>make project</code></li>
+<li>You&rsquo;re ready to go! Open <code>MongoSwift.xcodeproj</code> and build and test as normal.</li>
+</ol>
+
+<p>Why is this necessary? The project requires a customized &ldquo;copy resources&rdquo; build phase to include various test <code>.json</code> files. By default, this phase is not included when you run <code>swift package generate-xcodeproj</code>. So <code>make project</code> first generates the project, and then uses <code>xcodeproj</code> to manually add the files to the appropriate targets (see <code>add_json_files.rb</code>).</p>
+<h2 id='running-tests' class='heading'>Running Tests</h2>
+
+<p><strong>NOTE</strong>: Several of the tests require a mongod instance to be running on the default host/port, <code>localhost:27017</code>. You can start this by running <code>mongod --setParameter enableTestCommands=1</code>. The <code>enableTestCommands</code> parameter is required to use some test-only commands built into MongoDB that we utilize in our tests, e.g. <code>failCommand</code>.</p>
+
+<p>You can run tests from Xcode as usual. If you prefer to test from the command line, keep reading.</p>
+<h3 id='from-the-command-line' class='heading'>From the Command Line</h3>
+
+<p>We recommend installing the ruby gem <code>xcpretty</code> and running tests by executing <code>make test-pretty</code>, as this provides output in a much more readable format. (Works on MacOS only.)</p>
+
+<p>Alternatively, you can just run the tests with <code>swift test</code>, or <code>make test</code>.</p>
+
+<p>To filter tests by regular expression:</p>
+
+<ul>
+<li>If you are using <code>swift test</code>, provide the <code>--filter</code> argument: for example, <code>swift test --filter=MongoClientTests</code>.</li>
+<li>If you are using <code>make test</code> or <code>make test-pretty</code>, provide the <code>FILTER</code> environment variable: for example, <code>make test-pretty FILTER=MongoCollectionTests</code>.</li>
+</ul>
+<h3 id='diagnosing-backtraces-on-linux' class='heading'>Diagnosing Backtraces on Linux</h3>
+
+<p><a href="https://bugs.swift.org/browse/SR-755">SWIFT-755</a> documents an outstanding problem on Linux where backtraces do not contain debug symbols. As discussed in <a href="https://stackoverflow.com/a/44956167/162228">this Stack Overflow thread</a>, a <a href="https://github.com/apple/swift/blob/master/utils/symbolicate-linux-fatal"><code>symbolicate-linux-fatal</code></a> script may be used to add symbols to an existing backtrace. Consider the following:</p>
+<pre class="highlight plaintext"><code>$ swift test --filter CrashingTest &amp;&gt; crash.log
+$ symbolicate-linux-fatal /path/to/MongoSwiftPackageTests.xctest crash.log
+</code></pre>
+
+<p>This will require you to manually provide the path to the compiled test binary (e.g. <code>.build/x86_64-unknown-linux/debug/MongoSwiftPackageTests.xctest</code>).</p>
+<h2 id='writing-and-generating-documentation' class='heading'>Writing and Generating Documentation</h2>
+
+<p>We document new code as we write it. We use C-style documentation blocks (<code>/** ... */</code>) for documentation longer than 3 lines, and triple-slash (<code>///</code>) for shorter documentation.
+Comments that are <em>not</em> documentation should use two slashes (<code>//</code>).</p>
+
+<p>Documentation comments should generally be complete sentences and should end with periods.</p>
+
+<p>Our documentation site is automatically generated from the source code using <a href="https://github.com/realm/jazzy#installation">Jazzy</a>. We regenerate it via our release script each time we release a new version of the driver.</p>
+
+<p>If you&rsquo;d like to preview how new documentation you&rsquo;ve written will look when published, you can regenerate it by running <code>./etc/generate-docs.sh</code> and then inspecting the generated HTML files in <code>/docs</code>.</p>
+<h2 id='linting-and-style' class='heading'>Linting and Style</h2>
+
+<p>We use <a href="https://github.com/realm/SwiftLint#using-homebrew">SwiftLint</a> for linting. You can see our configuration in the <code>.swiftlint.yml</code> file in the project&rsquo;s root directory.  Run <code>swiftlint</code> in the root directory to lint all of our files. Running <code>swiftlint autocorrect</code> will correct some types of violations.</p>
+
+<p>We use <a href="https://github.com/nicklockwood/SwiftFormat">SwiftFormat</a> for formatting the code. You can see our configuration in the <code>.swiftformat</code> file in the project&rsquo;s root directory. Our linter config contains a superset of the rules that our formatter does, so some manual tweaking may be necessary to satisfy both once the formatter is run (e.g. line length enforcement). Most of the time, the formatter should put the code into a format that passes the linter. You can run the formatter on all of the files by running <code>swiftformat .</code> from the root directory.</p>
+
+<p>To pass all the formatting stages of our testing matrix, both <code>swiftlint --strict</code> and <code>swiftformat --lint .</code> must finish successfully.</p>
+
+<p>For style guidance, look at Swift&rsquo;s <a href="https://swift.org/documentation/api-design-guidelines/">API design guidelines</a> and Google&rsquo;s <a href="https://google.github.io/swift/">Swift Style Guide</a>.</p>
+<h2 id='editor-setup' class='heading'>Editor Setup</h2>
+
+<p>If you have a setup for developing the driver in an editor other than the ones listed, or have found any useful tools/plugins for the listed editors, please open a pull request to add information!</p>
+<h3 id='sublime-text' class='heading'>Sublime Text</h3>
+
+<ul>
+<li>For syntax highlighting, install <a href="https://packagecontrol.io/packages/Decent%20Swift%20Syntax">Decent Swift Syntax</a> via Package Control.</li>
+<li>For linting integration with SwiftLint, install <a href="https://packagecontrol.io/packages/SublimeLinter">SublimeLinter</a> and <a href="https://packagecontrol.io/packages/SublimeLinter-contrib-swiftlint">SublimeLinter-contrib-swiftlint</a> via Package Control.</li>
+</ul>
+<h3 id='vim-neovim' class='heading'>Vim/Neovim</h3>
+
+<ul>
+<li>You can get linting support by using <a href="https://github.com/w0rp/ale"><code>ale</code></a> by <code>w0rp</code>. This will show symbols in the gutter for warnings/errors and show linter messages in the status.</li>
+<li><a href="https://github.com/Utagai/swift.vim">swift.vim</a>: A fork of Keith Smiley&rsquo;s <code>swift.vim</code> with fixed indenting rules. This adds proper indenting and syntax for Swift to Vim. This fork also provides a match rule for column width highlighting.
+
+<ul>
+<li>Please read the <a href="https://github.com/Utagai/swift.vim#notice">NOTICE</a> for proper credits.</li>
+</ul></li>
+</ul>
+<h2 id='workflow' class='heading'>Workflow</h2>
+
+<ol>
+<li>Create a feature branch, named by the corresponding JIRA ticket if exists, along with a short descriptor of the work: for example, <code>SWIFT-30/writeconcern</code>.</li>
+<li>Do your work on the branch.</li>
+<li>If you add, remove, or rename any tests, make sure to update <code>LinuxMain.swift</code> accordingly. If you are on MacOS, you can do that by running <code>make linuxmain</code>.</li>
+<li>Ensure your code passes both the linter and the formatter.</li>
+<li>Make sure your code builds and passes all tests on:
+
+<ul>
+<li><a href="https://travis-ci.org/mongodb/mongo-swift-driver">Travis</a>. Every time you push to GitHub or open a pull request, it will trigger a new build, which includes running the linter, formatter, and basic tests.</li>
+<li>(If you work at MongoDB) <a href="https://evergreen.mongodb.com/waterfall/mongo-swift-driver">Evergreen</a> - Our Evergreen matrix tests a variety of MongoDB configurations, operating systems, and Swift language versions, and provides a way to more robustly test the driver. A new Evergreen build is automatically triggered for every commit to master, but for more complex pull requests it&rsquo;s a good idea to run patches on Evergreen before merging.</li>
+</ul></li>
+<li>Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on <code>master</code>.</li>
+<li>Go through code review to get the team&rsquo;s approval on your changes. (See the next section on <a href="#code-review">Code Review</a> for more details on this process.) Once you get the required approvals and your code passes all tests:</li>
+<li>Rebase on master again if needed.</li>
+<li>Rerun tests.</li>
+<li>Squash all commits into a single, descriptive commit method, formatted as: <code>TICKET-NUMBER: Description of changes</code>. For example, <code>SWIFT-30: Implement WriteConcern type</code>.</li>
+<li>Merge it, or if you don&rsquo;t have permissions, ask someone to merge it for you.</li>
+</ol>
+<h2 id='code-review' class='heading'>Code Review</h2>
+<h3 id='giving-a-review' class='heading'>Giving a review</h3>
+
+<p>When giving a review, please batch your comments together to cut down on the number of emails sent to others involved in the pull request. You can do this by going to the &ldquo;Files Changed&rdquo; tab. When you post your first comment, press &ldquo;Start a review&rdquo;. When you&rsquo;re done commenting, click &ldquo;Finish your review&rdquo; (top right).
+Please feel free to leave reviews on your own code when you open a pull request in order add additional context, point out an aspect of the design you&rsquo;re unsure of, etc.</p>
+<h3 id='responding-to-a-review' class='heading'>Responding to a review</h3>
+
+<p>You can use the same batching approach as above to respond to review comments. Once you&rsquo;ve posted your responses and pushed new commits addressing the comments, re-request reviews from your reviewers by clicking the arrow circle icons next to their names on the list of reviewers.</p>
+
+<p><strong>Note</strong>: GitHub allows marking comment threads on pull requests as &ldquo;resolved&rdquo;, which hides them from view. Always allow the <em>original commenter</em> to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.</p>
+<h2 id='resources' class='heading'>Resources</h2>
+<h3 id='swift' class='heading'>Swift</h3>
+
+<ul>
+<li><a href="https://docs.swift.org/swift-book/LanguageGuide/TheBasics.html">Swift Language Guide</a></li>
+<li><a href="https://developer.apple.com/documentation/swift">Swift Standard Library docs</a></li>
+<li><a href="https://www.swiftbysundell.com/">Swift by Sundell</a></li>
+<li><a href="https://forums.swift.org/">Swift Forums</a></li>
+<li>Some talks by Kaitlin:
+
+<ul>
+<li><a href="https://www.youtube.com/watch?v=CcCTM1PN1N4">A Swift Introduction to Swift</a></li>
+<li><a href="https://www.youtube.com/watch?v=9GZ8Hiq-Nbc">Encoding and Decoding in Swift</a></li>
+<li><a href="https://www.youtube.com/watch?v=9-fdbG9jNt4">Maintaining a Library in a Swiftly Moving Ecosystem</a></li>
+</ul></li>
+</ul>
+<h3 id='mongodb-and-drivers' class='heading'>MongoDB and Drivers</h3>
+
+<ul>
+<li><a href="https://mongodb.github.io/mongo-swift-driver/">MongoSwift docs</a></li>
+<li><a href="http://mongoc.org/libmongoc/current/index.html">libmongoc docs</a></li>
+<li><a href="http://mongoc.org/libbson/current/index.html">libbson docs</a></li>
+<li><a href="https://docs.mongodb.com/">MongoDB docs</a></li>
+<li><a href="https://github.com/mongodb/specifications">Driver specifications</a></li>
+</ul>
+
+          </div>
+        </section>
+
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-02-04)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.6</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>

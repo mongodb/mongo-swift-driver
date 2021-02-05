@@ -1,0 +1,19 @@
+{
+  "warnings": [
+    {
+      "file": "/home/patrick/mongo-swift-driver/Sources/MongoSwift/MongoCredential.swift",
+      "line": 24,
+      "symbol": "MongoCredential.init(username:password:source:mechanism:mechanismProperties:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/home/patrick/mongo-swift-driver/Sources/MongoSwift/MongoError.swift",
+      "line": 124,
+      "symbol": "MongoError.ConnectionError.message",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    }
+  ],
+  "source_directory": "/home/patrick/mongo-swift-driver"
+}
