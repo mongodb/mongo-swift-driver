@@ -234,14 +234,11 @@ extension SpecTestFile {
         let topologyType = try setupClient.topologyType()
 
         var mongosClients: [MongoClient]?
-        switch topologyType {
-        case .sharded, .shardedReplicaSet:
+        if topologyType.isSharded {
             var opts = setupClientOptions
             opts.directConnection = true // connect directly to mongoses
             mongosClients = try MongoSwiftTestCase.getConnectionStringPerHost()
                 .map { try MongoClient.makeTestClient($0.toString(), options: opts) }
-        default:
-            break
         }
 
         fileLevelLog("Executing tests from file \(self.name)...")
@@ -255,10 +252,7 @@ extension SpecTestFile {
 
             // Due to strange behavior in mongos, a "distinct" command needs to be run against each mongos
             // before the tests run to prevent certain errors from ocurring. (SERVER-39704)
-            if [.sharded, .shardedReplicaSet].contains(topologyType),
-               let collName = self.collectionName,
-               test.description.contains("distinct")
-            {
+            if topologyType.isSharded, test.description.contains("distinct"), let collName = self.collectionName {
                 for client in mongosClients! {
                     _ = try client.db(self.databaseName).runCommand(["distinct": .string(collName), "key": "_id"])
                 }
