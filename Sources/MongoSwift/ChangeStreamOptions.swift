@@ -53,7 +53,7 @@ public struct ChangeStreamOptions: Codable {
      * to receive notifications even after an invalidate event (e.g. it will allow watching a collection that has
      * been dropped and recreated).
      * - Note: The server will report an error if `startAfter` and `resumeAfter` are both specified.
-     * - SeeAlso: https://docs.mongodb.com/master/changeStreams/#change-stream-start-after
+     * - SeeAlso: https://docs.mongodb.com/manual/changeStreams/#change-stream-start-after
      */
     public var startAfter: ResumeToken?
 

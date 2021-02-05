@@ -12,7 +12,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "8.0.0")),
         .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.15.0")),
-        .package(url: "https://github.com/mongodb/swift-bson", .branch("master"))
+        .package(url: "https://github.com/mongodb/swift-bson", .branch("main"))
     ],
     targets: [
         .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON",]),

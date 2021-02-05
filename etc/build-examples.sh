@@ -8,8 +8,8 @@ for example_project in ${examples[@]}; do
     echo "Building $example_project"
     example_dir="Examples/${example_project}"
 
-    # replace version string with master
-    etc/sed.sh -i 's/swift-driver", .upToNextMajor[^)]*)/swift-driver", .branch("master")/' "${example_dir}/Package.swift"
+    # replace version string with main
+    etc/sed.sh -i 's/swift-driver", .upToNextMajor[^)]*)/swift-driver", .branch("main")/' "${example_dir}/Package.swift"
 
     pushd "${example_dir}"
 

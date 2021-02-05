@@ -14,8 +14,8 @@
         "package": "swift-bson",
         "repositoryURL": "https://github.com/mongodb/swift-bson",
         "state": {
-          "branch": "master",
-          "revision": "4c9f3803bf0d3c6e868a111c76e77dd8ff58a37e",
+          "branch": "main",
+          "revision": "e2b2dc0bd8e6435cc7fd3d5f3ebf1bc407dc0d40",
           "version": null
         }
       },

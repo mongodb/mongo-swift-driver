@@ -19,7 +19,7 @@ public struct ReadConcern: Codable {
     public static let majority = ReadConcern("majority")
 
     /// Snapshot ReadConcern.
-    /// - SeeAlso: https://docs.mongodb.com/master/reference/read-concern-snapshot/
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/read-concern-snapshot/
     public static let snapshot = ReadConcern("snapshot")
 
     /// Server default ReadConcern.
