@@ -137,10 +137,19 @@ open class MongoSwiftTestCase: XCTestCase {
 
 /// Enumerates the different topology configurations that are used throughout the tests
 public enum TestTopologyConfiguration: String, Decodable {
+    /// A sharded topology where each shard is a standalone.
     case sharded
+    /// A replica set.
     case replicaSet = "replicaset"
+    /// A sharded topology where each shard is a replica set.
     case shardedReplicaSet = "sharded-replicaset"
+    /// A standalone server.
     case single
+
+    /// Returns a Bool indicating whether this topology is either sharded configuration.
+    public var isSharded: Bool {
+        self == .sharded || self == .shardedReplicaSet
+    }
 
     /// Determines the topologyType of a client based on the reply returned by running an isMaster command and the
     /// first document in the config.shards collection.

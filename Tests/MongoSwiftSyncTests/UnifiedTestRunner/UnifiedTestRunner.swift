@@ -152,7 +152,7 @@ struct UnifiedTestRunner {
                 // Workaround for SERVER-39704:  a test runners MUST execute a non-transactional distinct command on
                 // each mongos server before running any test that might execute distinct within a transaction. To ease
                 // the implementation, test runners MAY execute distinct before every test.
-                if self.topologyType == .sharded || self.topologyType == .shardedReplicaSet {
+                if self.topologyType.isSharded {
                     let collEntities = context.entities.values.compactMap { try? $0.asCollection() }
                     for address in MongoSwiftTestCase.getHosts() {
                         for entity in collEntities {

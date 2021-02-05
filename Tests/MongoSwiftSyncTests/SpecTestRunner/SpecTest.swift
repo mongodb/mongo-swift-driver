@@ -182,9 +182,12 @@ extension SpecTestFile {
         }
     }
 
-    func terminateOpenTransactions(using client: MongoSwiftSync.MongoClient) throws {
-        // Using the provided MongoClient, execute the killAllSessions command on either the primary or, if
-        // connected to a sharded cluster, all mongos servers.
+    func terminateOpenTransactions(
+        using client: MongoSwiftSync.MongoClient,
+        mongosClients: [MongoSwiftSync.MongoClient]?
+    ) throws {
+        // if connected to a replica set, use the provided client to execute killAllSessions on the primary.
+        // if connected to a sharded cluster, use the per-mongos clients to execute killAllSessions on each mongos.
         switch try client.topologyType() {
         case .single:
             return
@@ -196,12 +199,11 @@ extension SpecTestFile {
                 _ = try client.db("admin").runCommand(["killAllSessions": []], options: opts)
             } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
         case .sharded, .shardedReplicaSet:
-            for address in MongoSwiftTestCase.getHosts() {
+            for mongosClient in mongosClients! {
                 do {
-                    _ = try client.db("admin").runCommand(["killAllSessions": []], on: address)
-                } catch let commandError as MongoError.CommandError where commandError.code == 11601 {
-                    continue
-                }
+                    _ = try mongosClient.db("admin").runCommand(["killAllSessions": []])
+                    break
+                } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
             }
         }
     }
@@ -229,25 +231,30 @@ extension SpecTestFile {
             }
         }
 
+        let topologyType = try setupClient.topologyType()
+
+        var mongosClients: [MongoClient]?
+        if topologyType.isSharded {
+            var opts = setupClientOptions
+            opts.directConnection = true // connect directly to mongoses
+            mongosClients = try MongoSwiftTestCase.getConnectionStringPerHost()
+                .map { try MongoClient.makeTestClient($0.toString(), options: opts) }
+        }
+
         fileLevelLog("Executing tests from file \(self.name)...")
         for var test in self.tests {
             if let keyword = Self.TestType.skippedTestKeywords.first(where: { test.description.contains($0) }) {
                 print("Skipping test \(test.description) due to matched keyword \"\(keyword)\".")
                 continue
             }
-
-            try self.terminateOpenTransactions(using: setupClient)
+            try self.terminateOpenTransactions(using: setupClient, mongosClients: mongosClients)
             try self.populateData(using: setupClient)
 
             // Due to strange behavior in mongos, a "distinct" command needs to be run against each mongos
             // before the tests run to prevent certain errors from ocurring. (SERVER-39704)
-            if MongoSwiftTestCase.topologyType == .sharded,
-               let collName = self.collectionName,
-               test.description.contains("distinct")
-            {
-                for address in MongoSwiftTestCase.getHosts() {
-                    _ = try setupClient.db(self.databaseName)
-                        .runCommand(["distinct": .string(collName), "key": "_id"], on: address)
+            if topologyType.isSharded, test.description.contains("distinct"), let collName = self.collectionName {
+                for client in mongosClients! {
+                    _ = try client.db(self.databaseName).runCommand(["distinct": .string(collName), "key": "_id"])
                 }
             }
 
