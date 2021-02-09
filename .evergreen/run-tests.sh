@@ -5,19 +5,27 @@ set -o errexit  # Exit the script with error if any of the commands fail
 # variables
 PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-$PWD}
 MONGODB_URI=${MONGODB_URI:-"NO_URI_PROVIDED"}
-SWIFT_VERSION=${SWIFT_VERSION:-5.1}
+SWIFT_VERSION=${SWIFT_VERSION:-5.2.5}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 TOPOLOGY=${TOPOLOGY:-single}
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 EXTRA_FLAGS="-Xlinker -rpath -Xlinker ${INSTALL_DIR}/lib"
 RAW_TEST_RESULTS="${PROJECT_DIRECTORY}/rawTestResults"
 XML_TEST_RESULTS="${PROJECT_DIRECTORY}/testResults.xml"
+INSTALL_DEPS=${INSTALL_DEPS:-"false"}
 
 # ssl setup
 SSL=${SSL:-nossl}
 if [ "$SSL" != "nossl" ]; then
    export SSL_KEY_FILE="$DRIVERS_TOOLS/.evergreen/x509gen/client.pem"
    export SSL_CA_FILE="$DRIVERS_TOOLS/.evergreen/x509gen/ca.pem"
+fi
+
+# if dependencies were not installed separately, do so now.
+# this is used for continous matrix testing
+if [ "$INSTALL_DEPS" == "true" ]; then
+    SWIFT_VERSION=${SWIFT_VERSION} \
+      sh ${PROJECT_DIRECTORY}/.evergreen/install-dependencies.sh
 fi
 
 # enable swiftenv

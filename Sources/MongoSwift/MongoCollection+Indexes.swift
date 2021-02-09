@@ -51,7 +51,9 @@ public struct IndexOptions: Codable {
     /// Optionally specifies the precision of the stored geo hash in the 2d index, from 1 to 32.
     public var bits: Int?
 
-    /// Optionally specifies the number of units within which to group the location values in a geo haystack index.
+    /// Optionally specifies the number of units within which to group the location values in a geoHaystack index.
+    /// Note: geoHaystack indexes are deprecated in MongoDB 4.4 and will be removed in a future version of the
+    /// server.
     public var bucketSize: Int?
 
     /// Optionally specifies a collation to use for the index in MongoDB 3.4 and higher. If not specified, no collation
