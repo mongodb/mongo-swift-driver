@@ -12,7 +12,7 @@ OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 EXTRA_FLAGS="-Xlinker -rpath -Xlinker ${INSTALL_DIR}/lib"
 RAW_TEST_RESULTS="${PROJECT_DIRECTORY}/rawTestResults"
 XML_TEST_RESULTS="${PROJECT_DIRECTORY}/testResults.xml"
-INSTALL_DEPS=${INSTALL_DEPS:-"false"}
+INSTALL_DEPS=${INSTALL_DEPS:-"true"}
 
 # ssl setup
 SSL=${SSL:-nossl}

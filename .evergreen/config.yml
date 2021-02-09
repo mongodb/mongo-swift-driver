@@ -153,6 +153,7 @@ functions:
           SSL=${SSL} \
           AUTH=${AUTH} \
           SWIFT_VERSION=${SWIFT_VERSION} \
+          INSTALL_DEPS="false" \
             ${PROJECT_DIRECTORY}/.evergreen/run-tests.sh
     
   "upload test results":
