@@ -137,7 +137,8 @@ print(result?.insertedID ?? "") // prints `.int64(100)`
 **Async**:
 ```swift
 let query: BSONDocument = ["a": 1]
-let result = collection.find(query).flatMap { cursor in
+let options = FindOptions(sort: ["_id": -1])
+let result = collection.find(query, options: options).flatMap { cursor in
     cursor.forEach { doc in
         print(doc)
     }
@@ -147,7 +148,8 @@ let result = collection.find(query).flatMap { cursor in
 **Sync**:
 ```swift
 let query: BSONDocument = ["a": 1]
-let documents = try collection.find(query)
+let options = FindOptions(sort: ["_id": -1])
+let documents = try collection.find(query, options: options)
 for d in documents {
     print(try d.get())
 }
