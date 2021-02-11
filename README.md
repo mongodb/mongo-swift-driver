@@ -137,6 +137,9 @@ print(result?.insertedID ?? "") // prints `.int64(100)`
 **Async**:
 ```swift
 let query: BSONDocument = ["a": 1]
+// The `sort` option specifies the order in which results are returned
+// via the cursor. In this case, `["_id": -1]` indicates that the documents will
+// be returned in descending order according to the `_id` field.
 let options = FindOptions(sort: ["_id": -1])
 let result = collection.find(query, options: options).flatMap { cursor in
     cursor.forEach { doc in
@@ -148,6 +151,9 @@ let result = collection.find(query, options: options).flatMap { cursor in
 **Sync**:
 ```swift
 let query: BSONDocument = ["a": 1]
+// The `sort` option specifies the order in which results are returned
+// via the cursor. In this case, `["_id": -1]` indicates that the documents will
+// be returned in descending order according to the `_id` field.
 let options = FindOptions(sort: ["_id": -1])
 let documents = try collection.find(query, options: options)
 for d in documents {
