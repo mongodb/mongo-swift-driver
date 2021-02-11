@@ -54,6 +54,7 @@ excluded:
   - Tests/LinuxMain.swift
   - Sources/MongoSwiftSync/Exports.swift
   - SwiftFormat # this is the path we download SwiftFormat to on travis
+  - Sources/MongoSwift/MongoSwiftVersion.swift
 
 trailing_whitespace:
   ignores_comments: false

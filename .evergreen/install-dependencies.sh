@@ -9,6 +9,10 @@ INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 BUILD_DIR="${PROJECT_DIRECTORY}/libmongoc-build"
 EVG_DIR=$(dirname $0)
 
+# this is set by drivers-matrix-testing, and it's a special variable used in swiftenv
+# leaving it set messes with the installation
+unset PLATFORM
+
 export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
 export PATH=/opt/cmake/bin:${SWIFTENV_ROOT}/bin:$PATH
 

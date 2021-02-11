@@ -76,7 +76,6 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let options = IndexOptions(
             background: true,
             bits: 32,
-            bucketSize: 10,
             collation: ["locale": "fr"],
             defaultLanguage: "english",
             languageOverride: "cat",
