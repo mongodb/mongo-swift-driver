@@ -1,40 +1,88 @@
 import MongoDBVapor
 import Vapor
 
-/// Constructs a document using the name from the specified request which can be used a filter
-/// for MongoDB reads/updates/deletions.
-func getNameFilter(from request: Request) throws -> BSONDocument {
-    // We only call this method from request handlers that have name parameters so the value
-    // will always be available.
-    guard let name = request.parameters.get("name") else {
-        throw Abort(.internalServerError, reason: "Request unexpectedly missing name parameter")
-    }
-    return ["name": .string(name)]
-}
-
-/// Adds a collection of routes to the application.
-func routes(_ app: Application) throws {
+/// Adds a collection of web routes to the application.
+func webRoutes(_ app: Application) throws {
     /// Handles a request to load the main index page containing a list of kittens.
     app.get { req -> EventLoopFuture<View> in
-        req.kittenCollection.find().flatMap { cursor in
-            cursor.toArray()
-        }.flatMap { kittens in
+        req.findKittens().flatMap { kittens in
             // Return the corresponding Leaf view, providing the list of kittens as context.
             req.view.render("index.leaf", IndexContext(kittens: kittens))
         }
-        .flatMapErrorThrowing { error in
+    }
+
+    /// Handles a request to load a page with info about a particular kitten.
+    app.get("kittens", ":name") { req -> EventLoopFuture<View> in
+        try req.findKitten().flatMap { kitten in
+            // Return the corresponding Leaf view, providing the kitten as context.
+            req.view.render("kitten.leaf", kitten)
+        }
+    }
+}
+
+// Adds a collection of rest API routes to the application.
+func restAPIRoutes(_ app: Application) throws {
+    let rest = app.grouped("rest")
+
+    /// Handles a request to load the list of kittens.
+    rest.get { req -> EventLoopFuture<[Kitten]> in
+        req.findKittens()
+    }
+
+    /// Handles a request to add a new kitten.
+    rest.post { req -> EventLoopFuture<Response> in
+        try req.addKitten()
+    }
+
+    /// Handles a request to load info about a particular kitten.
+    rest.get("kittens", ":name") { req -> EventLoopFuture<Kitten> in
+        try req.findKitten()
+    }
+
+    rest.delete("kittens", ":name") { req -> EventLoopFuture<Response> in
+        try req.deleteKitten()
+    }
+
+    rest.patch("kittens", ":name") { req -> EventLoopFuture<Response> in
+        try req.updateKitten()
+    }
+}
+
+extension Request {
+    /// Convenience extension for obtaining a collection which uses the same event loop as a request.
+    var kittenCollection: MongoCollection<Kitten> {
+        self.mongoDB.client.db("home").collection("kittens", withType: Kitten.self)
+    }
+
+    /// Constructs a document using the name from this request which can be used a filter for MongoDB
+    /// reads/updates/deletions.
+    func getNameFilter() throws -> BSONDocument {
+        // We only call this method from request handlers that have name parameters so the value
+        // will always be available.
+        guard let name = self.parameters.get("name") else {
+            throw Abort(.internalServerError, reason: "Request unexpectedly missing name parameter")
+        }
+        return ["name": .string(name)]
+    }
+
+    func findKittens() -> EventLoopFuture<[Kitten]> {
+        self.kittenCollection.find().flatMap { cursor in
+            cursor.toArray()
+        }.flatMapErrorThrowing { error in
             throw Abort(.internalServerError, reason: "Failed to load kittens: \(error)")
         }
     }
 
-    /// Handles a request to add a new kitten.
-    app.post { req -> EventLoopFuture<Response> in
-        let newKitten = try req.content.decode(Kitten.self)
-        return req.kittenCollection.insertOne(newKitten)
-            .map { _ in
-                // On success, redirect to the index to reload the updated list.
-                req.redirect(to: "/")
-            }
+    func findKitten() throws -> EventLoopFuture<Kitten> {
+        let nameFilter = try self.getNameFilter()
+        return self.kittenCollection.findOne(nameFilter)
+            .unwrap(or: Abort(.notFound, reason: "No kitten with matching name"))
+    }
+
+    func addKitten() throws -> EventLoopFuture<Response> {
+        let newKitten = try self.content.decode(Kitten.self)
+        return self.kittenCollection.insertOne(newKitten)
+            .map { _ in Response(status: .created) }
             .flatMapErrorThrowing { error in
                 // Give a more helpful error message in case of a duplicate key error.
                 if let err = error as? MongoError.WriteError, err.writeFailure?.code == 11000 {
@@ -44,20 +92,9 @@ func routes(_ app: Application) throws {
             }
     }
 
-    /// Handles a request to load info about a particular kitten.
-    app.get("kittens", ":name") { req -> EventLoopFuture<View> in
-        let nameFilter = try getNameFilter(from: req)
-        return req.kittenCollection.findOne(nameFilter)
-            .unwrap(or: Abort(.notFound, reason: "No kitten with matching name"))
-            .flatMap { kitten in
-                // Return the corresponding Leaf view, providing the kitten as context.
-                req.view.render("kitten.leaf", kitten)
-            }
-    }
-
-    app.delete("kittens", ":name") { req -> EventLoopFuture<Response> in
-        let nameFilter = try getNameFilter(from: req)
-        return req.kittenCollection.deleteOne(nameFilter)
+    func deleteKitten() throws -> EventLoopFuture<Response> {
+        let nameFilter = try self.getNameFilter()
+        return self.kittenCollection.deleteOne(nameFilter)
             .flatMapErrorThrowing { error in
                 throw Abort(.internalServerError, reason: "Failed to delete kitten: \(error)")
             }
@@ -72,14 +109,14 @@ func routes(_ app: Application) throws {
             }
     }
 
-    app.patch("kittens", ":name") { req -> EventLoopFuture<Response> in
-        let nameFilter = try getNameFilter(from: req)
+    func updateKitten() throws -> EventLoopFuture<Response> {
+        let nameFilter = try self.getNameFilter()
         // Parse the update data from the request.
-        let update = try req.content.decode(FoodUpdate.self)
+        let update = try self.content.decode(FoodUpdate.self)
         /// Create a document using MongoDB update syntax that specifies we want to set a field.
         let updateDocument: BSONDocument = ["$set": .document(try BSONEncoder().encode(update))]
 
-        return req.kittenCollection.updateOne(filter: nameFilter, update: updateDocument)
+        return self.kittenCollection.updateOne(filter: nameFilter, update: updateDocument)
             .flatMapErrorThrowing { error in
                 throw Abort(.internalServerError, reason: "Failed to update kitten: \(error)")
             }

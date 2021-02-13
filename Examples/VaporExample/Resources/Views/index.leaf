@@ -14,6 +14,8 @@
       font-family: "Trebuchet MS", Helvetica, sans-serif;
     }
   </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="../bson.bundle.js"></script>
 </head>
 <body>
   
@@ -35,14 +37,14 @@
 <br>
 <br>
 <h2>Add a new kitten</h2>
-<form method="POST">
+<form onsubmit="return false;">
     <div>
     <label for="name">Name</label>
-    <input name="name">
+    <input name="name" id="name">
   </div>
   <div>
     <label for="color">Color</label>
-    <input name="color">
+    <input name="color" id="color">
   <div>
     <label for="favoriteFood">Favorite Food</label>
     <select id="favoriteFood" name="favoriteFood">
@@ -55,8 +57,38 @@
     </select>
   </div>
   <div>
-    <button>Add</button>
+    <button id="add-btn">Add</button>
   </div>
 </form>
+
+<script type="text/javascript">
+  $(document).ready(() => {
+    $("\#add-btn").click(() => {
+      var name = $("\#name").val();
+      var color = $("\#color").val();
+      var food = $("\#favoriteFood").val();
+      // Serialize request data to extended JSON.
+      var data = BSON.EJSON.stringify({
+        'name': name,
+        'color': color,
+        'favoriteFood': food
+      })
+
+      $.ajax({
+          type:'POST',
+          contentType : 'application/json',
+          url:'/rest',
+          data: data,
+          success: () => {
+            window.location.href = '/';
+          },
+          error: (req, status, message) => {
+            alert("Error: " + message);
+          }
+      });
+    });
+  });
+</script>
+
 </body>
 </html>

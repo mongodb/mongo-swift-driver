@@ -32,10 +32,3 @@ struct Kitten: Content {
 struct IndexContext: Encodable {
     let kittens: [Kitten]
 }
-
-extension Request {
-    /// Convenience extension for obtaining a collection which uses the same event loop as a request.
-    var kittenCollection: MongoCollection<Kitten> {
-        self.mongoDB.client.db("home").collection("kittens", withType: Kitten.self)
-    }
-}
