@@ -18,7 +18,7 @@ version=${1}
 # Ensure version is non-empty
 [ ! -z "${version}" ] || { echo "ERROR: Missing version string"; exit 1; }
 
-swift build
+swift build # build to ensure we have a local copy of swift-bson available
 working_dir=${PWD}
 cd .build/checkouts/swift-bson
 sourcekitten doc --spm --module-name SwiftBSON > ${working_dir}/bson-docs.json
