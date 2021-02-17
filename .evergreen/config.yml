@@ -982,7 +982,7 @@ buildvariants:
     os-fully-featured:
       - "ubuntu-18.04"
       - "ubuntu-16.04"
-    mongodb-version:
+    versions:
       - latest
       - 4.4
     swift-version:
@@ -998,7 +998,7 @@ buildvariants:
       - macos-10.14
     swift-version:
       - 5.2
-    mongodb-version:
+    versions:
       - latest
       - 4.4
   display_name: "OCSP ${swift-version} ${os-fully-featured} ${mongodb-version}"
