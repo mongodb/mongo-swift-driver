@@ -116,6 +116,7 @@ extension MongoClientTests {
         ("testBound", testBound),
         ("testResubmittingToThreadPool", testResubmittingToThreadPool),
         ("testConnectionPoolClose", testConnectionPoolClose),
+        ("testOCSP", testOCSP),
     ]
 }
 
