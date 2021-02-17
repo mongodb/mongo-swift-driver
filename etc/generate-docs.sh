@@ -18,9 +18,12 @@ version=${1}
 # Ensure version is non-empty
 [ ! -z "${version}" ] || { echo "ERROR: Missing version string"; exit 1; }
 
-swift build # build to ensure we have a local copy of swift-bson available
+# obtain BSON version from Package.resolved
+bson_version="$(python3 etc/get_bson_version.py)"
+
+git clone --depth 1 --branch "v${bson_version}" https://github.com/mongodb/swift-bson
 working_dir=${PWD}
-cd .build/checkouts/swift-bson
+cd swift-bson
 sourcekitten doc --spm --module-name SwiftBSON > ${working_dir}/bson-docs.json
 cd $working_dir
 
@@ -47,6 +50,7 @@ args=("${jazzy_args[@]}"  --output "docs-temp/MongoSwiftSync" --module "MongoSwi
         --root-url "https://mongodb.github.io/mongo-swift-driver/docs/MongoSwiftSync/")
 jazzy "${args[@]}"
 
+rm -rf swift-bson
 rm mongoswift-docs.json
 rm mongoswift-filtered.json
 rm mongoswiftsync-docs.json
@@ -56,11 +60,9 @@ echo '<html><head><meta http-equiv="refresh" content="0; url=MongoSwift/index.ht
 
 # we can only pass a single GitHub file prefix above, so we need to correct the BSON file paths throughout the docs.
 
-# obtain BSON version from Package.resolved
-bson_version="$(python3 etc/get_bson_version.py)"
 # since we used the copy of BSON in .build/checkouts, look for all paths in that form throughout HTML files and replace them
 # with the correct path to the BSON repo.
 # note: we have to pass -print0 to `find` and pass -0 to `xargs` because some of the file names have spaces in them, which by
 # default xargs will treat as a delimiter.
 find docs-temp -name "*.html" -print0 | \
-xargs -0 etc/sed.sh -i "s/mongo-swift-driver\/tree\/v${version}\/.build\/checkouts\/swift-bson/swift-bson\/tree\/v${bson_version}/"
+xargs -0 etc/sed.sh -i "s/mongo-swift-driver\/tree\/v${version}\/swift-bson/swift-bson\/tree\/v${bson_version}/"
