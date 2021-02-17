@@ -512,6 +512,7 @@ tasks:
     - name: test-ocsp-rsa-valid-cert-server-staples
       tags: ["ocsp", "ocsp-rsa", "ocsp-staple"]
       commands:
+        - func: "prepare resources"
         - func: "run-valid-ocsp-server"
           vars:
             OCSP_ALGORITHM: "rsa"
@@ -526,6 +527,7 @@ tasks:
     - name: test-ocsp-rsa-invalid-cert-server-staples
       tags: ["ocsp", "ocsp-rsa", "ocsp-staple"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-ocsp-server
           vars:
             OCSP_ALGORITHM: "rsa"
@@ -540,6 +542,7 @@ tasks:
     - name: test-ocsp-rsa-valid-cert-server-does-not-staple
       tags: ["ocsp", "ocsp-rsa"]
       commands:
+        - func: "prepare resources"
         - func: "run-valid-ocsp-server"
           vars:
             OCSP_ALGORITHM: "rsa"
@@ -554,6 +557,7 @@ tasks:
     - name: test-ocsp-rsa-invalid-cert-server-does-not-staple
       tags: ["ocsp", "ocsp-rsa"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-ocsp-server
           vars:
             OCSP_ALGORITHM: "rsa"
@@ -568,6 +572,7 @@ tasks:
     - name: test-ocsp-rsa-soft-fail
       tags: ["ocsp", "ocsp-rsa"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             ORCHESTRATION_FILE: "rsa-basic-tls-ocsp-disableStapling.json"
@@ -579,6 +584,7 @@ tasks:
     - name: test-ocsp-rsa-malicious-invalid-cert-mustStaple-server-does-not-staple
       tags: ["ocsp", "ocsp-rsa"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-ocsp-server
           vars:
             OCSP_ALGORITHM: "rsa"
@@ -593,6 +599,7 @@ tasks:
     - name: test-ocsp-rsa-malicious-no-responder-mustStaple-server-does-not-staple
       tags: ["ocsp", "ocsp-rsa"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             ORCHESTRATION_FILE: "rsa-basic-tls-ocsp-mustStaple-disableStapling.json"
@@ -604,6 +611,7 @@ tasks:
     - name: test-ocsp-rsa-delegate-valid-cert-server-staples
       tags: ["ocsp", "ocsp-rsa", "ocsp-staple"]
       commands:
+        - func: "prepare resources"
         - func: run-valid-delegate-ocsp-server
           vars:
             OCSP_ALGORITHM: "rsa"
@@ -618,6 +626,7 @@ tasks:
     - name: test-ocsp-rsa-delegate-invalid-cert-server-staples
       tags: ["ocsp", "ocsp-rsa", "ocsp-staple"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-delegate-ocsp-server
           vars:
             OCSP_ALGORITHM: "rsa"
@@ -632,6 +641,7 @@ tasks:
     - name: test-ocsp-rsa-delegate-valid-cert-server-does-not-staple
       tags: ["ocsp", "ocsp-rsa"]
       commands:
+        - func: "prepare resources"
         - func: run-valid-delegate-ocsp-server
           vars:
             OCSP_ALGORITHM: "rsa"
@@ -646,6 +656,7 @@ tasks:
     - name: test-ocsp-rsa-delegate-invalid-cert-server-does-not-staple
       tags: ["ocsp", "ocsp-rsa"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-delegate-ocsp-server
           vars:
             OCSP_ALGORITHM: "rsa"
@@ -660,6 +671,7 @@ tasks:
     - name: test-ocsp-rsa-delegate-malicious-invalid-cert-mustStaple-server-does-not-staple
       tags: ["ocsp", "ocsp-rsa"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-delegate-ocsp-server
           vars:
             OCSP_ALGORITHM: "rsa"
@@ -674,6 +686,7 @@ tasks:
     - name: test-ocsp-ecdsa-valid-cert-server-staples
       tags: ["ocsp", "ocsp-ecdsa", "ocsp-staple"]
       commands:
+        - func: "prepare resources"
         - func: run-valid-ocsp-server
           vars:
             OCSP_ALGORITHM: "ecdsa"
@@ -688,6 +701,7 @@ tasks:
     - name: test-ocsp-ecdsa-invalid-cert-server-staples
       tags: ["ocsp", "ocsp-ecdsa", "ocsp-staple"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-ocsp-server
           vars:
             OCSP_ALGORITHM: "ecdsa"
@@ -702,6 +716,7 @@ tasks:
     - name: test-ocsp-ecdsa-valid-cert-server-does-not-staple
       tags: ["ocsp", "ocsp-ecdsa"]
       commands:
+        - func: "prepare resources"
         - func: run-valid-ocsp-server
           vars:
             OCSP_ALGORITHM: "ecdsa"
@@ -716,6 +731,7 @@ tasks:
     - name: test-ocsp-ecdsa-invalid-cert-server-does-not-staple
       tags: ["ocsp", "ocsp-ecdsa"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-ocsp-server
           vars:
             OCSP_ALGORITHM: "ecdsa"
@@ -730,6 +746,7 @@ tasks:
     - name: test-ocsp-ecdsa-soft-fail
       tags: ["ocsp", "ocsp-ecdsa"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             ORCHESTRATION_FILE: "ecdsa-basic-tls-ocsp-disableStapling.json"
@@ -741,6 +758,7 @@ tasks:
     - name: test-ocsp-ecdsa-malicious-invalid-cert-mustStaple-server-does-not-staple
       tags: ["ocsp", "ocsp-ecdsa"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-ocsp-server
           vars:
             OCSP_ALGORITHM: "ecdsa"
@@ -755,6 +773,7 @@ tasks:
     - name: test-ocsp-ecdsa-malicious-no-responder-mustStaple-server-does-not-staple
       tags: ["ocsp", "ocsp-ecdsa"]
       commands:
+        - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
           vars:
             ORCHESTRATION_FILE: "ecdsa-basic-tls-ocsp-mustStaple-disableStapling.json"
@@ -766,6 +785,7 @@ tasks:
     - name: test-ocsp-ecdsa-delegate-valid-cert-server-staples
       tags: ["ocsp", "ocsp-ecdsa", "ocsp-staple"]
       commands:
+        - func: "prepare resources"
         - func: run-valid-delegate-ocsp-server
           vars:
             OCSP_ALGORITHM: "ecdsa"
@@ -780,6 +800,7 @@ tasks:
     - name: test-ocsp-ecdsa-delegate-invalid-cert-server-staples
       tags: ["ocsp", "ocsp-ecdsa", "ocsp-staple"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-delegate-ocsp-server
           vars:
             OCSP_ALGORITHM: "ecdsa"
@@ -794,6 +815,7 @@ tasks:
     - name: test-ocsp-ecdsa-delegate-valid-cert-server-does-not-staple
       tags: ["ocsp", "ocsp-ecdsa"]
       commands:
+        - func: "prepare resources"
         - func: run-valid-delegate-ocsp-server
           vars:
             OCSP_ALGORITHM: "ecdsa"
@@ -808,6 +830,7 @@ tasks:
     - name: test-ocsp-ecdsa-delegate-invalid-cert-server-does-not-staple
       tags: ["ocsp", "ocsp-ecdsa"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-delegate-ocsp-server
           vars:
             OCSP_ALGORITHM: "ecdsa"
@@ -822,6 +845,7 @@ tasks:
     - name: test-ocsp-ecdsa-delegate-malicious-invalid-cert-mustStaple-server-does-not-staple
       tags: ["ocsp", "ocsp-ecdsa"]
       commands:
+        - func: "prepare resources"
         - func: run-revoked-delegate-ocsp-server
           vars:
             OCSP_ALGORITHM: "ecdsa"
