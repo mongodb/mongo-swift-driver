@@ -18,6 +18,9 @@ version=${1}
 # Ensure version is non-empty
 [ ! -z "${version}" ] || { echo "ERROR: Missing version string"; exit 1; }
 
+# ensure we have fresh build data for the docs generation process
+rm -rf .build
+
 # obtain BSON version from Package.resolved
 bson_version="$(python3 etc/get_bson_version.py)"
 
@@ -60,8 +63,11 @@ echo '<html><head><meta http-equiv="refresh" content="0; url=MongoSwift/index.ht
 
 # we can only pass a single GitHub file prefix above, so we need to correct the BSON file paths throughout the docs.
 
-# since we used the copy of BSON in .build/checkouts, look for all paths in that form throughout HTML files and replace them
-# with the correct path to the BSON repo.
+# Jazzy generates the links for each file by taking the base path we provide above as --github-file-prefix and tacking on
+#  the path of each file relative to the project's root directory. since we check out swift-bson from the root of the driver,
+# all of the generated URLs for BSON symbols are of the form
+# ....mongo-swift-driver/tree/v[driver version]/swift-bson/...
+# Here we replace all occurrences of this with the correct GitHub root URL, swift-bson/tree/v[bson version].
 # note: we have to pass -print0 to `find` and pass -0 to `xargs` because some of the file names have spaces in them, which by
 # default xargs will treat as a delimiter.
 find docs-temp -name "*.html" -print0 | \
