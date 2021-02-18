@@ -1014,7 +1014,7 @@ buildvariants:
       - 4.4
     swift-version:
       - 5.2
-  display_name: "OCSP ${swift-version} ${os-fully-featured} ${mongodb-version}"
+  display_name: "OCSP ${swift-version} ${os-fully-featured} ${versions}"
   batchtime: 20160 # 14 days
   tasks:
     - ".ocsp"
@@ -1028,7 +1028,7 @@ buildvariants:
     versions:
       - latest
       - 4.4
-  display_name: "OCSP ${swift-version} ${os-fully-featured} ${mongodb-version}"
+  display_name: "OCSP ${swift-version} ${os-fully-featured} ${versions}"
   batchtime: 20160 # 14 days
   tasks:
       # macOS MongoDB servers do not staple OCSP responses and only support RSA.
