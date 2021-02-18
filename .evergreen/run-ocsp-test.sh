@@ -19,13 +19,14 @@ set -x
 export MONGODB_URI=${MONGODB_URI:-"NO_URI_PROVIDED"}
 export SSL=ssl
 export SSL_CA_FILE="$DRIVERS_TOOLS/.evergreen/ocsp/${OCSP_ALGORITHM}/ca.pem"
+export MONGODB_OCSP_TESTING=1
+export OCSP_ALGORITHM=${OCSP_ALGORITHM}
+export OCSP_TLS_SHOULD_SUCCEED=${OCSP_TLS_SHOULD_SUCCEED}
 PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-$PWD}
 SWIFT_VERSION=${SWIFT_VERSION:-5.2.5}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 EXTRA_FLAGS="-Xlinker -rpath -Xlinker ${INSTALL_DIR}/lib"
-RAW_TEST_RESULTS="${PROJECT_DIRECTORY}/rawTestResults"
-XML_TEST_RESULTS="${PROJECT_DIRECTORY}/testResults.xml"
 
 # enable swiftenv
 export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
@@ -47,13 +48,4 @@ swift build $EXTRA_FLAGS
 set +o errexit # even if tests fail we want to parse the results, so disable errexit
 set -o pipefail # propagate error codes in the following pipes
 
-MONGODB_OCSP_TESTING=1 MONGODB_URI=$MONGODB_URI swift test --filter=OCSP $EXTRA_FLAGS 2>&1 | tee ${RAW_TEST_RESULTS}
-
-# save tests exit code
-EXIT_CODE=$?
-
-# convert tests to XML
-cat ${RAW_TEST_RESULTS} | swift "${PROJECT_DIRECTORY}/etc/convert-test-results.swift" > ${XML_TEST_RESULTS}
-
-# exit with exit code for running the tests
-exit $EXIT_CODE
+swift test --filter=OCSP $EXTRA_FLAGS

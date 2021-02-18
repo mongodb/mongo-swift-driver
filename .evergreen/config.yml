@@ -183,6 +183,8 @@ functions:
 
           MONGODB_URI="${MONGODB_URI}" \
           SWIFT_VERSION=${SWIFT_VERSION} \
+          OCSP_TLS_SHOULD_SUCCEED="${OCSP_TLS_SHOULD_SUCCEED}" \
+          OCSP_ALGORITHM="${OCSP_ALGORITHM}" \
             bash ${PROJECT_DIRECTORY}/.evergreen/run-ocsp-test.sh
 
   run-valid-ocsp-server:

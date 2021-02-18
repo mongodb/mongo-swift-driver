@@ -173,7 +173,9 @@ final class MongoClientTests: MongoSwiftTestCase {
             return
         }
 
-        guard let shouldSucceed = ProcessInfo.processInfo.environment["OCSP_TLS_SHOULD_SUCCEED"].flatMap(Bool.init) else {
+        guard
+            let shouldSucceed = ProcessInfo.processInfo.environment["OCSP_TLS_SHOULD_SUCCEED"].flatMap(Bool.init)
+        else {
             throw MongoError.InternalError(message: "OCSP_TLS_SHOULD_SUCCEED not set or has invalid value")
         }
 
