@@ -183,7 +183,7 @@ functions:
 
           MONGODB_URI="${MONGODB_URI}" \
           SWIFT_VERSION=${SWIFT_VERSION} \
-            ${PROJECT_DIRECTORY}/.evergreen/run-ocsp-test.sh
+            bash ${PROJECT_DIRECTORY}/.evergreen/run-ocsp-test.sh
 
   run-valid-ocsp-server:
     - command: shell.exec
