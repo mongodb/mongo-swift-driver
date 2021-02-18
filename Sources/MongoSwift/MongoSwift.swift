@@ -14,6 +14,7 @@ public func addWrappingLibraryMetadata(name: String, version: String) {
     clientMetadataLibraryName = name
     clientMetadataLibraryVersion = version
 }
+
 private final class MongocInitializer {
     internal static let shared = MongocInitializer()
 
