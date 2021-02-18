@@ -13,10 +13,10 @@ extension MongoClient {
         var opts = options ?? MongoClientOptions()
         // if SSL is on and custom TLS options were not provided, enable them
         if MongoSwiftTestCase.ssl && opts.tlsCAFile == nil && opts.tlsCertificateKeyFile == nil {
-            if let caPath = MongoSwiftTestCase.sslCAFilePath  {
+            if let caPath = MongoSwiftTestCase.sslCAFilePath {
                 opts.tlsCAFile = URL(string: caPath)
             }
-            if let keyPath = MongoSwiftTestCase.sslPEMKeyFilePath  {
+            if let keyPath = MongoSwiftTestCase.sslPEMKeyFilePath {
                 opts.tlsCertificateKeyFile = URL(string: keyPath)
             }
         }
