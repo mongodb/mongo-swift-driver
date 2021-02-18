@@ -101,7 +101,8 @@ functions:
       params:
         script: |
           ${PREPARE_SHELL}
-          MONGODB_VERSION=${MONGODB_VERSION} \
+          ORCHESTRATION_FILE=${ORCHESTRATION_FILE} \
+            MONGODB_VERSION=${MONGODB_VERSION} \
             TOPOLOGY=${TOPOLOGY} \
             SSL=${SSL} \
             AUTH=${AUTH} \
