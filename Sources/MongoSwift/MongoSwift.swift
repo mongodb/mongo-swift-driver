@@ -4,7 +4,7 @@ import CLibMongoC
 internal let MIN_SUPPORTED_WIRE_VERSION = 6
 
 /// Store optionally provided metadata about a library wrapping the driver.
-private var clientMetadataLibraryName: String? 
+private var clientMetadataLibraryName: String?
 private var clientMetadataLibraryVersion: String?
 
 /// Adds metadata to include the in the handshake performed with the MongoDB server. This is intended for use by
