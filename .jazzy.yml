@@ -16,6 +16,7 @@ custom_categories:
   - name: Core Types
     children:
       - MongoClient
+      - EventLoopBoundMongoClient
       - MongoClientOptions
       - MongoDatabase
       - MongoDatabaseOptions
@@ -139,6 +140,7 @@ custom_categories:
       - CollectionType
       - CreateCollectionOptions
       - DropCollectionOptions
+      - RenameCollectionOptions
       
   - name: Sessions & Transactions
     children:
