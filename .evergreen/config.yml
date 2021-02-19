@@ -192,13 +192,17 @@ functions:
     - command: shell.exec
       params:
         script: |
+          set -o errexit
           cd ${DRIVERS_TOOLS}/.evergreen/ocsp
           ${PYTHON} -m virtualenv ./venv
           ./venv/${VENV_BIN_DIR}/python3 -m pip install -r mock-ocsp-responder-requirements.txt
     - command: shell.exec
+      type: setup
       params:
         background: true
         script: |
+          set -o errexit
+
           cd ${DRIVERS_TOOLS}/.evergreen/ocsp
 
           ./venv/${VENV_BIN_DIR}/python3 ocsp_mock.py \
@@ -209,15 +213,19 @@ functions:
 
   run-revoked-ocsp-server:
     - command: shell.exec
+      type: setup
       params:
         script: |
+          set -o errexit
           cd ${DRIVERS_TOOLS}/.evergreen/ocsp
           ${PYTHON} -m virtualenv ./venv
           ./venv/${VENV_BIN_DIR}/python3 -m pip install -r mock-ocsp-responder-requirements.txt
     - command: shell.exec
+      type: setup
       params:
         background: true
         script: |
+          set -o errexit
           cd ${DRIVERS_TOOLS}/.evergreen/ocsp
 
           ./venv/${VENV_BIN_DIR}/python3 ocsp_mock.py \
@@ -230,15 +238,19 @@ functions:
 
   run-valid-delegate-ocsp-server:
     - command: shell.exec
+      type: setup
       params:
         script: |
+          set -o errexit
           cd ${DRIVERS_TOOLS}/.evergreen/ocsp
           ${PYTHON} -m virtualenv ./venv
           ./venv/${VENV_BIN_DIR}/python3 -m pip install -r mock-ocsp-responder-requirements.txt
     - command: shell.exec
+      type: setup
       params:
         background: true
         script: |
+          set -o errexit
           cd ${DRIVERS_TOOLS}/.evergreen/ocsp
 
           ./venv/${VENV_BIN_DIR}/python3 ocsp_mock.py \
@@ -249,15 +261,20 @@ functions:
 
   run-revoked-delegate-ocsp-server:
     - command: shell.exec
+      type: setup
       params:
         script: |
+          set -o errexit
           cd ${DRIVERS_TOOLS}/.evergreen/ocsp
           ${PYTHON} -m virtualenv ./venv
           ./venv/${VENV_BIN_DIR}/python3 -m pip install -r mock-ocsp-responder-requirements.txt
     - command: shell.exec
+      type: setup
       params:
         background: true
         script: |
+          set -o errexit
+
           cd ${DRIVERS_TOOLS}/.evergreen/ocsp
 
           ./venv/${VENV_BIN_DIR}/python3 ocsp_mock.py \
