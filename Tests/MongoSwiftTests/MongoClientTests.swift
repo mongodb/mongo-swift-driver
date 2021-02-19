@@ -197,7 +197,7 @@ final class MongoClientTests: MongoSwiftTestCase {
             expect(try invalidCertClient.db("admin").runCommand(["ping": 1]).wait()).toNot(throwError())
         }
 
-        options.tlsAllowInvalidHostnames = nil
+        options.tlsAllowInvalidCertificates = nil
         options.tlsInsecure = true
         try self.withTestClient(options: options) { invalidTLSClient in
             expect(try invalidTLSClient.db("admin").runCommand(["ping": 1]).wait()).toNot(throwError())
