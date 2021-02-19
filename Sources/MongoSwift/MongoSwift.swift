@@ -8,7 +8,7 @@ private var clientMetadataLibraryName: String?
 private var clientMetadataLibraryVersion: String?
 
 /// Adds metadata to include the in the handshake performed with the MongoDB server. This is intended for use by
-/// libraries wrapping the driver e.g. MongoDBVapor or an ORM. If used, this method should be called exactly once.
+/// libraries wrapping the driver e.g. MongoDBVapor or an ODM. If used, this method should be called exactly once.
 /// This method will only have an effect if called before any `MongoClient`s are initialized.
 public func addWrappingLibraryMetadata(name: String, version: String) {
     clientMetadataLibraryName = name
