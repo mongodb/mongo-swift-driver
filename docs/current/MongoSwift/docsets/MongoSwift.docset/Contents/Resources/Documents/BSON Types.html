@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwift 1.0.2 Docs
+          MongoSwift 1.1.0 Docs
         </a>
          (99% documented)
       </p>
@@ -65,6 +65,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="multithreaded-usage.html">Multithreaded-Usage</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="bson-guide.html">BSON-Guide</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -72,6 +75,9 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/EventLoopBoundMongoClient.html">EventLoopBoundMongoClient</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/MongoClientOptions.html">MongoClientOptions</a>
@@ -95,9 +101,6 @@
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/BSON.html">BSON</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="bson.html">BSON</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/BSONType.html">BSONType</a>
@@ -160,6 +163,9 @@
           <li class="nav-group-name">
             <a class="nav-group-name-link" href="Authentication%20%26%20TLS.html">Authentication &amp; TLS</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="tls-guide.html">TLS-Guide</a>
+              </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/MongoCredential.html">MongoCredential</a>
               </li>
@@ -276,6 +282,9 @@
             <a class="nav-group-name-link" href="Errors.html">Errors</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="error-handling-guide.html">Error-Handling-Guide</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Errors.html#/s:10MongoSwift0A13ErrorProtocolP">MongoErrorProtocol</a>
               </li>
               <li class="nav-group-task">
@@ -348,7 +357,7 @@
                 <a class="nav-group-task-link" href="Enums/BSONError/DocumentTooLargeError.html">– DocumentTooLargeError</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Errors.html#/s:10MongoSwift17BSONErrorProtocolP">BSONErrorProtocol</a>
+                <a class="nav-group-task-link" href="Errors.html#/s:9SwiftBSON17BSONErrorProtocolP">BSONErrorProtocol</a>
               </li>
             </ul>
           </li>
@@ -399,6 +408,9 @@
           <li class="nav-group-name">
             <a class="nav-group-name-link" href="Change%20Streams.html">Change Streams</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="change-streams-guide.html">Change-Streams-Guide</a>
+              </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/ChangeStream.html">ChangeStream</a>
               </li>
@@ -469,11 +481,17 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/DropCollectionOptions.html">DropCollectionOptions</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/RenameCollectionOptions.html">RenameCollectionOptions</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
             <a class="nav-group-name-link" href="Sessions%20%26%20Transactions.html">Sessions &amp; Transactions</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="transactions-guide.html">Transactions-Guide</a>
+              </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/ClientSession.html">ClientSession</a>
               </li>
@@ -559,33 +577,25 @@
             </ul>
           </li>
           <li class="nav-group-name">
-            <a class="nav-group-name-link" href="Other%20Guides.html">Other Guides</a>
-            <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="change-streams.html">Change-Streams</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="error-handling.html">Error-Handling</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="tls.html">TLS</a>
-              </li>
-              <li class="nav-group-task">
-                <a class="nav-group-task-link" href="transactions.html">Transactions</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-group-name">
             <a class="nav-group-name-link" href="Other%20Classes.html">Other Classes</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Classes/BSONDocumentIterator.html">BSONDocumentIterator</a>
+                <a class="nav-group-task-link" href="Classes/ExtendedJSONDecoder.html">ExtendedJSONDecoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ExtendedJSONEncoder.html">ExtendedJSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/ExtendedJSONEncoder/Format.html">– Format</a>
               </li>
             </ul>
           </li>
           <li class="nav-group-name">
             <a class="nav-group-name-link" href="Other%20Functions.html">Other Functions</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Other%20Functions.html#/s:10MongoSwift26addWrappingLibraryMetadata4name7versionySS_SStF">addWrappingLibraryMetadata(name:version:)</a>
+              </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Other%20Functions.html#/s:10MongoSwift07cleanupaB0yyF">cleanupMongoSwift()</a>
               </li>
@@ -594,6 +604,9 @@
           <li class="nav-group-name">
             <a class="nav-group-name-link" href="Other%20Structs.html">Other Structures</a>
             <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/Compressor.html">Compressor</a>
+              </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
@@ -620,9 +633,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift4BSONO"></a>
+                    <a name="/s:9SwiftBSON0B0O"></a>
                     <a name="//apple_ref/swift/Enum/BSON" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift4BSONO">BSON</a>
+                    <a class="token" href="#/s:9SwiftBSON0B0O">BSON</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -644,11 +657,11 @@
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">BSON</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSON</span><span class="p">:</span> <span class="kt">ExpressibleByStringLiteral</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSON</span><span class="p">:</span> <span class="kt">ExpressibleByBooleanLiteral</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSON</span><span class="p">:</span> <span class="kt">ExpressibleByFloatLiteral</span></code></pre>
 <pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSON</span><span class="p">:</span> <span class="kt">ExpressibleByIntegerLiteral</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSON</span><span class="p">:</span> <span class="kt">ExpressibleByFloatLiteral</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSON</span><span class="p">:</span> <span class="kt">ExpressibleByBooleanLiteral</span></code></pre>
 <pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSON</span><span class="p">:</span> <span class="kt">ExpressibleByDictionaryLiteral</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSON</span><span class="p">:</span> <span class="kt">ExpressibleByStringLiteral</span></code></pre>
 <pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSON</span><span class="p">:</span> <span class="kt">ExpressibleByArrayLiteral</span></code></pre>
 <pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSON</span><span class="p">:</span> <span class="kt">Equatable</span></code></pre>
 <pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSON</span><span class="p">:</span> <span class="kt">Hashable</span></code></pre>
@@ -657,7 +670,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSON.swift#L5-L300">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSON.swift#L6-L131">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -665,18 +678,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/documentation.BSON"></a>
-                    <a name="//apple_ref/swift/Guide/BSON" class="dashAnchor"></a>
-                    <a class="direct-link" href="bson.html">BSON</a>
-                    </code>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10MongoSwift8BSONTypeO"></a>
+                    <a name="/s:9SwiftBSON8BSONTypeO"></a>
                     <a name="//apple_ref/swift/Enum/BSONType" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift8BSONTypeO">BSONType</a>
+                    <a class="token" href="#/s:9SwiftBSON8BSONTypeO">BSONType</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -697,7 +701,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSONValue.swift#L9-L55">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSONValue.swift#L62-L108">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -705,9 +709,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift10BSONBinaryV"></a>
+                    <a name="/s:9SwiftBSON10BSONBinaryV"></a>
                     <a name="//apple_ref/swift/Struct/BSONBinary" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift10BSONBinaryV">BSONBinary</a>
+                    <a class="token" href="#/s:9SwiftBSON10BSONBinaryV">BSONBinary</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -723,12 +727,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONBinary</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONBinary</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSONValue.swift#L196-L374">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSONBinary.swift#L6-L145">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -736,9 +740,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift8BSONCodeV"></a>
+                    <a name="/s:9SwiftBSON8BSONCodeV"></a>
                     <a name="//apple_ref/swift/Struct/BSONCode" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift8BSONCodeV">BSONCode</a>
+                    <a class="token" href="#/s:9SwiftBSON8BSONCodeV">BSONCode</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -754,12 +758,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONCode</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONCode</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSONValue.swift#L726-L764">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSONCode.swift#L4-L12">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -767,9 +771,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift17BSONCodeWithScopeV"></a>
+                    <a name="/s:9SwiftBSON17BSONCodeWithScopeV"></a>
                     <a name="//apple_ref/swift/Struct/BSONCodeWithScope" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift17BSONCodeWithScopeV">BSONCodeWithScope</a>
+                    <a class="token" href="#/s:9SwiftBSON17BSONCodeWithScopeV">BSONCodeWithScope</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -785,12 +789,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONCodeWithScope</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONCodeWithScope</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSONValue.swift#L664-L723">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSONCode.swift#L15-L28">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -798,9 +802,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift13BSONDBPointerV"></a>
+                    <a name="/s:9SwiftBSON13BSONDBPointerV"></a>
                     <a name="//apple_ref/swift/Struct/BSONDBPointer" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift13BSONDBPointerV">BSONDBPointer</a>
+                    <a class="token" href="#/s:9SwiftBSON13BSONDBPointerV">BSONDBPointer</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -817,12 +821,12 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONDBPointer</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONDBPointer</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSONValue.swift#L437-L495">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSONDBPointer.swift#L5-L16">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -830,9 +834,9 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift14BSONDecimal128V"></a>
+                    <a name="/s:9SwiftBSON14BSONDecimal128V"></a>
                     <a name="//apple_ref/swift/Struct/BSONDecimal128" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift14BSONDecimal128V">BSONDecimal128</a>
+                    <a class="token" href="#/s:9SwiftBSON14BSONDecimal128V">BSONDecimal128</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -848,13 +852,12 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONDecimal128</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDecimal128</span><span class="p">:</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONDecimal128</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSONValue.swift#L498-L579">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSONDecimal128.swift#L122-L477">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -862,9 +865,9 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12BSONDocumentV"></a>
+                    <a name="/s:9SwiftBSON12BSONDocumentV"></a>
                     <a name="//apple_ref/swift/Struct/BSONDocument" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12BSONDocumentV">BSONDocument</a>
+                    <a class="token" href="#/s:9SwiftBSON12BSONDocumentV">BSONDocument</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -882,18 +885,17 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@dynamicMemberLookup</span>
 <span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONDocument</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">Codable</span></code></pre>
 <pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">Collection</span></code></pre>
 <pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">Sequence</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">Equatable</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">CustomStringConvertible</span></code></pre>
 <pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">ExpressibleByDictionaryLiteral</span></code></pre>
 <pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">Hashable</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">Equatable</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONDocument</span><span class="p">:</span> <span class="kt">CustomStringConvertible</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSONDocument.swift#L9-L42">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSONDocument.swift#L14-L437">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -901,9 +903,9 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12BSONObjectIDV"></a>
+                    <a name="/s:9SwiftBSON12BSONObjectIDV"></a>
                     <a name="//apple_ref/swift/Struct/BSONObjectID" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12BSONObjectIDV">BSONObjectID</a>
+                    <a class="token" href="#/s:9SwiftBSON12BSONObjectIDV">BSONObjectID</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -919,13 +921,12 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONObjectID</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span><span class="p">,</span> <span class="kt">Codable</span></code></pre>
-<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">BSONObjectID</span><span class="p">:</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONObjectID</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSONValue.swift#L833-L927">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSONObjectID.swift#L6-L66">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -933,9 +934,9 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift21BSONRegularExpressionV"></a>
+                    <a name="/s:9SwiftBSON21BSONRegularExpressionV"></a>
                     <a name="//apple_ref/swift/Struct/BSONRegularExpression" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift21BSONRegularExpressionV">BSONRegularExpression</a>
+                    <a class="token" href="#/s:9SwiftBSON21BSONRegularExpressionV">BSONRegularExpression</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -951,12 +952,12 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONRegularExpression</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONRegularExpression</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSONValue.swift#L973-L1041">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSONRegularExpression.swift#L38-L64">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -964,9 +965,9 @@ DBPointers cannot be instantiated, but they can be read from existing documents 
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift10BSONSymbolV"></a>
+                    <a name="/s:9SwiftBSON10BSONSymbolV"></a>
                     <a name="//apple_ref/swift/Struct/BSONSymbol" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift10BSONSymbolV">BSONSymbol</a>
+                    <a class="token" href="#/s:9SwiftBSON10BSONSymbolV">BSONSymbol</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -983,12 +984,12 @@ Symbols cannot be instantiated, but they can be read from existing documents tha
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONSymbol</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONSymbol</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSONValue.swift#L1087-L1139">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSONSymbol.swift#L5-L70">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -996,9 +997,9 @@ Symbols cannot be instantiated, but they can be read from existing documents tha
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift13BSONTimestampV"></a>
+                    <a name="/s:9SwiftBSON13BSONTimestampV"></a>
                     <a name="//apple_ref/swift/Struct/BSONTimestamp" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift13BSONTimestampV">BSONTimestamp</a>
+                    <a class="token" href="#/s:9SwiftBSON13BSONTimestampV">BSONTimestamp</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1006,7 +1007,13 @@ Symbols cannot be instantiated, but they can be read from existing documents tha
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>A struct to represent the BSON Timestamp type.</p>
+                        <p>A struct to represent the BSON Timestamp type. This type is for internal MongoDB use. For most cases, in
+application development, you should use the BSON date type (represented in this library by <code>Date</code>.)</p>
+<div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <a href="https://docs.mongodb.com/manual/reference/bson-types/#timestamps">https://docs.mongodb.com/manual/reference/bson-types/#timestamps</a>
+
+</div>
 
                         <a href="Structs/BSONTimestamp.html" class="slightly-smaller">See more</a>
                       </div>
@@ -1014,12 +1021,12 @@ Symbols cannot be instantiated, but they can be read from existing documents tha
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONTimestamp</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BSONTimestamp</span> <span class="p">:</span> <span class="kt">BSONValue</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.0.2/Sources/MongoSwift/BSON/BSONValue.swift#L1142-L1194">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/swift-bson/tree/v3.0.0/Sources/SwiftBSON/BSONTimestamp.swift#L6-L108">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1032,8 +1039,8 @@ Symbols cannot be instantiated, but they can be read from existing documents tha
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-02-04)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.6</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-02-19)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
 </div>
