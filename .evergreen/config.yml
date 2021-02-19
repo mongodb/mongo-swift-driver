@@ -13,6 +13,9 @@ command_type: system
 # That roughly accounts for variable system performance for various buildvariants
 exec_timeout_secs: 1800 # 30 minutes is the longest we'll ever run
 
+# fail a task in case fetching the source or installing Swift fails.
+pre_error_fails_task: true
+
 # What to do when evergreen hits the timeout (`post:` tasks are run automatically)
 timeout:
   - command: shell.exec
