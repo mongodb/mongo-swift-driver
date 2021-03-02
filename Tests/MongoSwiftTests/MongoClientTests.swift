@@ -188,7 +188,7 @@ final class MongoClientTests: MongoSwiftTestCase {
             if shouldSucceed {
                 expect(try response.get()).toNot(throwError())
             } else {
-                expect(try response.get()).to(throwError())
+                expect(try response.get()).to(throwError(errorType: MongoError.ServerSelectionError.self))
             }
         }
 
