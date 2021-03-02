@@ -26,7 +26,6 @@ PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-$PWD}
 SWIFT_VERSION=${SWIFT_VERSION:-5.2.5}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-EXTRA_FLAGS="-Xlinker -rpath -Xlinker ${INSTALL_DIR}/lib"
 
 # enable swiftenv
 export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
@@ -42,10 +41,10 @@ fi
 swiftenv local $SWIFT_VERSION
 
 # build the driver
-swift build $EXTRA_FLAGS
+swift build
 
 # test the driver
 set +o errexit # even if tests fail we want to parse the results, so disable errexit
 set -o pipefail # propagate error codes in the following pipes
 
-swift test --filter=OCSP $EXTRA_FLAGS
+swift test --filter=OCSP
