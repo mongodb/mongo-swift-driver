@@ -9,7 +9,6 @@ SWIFT_VERSION=${SWIFT_VERSION:-5.2.5}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 TOPOLOGY=${TOPOLOGY:-single}
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-EXTRA_FLAGS="-Xlinker -rpath -Xlinker ${INSTALL_DIR}/lib"
 RAW_TEST_RESULTS="${PROJECT_DIRECTORY}/rawTestResults"
 XML_TEST_RESULTS="${PROJECT_DIRECTORY}/testResults.xml"
 INSTALL_DEPS=${INSTALL_DEPS:-"false"}
@@ -42,13 +41,13 @@ fi
 swiftenv local $SWIFT_VERSION
 
 # build the driver
-swift build $EXTRA_FLAGS
+swift build
 
 # test the driver
 set +o errexit # even if tests fail we want to parse the results, so disable errexit
 set -o pipefail # propagate error codes in the following pipes
 
-MONGODB_TOPOLOGY=${TOPOLOGY} MONGODB_URI=$MONGODB_URI swift test $EXTRA_FLAGS 2>&1 | tee ${RAW_TEST_RESULTS}
+MONGODB_TOPOLOGY=${TOPOLOGY} MONGODB_URI=$MONGODB_URI swift test 2>&1 | tee ${RAW_TEST_RESULTS}
 
 # save tests exit code
 EXIT_CODE=$?

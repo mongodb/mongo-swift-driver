@@ -1,3 +1,4 @@
+import Foundation
 @testable import MongoSwift
 import Nimble
 import NIO
@@ -164,5 +165,42 @@ final class MongoClientTests: MongoSwiftTestCase {
 
         // wait to ensure all resource cleanup happens correctly
         try closeFuture.wait()
+    }
+
+    func testOCSP() throws {
+        guard ProcessInfo.processInfo.environment["MONGODB_OCSP_TESTING"] != nil else {
+            printSkipMessage(testName: "testOCSP", reason: "MONGODB_OCSP_TESTING environment variable not set")
+            return
+        }
+
+        guard
+            let shouldSucceed = ProcessInfo.processInfo.environment["OCSP_TLS_SHOULD_SUCCEED"].flatMap(Bool.init)
+        else {
+            throw MongoError.InternalError(message: "OCSP_TLS_SHOULD_SUCCEED not set or has invalid value")
+        }
+
+        var options = MongoClientOptions(serverSelectionTimeoutMS: 200)
+        try self.withTestClient(options: options) { client in
+            let response = Result {
+                try client.db("admin").runCommand(["ping": 1]).wait()
+            }
+
+            if shouldSucceed {
+                expect(try response.get()).toNot(throwError())
+            } else {
+                expect(try response.get()).to(throwError(errorType: MongoError.ServerSelectionError.self))
+            }
+        }
+
+        options.tlsAllowInvalidCertificates = true
+        try self.withTestClient(options: options) { invalidCertClient in
+            expect(try invalidCertClient.db("admin").runCommand(["ping": 1]).wait()).toNot(throwError())
+        }
+
+        options.tlsAllowInvalidCertificates = nil
+        options.tlsInsecure = true
+        try self.withTestClient(options: options) { invalidTLSClient in
+            expect(try invalidTLSClient.db("admin").runCommand(["ping": 1]).wait()).toNot(throwError())
+        }
     }
 }
