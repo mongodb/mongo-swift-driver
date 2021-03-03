@@ -99,10 +99,23 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Specifies the password to de-crypt the `tlsCertificateKeyFile`.
     public var tlsCertificateKeyFilePassword: String?
 
+    /// Indicates if revocation checking (CRL / OCSP) should be disabled.
+    /// On macOS, this setting has no effect.
+    /// By default this is set to false.
+    /// It is an error to specify both this option and `tlsDisableOCSPEndpointCheck`, either via this options struct,
+    /// connection string, or a combination of both.
+    public var tlsDisableCertificateRevocationCheck: Bool?
+
+    /// Indicates if OCSP responder endpoints should not be requested when an OCSP response is not stapled.
+    /// On macOS, this setting has no effect.
+    /// By default this is set to false.
+    public var tlsDisableOCSPEndpointCheck: Bool?
+
     /// When specified, TLS constraints will be relaxed as much as possible. Currently, setting this option to `true`
-    /// is equivalent to setting both `tlsAllowInvalidCertificates` and `tlsAllowInvalidHostnames` to `true`.
-    /// It is an error to specify both this option and either of `tlsAllowInvalidCertificates` or
-    /// `tlsAllowInvalidHostnames`, either via this options struct, connection string, or a combination of both.
+    /// is equivalent to setting `tlsAllowInvalidCertificates`, `tlsAllowInvalidHostnames`, and
+    /// `tlsDisableCertificateRevocationCheck` to `true`.
+    /// It is an error to specify both this option and any of the options enabled by it, either via this options struct,
+    /// connection string, or a combination of both.
     public var tlsInsecure: Bool?
 
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any

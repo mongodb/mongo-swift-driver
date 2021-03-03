@@ -79,3 +79,35 @@ let client = try MongoClient(
 ```
 **Note**: In both cases, if both a client certificate and a client private key are needed, the files should be concatenated into a single file which is specified by `tlsCertificateKeyFile`.
 
+## Server Certificate Validation
+
+The driver will automatically verify the validity of the server certificate, such as issued by configured Certificate
+Authority, hostname validation, and expiration.
+
+To overwrite this behavior, it is possible to disable hostname validation, OCSP endpoint revocation checking, revocation
+checking entirely, and allow invalid certificates.
+
+This behavior is controlled using the `tlsAllowInvalidHostnames`, `tlsDisableOCSPEndpointCheck`,
+`tlsDisableCertificateRevocationCheck`, and `tlsAllowInvalidCertificates` options respectively. By default, all are set
+to false.
+
+It is not recommended to change these defaults as it exposes the client to Man In The Middle attacks (when
+`tlsAllowInvalidHostnames` is set), invalid certificates (when `tlsAllowInvalidCertificates` is set), or potentially
+revoked certificates (when `tlsDisableOCSPEndpointCheck` or `tlsDisableCertificateRevocationCheck` are set).
+
+Note that `tlsDisableCertificateRevocationCheck` and `tlsDisableOCSPEndpointCheck` have no effect on macOS.
+
+### OCSP on Linux/OpenSSL
+The Online Certificate Status Protocol (OCSP) (see [RFC 6960](https://tools.ietf.org/html/rfc6960)) is fully supported
+when using OpenSSL 1.0.1+
+
+### OCSP on macOS
+The Online Certificate Status Protocol (OCSP) (see [RFC 6960](https://tools.ietf.org/html/rfc6960)) is partially
+supported with the following notes:
+
+- The Must-Staple extension (see [RFC 7633](https://tools.ietf.org/html/rfc7633)) is ignored. Connection may continue if
+  a Must-Staple certificate is presented with no stapled response (unless the client receives a revoked response from an
+  OCSP responder).
+
+- Connection will continue if a Must-Staple certificate is presented without a stapled response and the OCSP responder
+  is down.

@@ -288,4 +288,36 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         expect(commandEvents).toEventually(haveCount(2)) // wait for started and succeeded / failed
         expect(sdamEvents.isEmpty).toEventually(beFalse())
     }
+
+    func testCertificateVerificationOptions() throws {
+        var options = MongoClientOptions()
+        options.tlsInsecure = true
+        options.tlsDisableOCSPEndpointCheck = false
+        expect(try MongoClient("mongodb://localhost:12345", options: options))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        options = MongoClientOptions()
+        options.tlsInsecure = true
+        options.tlsDisableCertificateRevocationCheck = true
+        expect(try MongoClient("mongodb://localhost:12345", options: options))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        options = MongoClientOptions()
+        options.tlsAllowInvalidCertificates = true
+        options.tlsDisableOCSPEndpointCheck = false
+        expect(try MongoClient("mongodb://localhost:12345", options: options))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        options = MongoClientOptions()
+        options.tlsAllowInvalidCertificates = true
+        options.tlsDisableCertificateRevocationCheck = false
+        expect(try MongoClient("mongodb://localhost:12345", options: options))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        options = MongoClientOptions()
+        options.tlsDisableCertificateRevocationCheck = false
+        options.tlsDisableOCSPEndpointCheck = true
+        expect(try MongoClient("mongodb://localhost:12345", options: options))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+    }
 }

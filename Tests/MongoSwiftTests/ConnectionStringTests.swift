@@ -128,12 +128,6 @@ func shouldSkip(file: String, test: String) -> Bool {
         return true
     }
 
-    // check for these separately rather than putting them in the skip list since there are a lot of them.
-    // TODO: SWIFT-787: unskip
-    if test.contains("tlsDisableCertificateRevocationCheck") || test.contains("tlsDisableOCSPEndpointCheck") {
-        return true
-    }
-
     return false
 }
 
