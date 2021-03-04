@@ -4,7 +4,6 @@ github_url: https://github.com/mongodb/mongo-swift-driver
 theme: fullwidth
 swift_build_tool: spm
 readme: "etc/docs-main.md"
-documentation: "Guides/*.md"
 
 custom_categories:
   - name: General Guides
@@ -12,6 +11,9 @@ custom_categories:
       - Development
       - Multithreaded-Usage
       - BSON-Guide
+      - JSON-Interop
+      - Codable-Guide
+      - BSON-Migration-Guide
 
   - name: Core Types
     children:
