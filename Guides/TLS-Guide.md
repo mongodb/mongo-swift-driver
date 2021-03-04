@@ -84,7 +84,7 @@ let client = try MongoClient(
 The driver will automatically verify the validity of the server certificate, such as issued by configured Certificate
 Authority, hostname validation, and expiration.
 
-To overwrite this behavior, it is possible to disable hostname validation, OCSP endpoint revocation checking, revocation
+To overwrite this behavior, it is possible to disable hostname validation, OCSP endpoint revocation checking, and revocation
 checking entirely, and allow invalid certificates.
 
 This behavior is controlled using the `tlsAllowInvalidHostnames`, `tlsDisableOCSPEndpointCheck`,
