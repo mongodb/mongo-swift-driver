@@ -30,9 +30,15 @@ cd swift-bson
 sourcekitten doc --spm --module-name SwiftBSON > ${working_dir}/bson-docs.json
 cd $working_dir
 
+mkdir Guides-Temp
+cp Guides/*.md Guides-Temp/
+cp swift-bson/Guides/*.md Guides-Temp/
+
 jazzy_args=(--clean
             --github-file-prefix https://github.com/mongodb/mongo-swift-driver/tree/v${version} 
-            --module-version "${version}")
+            --module-version "${version}"
+            --documentation "Guides-Temp/*.md"
+          )
 
 # Generate MongoSwift docs
 sourcekitten doc --spm --module-name MongoSwift > mongoswift-docs.json
@@ -58,6 +64,7 @@ rm mongoswift-docs.json
 rm mongoswift-filtered.json
 rm mongoswiftsync-docs.json
 rm bson-docs.json
+rm -rf Guides-Temp
 
 echo '<html><head><meta http-equiv="refresh" content="0; url=MongoSwift/index.html" /></head></html>' > docs-temp/index.html
 
