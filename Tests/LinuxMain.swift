@@ -342,6 +342,7 @@ extension SyncMongoClientTests {
         ("testCodingStrategies", testCodingStrategies),
         ("testClientLifetimeManagement", testClientLifetimeManagement),
         ("testAPMCallbacks", testAPMCallbacks),
+        ("testCertificateVerificationOptions", testCertificateVerificationOptions),
     ]
 }
 
