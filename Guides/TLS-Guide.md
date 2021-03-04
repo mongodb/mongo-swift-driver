@@ -99,7 +99,7 @@ Note that `tlsDisableCertificateRevocationCheck` and `tlsDisableOCSPEndpointChec
 
 ### OCSP on Linux/OpenSSL
 The Online Certificate Status Protocol (OCSP) (see [RFC 6960](https://tools.ietf.org/html/rfc6960)) is fully supported
-when using OpenSSL 1.0.1+
+when using OpenSSL 1.0.1+.
 
 ### OCSP on macOS
 The Online Certificate Status Protocol (OCSP) (see [RFC 6960](https://tools.ietf.org/html/rfc6960)) is partially
