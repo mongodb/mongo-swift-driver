@@ -79,3 +79,41 @@ let client = try MongoClient(
 ```
 **Note**: In both cases, if both a client certificate and a client private key are needed, the files should be concatenated into a single file which is specified by `tlsCertificateKeyFile`.
 
+## Server Certificate Validation
+
+The driver will automatically verify the validity of the server certificate by ensuring that it was issued by the
+configured Certificate Authority, its SAN or CN match the hostname provided in the connection string, and it has not
+expired.
+
+To override this behavior, it is possible to disable parts or all of it via the following options in the
+`MongoClientOptions` or connection string used to create the `MongoClient`:
+- `tlsAllowInvalidHostnames`: disables hostname validation
+- `tlsDisableOCSPEndpointCheck`: disables OCSP endpoint revocation checking. This does not disable verifying OCSP
+responses stapled to a server's certificate 
+- `tlsDisableCertificateRevocationCheck`: disables revocation checking entirely, including via OCSP stapled responses or
+CRLs.
+- `tlsAllowInvalidCertificates`: completely disables server certificate verification and allows any certificate to be
+used.
+
+By default, all of these options are set to false.
+
+It is not recommended to change these defaults as it exposes the client to Man In The Middle attacks (when
+`tlsAllowInvalidHostnames` is set), invalid certificates (when `tlsAllowInvalidCertificates` is set), or potentially
+revoked certificates (when `tlsDisableOCSPEndpointCheck` or `tlsDisableCertificateRevocationCheck` are set).
+
+Note that `tlsDisableCertificateRevocationCheck` and `tlsDisableOCSPEndpointCheck` have no effect on macOS.
+
+### OCSP on Linux/OpenSSL
+The Online Certificate Status Protocol (OCSP) (see [RFC 6960](https://tools.ietf.org/html/rfc6960)) is fully supported
+when using OpenSSL 1.0.1+.
+
+### OCSP on macOS
+The Online Certificate Status Protocol (OCSP) (see [RFC 6960](https://tools.ietf.org/html/rfc6960)) is partially
+supported with the following notes:
+
+- The Must-Staple extension (see [RFC 7633](https://tools.ietf.org/html/rfc7633)) is ignored. Connection may continue if
+  a Must-Staple certificate is presented with no stapled response (unless the client receives a revoked response from an
+  OCSP responder).
+
+- Connection will continue if a Must-Staple certificate is presented without a stapled response and the OCSP responder
+  is down.
