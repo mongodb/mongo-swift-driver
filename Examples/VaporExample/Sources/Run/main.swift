@@ -11,10 +11,6 @@ try configure(app)
 // Configure the app for using a MongoDB server at the provided connection string.
 try app.mongoDB.configure("mongodb://localhost:27017")
 
-// Use `ExtendedJSONEncoder` and `ExtendedJSONDecoder` for encoding/decoding `Content`.
-ContentConfiguration.global.use(encoder: ExtendedJSONEncoder(), for: .json)
-ContentConfiguration.global.use(decoder: ExtendedJSONDecoder(), for: .json)
-
 defer {
     // Cleanup the application's MongoDB data.
     app.mongoDB.cleanup()
