@@ -106,8 +106,6 @@ internal enum ChangeStreamTestResult: Decodable {
         if let labels = labels {
             expect(seenError.errorLabels).toNot(beNil(), description: description)
             expect(seenError.errorLabels).to(equal(labels), description: description)
-        } else {
-            expect(seenError.errorLabels).to(beNil(), description: description)
         }
     }
 
@@ -131,6 +129,9 @@ internal struct ChangeStreamTest: Decodable, FailPointConfigured {
 
     /// The minimum server version that this test can be run against.
     let minServerVersion: ServerVersion
+
+    /// The maximum server version that this test can be run against.
+    let maxServerVersion: ServerVersion?
 
     /// The fail point that should be set prior to running this test.
     let failPoint: FailPoint?
@@ -203,7 +204,7 @@ internal struct ChangeStreamTest: Decodable, FailPointConfigured {
 
         if let expectations = self.expectations {
             let commandEvents = monitor.commandStartedEvents()
-                .filter { $0.commandName != "isMaster" }
+                .filter { !["isMaster", "killCursors"].contains($0.commandName) }
                 .map { TestCommandStartedEvent(from: $0) }
             expect(commandEvents).to(match(expectations), description: self.description)
         }
@@ -227,10 +228,10 @@ private struct ChangeStreamTestFile: Decodable {
     let collectionName: String
 
     /// Secondary database.
-    let database2Name: String
+    let database2Name: String?
 
     // Secondary collection.
-    let collection2Name: String
+    let collection2Name: String?
 
     /// An array of tests that are to be run independently of each other.
     let tests: [ChangeStreamTest]
@@ -239,23 +240,32 @@ private struct ChangeStreamTestFile: Decodable {
 /// Class covering the JSON spec tests associated with change streams.
 final class ChangeStreamSpecTests: MongoSwiftTestCase {
     func testChangeStreamSpec() throws {
-        let tests = try retrieveSpecTestFiles(specName: "change-streams", asType: ChangeStreamTestFile.self)
+        let tests = try retrieveSpecTestFiles(
+            specName: "change-streams",
+            subdirectory: "legacy",
+            asType: ChangeStreamTestFile.self
+        )
 
         let globalClient = try MongoClient.makeTestClient()
 
-        let version = try globalClient.serverVersion()
-
         for (testName, testFile) in tests {
             let db1 = globalClient.db(testFile.databaseName)
-            let db2 = globalClient.db(testFile.database2Name)
+            // only some test files use a second database.
+            let db2: MongoDatabase?
+            if let db2Name = testFile.database2Name {
+                db2 = globalClient.db(db2Name)
+            } else {
+                db2 = nil
+            }
             defer {
                 try? db1.drop()
-                try? db2.drop()
+                try? db2?.drop()
             }
             print("\n------------\nExecuting tests from file \(testName)...\n")
             for var test in testFile.tests {
                 let testRequirements = TestRequirement(
                     minServerVersion: test.minServerVersion,
+                    maxServerVersion: test.maxServerVersion,
                     acceptableTopologies: test.topology
                 )
 
@@ -265,19 +275,12 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase {
                     continue
                 }
 
-                guard !(test.description == "Change Stream should error when _id is projected out" &&
-                    version >= ServerVersion(major: 4, minor: 3, patch: 3))
-                else {
-                    print("Skipping test case \"\(test.description)\"; see SWIFT-722")
-                    continue
-                }
-
                 print("Executing test: \(test.description)")
 
                 try db1.drop()
-                try db2.drop()
+                try db2?.drop()
                 _ = try db1.createCollection(testFile.collectionName)
-                _ = try db2.createCollection(testFile.collection2Name)
+                _ = try db2?.createCollection(testFile.collection2Name ?? "foo")
 
                 try test.run(
                     globalClient: globalClient,
@@ -285,6 +288,61 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase {
                     collection: testFile.collectionName
                 )
             }
+        }
+    }
+
+    // TODO: SWIFT-560: Run this test.
+    func testChangeStreamSpecUnified() throws {
+        printSkipMessage(testName: self.name, reason: "Skipping until SWIFT-560 is implemented")
+        return
+
+                // let tests = try retrieveSpecTestFiles(
+                //     specName: "change-streams",
+                //     subdirectory: "unified",
+                //     asType: UnifiedTestFile.self
+                // ).map { $0.1 }
+                // let testRunner = try UnifiedTestRunner()
+                // try testRunner.runFiles(tests)
+    }
+
+    // TODO: SWIFT-560: Remove this test. It is a prose version of a unified test which we skip above.
+    func testChangeStreamTruncatedArrays() throws {
+        try withTestNamespace { client, db, collection in
+            let requirements = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 7),
+                acceptableTopologies: [.replicaSet]
+            )
+            let unmetRequirement = try client.getUnmetRequirement(requirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
+            let doc: BSONDocument = ["_id": 1, "a": 1, "array": ["foo", ["a": "bar"], 1, 2, 3]]
+            try collection.insertOne(doc)
+
+            let changeStream = try collection.watch()
+
+            let updateCommand: BSONDocument = [
+                "update": .string(collection.name),
+                "updates": [
+                    [
+                        "q": ["_id": 1],
+                        "u": [
+                            ["$set": ["array": ["foo", ["a": "bar"]]]]
+                        ]
+                    ]
+                ]
+            ]
+
+            try db.runCommand(updateCommand)
+            let event = try changeStream.nextWithTimeout()
+            expect(event?.operationType).to(equal(.update))
+            expect(event?.ns).to(equal(collection.namespace))
+            expect(event?.updateDescription?.updatedFields).to(beEmpty())
+            expect(event?.updateDescription?.removedFields).to(beEmpty())
+            expect(event?.updateDescription?.truncatedArrays?.first)
+                .to(sortedEqual(["field": "array", "newSize": .int32(2)]))
         }
     }
 }
@@ -337,20 +395,12 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamMissingId() throws {
         let testRequirements = TestRequirement(
-            maxServerVersion: ServerVersion(major: 4, minor: 3, patch: 3),
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
         let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
         guard unmetRequirement == nil else {
-            switch unmetRequirement {
-            case .minServerVersion, .maxServerVersion:
-                print("Skipping test; see SWIFT-722")
-            case .topology:
-                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
-            case .none:
-                break
-            }
+            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
             return
         }
 
@@ -499,73 +549,6 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             }
             expect(monitor.commandStartedEvents(withNames: ["aggregate"])).to(haveCount(1))
         }
-    }
-
-    /**
-     * Prose test 5 of change stream spec.
-     *
-     * `ChangeStream` will not attempt to resume after encountering error code 11601 (Interrupted),
-     * 136 (CappedPositionLost), or 237 (CursorKilled) while executing a getMore command.
-     */
-    func testChangeStreamDoesntResume() throws {
-        let testRequirements = TestRequirement(
-            acceptableTopologies: [.replicaSet, .sharded]
-        )
-
-        let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
-        guard unmetRequirement == nil else {
-            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
-            return
-        }
-
-        guard try MongoClient.makeTestClient().supportsFailCommand() else {
-            print("Skipping \(self.name) because server version doesn't support failCommand")
-            return
-        }
-
-        let interrupted = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 11601)
-        try interrupted.enable()
-        defer { interrupted.disable() }
-        let interruptedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
-            expect(try $0.watch().next()?.get()).to(throwError())
-        }
-        expect(interruptedAggs.count).to(equal(1))
-
-        let cappedPositionLost = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 136)
-        try cappedPositionLost.enable()
-        defer { cappedPositionLost.disable() }
-        let cappedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
-            expect(try $0.watch().next()?.get()).to(throwError())
-        }
-        expect(cappedAggs.count).to(equal(1))
-
-        let cursorKilled = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 237)
-        try cursorKilled.enable()
-        defer { cursorKilled.disable() }
-        let killedAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
-            expect(try $0.watch().next()?.get()).to(throwError())
-        }
-        expect(killedAggs.count).to(equal(1))
-
-        let version = try MongoClient.makeTestClient().serverVersion()
-        // the next set of assertions relies on the presence of the NonResumableChangeStreamError label, which was
-        // introduced in 4.1.1 via SERVER-40446.
-        guard version >= ServerVersion(major: 4, minor: 1, patch: 1) else {
-            return
-        }
-
-        // skip on 4.3.3+ due to removal of NonResumableChangeStreamError label; see SWIFT-722
-        guard version < ServerVersion(major: 4, minor: 3, patch: 3) else {
-            return
-        }
-
-        let nonResumableLabel = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 280)
-        try nonResumableLabel.enable()
-        defer { nonResumableLabel.disable() }
-        let labelAggs = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) {
-            expect(try $0.watch().next()?.get()).to(throwError())
-        }
-        expect(labelAggs.count).to(equal(1))
     }
 
     /**
