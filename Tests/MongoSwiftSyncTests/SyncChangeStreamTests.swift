@@ -191,9 +191,11 @@ internal struct ChangeStreamTest: Decodable, FailPointConfigured {
                 case let .success(events):
                     var seenEvents: [BSONDocument] = []
                     for _ in 0..<events.count {
-                        let event = try changeStream.tryNext()?.get()
-                        expect(event).toNot(beNil(), description: self.description)
-                        seenEvents.append(event!)
+                        guard let event = try changeStream.nextWithTimeout() else {
+                            XCTFail("Unexpectedly got no event from change stream in test: \(self.description)")
+                            return
+                        }
+                        seenEvents.append(event)
                     }
                     expect(seenEvents).to(match(events), description: self.description)
                 }
