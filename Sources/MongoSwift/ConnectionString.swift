@@ -98,7 +98,7 @@ internal class ConnectionString {
                 message: "Invalid \(MONGOC_URI_CONNECTTIMEOUTMS): must be between 1 and \(Int32.max)"
             )
         }
-        if let socketTimeoutMS = self.options?[MONGOC_URI_SOCKETTIMEOUTMS]?.int32Value, socketTimeoutMS < 0 {
+        if let socketTimeoutMS = self.options?[MONGOC_URI_SOCKETTIMEOUTMS]?.int32Value, socketTimeoutMS < 1 {
             throw MongoError.InvalidArgumentError(
                 message: "Invalid \(MONGOC_URI_SOCKETTIMEOUTMS): must be between 1 and \(Int32.max)"
             )
@@ -295,6 +295,19 @@ internal class ConnectionString {
             }
 
             try self.setInt32Option(MONGOC_URI_MAXPOOLSIZE, to: value)
+        }
+
+        if let connectTimeoutMS = options?.connectTimeoutMS {
+            guard let value = Int32(exactly: connectTimeoutMS), value > 0 else {
+                throw self.int32OutOfRangeError(
+                    option: MONGOC_URI_CONNECTTIMEOUTMS,
+                    value: connectTimeoutMS,
+                    min: 1,
+                    max: Int32.max
+                )
+            }
+
+            try self.setInt32Option(MONGOC_URI_CONNECTTIMEOUTMS, to: value)
         }
 
         let unsupportedOptions = [

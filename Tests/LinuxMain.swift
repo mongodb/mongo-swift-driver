@@ -72,6 +72,7 @@ extension ConnectionStringTests {
         ("testServerSelectionTimeoutMS", testServerSelectionTimeoutMS),
         ("testServerSelectionTimeoutMSWithCommand", testServerSelectionTimeoutMSWithCommand),
         ("testLocalThresholdMSOption", testLocalThresholdMSOption),
+        ("testConnectTimeoutMSOption", testConnectTimeoutMSOption),
         ("testUnsupportedOptions", testUnsupportedOptions),
         ("testCompressionOptions", testCompressionOptions),
         ("testInvalidOptionsCombinations", testInvalidOptionsCombinations),
@@ -342,6 +343,7 @@ extension SyncMongoClientTests {
         ("testClientLifetimeManagement", testClientLifetimeManagement),
         ("testAPMCallbacks", testAPMCallbacks),
         ("testCertificateVerificationOptions", testCertificateVerificationOptions),
+        ("testConnectionTimeout", testConnectionTimeout),
     ]
 }
 

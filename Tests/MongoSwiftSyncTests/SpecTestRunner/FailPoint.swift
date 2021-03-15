@@ -166,6 +166,7 @@ internal struct FailPoint: Decodable {
     public static func failCommand(
         failCommands: [String],
         mode: Mode,
+        blockTimeMS: Int? = nil,
         closeConnection: Bool? = nil,
         errorCode: Int? = nil,
         errorLabels: [String]? = nil,
@@ -174,6 +175,10 @@ internal struct FailPoint: Decodable {
         var data: BSONDocument = [
             "failCommands": .array(failCommands.map { .string($0) })
         ]
+        if let blockTime = blockTimeMS {
+            data["blockTimeMS"] = BSON(blockTime)
+            data["blockConnection"] = true
+        }
         if let close = closeConnection {
             data["closeConnection"] = .bool(close)
         }

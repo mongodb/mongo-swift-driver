@@ -127,6 +127,10 @@ extension MongoClient {
     internal func supportsFailCommand() throws -> Bool {
         try self.meetsAnyRequirement(in: TestRequirement.failCommandSupport)
     }
+
+    internal func supportsBlockTime() throws -> Bool {
+        try self.meetsAnyRequirement(in: TestRequirement.blockTimeSupport)
+    }
 }
 
 /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the

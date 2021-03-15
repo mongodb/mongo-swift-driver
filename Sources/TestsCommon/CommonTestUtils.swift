@@ -216,6 +216,13 @@ public struct TestRequirement: Decodable {
         )
     ]
 
+    public static let blockTimeSupport: [TestRequirement] = [
+        TestRequirement(
+            minServerVersion: ServerVersion.mongodBlockTimeSupport,
+            acceptableTopologies: [.single, .replicaSet]
+        )
+    ]
+
     public init(
         minServerVersion: ServerVersion? = nil,
         maxServerVersion: ServerVersion? = nil,
