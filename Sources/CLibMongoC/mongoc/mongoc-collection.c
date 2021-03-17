@@ -3397,7 +3397,7 @@ retry:
       BSON_ASSERT (bson_iter_recurse (&iter, &inner));
       while (bson_iter_next (&inner)) {
          if (BSON_ITER_IS_KEY (&inner, "code")) {
-            code = (uint32_t) bson_iter_as_int64 (&inner);
+            code = bson_iter_as_int64 (&inner);
          } else if (BSON_ITER_IS_KEY (&inner, "errmsg")) {
             errmsg = bson_iter_utf8 (&inner, NULL);
          }

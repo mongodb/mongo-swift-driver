@@ -1366,7 +1366,7 @@ _set_error_from_response (bson_t *bson_array,
             while (bson_iter_next (&doc_iter)) {
                /* use the first error code we find */
                if (BSON_ITER_IS_KEY (&doc_iter, "code") && code == 0) {
-                  code = (uint32_t) bson_iter_as_int64 (&doc_iter);
+                  code = bson_iter_as_int64 (&doc_iter);
                } else if (BSON_ITER_IS_KEY (&doc_iter, "errmsg")) {
                   errmsg = bson_iter_utf8 (&doc_iter, NULL);
 

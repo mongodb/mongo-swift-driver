@@ -1075,7 +1075,7 @@ _parse_error_reply (const bson_t *doc,
     * based on how it is configured to error. */
    if (bson_iter_init_find (&iter, doc, "code") &&
        BSON_ITER_HOLDS_NUMBER (&iter)) {
-      *code = (uint32_t) bson_iter_as_int64 (&iter);
+      *code = bson_iter_as_int64 (&iter);
       BSON_ASSERT (*code);
       found_error = true;
    }
@@ -1103,7 +1103,7 @@ _parse_error_reply (const bson_t *doc,
          BSON_ASSERT (bson_iter_recurse (&iter, &child));
          if (bson_iter_find (&child, "code") &&
              BSON_ITER_HOLDS_NUMBER (&child)) {
-            *code = (uint32_t) bson_iter_as_int64 (&child);
+            *code = bson_iter_as_int64 (&child);
             BSON_ASSERT (*code);
             found_error = true;
          }
@@ -1245,7 +1245,7 @@ _mongoc_populate_query_error (const bson_t *doc,
 
    if (bson_iter_init_find (&iter, doc, "code") &&
        BSON_ITER_HOLDS_NUMBER (&iter)) {
-      code = (uint32_t) bson_iter_as_int64 (&iter);
+      code = bson_iter_as_int64 (&iter);
       BSON_ASSERT (code);
    }
 
