@@ -343,8 +343,8 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase {
             expect(event?.ns).to(equal(collection.namespace))
             expect(event?.updateDescription?.updatedFields).to(beEmpty())
             expect(event?.updateDescription?.removedFields).to(beEmpty())
-            expect(event?.updateDescription?.truncatedArrays?.first)
-                .to(sortedEqual(["field": "array", "newSize": .int32(2)]))
+            expect(event?.updateDescription?.truncatedArrays?.first?.field).to(equal("array"))
+            expect(event?.updateDescription?.truncatedArrays?.first?.newSize).to(equal(2))
         }
     }
 }
