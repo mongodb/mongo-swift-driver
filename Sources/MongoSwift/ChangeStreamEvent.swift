@@ -38,6 +38,7 @@ public struct UpdateDescription: Codable {
     /// An array of field names that were removed from the document.
     public let removedFields: [String]
 
+    /// Describes an array that was truncated via an update operation.
     public struct TruncatedArrayDescription: Codable {
         /// The name of the array field which was truncated.
         public let field: String
