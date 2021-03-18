@@ -540,13 +540,28 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(result3).to(equal(["_id": 2, "cat": "blah"]))
         expect(try self.coll.countDocuments()).to(equal(2))
 
-        // test invalid maxTimeMS throws error
+        // test using a hint
+        let model = IndexModel(keys: ["cat": 1])
+        expect(try self.coll.createIndex(model)).to(equal("cat_1"))
+        let opts4 = FindOneAndReplaceOptions(hint: ["cat": 1])
+        let result4 = try self.coll.findOneAndReplace(
+            filter: ["cat": "hi"],
+            replacement: ["cat": "hello"],
+            options: opts4
+        )
+        expect(result4).to(equal(["_id": 1, "cat": "hi"]))
+        expect(try self.coll.countDocuments()).to(equal(2))
+
+        // test invalid maxTimeMS and hint throws error
         let invalidOpts1 = FindOneAndReplaceOptions(maxTimeMS: 0)
         let invalidOpts2 = FindOneAndReplaceOptions(maxTimeMS: -1)
+        let invalidOpts3 = FindOneAndReplaceOptions(hint: ["nonexistant_index": 1])
         expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts1))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
         expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts2))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts3))
+            .to(throwError(errorType: MongoError.CommandError.self))
     }
 
     func testFindOneAndUpdate() throws {
@@ -580,13 +595,28 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(result3).to(equal(["_id": 2, "cat": "blah"]))
         expect(try self.coll.countDocuments()).to(equal(2))
 
-        // test invalid maxTimeMS throws error
+        // test using a hint
+        let model = IndexModel(keys: ["cat": 1])
+        expect(try self.coll.createIndex(model)).to(equal("cat_1"))
+        let opts4 = FindOneAndUpdateOptions(hint: ["cat": 1])
+        let result4 = try self.coll.findOneAndUpdate(
+            filter: ["cat": "hi"],
+            update: ["$set": ["cat": "hello"]],
+            options: opts4
+        )
+        expect(result4).to(equal(["_id": 1, "cat": "hi"]))
+        expect(try self.coll.countDocuments()).to(equal(2))
+
+        // test invalid maxTimeMS and hint throws error
         let invalidOpts1 = FindOneAndUpdateOptions(maxTimeMS: 0)
         let invalidOpts2 = FindOneAndUpdateOptions(maxTimeMS: -1)
+        let invalidOpts3 = FindOneAndUpdateOptions(hint: ["nonexistant_index": 1])
         expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts1))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
         expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts2))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts3))
+            .to(throwError(errorType: MongoError.CommandError.self))
     }
 
     func testNullIds() throws {
