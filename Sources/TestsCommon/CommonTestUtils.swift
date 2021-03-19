@@ -221,6 +221,12 @@ public struct TestRequirement: Decodable {
             minServerVersion: ServerVersion.mongodBlockTimeSupport
         )
     ]
+    
+    public static let hintSupport: [TestRequirement] = [
+        TestRequirement(
+            minServerVersion: ServerVersion.mongodHintSupport,
+        )
+    ]
 
     public init(
         minServerVersion: ServerVersion? = nil,

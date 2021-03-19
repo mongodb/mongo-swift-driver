@@ -22,7 +22,7 @@ internal class FindAndModifyOptions {
         arrayFilters: [BSONDocument]? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument?,
-        hint: BSONDocument? = nil,
+        hint: IndexHint? = nil,
         maxTimeMS: Int?,
         projection: BSONDocument?,
         remove: Bool? = nil,
@@ -83,7 +83,10 @@ internal class FindAndModifyOptions {
             extra["collation"] = .document(coll)
         }
         if let hnt = hint {
-            extra["hint"] = .document(hnt)
+            switch hnt {
+            case .indexName(let name): extra["hint"] = .string(name)
+                case .indexSpec(let doc): extra["hint"] = .document(doc)
+            }
         }
 
         // note: mongoc_find_and_modify_opts_set_max_time_ms() takes in a

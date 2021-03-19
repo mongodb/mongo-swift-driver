@@ -5,6 +5,7 @@ public struct ServerVersion: Comparable, Decodable, CustomStringConvertible {
     public static let mongodFailCommandSupport = ServerVersion(major: 4, minor: 0)
     public static let mongosFailCommandSupport = ServerVersion(major: 4, minor: 1, patch: 5)
     public static let mongodBlockTimeSupport = ServerVersion(major: 4, minor: 2, patch: 9)
+    public static let mongodHintSupport = ServerVersion(major: 4, minor: 4)
 
     let major: Int
     let minor: Int

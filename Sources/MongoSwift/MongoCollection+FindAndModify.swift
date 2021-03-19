@@ -199,7 +199,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     public var collation: BSONDocument?
 
     /// A document or string that specifies the index to use to support the query.
-    public var hint: BSONDocument?
+    public var hint: IndexHint?
 
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
@@ -237,7 +237,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     public init(
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
-        hint: BSONDocument? = nil,
+        hint: IndexHint? = nil,
         maxTimeMS: Int? = nil,
         projection: BSONDocument? = nil,
         returnDocument: ReturnDocument? = nil,
@@ -269,7 +269,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
     public var collation: BSONDocument?
 
     /// A document or string that specifies the index to use to support the query.
-    public var hint: BSONDocument?
+    public var hint: IndexHint?
 
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
@@ -309,7 +309,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
         arrayFilters: [BSONDocument]? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
-        hint: BSONDocument? = nil,
+        hint: IndexHint? = nil,
         maxTimeMS: Int? = nil,
         projection: BSONDocument? = nil,
         returnDocument: ReturnDocument? = nil,
