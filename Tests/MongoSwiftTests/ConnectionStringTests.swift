@@ -454,14 +454,15 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         let connStr3 = try ConnectionString("mongodb://localhost:27017/?connectTimeoutMS=50", options: opts)
         expect(connStr3.options?["connecttimeoutms"]?.int32Value).to(equal(100))
 
+        // test invalid options
         expect(try ConnectionString(
             "mongodb://localhost:27017",
             options: MongoClientOptions(connectTimeoutMS: 0)
-        )).toNot(throwError())
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         expect(try ConnectionString(
             "mongodb://localhost:27017/?connectTimeoutMS=0"
-        )).toNot(throwError())
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         let tooSmall = -10
         expect(try ConnectionString(
