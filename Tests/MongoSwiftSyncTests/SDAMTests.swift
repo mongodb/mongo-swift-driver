@@ -184,7 +184,7 @@ extension SDAMEvent {
         return event
     }
 
-    private var topologyClosedValue: TopologyClosedEvent? {
+    fileprivate var topologyClosedValue: TopologyClosedEvent? {
         guard case let .topologyClosed(event) = self else {
             return nil
         }
@@ -205,7 +205,7 @@ extension SDAMEvent {
         return event
     }
 
-    private var serverClosedValue: ServerClosedEvent? {
+    fileprivate var serverClosedValue: ServerClosedEvent? {
         guard case let .serverClosed(event) = self else {
             return nil
         }
