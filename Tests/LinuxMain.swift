@@ -35,6 +35,8 @@ extension BSONPointerUtilsTests {
 extension ChangeStreamSpecTests {
     static var allTests = [
         ("testChangeStreamSpec", testChangeStreamSpec),
+        ("testChangeStreamSpecUnified", testChangeStreamSpecUnified),
+        ("testChangeStreamTruncatedArrays", testChangeStreamTruncatedArrays),
     ]
 }
 
@@ -301,7 +303,6 @@ extension SyncChangeStreamTests {
         ("testChangeStreamMissingId", testChangeStreamMissingId),
         ("testChangeStreamAutomaticResume", testChangeStreamAutomaticResume),
         ("testChangeStreamFailedAggregate", testChangeStreamFailedAggregate),
-        ("testChangeStreamDoesntResume", testChangeStreamDoesntResume),
         ("testChangeStreamDoesntCloseOnEmptyBatch", testChangeStreamDoesntCloseOnEmptyBatch),
         ("testChangeStreamFailedKillCursors", testChangeStreamFailedKillCursors),
         ("testChangeStreamResumeTokenUpdatesEmptyBatch", testChangeStreamResumeTokenUpdatesEmptyBatch),
