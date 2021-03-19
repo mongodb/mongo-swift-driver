@@ -603,7 +603,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.createIndex(model)).to(equal("cat_1"))
 
         // find and replace
-        let opts1 = FindOneAndReplaceOptions(hint: .indexSpec(["cat": 1]))
+        let opts1 = FindOneAndReplaceOptions(hint: ["cat": 1])
         let result1 = try self.coll.findOneAndReplace(
             filter: ["cat": "dog"],
             replacement: ["cat": "hello"],
@@ -612,7 +612,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(result1).to(equal(["_id": 1, "cat": "dog"]))
         expect(try self.coll.countDocuments()).to(equal(2))
 
-        let opts2 = FindOneAndReplaceOptions(hint: .indexName("cat_1"))
+        let opts2 = FindOneAndReplaceOptions(hint: "cat_1")
         let result2 = try self.coll.findOneAndReplace(
             filter: ["cat": "hello"],
             replacement: ["cat": "meow"],
@@ -622,7 +622,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.countDocuments()).to(equal(2))
 
         // find and update
-        let opts3 = FindOneAndUpdateOptions(hint: .indexSpec(["cat": 1]))
+        let opts3 = FindOneAndUpdateOptions(hint: ["cat": 1])
         let result3 = try self.coll.findOneAndUpdate(
             filter: ["cat": "meow"],
             update: ["$set": ["cat": "woof"]],
@@ -631,7 +631,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(result3).to(equal(["_id": 1, "cat": "meow"]))
         expect(try self.coll.countDocuments()).to(equal(2))
 
-        let opts4 = FindOneAndUpdateOptions(hint: .indexName("cat_1"))
+        let opts4 = FindOneAndUpdateOptions(hint: "cat_1")
         let result4 = try self.coll.findOneAndUpdate(
             filter: ["cat": "woof"],
             update: ["$set": ["cat": "bird"]],
@@ -641,11 +641,17 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.countDocuments()).to(equal(2))
 
         // test invalid hint throws error
-        let invalidOpts1 = FindOneAndReplaceOptions(hint: .indexSpec(["nonexistant_index": 1]))
-        let invalidOpts2 = FindOneAndUpdateOptions(hint: .indexSpec(["nonexistant_index": 1]))
+        let invalidOpts1 = FindOneAndReplaceOptions(hint: ["nonexistant_index": 1])
+        let invalidOpts2 = FindOneAndReplaceOptions(hint: "nonexistant_index")
+        let invalidOpts3 = FindOneAndUpdateOptions(hint: ["nonexistant_index": 1])
+        let invalidOpts4 = FindOneAndUpdateOptions(hint: "nonexistant_index")
         expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts1))
             .to(throwError(errorType: MongoError.CommandError.self))
-        expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts2))
+        expect(try self.coll.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts2))
+            .to(throwError(errorType: MongoError.CommandError.self))
+        expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts3))
+            .to(throwError(errorType: MongoError.CommandError.self))
+        expect(try self.coll.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts4))
             .to(throwError(errorType: MongoError.CommandError.self))
     }
 
