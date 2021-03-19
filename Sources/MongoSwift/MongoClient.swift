@@ -14,6 +14,10 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/#urioption.compressors
     public var compressors: [Compressor]?
 
+    /// Specifies the maximum time, in milliseconds, for an individual connection to establish a TCP
+    /// connection to a MongoDB server before timing out.
+    public var connectTimeoutMS: Int?
+
     /// Specifies authentication options for use with the client.
     public var credential: MongoCredential?
 
@@ -131,6 +135,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
     public init(
         appName: String? = nil,
         compressors: [Compressor]? = nil,
+        connectTimeoutMS: Int? = nil,
         credential: MongoCredential? = nil,
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
@@ -157,6 +162,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
     ) {
         self.appName = appName
         self.compressors = compressors
+        self.connectTimeoutMS = connectTimeoutMS
         self.credential = credential
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
