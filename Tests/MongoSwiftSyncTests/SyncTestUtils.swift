@@ -135,6 +135,7 @@ extension MongoClient {
     internal func supportsHint() throws -> Bool {
         try self.meetsAnyRequirement(in: TestRequirement.hintSupport)
     }
+}
 
 /// Captures any command monitoring events filtered by type and name that are emitted during the execution of the
 /// provided closure. A client pre-configured for command monitoring is passed into the closure.

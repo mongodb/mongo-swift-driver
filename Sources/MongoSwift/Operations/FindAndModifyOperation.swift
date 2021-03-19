@@ -85,7 +85,7 @@ internal class FindAndModifyOptions {
         if let hnt = hint {
             switch hnt {
             case .indexName(let name): extra["hint"] = .string(name)
-                case .indexSpec(let doc): extra["hint"] = .document(doc)
+            case .indexSpec(let doc): extra["hint"] = .document(doc)
             }
         }
 

@@ -611,7 +611,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         )
         expect(result1).to(equal(["_id": 1, "cat": "dog"]))
         expect(try self.coll.countDocuments()).to(equal(2))
-        
+
         let opts2 = FindOneAndReplaceOptions(hint: .indexName("cat_1"))
         let result2 = try self.coll.findOneAndReplace(
             filter: ["cat": "hello"],
@@ -630,7 +630,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         )
         expect(result3).to(equal(["_id": 1, "cat": "meow"]))
         expect(try self.coll.countDocuments()).to(equal(2))
-        
+
         let opts4 = FindOneAndUpdateOptions(hint: .indexName("cat_1"))
         let result4 = try self.coll.findOneAndUpdate(
             filter: ["cat": "woof"],
