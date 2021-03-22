@@ -222,12 +222,6 @@ public struct TestRequirement: Decodable {
         )
     ]
 
-    public static let hintSupport: [TestRequirement] = [
-        TestRequirement(
-            minServerVersion: ServerVersion.mongodHintSupport
-        )
-    ]
-
     public init(
         minServerVersion: ServerVersion? = nil,
         maxServerVersion: ServerVersion? = nil,
