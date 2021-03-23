@@ -600,19 +600,26 @@ final class MongoCollectionTests: MongoSwiftTestCase {
                 return
             }
 
+            let doc1: BSONDocument = ["_id": 1, "cat": "meow", "dog": "bark"]
+            let doc2: BSONDocument = ["_id": 2, "cat": "nya", "dog": "woof"]
+            try collection.insertMany([doc1, doc2])
+
+            let model = IndexModel(keys: ["cat": 1, "dog": 1])
+            expect(try collection.createIndex(model)).to(equal("cat_1_dog_1"))
+
             // Drivers must raise an error for servers < 4.2.
-            let invalidOpts1 = FindOneAndReplaceOptions(hint: ["nonexistant_index": 1])
-            let invalidOpts2 = FindOneAndReplaceOptions(hint: "nonexistant_index")
-            let invalidOpts3 = FindOneAndUpdateOptions(hint: ["nonexistant_index": 1])
-            let invalidOpts4 = FindOneAndUpdateOptions(hint: "nonexistant_index")
-            expect(try collection.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts1))
-                .to(throwError(errorType: MongoError.InternalError.self))
-            expect(try collection.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts2))
-                .to(throwError(errorType: MongoError.InternalError.self))
-            expect(try collection.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts3))
-                .to(throwError(errorType: MongoError.InternalError.self))
-            expect(try collection.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts4))
-                .to(throwError(errorType: MongoError.InternalError.self))
+            let opts1 = FindOneAndReplaceOptions(hint: ["cat": 1, "dog": 1])
+            let opts2 = FindOneAndReplaceOptions(hint: "cat_1_dog_1")
+            let opts3 = FindOneAndUpdateOptions(hint: ["cat": 1, "dog": 1])
+            let opts4 = FindOneAndUpdateOptions(hint: "cat_1_dog_1")
+            expect(try collection.findOneAndReplace(filter: [:], replacement: [:], options: opts1))
+                .to(throwError(errorType: MongoError.CompatibilityError.self))
+            expect(try collection.findOneAndReplace(filter: [:], replacement: [:], options: opts2))
+                .to(throwError(errorType: MongoError.CompatibilityError.self))
+            expect(try collection.findOneAndUpdate(filter: [:], update: [:], options: opts3))
+                .to(throwError(errorType: MongoError.CompatibilityError.self))
+            expect(try collection.findOneAndUpdate(filter: [:], update: [:], options: opts4))
+                .to(throwError(errorType: MongoError.CompatibilityError.self))
         }
     }
 
