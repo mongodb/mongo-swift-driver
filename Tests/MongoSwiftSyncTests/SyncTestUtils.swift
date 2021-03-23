@@ -46,7 +46,7 @@ extension MongoSwiftTestCase {
             try database.collection(collName).drop()
             collection = try database.createCollection(collName, options: options)
         }
-        try collection.deleteMany([:])
+        _ = try? collection.deleteMany([:])
         defer { try? collection.drop() }
         return try f(database, collection)
     }
