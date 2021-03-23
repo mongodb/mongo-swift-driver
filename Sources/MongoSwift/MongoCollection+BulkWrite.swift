@@ -325,6 +325,17 @@ public struct BulkWriteOptions: Codable {
         self.ordered = options.ordered
         self.writeConcern = options.writeConcern
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case bypassDocumentValidation, ordered, writeConcern
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.bypassDocumentValidation = try container.decodeIfPresent(Bool.self, forKey: .bypassDocumentValidation)
+        self.ordered = try container.decodeIfPresent(Bool.self, forKey: .ordered) ?? true
+        self.writeConcern = try container.decodeIfPresent(WriteConcern.self, forKey: .writeConcern)
+    }
 }
 
 /// The result of a bulk write operation on a `MongoCollection`.
