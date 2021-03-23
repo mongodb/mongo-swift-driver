@@ -161,6 +161,9 @@ public struct DeleteModelOptions: Codable {
     /// The collation to use.
     public var collation: BSONDocument?
 
+    /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
+    public var hint: IndexHint?
+
     /// Initializer allowing any/all options to be omitted or optional.
     public init(collation: BSONDocument? = nil) {
         self.collation = collation

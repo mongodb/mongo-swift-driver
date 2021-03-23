@@ -151,6 +151,9 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     /// Specifies a collation to use.
     public var collation: BSONDocument?
 
+    /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
+    public var hint: IndexHint?
+
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
 
@@ -166,6 +169,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     internal func toFindAndModifyOptions() throws -> FindAndModifyOptions {
         try FindAndModifyOptions(
             collation: self.collation,
+            hint: self.hint,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
             remove: true,
@@ -177,12 +181,14 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     /// Convenience initializer allowing any/all parameters to be omitted/optional
     public init(
         collation: BSONDocument? = nil,
+        hint: IndexHint? = nil,
         maxTimeMS: Int? = nil,
         projection: BSONDocument? = nil,
         sort: BSONDocument? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.collation = collation
+        self.hint = hint
         self.maxTimeMS = maxTimeMS
         self.projection = projection
         self.sort = sort

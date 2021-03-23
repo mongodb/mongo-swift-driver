@@ -342,12 +342,20 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
+    /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
+    public var hint: IndexHint?
+
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing collation to be omitted or optional
-    public init(collation: BSONDocument? = nil, writeConcern: WriteConcern? = nil) {
+    public init(
+        collation: BSONDocument? = nil,
+        hint: IndexHint? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.collation = collation
+        self.hint = hint
         self.writeConcern = writeConcern
     }
 

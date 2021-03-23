@@ -256,6 +256,31 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.deleteOne(["cat": "cat"])?.deletedCount).to(equal(1))
     }
 
+    func testDeleteOneWithHint() throws {
+        try withTestNamespace { client, _, collection in
+            let requirements = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 4)
+            )
+            let unmetRequirement = try client.getUnmetRequirement(requirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
+            let doc1: BSONDocument = ["_id": 1, "cat": "meow", "dog": "bark"]
+            let doc2: BSONDocument = ["_id": 2, "cat": "nya", "dog": "woof"]
+            try collection.insertMany([doc1, doc2])
+
+            let model = IndexModel(keys: ["cat": 1, "dog": 1])
+            expect(try collection.createIndex(model)).to(equal("cat_1_dog_1"))
+
+            let opts1 = DeleteOptions(hint: .indexSpec(["cat": 1, "dog": 1]))
+            let opts2 = DeleteOptions(hint: .indexName("cat_1_dog_1"))
+            expect(try collection.deleteOne(["cat": "meow"], options: opts1)?.deletedCount).to(equal(1))
+            expect(try collection.deleteOne(["cat": "nya"], options: opts2)?.deletedCount).to(equal(1))
+        }
+    }
+
     func testDeleteOneWithUnacknowledgedWriteConcern() throws {
         let options = DeleteOptions(writeConcern: try WriteConcern(w: .number(0)))
         let deleteOneResult = try self.coll.deleteOne(["cat": "cat"], options: options)
@@ -264,6 +289,32 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testDeleteMany() throws {
         expect(try self.coll.deleteMany([:])?.deletedCount).to(equal(2))
+    }
+
+    func testDeleteManyWithHint() throws {
+        try withTestNamespace { client, _, collection in
+            let requirements = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 4)
+            )
+            let unmetRequirement = try client.getUnmetRequirement(requirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
+            let doc1: BSONDocument = ["_id": 1, "cat": "meow", "dog": "bark"]
+            let doc2: BSONDocument = ["_id": 2, "cat": "nya", "dog": "woof"]
+            try collection.insertMany([doc1, doc2])
+
+            let model = IndexModel(keys: ["cat": 1, "dog": 1])
+            expect(try collection.createIndex(model)).to(equal("cat_1_dog_1"))
+
+            let opts1 = DeleteOptions(hint: .indexSpec(["cat": 1, "dog": 1]))
+            let opts2 = DeleteOptions(hint: .indexName("cat_1_dog_1"))
+            expect(try collection.deleteMany([:], options: opts1)?.deletedCount).to(equal(2))
+            try collection.insertMany([doc1, doc2])
+            expect(try collection.deleteMany([:], options: opts2)?.deletedCount).to(equal(2))
+        }
     }
 
     func testDeleteManyWithUnacknowledgedWriteConcern() throws {
@@ -489,7 +540,9 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testFindOneAndDelete() throws {
         // test using maxTimeMS
-        let opts1 = FindOneAndDeleteOptions(maxTimeMS: 100)
+        let model = IndexModel(keys: ["cat": 1])
+        expect(try self.coll.createIndex(model)).to(equal("cat_1"))
+        let opts1 = FindOneAndDeleteOptions(hint: .indexSpec(["cat": 1]), maxTimeMS: 100)
         let result1 = try self.coll.findOneAndDelete(["cat": "cat"], options: opts1)
         expect(result1).to(equal(self.doc2))
         expect(try self.coll.countDocuments()).to(equal(1))
