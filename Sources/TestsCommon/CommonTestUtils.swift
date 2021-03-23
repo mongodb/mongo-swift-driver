@@ -197,6 +197,7 @@ public enum UnmetRequirement {
     case minServerVersion(actual: ServerVersion, required: ServerVersion)
     case maxServerVersion(actual: ServerVersion, required: ServerVersion)
     case topology(actual: TestTopologyConfiguration, required: [TestTopologyConfiguration])
+    case serverParameter(name: String, actual: BSON?, required: BSON)
 }
 
 /// Struct representing conditions that a deployment must meet in order for a test file to be run.
@@ -204,6 +205,7 @@ public struct TestRequirement: Decodable {
     private let minServerVersion: ServerVersion?
     private let maxServerVersion: ServerVersion?
     private let topologies: [TestTopologyConfiguration]?
+    private let serverParameters: BSONDocument?
 
     public static let failCommandSupport: [TestRequirement] = [
         TestRequirement(
@@ -225,17 +227,20 @@ public struct TestRequirement: Decodable {
     public init(
         minServerVersion: ServerVersion? = nil,
         maxServerVersion: ServerVersion? = nil,
-        acceptableTopologies: [TestTopologyConfiguration]? = nil
+        acceptableTopologies: [TestTopologyConfiguration]? = nil,
+        serverParameters: BSONDocument? = nil
     ) {
         self.minServerVersion = minServerVersion
         self.maxServerVersion = maxServerVersion
         self.topologies = acceptableTopologies
+        self.serverParameters = serverParameters
     }
 
     /// Determines if the given deployment meets this requirement.
     public func getUnmetRequirement(
         givenCurrent version: ServerVersion,
-        _ topology: TestTopologyConfiguration
+        _ topology: TestTopologyConfiguration,
+        _ serverParameters: BSONDocument
     ) -> UnmetRequirement? {
         if let minVersion = self.minServerVersion {
             guard minVersion <= version else {
@@ -258,11 +263,32 @@ public struct TestRequirement: Decodable {
                 return .topology(actual: topology, required: topologies)
             }
         }
+        if let expectedParameters = self.serverParameters {
+            for (expectedParam, expectedValue) in expectedParameters {
+                guard let actualValue = serverParameters[expectedParam] else {
+                    return .serverParameter(name: expectedParam, actual: nil, required: expectedValue)
+                }
+                switch expectedValue {
+                // When comparing numeric types (excluding Decimal128), test runners MUST consider 32-bit, 64-bit, and
+                /// floating point numbers to be equal if their values are numerically equivalent.
+                case .double, .int32, .int64:
+                    let expectedDouble = expectedValue.toDouble()!
+                    guard let actualDouble = actualValue.toDouble(), abs(actualDouble - expectedDouble) < 0.0001 else {
+                        return .serverParameter(name: expectedParam, actual: actualValue, required: expectedValue)
+                    }
+                default:
+                    guard actualValue == expectedValue else {
+                        return .serverParameter(name: expectedParam, actual: actualValue, required: expectedValue)
+                    }
+                }
+            }
+        }
+
         return nil
     }
 
     private enum CodingKeys: String, CodingKey {
-        case minServerVersion, maxServerVersion, topology, topologies
+        case minServerVersion, maxServerVersion, topology, topologies, serverParameters
     }
 
     public init(from decoder: Decoder) throws {
@@ -277,6 +303,7 @@ public struct TestRequirement: Decodable {
         } else {
             self.topologies = nil
         }
+        self.serverParameters = try container.decodeIfPresent(BSONDocument.self, forKey: .serverParameters)
     }
 }
 
@@ -376,6 +403,8 @@ public func printSkipMessage(
         reason = "maximum required server version \(required) not met by current server version \(actual)"
     case let .topology(actual, required):
         reason = "unsupported topology type \(actual), supported topologies are: \(required)"
+    case let .serverParameter(name, actual, required):
+        reason = "required value for server parameter \(name) is \(required), but actual is \(actual ?? "nil")"
     }
     printSkipMessage(testName: testName, reason: reason)
 }
