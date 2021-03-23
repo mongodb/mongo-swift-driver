@@ -6,15 +6,17 @@ struct UnifiedTestRunner {
     let internalClient: MongoClient
     let serverVersion: ServerVersion
     let topologyType: TestTopologyConfiguration
+    let serverParameters: BSONDocument
 
     static let minSchemaVersion = SchemaVersion(rawValue: "1.0.0")!
-    static let maxSchemaVersion = SchemaVersion(rawValue: "1.0.0")!
+    static let maxSchemaVersion = SchemaVersion(rawValue: "1.1.0")!
 
     init() throws {
         let connStr = MongoSwiftTestCase.getConnectionString(singleMongos: false).toString()
         self.internalClient = try MongoClient.makeTestClient(connStr)
         self.serverVersion = try self.internalClient.serverVersion()
         self.topologyType = try self.internalClient.topologyType()
+        self.serverParameters = try self.internalClient.serverParameters()
 
         // The test runner SHOULD terminate any open transactions using the internal MongoClient before executing any
         // tests.
@@ -46,7 +48,7 @@ struct UnifiedTestRunner {
     }
 
     func getUnmetRequirement(_ requirement: TestRequirement) -> UnmetRequirement? {
-        requirement.getUnmetRequirement(givenCurrent: self.serverVersion, self.topologyType)
+        requirement.getUnmetRequirement(givenCurrent: self.serverVersion, self.topologyType, self.serverParameters)
     }
 
     /// Runs the provided files. `skipTestCases` is a map of file description strings to arrays of test description
