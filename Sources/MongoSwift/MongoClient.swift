@@ -66,6 +66,10 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Determines whether the client should retry supported write operations (on by default).
     public var retryWrites: Bool?
 
+    // TODO: SWIFT-1159: add versioned API docs link.
+    /// Specifies a MongoDB server API version and related options.
+    public var serverAPI: MongoServerAPI?
+
     /// Specifies how long the driver should attempt to select a server for before throwing an error. Defaults to 30
     /// seconds (30000 ms).
     public var serverSelectionTimeoutMS: Int?
@@ -148,6 +152,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         replicaSet: String? = nil,
         retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
+        serverAPI: MongoServerAPI? = nil,
         serverSelectionTimeoutMS: Int? = nil,
         threadPoolSize: Int? = nil,
         tls: Bool? = nil,
@@ -176,6 +181,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.replicaSet = replicaSet
         self.retryWrites = retryWrites
         self.retryReads = retryReads
+        self.serverAPI = serverAPI
         self.serverSelectionTimeoutMS = serverSelectionTimeoutMS
         self.threadPoolSize = threadPoolSize
         self.tls = tls

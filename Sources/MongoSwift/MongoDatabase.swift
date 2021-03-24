@@ -357,6 +357,9 @@ public struct MongoDatabase {
      *    - `MongoError.WriteError` if any error occurs while the command was performing a write.
      *    - `MongoError.CommandError` if an error occurs that prevents the command from being performed.
      *    - `EncodingError` if an error occurs while encoding the options to BSON.
+     *
+     * - Note: Attempting to specify an API version in this command is considered undefined behavior. API version may
+     *         only be configured at the `MongoClient` level.
      */
     public func runCommand(
         _ command: BSONDocument,
