@@ -46,6 +46,10 @@ extension MongoSwiftTestCase {
             try database.collection(collName).drop()
             collection = try database.createCollection(collName, options: options)
         }
+
+        // Sharded clusters may throw duplicateKey error due to their internal cache.
+        // The deleteMany assures the documents are cleared out correctly.
+        _ = try? collection.deleteMany([:])
         defer { try? collection.drop() }
         return try f(database, collection)
     }
