@@ -39,6 +39,8 @@ The driver supports use with Swift 5.1+. The minimum macOS version required to b
 
 Installation is supported via [Swift Package Manager](https://swift.org/package-manager/).
 
+You can find details about all our versions in this repo's [releases page](https://github.com/mongodb/mongo-swift-driver/releases).
+
 ### Step 1: Install Required System Libraries (Linux Only)
 The driver vendors and wraps the MongoDB C driver (`libmongoc`), which depends on a number of external C libraries when built in Linux environments. As a result, these libraries must be installed on your system in order to build MongoSwift.
 
