@@ -330,6 +330,7 @@ public struct BulkWriteOptions: Codable {
         case bypassDocumentValidation, ordered, writeConcern
     }
 
+    // A manual implementation is required to enforce a default value for ordered without making it optional.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.bypassDocumentValidation = try container.decodeIfPresent(Bool.self, forKey: .bypassDocumentValidation)
