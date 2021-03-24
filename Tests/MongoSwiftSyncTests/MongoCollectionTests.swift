@@ -274,8 +274,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             let model = IndexModel(keys: ["cat": 1, "dog": 1])
             expect(try collection.createIndex(model)).to(equal("cat_1_dog_1"))
 
-            let opts1 = DeleteOptions(hint: .indexSpec(["cat": 1, "dog": 1]))
-            let opts2 = DeleteOptions(hint: .indexName("cat_1_dog_1"))
+            let opts1 = DeleteOptions(hint: ["cat": 1, "dog": 1])
+            let opts2 = DeleteOptions(hint: "cat_1_dog_1")
             expect(try collection.deleteOne(["cat": "meow"], options: opts1)?.deletedCount).to(equal(1))
             expect(try collection.deleteOne(["cat": "nya"], options: opts2)?.deletedCount).to(equal(1))
         }
@@ -309,8 +309,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             let model = IndexModel(keys: ["cat": 1, "dog": 1])
             expect(try collection.createIndex(model)).to(equal("cat_1_dog_1"))
 
-            let opts1 = DeleteOptions(hint: .indexSpec(["cat": 1, "dog": 1]))
-            let opts2 = DeleteOptions(hint: .indexName("cat_1_dog_1"))
+            let opts1 = DeleteOptions(hint: ["cat": 1, "dog": 1])
+            let opts2 = DeleteOptions(hint: "cat_1_dog_1")
             expect(try collection.deleteMany([:], options: opts1)?.deletedCount).to(equal(2))
             try collection.insertMany([doc1, doc2])
             expect(try collection.deleteMany([:], options: opts2)?.deletedCount).to(equal(2))
@@ -665,6 +665,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             let opts2 = FindOneAndReplaceOptions(hint: "cat_1_dog_1")
             let opts3 = FindOneAndUpdateOptions(hint: ["cat": 1, "dog": 1])
             let opts4 = FindOneAndUpdateOptions(hint: "cat_1_dog_1")
+            let opts5 = FindOneAndDeleteOptions(hint: ["cat": 1, "dog": 1])
+            let opts6 = FindOneAndDeleteOptions(hint: "cat_1_dog_1")
             expect(try collection.findOneAndReplace(filter: [:], replacement: [:], options: opts1))
                 .to(throwError(errorType: MongoError.CompatibilityError.self))
             expect(try collection.findOneAndReplace(filter: [:], replacement: [:], options: opts2))
@@ -672,6 +674,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             expect(try collection.findOneAndUpdate(filter: [:], update: [:], options: opts3))
                 .to(throwError(errorType: MongoError.CompatibilityError.self))
             expect(try collection.findOneAndUpdate(filter: [:], update: [:], options: opts4))
+                .to(throwError(errorType: MongoError.CompatibilityError.self))
+            expect(try collection.findOneAndDelete([:], options: opts5))
+                .to(throwError(errorType: MongoError.CompatibilityError.self))
+            expect(try collection.findOneAndDelete([:], options: opts6))
                 .to(throwError(errorType: MongoError.CompatibilityError.self))
         }
     }
@@ -732,11 +738,23 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             expect(result4).to(equal(["_id": 1, "cat": "woof", "dog": "bark"]))
             expect(try collection.countDocuments()).to(equal(2))
 
+            let opts5 = FindOneAndDeleteOptions(hint: ["cat": 1, "dog": 1])
+            let result5 = try collection.findOneAndDelete(["cat": "wow"], options: opts5)
+            expect(result5).to(equal(["_id": 1, "cat": "wow", "dog": "bark"]))
+            expect(try collection.countDocuments()).to(equal(1))
+
+            let opts6 = FindOneAndDeleteOptions(hint: "cat_1_dog_1")
+            let result6 = try collection.findOneAndDelete(["cat": "nya"], options: opts6)
+            expect(result6).to(equal(["_id": 2, "cat": "nya", "dog": "woof"]))
+            expect(try collection.countDocuments()).to(equal(0))
+
             // test invalid hint throws error
             let invalidOpts1 = FindOneAndReplaceOptions(hint: ["nonexistant_index": 1])
             let invalidOpts2 = FindOneAndReplaceOptions(hint: "nonexistant_index")
             let invalidOpts3 = FindOneAndUpdateOptions(hint: ["nonexistant_index": 1])
             let invalidOpts4 = FindOneAndUpdateOptions(hint: "nonexistant_index")
+            let invalidOpts5 = FindOneAndDeleteOptions(hint: ["nonexistant_index": 1])
+            let invalidOpts6 = FindOneAndDeleteOptions(hint: "nonexistant_index")
             expect(try collection.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts1))
                 .to(throwError(errorType: MongoError.CommandError.self))
             expect(try collection.findOneAndReplace(filter: [:], replacement: [:], options: invalidOpts2))
@@ -744,6 +762,10 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             expect(try collection.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts3))
                 .to(throwError(errorType: MongoError.CommandError.self))
             expect(try collection.findOneAndUpdate(filter: [:], update: [:], options: invalidOpts4))
+                .to(throwError(errorType: MongoError.CommandError.self))
+            expect(try collection.findOneAndDelete([:], options: invalidOpts5))
+                .to(throwError(errorType: MongoError.CommandError.self))
+            expect(try collection.findOneAndDelete([:], options: invalidOpts6))
                 .to(throwError(errorType: MongoError.CommandError.self))
         }
     }
