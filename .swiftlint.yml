@@ -8,6 +8,7 @@ disabled_rules:
   - inclusive_language # disabled until we complete work for the "remove offensive terminology" project.
   - cyclomatic_complexity
   - opening_brace # conflicts with SwiftFormat wrapMultilineStatementBraces
+  - nesting
 
 opt_in_rules:
   - array_init

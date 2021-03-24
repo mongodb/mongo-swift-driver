@@ -66,6 +66,77 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Determines whether the client should retry supported write operations (on by default).
     public var retryWrites: Bool?
 
+    /// A type containing options for specifying a MongoDB server API version and related behavior.
+    public struct ServerAPI: Codable {
+        /// Represents a server API version.
+        public struct Version: Codable, Equatable, LosslessStringConvertible {
+            /// MongoDB API version 1.
+            public static let v1 = Version(.v1)
+
+            private enum _Version: String {
+                case v1 = "1"
+            }
+
+            private let _version: _Version
+
+            private init(_ version: _Version) {
+                self._version = version
+            }
+
+            /// `LosslessStringConvertible` conformance
+
+            public init?(_ description: String) {
+                guard let _version = _Version(rawValue: description) else {
+                    return nil
+                }
+                self.init(_version)
+            }
+
+            public var description: String {
+                self._version.rawValue
+            }
+
+            /// `Codable` conformance
+
+            public func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                try container.encode(self._version.rawValue)
+            }
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                let stringValue = try container.decode(String.self)
+
+                guard let version = _Version(rawValue: stringValue) else {
+                    throw DecodingError.dataCorruptedError(
+                        in: container,
+                        debugDescription: "Invalid API version string \(stringValue)"
+                    )
+                }
+                self = Version(version)
+            }
+        }
+
+        /// Specifies the API version to use.
+        public var version: Version
+
+        /// Specifies whether the server should return errors for features that are not part of the API version.
+        public var strict: Bool?
+
+        /// Specifies whether the server should return errors for deprecated features.
+        public var deprecationErrors: Bool?
+
+        /// Convenience initializer allowing optional parameters to be optional or omitted.
+        public init(version: Version, strict: Bool? = nil, deprecationErrors: Bool? = nil) {
+            self.version = version
+            self.strict = strict
+            self.deprecationErrors = deprecationErrors
+        }
+    }
+
+    /// Specifies a MongoDB server API version and related options.
+    public var serverAPI: ServerAPI?
+
     /// Specifies how long the driver should attempt to select a server for before throwing an error. Defaults to 30
     /// seconds (30000 ms).
     public var serverSelectionTimeoutMS: Int?
@@ -148,6 +219,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         replicaSet: String? = nil,
         retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
+        serverAPI: ServerAPI? = nil,
         serverSelectionTimeoutMS: Int? = nil,
         threadPoolSize: Int? = nil,
         tls: Bool? = nil,
@@ -176,6 +248,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.replicaSet = replicaSet
         self.retryWrites = retryWrites
         self.retryReads = retryReads
+        self.serverAPI = serverAPI
         self.serverSelectionTimeoutMS = serverSelectionTimeoutMS
         self.threadPoolSize = threadPoolSize
         self.tls = tls
