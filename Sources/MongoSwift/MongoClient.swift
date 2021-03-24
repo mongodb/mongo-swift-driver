@@ -152,7 +152,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         replicaSet: String? = nil,
         retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
-        serverAPI: ServerAPI? = nil,
+        serverAPI: MongoServerAPI? = nil,
         serverSelectionTimeoutMS: Int? = nil,
         threadPoolSize: Int? = nil,
         tls: Bool? = nil,
