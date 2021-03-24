@@ -74,7 +74,7 @@ extension MongoClient {
     }
 
     internal func serverParameters() throws -> BSONDocument {
-        try self.db("admin").runCommand(["getParameter": "*"]) 
+        try self.db("admin").runCommand(["getParameter": "*"])
     }
 
     /// Determine whether server version and topology requirements for a certain test are met

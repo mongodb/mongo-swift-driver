@@ -49,12 +49,12 @@ struct UnifiedRunCommand: UnifiedOperationProtocol {
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
-        var orderedCommand = command
+        var orderedCommand = self.command
         // reorder if needed to put command name first.
-        if command.keys.first != commandName {
+        if self.command.keys.first != self.commandName {
             orderedCommand = [:]
-            orderedCommand[commandName] = command[commandName]
-            for (k, v) in command where k != commandName {
+            orderedCommand[self.commandName] = self.command[self.commandName]
+            for (k, v) in self.command where k != self.commandName {
                 orderedCommand[k] = v
             }
         }

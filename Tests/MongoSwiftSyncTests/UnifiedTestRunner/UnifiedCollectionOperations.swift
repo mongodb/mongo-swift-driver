@@ -301,6 +301,7 @@ struct UnifiedDeleteOne: UnifiedOperationProtocol {
         return .bson(.document(encoded))
     }
 }
+
 struct UnifiedDeleteMany: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -318,7 +319,6 @@ struct UnifiedDeleteMany: UnifiedOperationProtocol {
         return .bson(.document(encoded))
     }
 }
-
 
 struct UnifiedInsertOne: UnifiedOperationProtocol {
     /// Document to insert.
@@ -460,7 +460,6 @@ struct UnifiedCountDocuments: UnifiedOperationProtocol {
     }
 }
 
-
 struct UnifiedEstimatedDocumentCount: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
@@ -509,7 +508,6 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
         return .bson(.document(encoded))
     }
 }
-
 
 struct UnifiedUpdateMany: UnifiedOperationProtocol {
     /// Filter for the query.

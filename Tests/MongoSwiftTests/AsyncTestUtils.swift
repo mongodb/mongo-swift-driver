@@ -44,7 +44,7 @@ extension MongoClient {
     }
 
     internal func serverParameters() throws -> EventLoopFuture<BSONDocument> {
-        self.db("admin").runCommand(["getParameter": "*"]) 
+        self.db("admin").runCommand(["getParameter": "*"])
     }
 
     /// Determine whether server version and topology requirements for a certain test are met
