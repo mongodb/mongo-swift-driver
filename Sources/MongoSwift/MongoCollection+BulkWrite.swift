@@ -165,8 +165,9 @@ public struct DeleteModelOptions: Codable {
     public var hint: IndexHint?
 
     /// Initializer allowing any/all options to be omitted or optional.
-    public init(collation: BSONDocument? = nil) {
+    public init(collation: BSONDocument? = nil, hint: IndexHint? = nil) {
         self.collation = collation
+        self.hint = hint
     }
 }
 
