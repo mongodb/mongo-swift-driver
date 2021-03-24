@@ -540,9 +540,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testFindOneAndDelete() throws {
         // test using maxTimeMS
-        let model = IndexModel(keys: ["cat": 1])
-        expect(try self.coll.createIndex(model)).to(equal("cat_1"))
-        let opts1 = FindOneAndDeleteOptions(hint: .indexSpec(["cat": 1]), maxTimeMS: 100)
+        let opts1 = FindOneAndDeleteOptions(maxTimeMS: 100)
         let result1 = try self.coll.findOneAndDelete(["cat": "cat"], options: opts1)
         expect(result1).to(equal(self.doc2))
         expect(try self.coll.countDocuments()).to(equal(1))
