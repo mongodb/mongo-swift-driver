@@ -199,7 +199,7 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
-        let modelOptions = DeleteModelOptions(collation: options?.collation)
+        let modelOptions = DeleteModelOptions(collation: options?.collation, hint: options?.hint)
         let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }
@@ -231,7 +231,7 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
-        let modelOptions = DeleteModelOptions(collation: options?.collation)
+        let modelOptions = DeleteModelOptions(collation: options?.collation, hint: options?.hint)
         let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }

@@ -278,6 +278,13 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             let opts2 = DeleteOptions(hint: "cat_1_dog_1")
             expect(try collection.deleteOne(["cat": "meow"], options: opts1)?.deletedCount).to(equal(1))
             expect(try collection.deleteOne(["cat": "nya"], options: opts2)?.deletedCount).to(equal(1))
+
+            let invalidOpts1 = DeleteOptions(hint: ["nonexistant_index": 1])
+            let invalidOpts2 = DeleteOptions(hint: "nonexistant_index")
+            expect(try collection.deleteOne([:], options: invalidOpts1))
+                .to(throwError(errorType: MongoError.WriteError.self))
+            expect(try collection.deleteOne([:], options: invalidOpts2))
+                .to(throwError(errorType: MongoError.WriteError.self))
         }
     }
 
@@ -314,6 +321,13 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             expect(try collection.deleteMany([:], options: opts1)?.deletedCount).to(equal(2))
             try collection.insertMany([doc1, doc2])
             expect(try collection.deleteMany([:], options: opts2)?.deletedCount).to(equal(2))
+
+            let invalidOpts1 = DeleteOptions(hint: ["nonexistant_index": 1])
+            let invalidOpts2 = DeleteOptions(hint: "nonexistant_index")
+            expect(try collection.deleteMany([:], options: invalidOpts1))
+                .to(throwError(errorType: MongoError.WriteError.self))
+            expect(try collection.deleteMany([:], options: invalidOpts2))
+                .to(throwError(errorType: MongoError.WriteError.self))
         }
     }
 
@@ -640,7 +654,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    func testHintInPreviousVersion() throws {
+    func testFindAndModifyWithHintInPreviousVersion() throws {
         try withTestNamespace { client, _, collection in
             let requirements = TestRequirement(
                 maxServerVersion: ServerVersion(major: 4, minor: 2)

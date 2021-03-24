@@ -161,7 +161,7 @@ extension MongoCollectionTests {
         ("testFindOneAndDelete", testFindOneAndDelete),
         ("testFindOneAndReplace", testFindOneAndReplace),
         ("testFindOneAndUpdate", testFindOneAndUpdate),
-        ("testHintInPreviousVersion", testHintInPreviousVersion),
+        ("testFindAndModifyWithHintInPreviousVersion", testFindAndModifyWithHintInPreviousVersion),
         ("testFindAndModifyWithHint", testFindAndModifyWithHint),
         ("testNullIds", testNullIds),
         ("testNSNotFoundSuppression", testNSNotFoundSuppression),
