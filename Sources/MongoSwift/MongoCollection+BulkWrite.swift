@@ -175,12 +175,15 @@ public struct DeleteModelOptions: Codable {
 public struct ReplaceOneModelOptions: Codable {
     /// The collation to use.
     public var collation: BSONDocument?
+    /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
+    public var hint: IndexHint?
     /// When `true`, creates a new document if no document matches the query.
     public var upsert: Bool?
 
     /// Initializer allowing any/all options to be omitted or optional.
-    public init(collation: BSONDocument? = nil, upsert: Bool? = nil) {
+    public init(collation: BSONDocument? = nil, hint: IndexHint? = nil, upsert: Bool? = nil) {
         self.collation = collation
+        self.hint = hint
         self.upsert = upsert
     }
 }
@@ -191,13 +194,21 @@ public struct UpdateModelOptions: Codable {
     public var arrayFilters: [BSONDocument]?
     /// The collation to use.
     public var collation: BSONDocument?
+    /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
+    public var hint: IndexHint?
     /// When `true`, creates a new document if no document matches the query.
     public var upsert: Bool?
 
     /// Initializer allowing any/all options to be omitted or optional.
-    public init(arrayFilters: [BSONDocument]? = nil, collation: BSONDocument? = nil, upsert: Bool? = nil) {
+    public init(
+        arrayFilters: [BSONDocument]? = nil,
+        collation: BSONDocument? = nil,
+        hint: IndexHint? = nil,
+        upsert: Bool? = nil
+    ) {
         self.arrayFilters = arrayFilters
         self.collation = collation
+        self.hint = hint
         self.upsert = upsert
     }
 }

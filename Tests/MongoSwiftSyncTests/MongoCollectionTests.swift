@@ -402,6 +402,42 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(replaceOneResult?.modifiedCount).to(equal(1))
     }
 
+    func testReplaceOneWithHint() throws {
+        try withTestNamespace { client, _, collection in
+            let requirements = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 2)
+            )
+            let unmetRequirement = try client.getUnmetRequirement(requirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
+            let doc1: BSONDocument = ["_id": 1, "cat": "meow", "dog": "bark"]
+            let doc2: BSONDocument = ["_id": 2, "cat": "nya", "dog": "woof"]
+            try collection.insertMany([doc1, doc2])
+
+            let model = IndexModel(keys: ["cat": 1, "dog": 1])
+            expect(try collection.createIndex(model)).to(equal("cat_1_dog_1"))
+
+            let opts1 = ReplaceOptions(hint: ["cat": 1, "dog": 1])
+            let opts2 = ReplaceOptions(hint: "cat_1_dog_1")
+            let result1 = try collection.replaceOne(filter: ["_id": 1], replacement: ["cat": "mew"], options: opts1)
+            expect(result1?.matchedCount).to(equal(1))
+            expect(result1?.modifiedCount).to(equal(1))
+            let result2 = try collection.replaceOne(filter: ["_id": 2], replacement: ["cat": "pss"], options: opts2)
+            expect(result2?.matchedCount).to(equal(1))
+            expect(result2?.modifiedCount).to(equal(1))
+
+            let invalidOpts1 = ReplaceOptions(hint: ["nonexistant_index": 1])
+            let invalidOpts2 = ReplaceOptions(hint: "nonexistant_index")
+            expect(try collection.replaceOne(filter: [:], replacement: [:], options: invalidOpts1))
+                .to(throwError(errorType: MongoError.WriteError.self))
+            expect(try collection.replaceOne(filter: [:], replacement: [:], options: invalidOpts2))
+                .to(throwError(errorType: MongoError.WriteError.self))
+        }
+    }
+
     func testReplaceOneWithUnacknowledgedWriteConcern() throws {
         let options = ReplaceOptions(writeConcern: try WriteConcern(w: .number(0)))
         let replaceOneResult = try coll.replaceOne(
@@ -416,6 +452,42 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         )
         expect(updateOneResult?.matchedCount).to(equal(1))
         expect(updateOneResult?.modifiedCount).to(equal(1))
+    }
+
+    func testUpdateOneWithHint() throws {
+        try withTestNamespace { client, _, collection in
+            let requirements = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 2)
+            )
+            let unmetRequirement = try client.getUnmetRequirement(requirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
+            let doc1: BSONDocument = ["_id": 1, "cat": "meow", "dog": "bark"]
+            let doc2: BSONDocument = ["_id": 2, "cat": "nya", "dog": "woof"]
+            try collection.insertMany([doc1, doc2])
+
+            let model = IndexModel(keys: ["cat": 1, "dog": 1])
+            expect(try collection.createIndex(model)).to(equal("cat_1_dog_1"))
+
+            let opts1 = UpdateOptions(hint: ["cat": 1, "dog": 1])
+            let opts2 = UpdateOptions(hint: "cat_1_dog_1")
+            let result1 = try collection.updateOne(filter: ["_id": 1], update: ["$set": ["cat": "mew"]], options: opts1)
+            expect(result1?.matchedCount).to(equal(1))
+            expect(result1?.modifiedCount).to(equal(1))
+            let result2 = try collection.updateOne(filter: ["_id": 2], update: ["$set": ["cat": "pss"]], options: opts2)
+            expect(result2?.matchedCount).to(equal(1))
+            expect(result2?.modifiedCount).to(equal(1))
+
+            let invalidOpts1 = UpdateOptions(hint: ["nonexistant_index": 1])
+            let invalidOpts2 = UpdateOptions(hint: "nonexistant_index")
+            expect(try collection.updateOne(filter: [:], update: [:], options: invalidOpts1))
+                .to(throwError(errorType: MongoError.WriteError.self))
+            expect(try collection.updateOne(filter: [:], update: [:], options: invalidOpts2))
+                .to(throwError(errorType: MongoError.WriteError.self))
+        }
     }
 
     func testUpdateOneWithUnacknowledgedWriteConcern() throws {
@@ -434,12 +506,93 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(updateManyResult?.modifiedCount).to(equal(2))
     }
 
+    func testUpdateManyWithHint() throws {
+        try withTestNamespace { client, _, collection in
+            let requirements = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 2)
+            )
+            let unmetRequirement = try client.getUnmetRequirement(requirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
+            let doc1: BSONDocument = ["_id": 1, "cat": "meow", "dog": "bark"]
+            let doc2: BSONDocument = ["_id": 2, "cat": "nya", "dog": "woof"]
+            try collection.insertMany([doc1, doc2])
+
+            let model = IndexModel(keys: ["cat": 1, "dog": 1])
+            expect(try collection.createIndex(model)).to(equal("cat_1_dog_1"))
+
+            let opts1 = UpdateOptions(hint: ["cat": 1, "dog": 1])
+            let opts2 = UpdateOptions(hint: "cat_1_dog_1")
+            let result1 = try collection.updateMany(
+                filter: ["_id": 1],
+                update: ["$set": ["cat": "mew"]],
+                options: opts1
+            )
+            expect(result1?.matchedCount).to(equal(1))
+            expect(result1?.modifiedCount).to(equal(1))
+            let result2 = try collection.updateMany(
+                filter: ["_id": 2],
+                update: ["$set": ["cat": "pss"]],
+                options: opts2
+            )
+            expect(result2?.matchedCount).to(equal(1))
+            expect(result2?.modifiedCount).to(equal(1))
+
+            let invalidOpts1 = UpdateOptions(hint: ["nonexistant_index": 1])
+            let invalidOpts2 = UpdateOptions(hint: "nonexistant_index")
+            expect(try collection.updateMany(filter: [:], update: [:], options: invalidOpts1))
+                .to(throwError(errorType: MongoError.WriteError.self))
+            expect(try collection.updateMany(filter: [:], update: [:], options: invalidOpts2))
+                .to(throwError(errorType: MongoError.WriteError.self))
+        }
+    }
+
     func testUpdateManyWithUnacknowledgedWriteConcern() throws {
         let options = UpdateOptions(writeConcern: try WriteConcern(w: .number(0)))
         let updateManyResult = try coll.updateMany(
             filter: [:], update: ["$set": ["apple": "pear"]], options: options
         )
         expect(updateManyResult).to(beNil())
+    }
+
+    func testUpdateAndReplaceWithHintPreviousVersion() throws {
+        try withTestNamespace { client, _, collection in
+            let requirements = TestRequirement(
+                maxServerVersion: ServerVersion(major: 4, minor: 2)
+            )
+            let unmetRequirement = try client.getUnmetRequirement(requirements)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+
+            let doc1: BSONDocument = ["_id": 1, "cat": "meow", "dog": "bark"]
+            let doc2: BSONDocument = ["_id": 2, "cat": "nya", "dog": "woof"]
+            try collection.insertMany([doc1, doc2])
+
+            let model = IndexModel(keys: ["cat": 1, "dog": 1])
+            expect(try collection.createIndex(model)).to(equal("cat_1_dog_1"))
+
+            let replaceOp1 = ReplaceOptions(hint: ["cat": 1, "dog": 1])
+            let replaceOp2 = ReplaceOptions(hint: "cat_1_dog_1")
+            let updateOp1 = UpdateOptions(hint: ["cat": 1, "dog": 1])
+            let updateOp2 = UpdateOptions(hint: "cat_1_dog_1")
+            expect(try collection.replaceOne(filter: [:], replacement: [:], options: replaceOp1))
+                .to(throwError(errorType: MongoError.CommandError.self))
+            expect(try collection.replaceOne(filter: [:], replacement: [:], options: replaceOp2))
+                .to(throwError(errorType: MongoError.CommandError.self))
+            expect(try collection.updateOne(filter: [:], update: [:], options: updateOp1))
+                .to(throwError(errorType: MongoError.CommandError.self))
+            expect(try collection.updateOne(filter: [:], update: [:], options: updateOp2))
+                .to(throwError(errorType: MongoError.CommandError.self))
+            expect(try collection.updateMany(filter: [:], update: [:], options: updateOp1))
+                .to(throwError(errorType: MongoError.CommandError.self))
+            expect(try collection.updateMany(filter: [:], update: [:], options: updateOp2))
+                .to(throwError(errorType: MongoError.CommandError.self))
+        }
     }
 
     func testDistinct() throws {
