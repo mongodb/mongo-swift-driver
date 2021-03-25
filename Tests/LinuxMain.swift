@@ -363,6 +363,13 @@ extension UnifiedRunnerTests {
         ("testSchemaVersion", testSchemaVersion),
         ("testSampleUnifiedTests", testSampleUnifiedTests),
         ("testStrictDecodableTypes", testStrictDecodableTypes),
+        ("testServerParameterRequirements", testServerParameterRequirements),
+    ]
+}
+
+extension VersionedAPITests {
+    static var allTests = [
+        ("testVersionedAPI", testVersionedAPI),
     ]
 }
 
@@ -409,5 +416,6 @@ XCTMain([
     testCase(SyncMongoClientTests.allTests),
     testCase(TransactionsTests.allTests),
     testCase(UnifiedRunnerTests.allTests),
+    testCase(VersionedAPITests.allTests),
     testCase(WriteConcernTests.allTests),
 ])
