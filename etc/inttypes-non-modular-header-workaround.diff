@@ -128,13 +128,13 @@ index 92a10b2..35159b1 100644
  #undef MONGOC_LOG_DOMAIN
  #define MONGOC_LOG_DOMAIN "client"
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-collection.c b/Sources/CLibMongoC/mongoc/mongoc-collection.c
-index 7cbf2cd..1f697c4 100644
+index 200f9c2..2c05ba1 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-collection.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-collection.c
-@@ -40,6 +40,10 @@
+@@ -42,6 +42,10 @@
  #include "mongoc-write-command-private.h"
- #include "mongoc-error-private.h"
- 
+ #include "mongoc-write-concern-private.h"
+
 +#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 +#include <inttypes.h>
 +#endif

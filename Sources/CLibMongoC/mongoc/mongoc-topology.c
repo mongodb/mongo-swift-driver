@@ -633,6 +633,8 @@ bool
 mongoc_topology_should_rescan_srv (mongoc_topology_t *topology) {
    const char *service;
 
+   MONGOC_DEBUG_ASSERT (COMMON_PREFIX (mutex_is_locked) (&topology->mutex));
+
    service = mongoc_uri_get_service (topology->uri);
    if (!service) {
       /* Only rescan if we have a mongodb+srv:// URI. */
@@ -671,6 +673,7 @@ mongoc_topology_rescan_srv (mongoc_topology_t *topology)
    int64_t scan_time_ms;
    bool ret;
 
+   MONGOC_DEBUG_ASSERT (COMMON_PREFIX (mutex_is_locked) (&topology->mutex));
    BSON_ASSERT (mongoc_topology_should_rescan_srv (topology));
 
    service = mongoc_uri_get_service (topology->uri);
@@ -752,6 +755,8 @@ done:
 static void
 mongoc_topology_scan_once (mongoc_topology_t *topology, bool obey_cooldown)
 {
+   MONGOC_DEBUG_ASSERT (COMMON_PREFIX (mutex_is_locked) (&topology->mutex));
+
    if (mongoc_topology_should_rescan_srv (topology)) {
       /* Prior to scanning hosts, update the list of SRV hosts, if applicable. */
       mongoc_topology_rescan_srv (topology);

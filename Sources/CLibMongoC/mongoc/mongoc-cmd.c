@@ -20,6 +20,7 @@
 #include "mongoc-trace-private.h"
 #include "mongoc-client-private.h"
 #include "mongoc-read-concern-private.h"
+#include "mongoc-server-api-private.h"
 #include "mongoc-write-concern-private.h"
 /* For strcasecmp on Windows */
 #include "mongoc-util-private.h"
@@ -83,7 +84,6 @@ mongoc_cmd_parts_set_session (mongoc_cmd_parts_t *parts,
 
    parts->assembled.session = cs;
 }
-
 
 /*
  *--------------------------------------------------------------------------
@@ -785,6 +785,22 @@ _is_retryable_read (const mongoc_cmd_parts_t *parts,
 }
 
 
+static bool
+_txn_in_progress (mongoc_cmd_parts_t *parts)
+{
+   mongoc_client_session_t *cs;
+
+   cs = parts->prohibit_lsid ? NULL : parts->assembled.session;
+   if (!cs) {
+      return false;
+   }
+
+   return (_mongoc_client_session_txn_in_progress (cs)
+      /* commitTransaction and abortTransaction count as in progress, too. */
+      || parts->assembled.is_txn_finish);
+}
+
+
 /*
  *--------------------------------------------------------------------------
  *
@@ -881,7 +897,8 @@ mongoc_cmd_parts_assemble (mongoc_cmd_parts_t *parts,
       }
 
       if (cs && _mongoc_client_session_in_txn (cs)) {
-         if (!IS_PREF_PRIMARY (cs->txn.opts.read_prefs) && !parts->is_write_command) {
+         if (!IS_PREF_PRIMARY (cs->txn.opts.read_prefs) &&
+             !parts->is_write_command) {
             bson_set_error (error,
                             MONGOC_ERROR_TRANSACTION,
                             MONGOC_ERROR_TRANSACTION_INVALID_STATE,
@@ -971,6 +988,15 @@ mongoc_cmd_parts_assemble (mongoc_cmd_parts_t *parts,
             &parts->assembled_body, "$clusterTime", 12, cluster_time);
       }
 
+      /* Add versioned server api, if it is set. Do not add api if we are
+         sending a getmore, or if we are in a transaction. */
+      if (parts->client->api) {
+         if (!is_get_more && !_txn_in_progress (parts)) {
+            _mongoc_cmd_append_server_api (&parts->assembled_body,
+                                           parts->client->api);
+         }
+      }
+
       if (!is_get_more) {
          if (cs) {
             _mongoc_cmd_parts_ensure_copied (parts);
@@ -988,6 +1014,7 @@ mongoc_cmd_parts_assemble (mongoc_cmd_parts_t *parts,
          }
       }
 
+      /* if transaction is in progress do not inherit write concern */
       if (parts->assembled.is_txn_finish ||
           !_mongoc_client_session_in_txn (cs)) {
          _mongoc_cmd_parts_add_write_concern (parts);
@@ -1110,4 +1137,44 @@ _mongoc_cmd_append_payload_as_array (const mongoc_cmd_t *cmd, bson_t *out)
    }
 
    bson_append_array_end (out, &bson);
+}
+
+/*--------------------------------------------------------------------------
+ *
+ * _mongoc_cmd_append_server_api --
+ *    Append versioned API fields to a mongoc_cmd_t
+ *
+ * Arguments:
+ *    cmd The mongoc_cmd_t, which will have versioned API fields added
+ *    api A mongoc_server_api_t holding server API information
+ *
+ * Pre-conditions:
+ *    - @api is initialized.
+ *    - @command_body is initialised
+ *
+ *--------------------------------------------------------------------------
+ */
+void
+_mongoc_cmd_append_server_api (bson_t *command_body,
+                               const mongoc_server_api_t *api)
+{
+   const char *string_version;
+
+   BSON_ASSERT (command_body);
+   BSON_ASSERT (api);
+
+   string_version = mongoc_server_api_version_to_string (api->version);
+
+   bson_append_utf8 (command_body, "apiVersion", -1, string_version, -1);
+
+   if (api->strict.is_set) {
+      bson_append_bool (command_body, "apiStrict", -1, api->strict.value);
+   }
+
+   if (api->deprecation_errors.is_set) {
+      bson_append_bool (command_body,
+                        "apiDeprecationErrors",
+                        -1,
+                        api->deprecation_errors.value);
+   }
 }
