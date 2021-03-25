@@ -246,6 +246,23 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
     }
 }
 
+struct UnifiedFindOneAndDelete: UnifiedOperationProtocol {
+    /// Filter to use for the operation.
+    let filter: BSONDocument
+
+    static var knownArguments: Set<String> {
+        ["filter"]
+    }
+
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let collection = try context.entities.getEntity(from: object).asCollection()
+        guard let result = try collection.findOneAndDelete(filter) else {
+            return .none
+        }
+        return .rootDocument(result)
+    }
+}
+
 struct UnifiedDeleteOne: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -278,6 +295,24 @@ struct UnifiedDeleteOne: UnifiedOperationProtocol {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
         guard let result = try collection.deleteOne(filter, options: options, session: session) else {
+            return .none
+        }
+        let encoded = try BSONEncoder().encode(result)
+        return .bson(.document(encoded))
+    }
+}
+
+struct UnifiedDeleteMany: UnifiedOperationProtocol {
+    /// Filter to use for the operation.
+    let filter: BSONDocument
+
+    static var knownArguments: Set<String> {
+        ["filter"]
+    }
+
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let collection = try context.entities.getEntity(from: object).asCollection()
+        guard let result = try collection.deleteMany(filter) else {
             return .none
         }
         let encoded = try BSONEncoder().encode(result)
@@ -403,6 +438,91 @@ struct UnifiedReplaceOne: UnifiedOperationProtocol {
             options: options,
             session: session
         ) else {
+            return .none
+        }
+        let encoded = try BSONEncoder().encode(result)
+        return .bson(.document(encoded))
+    }
+}
+
+struct UnifiedCountDocuments: UnifiedOperationProtocol {
+    /// Filter for the query.
+    let filter: BSONDocument
+
+    static var knownArguments: Set<String> {
+        ["filter"]
+    }
+
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let collection = try context.entities.getEntity(from: object).asCollection()
+        let result = try collection.countDocuments(filter)
+        return .bson(BSON(result))
+    }
+}
+
+struct UnifiedEstimatedDocumentCount: UnifiedOperationProtocol {
+    static var knownArguments: Set<String> { [] }
+
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let collection = try context.entities.getEntity(from: object).asCollection()
+        let result = try collection.estimatedDocumentCount()
+        return .bson(BSON(result))
+    }
+}
+
+struct UnifiedDistinct: UnifiedOperationProtocol {
+    /// Field to retrieve distinct values for.
+    let fieldName: String
+
+    /// Filter for the query.
+    let filter: BSONDocument
+
+    static var knownArguments: Set<String> {
+        ["fieldName", "filter"]
+    }
+
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let collection = try context.entities.getEntity(from: object).asCollection()
+        let result = try collection.distinct(fieldName: self.fieldName, filter: filter)
+        return .bson(.array(result))
+    }
+}
+
+struct UnifiedUpdateOne: UnifiedOperationProtocol {
+    /// Filter for the query.
+    let filter: BSONDocument
+
+    /// Update to perform.
+    let update: BSONDocument
+
+    static var knownArguments: Set<String> {
+        ["update", "filter"]
+    }
+
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let collection = try context.entities.getEntity(from: object).asCollection()
+        guard let result = try collection.updateOne(filter: filter, update: update) else {
+            return .none
+        }
+        let encoded = try BSONEncoder().encode(result)
+        return .bson(.document(encoded))
+    }
+}
+
+struct UnifiedUpdateMany: UnifiedOperationProtocol {
+    /// Filter for the query.
+    let filter: BSONDocument
+
+    /// Update to perform.
+    let update: BSONDocument
+
+    static var knownArguments: Set<String> {
+        ["update", "filter"]
+    }
+
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let collection = try context.entities.getEntity(from: object).asCollection()
+        guard let result = try collection.updateMany(filter: filter, update: update) else {
             return .none
         }
         let encoded = try BSONEncoder().encode(result)

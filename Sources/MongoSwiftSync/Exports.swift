@@ -57,6 +57,7 @@
 @_exported import struct MongoSwift.MongoDatabaseOptions
 @_exported import enum MongoSwift.MongoError
 @_exported import struct MongoSwift.MongoNamespace
+@_exported import struct MongoSwift.MongoServerAPI
 @_exported import enum MongoSwift.OperationType
 @_exported import struct MongoSwift.ReadConcern
 @_exported import struct MongoSwift.ReadPreference

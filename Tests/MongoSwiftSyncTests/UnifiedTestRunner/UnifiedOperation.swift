@@ -158,6 +158,8 @@ struct UnifiedOperation: Decodable {
             self.operation = try container.decode(UnifiedBulkWrite.self, forKey: .arguments)
         case "commitTransaction":
             self.operation = UnifiedCommitTransaction()
+        case "countDocuments":
+            self.operation = try container.decode(UnifiedCountDocuments.self, forKey: .arguments)
         case "createChangeStream":
             self.operation = try container.decode(CreateChangeStream.self, forKey: .arguments)
         case "createCollection":
@@ -166,16 +168,24 @@ struct UnifiedOperation: Decodable {
             self.operation = try container.decode(UnifiedCreateIndex.self, forKey: .arguments)
         case "deleteOne":
             self.operation = try container.decode(UnifiedDeleteOne.self, forKey: .arguments)
+        case "deleteMany":
+            self.operation = try container.decode(UnifiedDeleteMany.self, forKey: .arguments)
+        case "distinct":
+            self.operation = try container.decode(UnifiedDistinct.self, forKey: .arguments)
         case "dropCollection":
             self.operation = try container.decode(UnifiedDropCollection.self, forKey: .arguments)
         case "endSession":
             self.operation = EndSession()
+        case "estimatedDocumentCount":
+            self.operation = UnifiedEstimatedDocumentCount()
         case "find":
             self.operation = try container.decode(UnifiedFind.self, forKey: .arguments)
         case "findOneAndReplace":
             self.operation = try container.decode(UnifiedFindOneAndReplace.self, forKey: .arguments)
         case "findOneAndUpdate":
             self.operation = try container.decode(UnifiedFindOneAndUpdate.self, forKey: .arguments)
+        case "findOneAndDelete":
+            self.operation = try container.decode(UnifiedFindOneAndDelete.self, forKey: .arguments)
         case "failPoint":
             self.operation = try container.decode(UnifiedFailPoint.self, forKey: .arguments)
         case "insertOne":
@@ -188,10 +198,16 @@ struct UnifiedOperation: Decodable {
             self.operation = UnifiedListDatabases()
         case "replaceOne":
             self.operation = try container.decode(UnifiedReplaceOne.self, forKey: .arguments)
+        case "runCommand":
+            self.operation = try container.decode(UnifiedRunCommand.self, forKey: .arguments)
         case "startTransaction":
             self.operation = UnifiedStartTransaction()
         case "targetedFailPoint":
             self.operation = try container.decode(UnifiedTargetedFailPoint.self, forKey: .arguments)
+        case "updateOne":
+            self.operation = try container.decode(UnifiedUpdateOne.self, forKey: .arguments)
+        case "updateMany":
+            self.operation = try container.decode(UnifiedUpdateMany.self, forKey: .arguments)
         // GridFS ops
         case "delete", "download", "upload":
             self.operation = Placeholder()

@@ -114,4 +114,38 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         expect(try BSONDecoder().decode(ClientSessionOptions.self, from: invalidNestedOptsRaw))
             .to(throwError(errorType: TestError.self))
     }
+
+    func testServerParameterRequirements() throws {
+        // "ok" isn't actually a parameter, it's just part of the command response, but is good for testing use
+        // because assuming the command succeeds it will always be present and therefore "met".
+        let meetableParamRequirements: [BSONDocument] = [
+            ["ok": .int32(1)],
+            ["ok": .int64(1)],
+            ["ok": .double(1)],
+            ["ok": .double(1.00001)]
+        ]
+
+        let client = try MongoClient.makeTestClient()
+        for params in meetableParamRequirements {
+            let req = TestRequirement(serverParameters: params)
+            expect(try client.getUnmetRequirement(req)).to(beNil())
+        }
+
+        let unmeetableParamRequirements: [BSONDocument] = [
+            ["fakeParameterNameTheServerWillNeverUse": true],
+            ["ok": 2],
+            ["ok": "hi"]
+        ]
+
+        for param in unmeetableParamRequirements {
+            let req = TestRequirement(serverParameters: param)
+            let unmetReq = try client.getUnmetRequirement(req)
+            switch unmetReq {
+            case .serverParameter:
+                continue
+            default:
+                fail("Expected server parameter requirement \(param) to be unmet, but was met")
+            }
+        }
+    }
 }

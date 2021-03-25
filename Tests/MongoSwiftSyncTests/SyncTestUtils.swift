@@ -73,11 +73,16 @@ extension MongoClient {
         return try TestTopologyConfiguration(isMasterReply: isMasterReply, shards: shards)
     }
 
+    internal func serverParameters() throws -> BSONDocument {
+        try self.db("admin").runCommand(["getParameter": "*"])
+    }
+
     /// Determine whether server version and topology requirements for a certain test are met
     internal func getUnmetRequirement(_ testRequirement: TestRequirement) throws -> UnmetRequirement? {
         let topologyType = try self.topologyType()
         let serverVersion = try self.serverVersion()
-        return testRequirement.getUnmetRequirement(givenCurrent: serverVersion, topologyType)
+        let params = try self.serverParameters()
+        return testRequirement.getUnmetRequirement(givenCurrent: serverVersion, topologyType, params)
     }
 
     internal func meetsAnyRequirement(in requirements: [TestRequirement]) throws -> Bool {
