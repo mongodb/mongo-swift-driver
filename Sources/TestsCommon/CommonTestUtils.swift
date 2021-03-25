@@ -137,10 +137,19 @@ open class MongoSwiftTestCase: XCTestCase {
 
 /// Enumerates the different topology configurations that are used throughout the tests
 public enum TestTopologyConfiguration: String, Decodable {
+    /// A sharded topology where each shard is a standalone.
     case sharded
+    /// A replica set.
     case replicaSet = "replicaset"
+    /// A sharded topology where each shard is a replica set.
     case shardedReplicaSet = "sharded-replicaset"
+    /// A standalone server.
     case single
+
+    /// Returns a Bool indicating whether this topology is either sharded configuration.
+    public var isSharded: Bool {
+        self == .sharded || self == .shardedReplicaSet
+    }
 
     /// Determines the topologyType of a client based on the reply returned by running an isMaster command and the
     /// first document in the config.shards collection.
@@ -207,6 +216,12 @@ public struct TestRequirement: Decodable {
         )
     ]
 
+    public static let blockTimeSupport: [TestRequirement] = [
+        TestRequirement(
+            minServerVersion: ServerVersion.mongodBlockTimeSupport
+        )
+    ]
+
     public init(
         minServerVersion: ServerVersion? = nil,
         maxServerVersion: ServerVersion? = nil,
@@ -265,41 +280,28 @@ public struct TestRequirement: Decodable {
     }
 }
 
-extension BSONDocument {
+public protocol SortedEquatable {
+    func sortedEquals(_ other: Self) -> Bool
+}
+
+extension BSONDocument: SortedEquatable {
     public func sortedEquals(_ other: BSONDocument) -> Bool {
-        let keys = self.keys.sorted()
-        let otherKeys = other.keys.sorted()
-
-        // first compare keys, because rearrangeDoc will discard any that don't exist in `expected`
-        expect(keys).to(equal(otherKeys))
-
-        let rearranged = rearrangeDoc(other, toLookLike: self)
-        return self == rearranged
+        self.equalsIgnoreKeyOrder(other)
     }
+}
 
-    /**
-     * Allows retrieving and strongly typing a value at the same time. This means you can avoid
-     * having to cast and unwrap values from the `Document` when you know what type they will be.
-     * For example:
-     * ```
-     *  let d: Document = ["x": 1]
-     *  let x: Int = try d.get("x")
-     *  ```
-     *
-     *  - Parameters:
-     *      - key: The key under which the value you are looking up is stored
-     *      - `T`: Any type conforming to the `BSONValue` protocol
-     *  - Returns: The value stored under key, as type `T`
-     *  - Throws:
-     *    - `MongoError.InternalError` if the value cannot be cast to type `T` or is not in the `Document`, or an
-     *      unexpected error occurs while decoding the `BSONValue`.
-     *
-     */
-    public func get<T: BSONValue>(_ key: String) throws -> T {
-        guard let value = try self.getValue(for: key)?.bsonValue as? T else {
-            throw MongoError.InternalError(message: "Could not cast value for key \(key) to type \(T.self)")
+extension BSON: SortedEquatable {
+    public func sortedEquals(_ other: BSON) -> Bool {
+        switch (self, other) {
+        case let (.document(selfDoc), .document(otherDoc)):
+            return selfDoc.sortedEquals(otherDoc)
+        case let (.array(selfArr), .array(otherArr)):
+            return selfArr.elementsEqual(otherArr) {
+                $0.sortedEquals($1)
+            }
+        default:
+            return self == other
         }
-        return value
     }
 }
 
@@ -338,7 +340,7 @@ public func cleanEqual(_ expectedValue: String?) -> Predicate<String> {
 
 // Adds a custom "sortedEqual" predicate that compares two `Document`s and returns true if they
 // have the same key/value pairs in them
-public func sortedEqual(_ expectedValue: BSONDocument?) -> Predicate<BSONDocument> {
+public func sortedEqual<T: SortedEquatable>(_ expectedValue: T?) -> Predicate<T> {
     Predicate.define("sortedEqual <\(stringify(expectedValue))>") { actualExpression, msg in
         let actualValue = try actualExpression.evaluate()
 

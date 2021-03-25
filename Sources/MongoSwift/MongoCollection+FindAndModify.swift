@@ -151,6 +151,9 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     /// Specifies a collation to use.
     public var collation: BSONDocument?
 
+    /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
+    public var hint: IndexHint?
+
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
 
@@ -166,6 +169,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     internal func toFindAndModifyOptions() throws -> FindAndModifyOptions {
         try FindAndModifyOptions(
             collation: self.collation,
+            hint: self.hint,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
             remove: true,
@@ -177,12 +181,14 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     /// Convenience initializer allowing any/all parameters to be omitted/optional
     public init(
         collation: BSONDocument? = nil,
+        hint: IndexHint? = nil,
         maxTimeMS: Int? = nil,
         projection: BSONDocument? = nil,
         sort: BSONDocument? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.collation = collation
+        self.hint = hint
         self.maxTimeMS = maxTimeMS
         self.projection = projection
         self.sort = sort
@@ -197,6 +203,9 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
 
     /// Specifies a collation to use.
     public var collation: BSONDocument?
+
+    /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
+    public var hint: IndexHint?
 
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
@@ -220,6 +229,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
         try FindAndModifyOptions(
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
+            hint: self.hint,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
             returnDocument: self.returnDocument,
@@ -233,6 +243,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     public init(
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
+        hint: IndexHint? = nil,
         maxTimeMS: Int? = nil,
         projection: BSONDocument? = nil,
         returnDocument: ReturnDocument? = nil,
@@ -242,6 +253,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     ) {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
+        self.hint = hint
         self.maxTimeMS = maxTimeMS
         self.projection = projection
         self.returnDocument = returnDocument
@@ -261,6 +273,9 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
 
     /// Specifies a collation to use.
     public var collation: BSONDocument?
+
+    /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
+    public var hint: IndexHint?
 
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
@@ -285,6 +300,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
             arrayFilters: self.arrayFilters,
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
+            hint: self.hint,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
             returnDocument: self.returnDocument,
@@ -299,6 +315,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
         arrayFilters: [BSONDocument]? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
+        hint: IndexHint? = nil,
         maxTimeMS: Int? = nil,
         projection: BSONDocument? = nil,
         returnDocument: ReturnDocument? = nil,
@@ -309,6 +326,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
         self.arrayFilters = arrayFilters
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
+        self.hint = hint
         self.maxTimeMS = maxTimeMS
         self.projection = projection
         self.returnDocument = returnDocument

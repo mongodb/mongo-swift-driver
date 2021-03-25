@@ -37,11 +37,8 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
         for (_, asDocument) in testFiles {
             let tests: [BSONDocument] = asDocument["tests"]!.arrayValue!.compactMap { $0.documentValue }
             for test in tests {
-                let description: String = try test.get("description")
-                // skipping because C driver does not comply with these; see CDRIVER-2621
-                if description.lowercased().contains("wtimeoutms") { continue }
-                let uri: String = try test.get("uri")
-                let valid: Bool = try test.get("valid")
+                let uri = test["uri"]!.stringValue!
+                let valid = test["valid"]!.boolValue!
                 if valid {
                     let client = try MongoClient(uri, using: testElg)
                     defer { client.syncCloseOrFail() }
@@ -80,14 +77,14 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
         for (_, asDocument) in testFiles {
             let tests = asDocument["tests"]!.arrayValue!.compactMap { $0.documentValue }
             for test in tests {
-                let valid: Bool = try test.get("valid")
+                let valid: Bool = test["valid"]!.boolValue!
                 if let rcToUse = test["readConcern"]?.documentValue {
                     let rc = try BSONDecoder().decode(ReadConcern.self, from: rcToUse)
 
-                    let isDefault: Bool = try test.get("isServerDefault")
+                    let isDefault = test["isServerDefault"]!.boolValue!
                     expect(rc.isDefault).to(equal(isDefault))
 
-                    let expected: BSONDocument = try test.get("readConcernDocument")
+                    let expected = test["readConcernDocument"]!.documentValue!
                     if expected == [:] {
                         expect(try encoder.encode(rc)).to(beNil())
                     } else {
@@ -97,13 +94,13 @@ class ReadWriteConcernSpecTests: MongoSwiftTestCase {
                     if valid {
                         let wc = try WriteConcern(wcToUse)
 
-                        let isAcknowledged: Bool = try test.get("isAcknowledged")
+                        let isAcknowledged = test["isAcknowledged"]!.boolValue!
                         expect(wc.isAcknowledged).to(equal(isAcknowledged))
 
-                        let isDefault: Bool = try test.get("isServerDefault")
+                        let isDefault = test["isServerDefault"]!.boolValue!
                         expect(wc.isDefault).to(equal(isDefault))
 
-                        var expected: BSONDocument = try test.get("writeConcernDocument")
+                        var expected = test["writeConcernDocument"]!.documentValue!
                         if expected == [:] {
                             expect(try encoder.encode(wc)).to(beNil())
                         } else {

@@ -288,4 +288,62 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         expect(commandEvents).toEventually(haveCount(2)) // wait for started and succeeded / failed
         expect(sdamEvents.isEmpty).toEventually(beFalse())
     }
+
+    func testCertificateVerificationOptions() throws {
+        var options = MongoClientOptions()
+        options.tlsInsecure = true
+        options.tlsDisableOCSPEndpointCheck = false
+        expect(try MongoClient("mongodb://localhost:12345", options: options))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        options = MongoClientOptions()
+        options.tlsInsecure = true
+        options.tlsDisableCertificateRevocationCheck = true
+        expect(try MongoClient("mongodb://localhost:12345", options: options))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        options = MongoClientOptions()
+        options.tlsAllowInvalidCertificates = true
+        options.tlsDisableOCSPEndpointCheck = false
+        expect(try MongoClient("mongodb://localhost:12345", options: options))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        options = MongoClientOptions()
+        options.tlsAllowInvalidCertificates = true
+        options.tlsDisableCertificateRevocationCheck = false
+        expect(try MongoClient("mongodb://localhost:12345", options: options))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        options = MongoClientOptions()
+        options.tlsDisableCertificateRevocationCheck = false
+        options.tlsDisableOCSPEndpointCheck = true
+        expect(try MongoClient("mongodb://localhost:12345", options: options))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+    }
+
+    func testConnectionTimeout() throws {
+        let setupClient = try MongoClient.makeTestClient()
+        guard try setupClient.supportsBlockTime() else {
+            printSkipMessage(testName: self.name, reason: "blockTime not supported")
+            return
+        }
+
+        var failOptions = MongoClientOptions()
+        failOptions.connectTimeoutMS = 100
+        failOptions.serverSelectionTimeoutMS = 1000
+        let timeoutClient = try MongoClient.makeTestClient(options: failOptions)
+
+        let fp = FailPoint.failCommand(failCommands: ["isMaster"], mode: .alwaysOn, blockTimeMS: 500)
+        try fp.enable()
+        defer { fp.disable() }
+
+        expect(try timeoutClient.db("admin").runCommand(["ping": 1])).to(throwError())
+
+        var succeedOptions = MongoClientOptions()
+        succeedOptions.connectTimeoutMS = 1000
+        succeedOptions.serverSelectionTimeoutMS = 1000
+        let succeedClient = try MongoClient.makeTestClient(options: succeedOptions)
+
+        expect(try succeedClient.db("admin").runCommand(["ping": 1])).toNot(throwError())
+    }
 }

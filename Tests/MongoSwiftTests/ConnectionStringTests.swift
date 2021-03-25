@@ -128,12 +128,6 @@ func shouldSkip(file: String, test: String) -> Bool {
         return true
     }
 
-    // check for these separately rather than putting them in the skip list since there are a lot of them.
-    // TODO: SWIFT-787: unskip
-    if test.contains("tlsDisableCertificateRevocationCheck") || test.contains("tlsDisableOCSPEndpointCheck") {
-        return true
-    }
-
     return false
 }
 
@@ -174,8 +168,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
                 // Assert that options match, if present
                 for (key, value) in testCase.options ?? BSONDocument() {
-                    expect(parsedOptions[key.lowercased()])
-                        .to(equal(value), description: "Value for key \(key) doesn't match")
+                    expect(parsedOptions[key.lowercased()]).to(sortedEqual(value))
                 }
 
                 // Assert that hosts match, if present
@@ -444,6 +437,54 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(try ConnectionString(
             "mongodb://localhost:27017",
             options: MongoClientOptions(localThresholdMS: tooLarge)
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+    }
+
+    func testConnectTimeoutMSOption() throws {
+        // option is set correctly from options struct
+        let opts = MongoClientOptions(connectTimeoutMS: 100)
+        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts)
+        expect(connStr1.options?["connecttimeoutms"]?.int32Value).to(equal(100))
+
+        // option is parsed correctly from string
+        let connStr2 = try ConnectionString("mongodb://localhost:27017/?connectTimeoutMS=100")
+        expect(connStr2.options?["connecttimeoutms"]?.int32Value).to(equal(100))
+
+        // options struct overrides string
+        let connStr3 = try ConnectionString("mongodb://localhost:27017/?connectTimeoutMS=50", options: opts)
+        expect(connStr3.options?["connecttimeoutms"]?.int32Value).to(equal(100))
+
+        // test invalid options
+        expect(try ConnectionString(
+            "mongodb://localhost:27017",
+            options: MongoClientOptions(connectTimeoutMS: 0)
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        expect(try ConnectionString(
+            "mongodb://localhost:27017/?connectTimeoutMS=0"
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        let tooSmall = -10
+        expect(try ConnectionString(
+            "mongodb://localhost:27017",
+            options: MongoClientOptions(connectTimeoutMS: tooSmall)
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        expect(try ConnectionString(
+            "mongodb://localhost:27017/?connectTimeoutMS=\(tooSmall)"
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        guard !MongoSwiftTestCase.is32Bit else {
+            print("Skipping remainder of test, requires 64-bit platform")
+            return
+        }
+
+        let tooLarge = Int(Int32.max) + 1
+        expect(try ConnectionString("mongodb://localhost:27017/?connectTimeoutMS=\(tooLarge)"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try ConnectionString(
+            "mongodb://localhost:27017",
+            options: MongoClientOptions(connectTimeoutMS: tooLarge)
         )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 

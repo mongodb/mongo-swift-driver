@@ -1,12 +1,62 @@
 /// An `UpdateDescription` containing fields that will be present in the change stream document for
 /// operations of type `update`.
 public struct UpdateDescription: Codable {
-    /// A document containing key:value pairs of names of the fields that were changed, and the new
-    /// value for those fields.
+    /**
+     * A document containing key:value pairs of names of the fields that were changed (excluding the fields reported
+     * via `truncatedArrays`), and the new value for those fields.
+     *
+     * Despite array fields reported via `truncatedArrays` being excluded from this field, changes to fields of the
+     * elements of the array values may be reported via this field.
+     *
+     * Example:
+     *   original field:
+     *     "arrayField": ["foo", {"a": "bar"}, 1, 2, 3]
+     *   updated field:
+     *     "arrayField": ["foo", {"a": "bar", "b": 3}]
+     *   a potential corresponding UpdateDescription:
+     *     UpdateDescription(
+     *       updatedFields: {
+     *         "arrayField.1.b": 3
+     *       },
+     *       removedFields: [],
+     *       truncatedArrays: [
+     *         TruncatedArrayDescription(
+     *           field: "arrayField",
+     *           newSize: 2
+     *         )
+     *       ]
+     *     )
+     *
+     * Modifications to array elements are expressed via dot notation.
+     * Example: an `update` which sets the element with index 0 in the array field named arrayField to 7 is reported as
+     *   "updatedFields": {"arrayField.0": 7}
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/core/document/#document-dot-notation
+     */
     public let updatedFields: BSONDocument
 
     /// An array of field names that were removed from the document.
     public let removedFields: [String]
+
+    /// Describes an array that was truncated via an update operation.
+    public struct TruncatedArrayDescription: Codable {
+        /// The name of the array field which was truncated.
+        public let field: String
+        /// The new size of the array.
+        public let newSize: Int
+    }
+
+    /**
+     * Truncations of arrays may be reported either via this field or via the ‘updatedFields’ field. In the latter
+     * case, the entire array is considered to be replaced. The method used to report a truncation is a server
+     * implementation detail.
+     *
+     * Example: an `update` which shrinks the array `arrayField.0.nestedArrayField` from size 8 to 5 may be reported
+     * via this field as [TruncatedArrayDescription(field: "arrayField.0.nestedArrayField", newSize: 5)].
+     *
+     * This property will only ever be present on MongoDB server versions >= 5.0.
+     */
+    public let truncatedArrays: [TruncatedArrayDescription]?
 }
 
 /// An enum representing the type of operation for this change event.

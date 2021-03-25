@@ -79,7 +79,7 @@ internal struct ListDatabasesOperation: Operation {
             }
         }
 
-        guard let databases = reply["databases"]?.arrayValue?.toArrayOf(BSONDocument.self) else {
+        guard let databases = reply["databases"]?.arrayValue?.compactMap({ $0.documentValue }) else {
             throw MongoError.InternalError(message: "Invalid server response: \(reply)")
         }
 

@@ -29,11 +29,18 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> [String] {
         var indexData = [BSON]()
+        var indexNames = [String]()
         for index in self.models {
             var indexDoc = try self.collection.encoder.encode(index)
-            if indexDoc["name"] == nil {
-                indexDoc["name"] = .string(index.defaultName)
+
+            if let indexName = index.options?.name {
+                indexNames.append(indexName)
+            } else {
+                let indexName = try index.getDefaultName()
+                indexDoc["name"] = .string(indexName)
+                indexNames.append(indexName)
             }
+
             indexData.append(.document(indexDoc))
         }
 
@@ -47,6 +54,6 @@ internal struct CreateIndexesOperation<T: Codable>: Operation {
             }
         }
 
-        return self.models.map { $0.options?.name ?? $0.defaultName }
+        return indexNames
     }
 }

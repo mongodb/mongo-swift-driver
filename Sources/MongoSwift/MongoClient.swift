@@ -14,6 +14,10 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/#urioption.compressors
     public var compressors: [Compressor]?
 
+    /// Specifies the maximum time, in milliseconds, for an individual connection to establish a TCP
+    /// connection to a MongoDB server before timing out.
+    public var connectTimeoutMS: Int?
+
     /// Specifies authentication options for use with the client.
     public var credential: MongoCredential?
 
@@ -62,6 +66,10 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Determines whether the client should retry supported write operations (on by default).
     public var retryWrites: Bool?
 
+    // TODO: SWIFT-1159: add versioned API docs link.
+    /// Specifies a MongoDB server API version and related options.
+    public var serverAPI: MongoServerAPI?
+
     /// Specifies how long the driver should attempt to select a server for before throwing an error. Defaults to 30
     /// seconds (30000 ms).
     public var serverSelectionTimeoutMS: Int?
@@ -99,10 +107,23 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Specifies the password to de-crypt the `tlsCertificateKeyFile`.
     public var tlsCertificateKeyFilePassword: String?
 
+    /// Indicates if revocation checking (CRL / OCSP) should be disabled.
+    /// On macOS, this setting has no effect.
+    /// By default this is set to false.
+    /// It is an error to specify both this option and `tlsDisableOCSPEndpointCheck`, either via this options struct,
+    /// connection string, or a combination of both.
+    public var tlsDisableCertificateRevocationCheck: Bool?
+
+    /// Indicates if OCSP responder endpoints should not be requested when an OCSP response is not stapled.
+    /// On macOS, this setting has no effect.
+    /// By default this is set to false.
+    public var tlsDisableOCSPEndpointCheck: Bool?
+
     /// When specified, TLS constraints will be relaxed as much as possible. Currently, setting this option to `true`
-    /// is equivalent to setting both `tlsAllowInvalidCertificates` and `tlsAllowInvalidHostnames` to `true`.
-    /// It is an error to specify both this option and either of `tlsAllowInvalidCertificates` or
-    /// `tlsAllowInvalidHostnames`, either via this options struct, connection string, or a combination of both.
+    /// is equivalent to setting `tlsAllowInvalidCertificates`, `tlsAllowInvalidHostnames`, and
+    /// `tlsDisableCertificateRevocationCheck` to `true`.
+    /// It is an error to specify both this option and any of the options enabled by it, either via this options struct,
+    /// connection string, or a combination of both.
     public var tlsInsecure: Bool?
 
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this client and any
@@ -118,6 +139,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
     public init(
         appName: String? = nil,
         compressors: [Compressor]? = nil,
+        connectTimeoutMS: Int? = nil,
         credential: MongoCredential? = nil,
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
@@ -130,6 +152,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         replicaSet: String? = nil,
         retryReads: Bool? = nil,
         retryWrites: Bool? = nil,
+        serverAPI: MongoServerAPI? = nil,
         serverSelectionTimeoutMS: Int? = nil,
         threadPoolSize: Int? = nil,
         tls: Bool? = nil,
@@ -144,6 +167,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
     ) {
         self.appName = appName
         self.compressors = compressors
+        self.connectTimeoutMS = connectTimeoutMS
         self.credential = credential
         self.dataCodingStrategy = dataCodingStrategy
         self.dateCodingStrategy = dateCodingStrategy
@@ -157,6 +181,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.replicaSet = replicaSet
         self.retryWrites = retryWrites
         self.retryReads = retryReads
+        self.serverAPI = serverAPI
         self.serverSelectionTimeoutMS = serverSelectionTimeoutMS
         self.threadPoolSize = threadPoolSize
         self.tls = tls
@@ -285,11 +310,11 @@ public class MongoClient {
         initializeMongoc()
 
         let connString = try ConnectionString(connectionString, options: options)
-        self.connectionPool = try ConnectionPool(from: connString)
         self.operationExecutor = OperationExecutor(
             eventLoopGroup: eventLoopGroup,
             threadPoolSize: options?.threadPoolSize ?? MongoClient.defaultThreadPoolSize
         )
+        self.connectionPool = try ConnectionPool(from: connString, executor: self.operationExecutor)
 
         let rc = connString.readConcern
         if !rc.isDefault {

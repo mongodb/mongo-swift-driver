@@ -278,6 +278,11 @@ public enum MongoError {
     }
 }
 
+extension BSONError.DocumentTooLargeError: MongoErrorProtocol {}
+extension BSONError.InternalError: MongoErrorProtocol {}
+extension BSONError.InvalidArgumentError: MongoErrorProtocol {}
+extension BSONError.LogicError: MongoErrorProtocol {}
+
 // swiftlint:disable cyclomatic_complexity
 
 /// Gets an appropriate error from a libmongoc error. Additional details may be provided in the form of a server reply
@@ -287,7 +292,7 @@ private func parseMongocError(_ error: bson_error_t, reply: BSONDocument?) -> Mo
     let code = mongoc_error_code_t(rawValue: error.code)
     let message = toErrorString(error)
 
-    let errorLabels = reply?["errorLabels"]?.arrayValue?.toArrayOf(String.self)
+    let errorLabels = reply?["errorLabels"]?.arrayValue?.compactMap { $0.stringValue }
     let codeName = reply?["codeName"]?.stringValue ?? ""
 
     switch (domain, code) {
@@ -321,6 +326,8 @@ private func parseMongocError(_ error: bson_error_t, reply: BSONDocument?) -> Mo
         return MongoError.CompatibilityError(message: message)
     case (MONGOC_ERROR_TRANSACTION, MONGOC_ERROR_TRANSACTION_INVALID_STATE):
         return MongoError.LogicError(message: message)
+    case (MONGOC_ERROR_COMMAND, MONGOC_ERROR_PROTOCOL_BAD_WIRE_VERSION):
+        return MongoError.CompatibilityError(message: message)
     default:
         assert(
             errorLabels == nil, "errorLabels set on error, but were not thrown as a MongoError. " +
@@ -364,7 +371,7 @@ internal func extractMongoError(error bsonError: bson_error_t, reply: BSONDocume
         return MongoError.WriteError(
             writeFailure: writeError,
             writeConcernFailure: wcError,
-            errorLabels: serverReply["errorLabels"]?.arrayValue?.toArrayOf(String.self)
+            errorLabels: serverReply["errorLabels"]?.arrayValue?.compactMap { $0.stringValue }
         )
     } catch {
         return fallback
@@ -454,7 +461,7 @@ internal func extractBulkWriteError<T: Codable>(
             writeConcernFailure: try extractWriteConcernError(from: reply),
             otherError: other,
             result: errResult,
-            errorLabels: reply["errorLabels"]?.arrayValue?.toArrayOf(String.self)
+            errorLabels: reply["errorLabels"]?.arrayValue?.compactMap { $0.stringValue }
         )
     } catch {
         return fallback

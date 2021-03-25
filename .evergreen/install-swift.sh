@@ -7,6 +7,10 @@ PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-$PWD}
 SWIFT_VERSION=${SWIFT_VERSION:-5.1.5}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 
+# this is set by drivers-matrix-testing, and it's a special variable used in swiftenv
+# leaving it set messes with the installation
+unset PLATFORM
+
 export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
 export PATH="${SWIFTENV_ROOT}/bin:$PATH"
 

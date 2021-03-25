@@ -44,6 +44,22 @@ struct RunCommand: TestOperation {
     let command: BSONDocument
     let readPreference: ReadPreference?
 
+    /// Return a new `RunCommand` with the command document ordered such that the provided command name
+    /// is the first key.
+    func withCommandName(_ name: String) -> RunCommand {
+        guard let command = self.command[name] else {
+            fatalError("missing \"\(name)\" in \(self.command)")
+        }
+        var ordered: BSONDocument = [name: command]
+        for (k, v) in self.command {
+            guard k != name else {
+                continue
+            }
+            ordered[k] = v
+        }
+        return RunCommand(session: self.session, command: ordered, readPreference: self.readPreference)
+    }
+
     func execute(on database: MongoDatabase, sessions: [String: ClientSession]) throws -> TestOperationResult? {
         let runCommandOptions = RunCommandOptions(readPreference: self.readPreference)
         let result = try database.runCommand(

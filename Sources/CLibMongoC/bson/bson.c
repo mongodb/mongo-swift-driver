@@ -2586,7 +2586,7 @@ _bson_as_json_visit_int64 (const bson_iter_t *iter,
 
    if (state->mode == BSON_JSON_MODE_CANONICAL) {
       bson_string_append_printf (
-         state->str, "{ \"$numberLong\" : \"%" "lld" "\"}", v_int64);
+         state->str, "{ \"$numberLong\" : \"%" "lld" "\" }", v_int64);
    } else {
       bson_string_append_printf (state->str, "%" "lld", v_int64);
    }

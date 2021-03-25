@@ -54,14 +54,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             )
             let unmetRequirement = try client.getUnmetRequirement(testRequirements)
             guard unmetRequirement == nil else {
-                switch unmetRequirement {
-                case .minServerVersion, .maxServerVersion:
-                    print("Skipping test; see SWIFT-722")
-                case .topology:
-                    printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
-                case .none:
-                    break
-                }
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
                 return
             }
 

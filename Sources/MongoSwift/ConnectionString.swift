@@ -2,6 +2,35 @@ import CLibMongoC
 
 /// Class representing a connection string for connecting to MongoDB.
 internal class ConnectionString {
+    /// Type defining the relationship between a field on MongoClientOptions and a URI option.
+    private struct Option {
+        /// The key path into `MongoClientOptions` of the option.
+        let path: KeyPath<MongoClientOptions, Bool?>
+
+        /// The associated URI option.
+        let uriOption: String
+    }
+
+    // A few select options that we define to test for incompatibilities between each other.
+
+    private static let TLS_INSECURE = Option(path: \.tlsInsecure, uriOption: "tlsInsecure")
+    private static let TLS_ALLOW_INVALID_HOSTNAMES = Option(
+        path: \.tlsAllowInvalidHostnames,
+        uriOption: "tlsAllowInvalidHostnames"
+    )
+    private static let TLS_ALLOW_INVALID_CERTIFICATES = Option(
+        path: \.tlsAllowInvalidCertificates,
+        uriOption: "tlsAllowInvalidCertificates"
+    )
+    private static let TLS_DISABLE_OCSP_ENDPOINT_CHECK = Option(
+        path: \.tlsDisableOCSPEndpointCheck,
+        uriOption: "tlsDisableOCSPEndpointCheck"
+    )
+    private static let TLS_DISABLE_CERTIFICATE_REVOCATION_CHECK = Option(
+        path: \.tlsDisableCertificateRevocationCheck,
+        uriOption: "tlsDisableCertificateRevocationCheck"
+    )
+
     /// Pointer to the underlying `mongoc_uri_t`.
     private let _uri: OpaquePointer
     /// Tracks whether we have already destroyed the above pointer.
@@ -69,7 +98,7 @@ internal class ConnectionString {
                 message: "Invalid \(MONGOC_URI_CONNECTTIMEOUTMS): must be between 1 and \(Int32.max)"
             )
         }
-        if let socketTimeoutMS = self.options?[MONGOC_URI_SOCKETTIMEOUTMS]?.int32Value, socketTimeoutMS < 0 {
+        if let socketTimeoutMS = self.options?[MONGOC_URI_SOCKETTIMEOUTMS]?.int32Value, socketTimeoutMS < 1 {
             throw MongoError.InvalidArgumentError(
                 message: "Invalid \(MONGOC_URI_SOCKETTIMEOUTMS): must be between 1 and \(Int32.max)"
             )
@@ -133,6 +162,26 @@ internal class ConnectionString {
         )
     }
 
+    private func checkIncompatibility(
+        between optionA: Option,
+        and incompatibilities: [Option],
+        options: MongoClientOptions?
+    ) throws {
+        guard options?[keyPath: optionA.path] != nil || self.hasOption(optionA.uriOption) else {
+            return
+        }
+        for incompatibleOption in incompatibilities {
+            guard
+                options?[keyPath: incompatibleOption.path] == nil,
+                !self.hasOption(incompatibleOption.uriOption)
+            else {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(incompatibleOption.uriOption) and \(optionA.uriOption) options cannot both be specified"
+                )
+            }
+        }
+    }
+
     /// Sets and validates TLS-related on the underlying `mongoc_uri_t`.
     private func applyAndValidateTLSOptions(_ options: MongoClientOptions?) throws {
         if let tls = options?.tls {
@@ -142,24 +191,33 @@ internal class ConnectionString {
             try self.setBoolOption(MONGOC_URI_TLS, to: tls)
         }
 
-        if options?.tlsInsecure != nil || self.hasOption(MONGOC_URI_TLSINSECURE) {
-            let errString = "and \(MONGOC_URI_TLSINSECURE) options cannot both be specified"
+        try self.checkIncompatibility(
+            between: Self.TLS_INSECURE,
+            and: [
+                Self.TLS_ALLOW_INVALID_CERTIFICATES,
+                Self.TLS_ALLOW_INVALID_HOSTNAMES,
+                Self.TLS_DISABLE_OCSP_ENDPOINT_CHECK,
+                Self.TLS_DISABLE_CERTIFICATE_REVOCATION_CHECK
+            ],
+            options: options
+        )
 
-            // per URI options spec, we must raise an error if `tlsInsecure` is provided along with either of
-            // `tlsAllowInvalidCertificates` or `tlsAllowInvalidHostnames`. if such a combination is provided in the
-            // input connection string, libmongoc will error.
-            if options?.tlsAllowInvalidCertificates != nil || self.hasOption(MONGOC_URI_TLSALLOWINVALIDCERTIFICATES) {
-                throw MongoError.InvalidArgumentError(
-                    message: "\(MONGOC_URI_TLSALLOWINVALIDCERTIFICATES) \(errString)"
-                )
-            }
+        try self.checkIncompatibility(
+            between: Self.TLS_ALLOW_INVALID_CERTIFICATES,
+            and: [
+                Self.TLS_DISABLE_OCSP_ENDPOINT_CHECK,
+                Self.TLS_DISABLE_CERTIFICATE_REVOCATION_CHECK
+            ],
+            options: options
+        )
 
-            if options?.tlsAllowInvalidHostnames != nil || self.hasOption(MONGOC_URI_TLSALLOWINVALIDHOSTNAMES) {
-                throw MongoError.InvalidArgumentError(
-                    message: "\(MONGOC_URI_TLSALLOWINVALIDHOSTNAMES) \(errString)"
-                )
-            }
-        }
+        try self.checkIncompatibility(
+            between: Self.TLS_DISABLE_CERTIFICATE_REVOCATION_CHECK,
+            and: [
+                Self.TLS_DISABLE_OCSP_ENDPOINT_CHECK
+            ],
+            options: options
+        )
 
         if let tlsInsecure = options?.tlsInsecure {
             try self.setBoolOption(MONGOC_URI_TLSINSECURE, to: tlsInsecure)
@@ -237,6 +295,19 @@ internal class ConnectionString {
             }
 
             try self.setInt32Option(MONGOC_URI_MAXPOOLSIZE, to: value)
+        }
+
+        if let connectTimeoutMS = options?.connectTimeoutMS {
+            guard let value = Int32(exactly: connectTimeoutMS), value > 0 else {
+                throw self.int32OutOfRangeError(
+                    option: MONGOC_URI_CONNECTTIMEOUTMS,
+                    value: connectTimeoutMS,
+                    min: 1,
+                    max: Int32.max
+                )
+            }
+
+            try self.setInt32Option(MONGOC_URI_CONNECTTIMEOUTMS, to: value)
         }
 
         let unsupportedOptions = [
