@@ -46,7 +46,7 @@ private struct RetryableReadsTestFile: Decodable, SpecTestFile {
         "count.",
         "count-",
         "mapReduce",
-        "estimatedDocumentCount" // TODO SWIFT-1099: unskip
+        "estimatedDocumentCount" // TODO: SWIFT-1099: unskip
     ]
 }
 
