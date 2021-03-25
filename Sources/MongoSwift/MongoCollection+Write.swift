@@ -91,7 +91,11 @@ extension MongoCollection {
         options: ReplaceOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<UpdateResult?> {
-        let modelOptions = ReplaceOneModelOptions(collation: options?.collation, upsert: options?.upsert)
+        let modelOptions = ReplaceOneModelOptions(
+            collation: options?.collation,
+            hint: options?.hint,
+            upsert: options?.upsert
+        )
         let model = WriteModel.replaceOne(filter: filter, replacement: replacement, options: modelOptions)
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try UpdateResult(from: $0) }
@@ -128,6 +132,7 @@ extension MongoCollection {
         let modelOptions = UpdateModelOptions(
             arrayFilters: options?.arrayFilters,
             collation: options?.collation,
+            hint: options?.hint,
             upsert: options?.upsert
         )
         let model: WriteModel<CollectionType> = .updateOne(filter: filter, update: update, options: modelOptions)
@@ -166,6 +171,7 @@ extension MongoCollection {
         let modelOptions = UpdateModelOptions(
             arrayFilters: options?.arrayFilters,
             collation: options?.collation,
+            hint: options?.hint,
             upsert: options?.upsert
         )
         let model: WriteModel<CollectionType> = .updateMany(filter: filter, update: update, options: modelOptions)
@@ -287,6 +293,9 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
+    /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
+    public var hint: IndexHint?
+
     /// When true, creates a new document if no document matches the query.
     public var upsert: Bool?
 
@@ -298,12 +307,14 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
         arrayFilters: [BSONDocument]? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
+        hint: IndexHint? = nil,
         upsert: Bool? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.arrayFilters = arrayFilters
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
+        self.hint = hint
         self.upsert = upsert
         self.writeConcern = writeConcern
     }
@@ -317,6 +328,9 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
+    /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
+    public var hint: IndexHint?
+
     /// When true, creates a new document if no document matches the query.
     public var upsert: Bool?
 
@@ -327,11 +341,13 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     public init(
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
+        hint: IndexHint? = nil,
         upsert: Bool? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
+        self.hint = hint
         self.upsert = upsert
         self.writeConcern = writeConcern
     }
