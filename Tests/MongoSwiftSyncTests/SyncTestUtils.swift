@@ -123,6 +123,9 @@ extension MongoClient {
             opts.tlsCAFile = URL(string: MongoSwiftTestCase.sslCAFilePath ?? "")
             opts.tlsCertificateKeyFile = URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
         }
+        if let apiVersion = MongoSwiftTestCase.apiVersion, opts.serverAPI == nil {
+            opts.serverAPI = MongoServerAPI(version: apiVersion)
+        }
         return try MongoClient(uri, options: opts)
     }
 

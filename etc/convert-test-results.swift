@@ -85,7 +85,8 @@ let ignoreSuites = [
     "mongo-swift-driverPackageTests.xctest",
     // linux
     "All tests",
-    "debug.xctest"
+    "debug.xctest",
+    "Selected tests" // this shows us when --filter is used
 ]
 
 /// An error thrown while parsing test output.

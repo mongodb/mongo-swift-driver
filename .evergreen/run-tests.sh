@@ -12,6 +12,7 @@ OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 RAW_TEST_RESULTS="${PROJECT_DIRECTORY}/rawTestResults"
 XML_TEST_RESULTS="${PROJECT_DIRECTORY}/testResults.xml"
 INSTALL_DEPS=${INSTALL_DEPS:-"false"}
+TEST_FILTER=${TEST_FILTER:-"NO_FILTER"}
 
 # ssl setup
 SSL=${SSL:-nossl}
@@ -47,7 +48,14 @@ swift build
 set +o errexit # even if tests fail we want to parse the results, so disable errexit
 set -o pipefail # propagate error codes in the following pipes
 
-MONGODB_TOPOLOGY=${TOPOLOGY} MONGODB_URI=$MONGODB_URI swift test 2>&1 | tee ${RAW_TEST_RESULTS}
+# construct an optional filter statement for tests
+FILTER_STATEMENT=""
+if [ "$TEST_FILTER" != "NO_FILTER" ]; then
+    FILTER_STATEMENT="--filter ${TEST_FILTER}"
+fi
+
+echo $FILTER_STATEMENT
+MONGODB_TOPOLOGY=${TOPOLOGY} MONGODB_URI=$MONGODB_URI MONGODB_API_VERSION=$MONGODB_API_VERSION swift test $FILTER_STATEMENT 2>&1 | tee ${RAW_TEST_RESULTS}
 
 # save tests exit code
 EXIT_CODE=$?

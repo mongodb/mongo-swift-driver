@@ -133,6 +133,14 @@ open class MongoSwiftTestCase: XCTestCase {
     public static var auth: Bool {
         ProcessInfo.processInfo.environment["AUTH"] == "auth"
     }
+
+    /// Returns the API version specified by the environment variable $MONGODB_API_VERSION, if any.
+    public static var apiVersion: MongoServerAPI.Version? {
+        guard let versionString = ProcessInfo.processInfo.environment["MONGODB_API_VERSION"] else {
+            return nil
+        }
+        return MongoServerAPI.Version(versionString)
+    }
 }
 
 /// Enumerates the different topology configurations that are used throughout the tests
