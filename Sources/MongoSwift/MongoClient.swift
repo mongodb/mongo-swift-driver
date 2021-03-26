@@ -314,7 +314,11 @@ public class MongoClient {
             eventLoopGroup: eventLoopGroup,
             threadPoolSize: options?.threadPoolSize ?? MongoClient.defaultThreadPoolSize
         )
-        self.connectionPool = try ConnectionPool(from: connString, executor: self.operationExecutor)
+        self.connectionPool = try ConnectionPool(
+            from: connString,
+            executor: self.operationExecutor,
+            serverAPI: options?.serverAPI
+        )
 
         let rc = connString.readConcern
         if !rc.isDefault {

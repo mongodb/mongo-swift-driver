@@ -78,7 +78,7 @@ internal class ConnectionPool {
     internal static let PoolClosedError = MongoError.LogicError(message: "ConnectionPool was already closed")
 
     /// Initializes the pool using the provided `ConnectionString`.
-    internal init(from connString: ConnectionString, executor: OperationExecutor) throws {
+    internal init(from connString: ConnectionString, executor: OperationExecutor, serverAPI: MongoServerAPI?) throws {
         let poolFut = executor.execute(on: nil) { () -> OpaquePointer in
             try connString.withMongocURI { uriPtr in
                 guard let pool = mongoc_client_pool_new(uriPtr) else {
@@ -92,6 +92,14 @@ internal class ConnectionPool {
                 // We always set min_heartbeat_frequency because the hard-coded default in the vendored mongoc
                 // was lowered to 50. Setting it here brings it to whatever was specified, or 500 if it wasn't.
                 mongoc_client_pool_set_min_heartbeat_frequency_msec(pool, UInt64(connString.minHeartbeatFrequencyMS))
+
+                try serverAPI?.withMongocServerAPI { apiPtr in
+                    var error = bson_error_t()
+                    guard mongoc_client_pool_set_server_api(pool, apiPtr, &error) else {
+                        throw extractMongoError(error: error)
+                    }
+                }
+
                 return pool
             }
         }
