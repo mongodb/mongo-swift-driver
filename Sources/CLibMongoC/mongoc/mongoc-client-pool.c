@@ -54,6 +54,8 @@ struct _mongoc_client_pool_t {
    void *apm_context;
    int32_t error_api_version;
    bool error_api_set;
+   mongoc_server_api_t *api;
+   bool client_initialized;
 };
 
 
@@ -87,6 +89,7 @@ _mongoc_client_pool_set_internal_tls_opts (
 {
    bson_mutex_lock (&pool->mutex);
    if (!pool->ssl_opts_set) {
+      bson_mutex_unlock (&pool->mutex);
       return;
    }
    pool->ssl_opts.internal = bson_malloc (sizeof (_mongoc_internal_tls_opts_t));
@@ -203,6 +206,8 @@ mongoc_client_pool_destroy (mongoc_client_pool_t *pool)
    bson_mutex_destroy (&pool->mutex);
    mongoc_cond_destroy (&pool->cond);
 
+   mongoc_server_api_destroy (pool->api);
+
 #ifdef MONGOC_ENABLE_SSL
    _mongoc_ssl_opts_cleanup (&pool->ssl_opts, true);
 #endif
@@ -240,9 +245,13 @@ _initialize_new_client (mongoc_client_pool_t *pool, mongoc_client_t *client)
       pool->topology->scanner->initiator,
       pool->topology->scanner->initiator_context);
 
+   pool->client_initialized = true;
+   client->is_pooled = true;
    client->error_api_version = pool->error_api_version;
    _mongoc_client_set_apm_callbacks_private (
       client, &pool->apm_callbacks, pool->apm_context);
+
+   client->api = mongoc_server_api_copy (pool->api);
 
 #ifdef MONGOC_ENABLE_SSL
    if (pool->ssl_opts_set) {
@@ -508,6 +517,35 @@ mongoc_client_pool_enable_auto_encryption (mongoc_client_pool_t *pool,
 {
    return _mongoc_cse_client_pool_enable_auto_encryption (
       pool->topology, opts, error);
+}
+
+bool
+mongoc_client_pool_set_server_api (mongoc_client_pool_t *pool,
+                                   const mongoc_server_api_t *api,
+                                   bson_error_t *error)
+{
+   BSON_ASSERT_PARAM (pool);
+   BSON_ASSERT_PARAM (api);
+
+   if (pool->api) {
+      bson_set_error (error,
+                      MONGOC_ERROR_POOL,
+                      MONGOC_ERROR_POOL_API_ALREADY_SET,
+                      "Cannot set server api more than once per pool");
+      return false;
+   }
+
+   if (pool->client_initialized) {
+      bson_set_error (error,
+                      MONGOC_ERROR_POOL,
+                      MONGOC_ERROR_POOL_API_TOO_LATE,
+                      "Cannot set server api after a client has been created");
+      return false;
+   }
+
+   pool->api = mongoc_server_api_copy (api);
+   _mongoc_topology_scanner_set_server_api (pool->topology->scanner, api);
+   return true;
 }
 
 void

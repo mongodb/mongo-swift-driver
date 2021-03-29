@@ -71,9 +71,15 @@ MONGOC_EXPORT (bool)
 mongoc_client_pool_enable_auto_encryption (mongoc_client_pool_t *pool,
                                            mongoc_auto_encryption_opts_t *opts,
                                            bson_error_t *error);
+MONGOC_EXPORT (bool)
+mongoc_client_pool_set_server_api (mongoc_client_pool_t *pool,
+                                   const mongoc_server_api_t *api,
+                                   bson_error_t *error);
+
 MONGOC_EXPORT (void)
 mongoc_client_pool_set_min_heartbeat_frequency_msec (mongoc_client_pool_t *pool,
                                                      uint64_t freq_msec);
+
 BSON_END_DECLS
 
 

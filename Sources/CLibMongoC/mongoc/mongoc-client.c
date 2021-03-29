@@ -433,6 +433,7 @@ _mongoc_get_rr_search (const char *service,
    bool dns_success;
    bool callback_success = true;
    int num_matching_records;
+   uint32_t ttl;
 
    ENTRY;
 
@@ -521,13 +522,9 @@ _mongoc_get_rr_search (const char *service,
 
       num_matching_records++;
 
-      if (rr_data) {
-         uint32_t ttl;
-
-         ttl = ns_rr_ttl (resource_record);
-         if ((i == 0) || (ttl < rr_data->min_ttl)) {
-            rr_data->min_ttl = ttl;
-         }
+      ttl = ns_rr_ttl (resource_record);
+      if ((i == 0) || (ttl < rr_data->min_ttl)) {
+         rr_data->min_ttl = ttl;
       }
 
       if (!callback (service, &ns_answer, &resource_record, rr_data, error)) {
@@ -589,6 +586,8 @@ _mongoc_client_get_rr (const char *service,
                        size_t initial_buffer_size,
                        bson_error_t *error)
 {
+   BSON_ASSERT (rr_data);
+
 #ifdef MONGOC_HAVE_DNSAPI
    return _mongoc_get_rr_dnsapi (service, rr_type, rr_data, error);
 #elif (defined(MONGOC_HAVE_RES_NSEARCH) || defined(MONGOC_HAVE_RES_SEARCH))
@@ -1160,6 +1159,9 @@ _mongoc_client_new_from_uri (mongoc_topology_t *topology)
       BSON_ASSERT (mongoc_client_set_appname (client, appname));
    }
 
+   /* TODO CDRIVER-3850 pull initial timeoutMS value from the URI */
+   client->timeout_ms = MONGOC_TIMEOUTMS_UNSET;
+
    mongoc_cluster_init (&client->cluster, client->uri, client);
 
 #ifdef MONGOC_ENABLE_SSL
@@ -1212,6 +1214,7 @@ mongoc_client_destroy (mongoc_client_t *client)
       mongoc_cluster_destroy (&client->cluster);
       mongoc_uri_destroy (client->uri);
       mongoc_set_destroy (client->client_sessions);
+      mongoc_server_api_destroy (client->api);
 
 #ifdef MONGOC_ENABLE_SSL
       _mongoc_ssl_opts_cleanup (&client->ssl_opts, true);
@@ -1331,7 +1334,8 @@ mongoc_client_get_database (mongoc_client_t *client, const char *name)
                                 name,
                                 client->read_prefs,
                                 client->read_concern,
-                                client->write_concern);
+                                client->write_concern,
+                                client->timeout_ms);
 }
 
 
@@ -1410,7 +1414,8 @@ mongoc_client_get_collection (mongoc_client_t *client,
                                   collection,
                                   client->read_prefs,
                                   client->read_concern,
-                                  client->write_concern);
+                                  client->write_concern,
+                                  client->timeout_ms);
 }
 
 
@@ -3074,6 +3079,8 @@ mongoc_client_enable_auto_encryption (mongoc_client_t *client,
                                       mongoc_auto_encryption_opts_t *opts,
                                       bson_error_t *error)
 {
+   BSON_ASSERT_PARAM (client);
+
    if (!client->topology->single_threaded) {
       bson_set_error (error,
                       MONGOC_ERROR_CLIENT,
@@ -3083,4 +3090,41 @@ mongoc_client_enable_auto_encryption (mongoc_client_t *client,
       return false;
    }
    return _mongoc_cse_client_enable_auto_encryption (client, opts, error);
+}
+
+int64_t
+mongoc_client_get_timeout_ms (const mongoc_client_t *client)
+{
+   BSON_ASSERT_PARAM (client);
+
+   return client->timeout_ms;
+}
+
+bool
+mongoc_client_set_server_api (mongoc_client_t *client,
+                              const mongoc_server_api_t *api,
+                              bson_error_t *error)
+{
+   BSON_ASSERT_PARAM (client);
+   BSON_ASSERT_PARAM (api);
+
+   if (client->is_pooled) {
+      bson_set_error (error,
+                      MONGOC_ERROR_CLIENT,
+                      MONGOC_ERROR_CLIENT_API_FROM_POOL,
+                      "Cannot set server api on a client checked out from a pool");
+      return false;
+   }
+
+   if (client->api) {
+      bson_set_error (error,
+                      MONGOC_ERROR_CLIENT,
+                      MONGOC_ERROR_CLIENT_API_ALREADY_SET,
+                      "Cannot set server api more than once per client");
+      return false;
+   }
+
+   client->api = mongoc_server_api_copy (api);
+   _mongoc_topology_scanner_set_server_api (client->topology->scanner, api);
+   return true;
 }

@@ -90,6 +90,8 @@ BSON_BEGIN_DECLS
 #define WIRE_VERSION_RETRYABLE_WRITE_ERROR_LABEL 9
 /* first version to support server hedged reads */
 #define WIRE_VERSION_HEDGED_READS 9
+/* first version to support estimatedDocumentCount with collStats */
+#define WIRE_VERSION_4_9 12
 
 struct _mongoc_collection_t;
 
@@ -97,6 +99,7 @@ struct _mongoc_client_t {
    mongoc_uri_t *uri;
    mongoc_cluster_t cluster;
    bool in_exhaust;
+   bool is_pooled;
 
    mongoc_stream_initiator_t initiator;
    void *initiator_data;
@@ -118,9 +121,13 @@ struct _mongoc_client_t {
    int32_t error_api_version;
    bool error_api_set;
 
+   mongoc_server_api_t *api;
+
    /* mongoc_client_session_t's in use, to look up lsids and clusterTimes */
    mongoc_set_t *client_sessions;
    unsigned int csid_rand_seed;
+
+   int64_t timeout_ms;
 
    uint32_t generation;
 };

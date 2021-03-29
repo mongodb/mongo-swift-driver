@@ -134,6 +134,10 @@ _server_monitor_heartbeat_started (mongoc_server_monitor_t *server_monitor,
                                    bool awaited)
 {
    mongoc_apm_server_heartbeat_started_t event;
+   MONGOC_DEBUG_ASSERT (
+      !COMMON_PREFIX (mutex_is_locked) (&server_monitor->topology->apm_mutex));
+   MONGOC_DEBUG_ASSERT (
+      !COMMON_PREFIX (mutex_is_locked) (&server_monitor->topology->mutex));
 
    if (!server_monitor->apm_callbacks.server_heartbeat_started) {
       return;
@@ -392,7 +396,7 @@ _server_monitor_poll_with_interrupt (mongoc_server_monitor_t *server_monitor,
 {
    /* How many milliseconds we should poll for on each tick.
     * On every tick, check whether the awaitable ismaster was cancelled. */
-   const int32_t monitor_tick_ms = 500;
+   const int32_t monitor_tick_ms = MONGOC_TOPOLOGY_MIN_HEARTBEAT_FREQUENCY_MS;
    int64_t timeleft_ms;
 
    while ((timeleft_ms = expire_at_ms - _now_ms ()) > 0) {
@@ -683,6 +687,7 @@ mongoc_server_monitor_new (mongoc_topology_t *topology,
                            mongoc_server_description_t *init_description)
 {
    mongoc_server_monitor_t *server_monitor;
+   MONGOC_DEBUG_ASSERT (COMMON_PREFIX (mutex_is_locked (&topology->mutex)));
 
    server_monitor = bson_malloc0 (sizeof (*server_monitor));
    server_monitor->description =
