@@ -402,7 +402,12 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
 
         let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)
         guard unmetRequirement == nil else {
-            printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+            switch unmetRequirement {
+            case .minServerVersion, .maxServerVersion:
+                print("Skipping test; see SWIFT-722")
+            default:
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+            }
             return
         }
 

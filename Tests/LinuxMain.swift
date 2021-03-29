@@ -204,12 +204,6 @@ extension MongoCollection_IndexTests {
     ]
 }
 
-extension MongoCrudV2Tests {
-    static var allTests = [
-        ("testFindOptionsAllowDiskUse", testFindOptionsAllowDiskUse),
-    ]
-}
-
 extension MongoCursorTests {
     static var allTests = [
         ("testNonTailableCursor", testNonTailableCursor),
@@ -361,7 +355,8 @@ extension SyncMongoClientTests {
 
 extension TransactionsTests {
     static var allTests = [
-        ("testTransactions", testTransactions),
+        ("testTransactionsLegacy", testTransactionsLegacy),
+        ("testTransactionsUnified", testTransactionsUnified),
     ]
 }
 
@@ -405,7 +400,6 @@ XCTMain([
     testCase(MongoCollectionTests.allTests),
     testCase(MongoCollection_BulkWriteTests.allTests),
     testCase(MongoCollection_IndexTests.allTests),
-    testCase(MongoCrudV2Tests.allTests),
     testCase(MongoCursorTests.allTests),
     testCase(MongoDatabaseTests.allTests),
     testCase(OptionsTests.allTests),

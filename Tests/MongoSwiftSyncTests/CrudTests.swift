@@ -32,10 +32,6 @@ final class CrudTests: MongoSwiftTestCase {
 
             // For each file, execute the test cases contained in it
             for (i, test) in try file.makeTests().enumerated() {
-                if type(of: test) == CountTest.self {
-                    print("Skipping test for old count API, no longer supported by the driver")
-                }
-
                 print("Executing test: \(test.description)")
 
                 // for each test case:
@@ -69,7 +65,25 @@ final class CrudTests: MongoSwiftTestCase {
     func testCrudUnified() throws {
         let files = try retrieveSpecTestFiles(specName: "crud", subdirectory: "unified", asType: UnifiedTestFile.self)
         let runner = try UnifiedTestRunner()
-        try runner.runFiles(files.map { $0.1 })
+        let skipList: [String: [String]] = [
+            // TODO: SWIFT-560 unskip this test
+            "updateWithPipelines": ["*"],
+            // libmongoc chose not to implement CDRIVER-3630 in anticipation of DRIVERS-1340,
+            // so we cannot pass these tests for now.
+            // TODO: DRIVERS-1340 unskip
+            "unacknowledged-findOneAndUpdate-hint-clientError": ["*"],
+            "unacknowledged-updateMany-hint-clientError": ["*"],
+            "unacknowledged-updateOne-hint-clientError": ["*"],
+            "unacknowledged-deleteOne-hint-clientError": ["*"],
+            "unacknowledged-deleteMany-hint-clientError": ["*"],
+            "unacknowledged-replaceOne-hint-clientError": ["*"],
+            "unacknowledged-findOneAndReplace-hint-clientError": ["*"],
+            "unacknowledged-findOneAndDelete-hint-clientError": ["*"],
+            "unacknowledged-bulkWrite-delete-hint-clientError": ["*"],
+            "unacknowledged-bulkWrite-update-hint-clientError": ["*"],
+            "unacknowledged-bulkWrite-replace-hint-clientError": ["*"]
+        ]
+        try runner.runFiles(files.map { $0.1 }, skipTests: skipList)
     }
 }
 

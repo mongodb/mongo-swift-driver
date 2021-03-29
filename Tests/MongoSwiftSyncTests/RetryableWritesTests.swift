@@ -87,6 +87,7 @@ final class RetryableWritesTests: MongoSwiftTestCase {
                 let client = try MongoClient.makeTestClient(options: clientOptions)
                 let db = client.db(Self.testDatabase)
                 let collection = db.collection(self.getCollectionName(suffix: test.description))
+                defer { try? collection.drop() }
 
                 if !testFile.data.isEmpty {
                     try collection.insertMany(testFile.data)

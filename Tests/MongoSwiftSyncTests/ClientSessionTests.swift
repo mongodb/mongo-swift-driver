@@ -349,7 +349,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         // Causal consistency spec test 3: the first read/write on a session should update the operationTime of a
         // session, even when there is an error.
         client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            _ = try? db.runCommand(["axasdfasdf": 1], session: session)
+            _ = try? db.runCommand(["insert": "foo", "bar": "bar"], session: session)
             expect(session.operationTime).toNot(beNil())
         }
 
