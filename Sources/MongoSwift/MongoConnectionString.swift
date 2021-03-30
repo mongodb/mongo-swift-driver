@@ -11,7 +11,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
         /// Internal representation of a scheme.
         private enum _Scheme: String {
-            case mongodb = "mongodb"
+            case mongodb
             case srv = "mongodb+srv"
         }
 
@@ -29,7 +29,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             self.init(_scheme)
         }
 
-        public var description: String { _scheme.rawValue }
+        public var description: String { self._scheme.rawValue }
     }
 
     /// Parses `input` into its constituent parts.
@@ -43,7 +43,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             )
         }
         let getUser = getScheme[1].components(separatedBy: "@")
-        let userInfo = getUser.count > 1 ?  getUser[0].components(separatedBy: ":") : nil
+        let userInfo = getUser.count > 1 ? getUser[0].components(separatedBy: ":") : nil
         let getHost = getUser.count > 1 ? getUser[1].components(separatedBy: "/") :
             getUser[0].components(separatedBy: "/")
         guard let hosts = try? getHost[0].components(separatedBy: ",").map(ServerAddress.init) else {
@@ -81,11 +81,11 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
     public var description: String {
         var des = ""
-        des += "\(scheme)://"
+        des += "\(self.scheme)://"
         if let username = credential?.username, let password = credential?.password {
             des += "\(username):\(password)@"
         }
-        des += hosts.map { $0.description }.joined(separator: ",")
+        des += self.hosts.map { $0.description }.joined(separator: ",")
         if let source = credential?.source {
             des += "/\(source)"
         } else {
