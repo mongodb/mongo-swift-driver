@@ -39,7 +39,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         let getScheme = input.components(separatedBy: "://")
         guard getScheme.count > 1, let scheme = Scheme(getScheme[0]) else {
             throw MongoError.InvalidArgumentError(
-                message: "Invalid URI Schema, expecting \'mongodb://\' or \'mongodb+srv://\'"
+                message: "Invalid connection string scheme, expecting \'mongodb\' or \'mongodb+srv\'"
             )
         }
         let getUser = getScheme[1].components(separatedBy: "@")
