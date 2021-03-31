@@ -24,11 +24,41 @@ public struct ServerAddress: Equatable {
 
     /// Initializes a ServerAddress, using the default localhost:27017 if a host/port is not provided.
     internal init(_ hostAndPort: String = "localhost:27017") throws {
-        let parts = hostAndPort.split(separator: ":")
-        self.host = String(parts[0])
-        guard let port = UInt16(parts[1]) else {
-            throw MongoError.InternalError(message: "couldn't parse address from \(hostAndPort)")
+        guard !hostAndPort.contains("?") else {
+            throw MongoError.InvalidArgumentError(message: "\(hostAndPort) contains invalid characters")
         }
+
+        var host: String
+        var port: UInt16
+        let regex = try NSRegularExpression(pattern: #"\[(.*)\]"#)
+        let matches = regex.matches(
+            in: hostAndPort,
+            options: [],
+            range: NSRange(location: 0, length: hostAndPort.utf16.count)
+        )
+        if let match = matches.first {
+            let range = match.range(at: 1)
+            guard let swiftRange = Range(range, in: hostAndPort) else {
+                throw MongoError.InternalError(message: "couldn't parse address from \(hostAndPort)")
+            }
+            host = String(hostAndPort[swiftRange])
+            let rest = hostAndPort[swiftRange.upperBound...].split(separator: ":")
+            guard let portOptional = rest.count > 1 ? UInt16(rest[1]) : 27017, portOptional > 0 else {
+                throw MongoError.InternalError(message: "couldn't parse address from \(hostAndPort)")
+            }
+            port = portOptional
+        } else {
+            let parts = hostAndPort.components(separatedBy: ":")
+            host = String(parts[0])
+            guard parts.count <= 2,
+                  let portOptional = parts.count > 1 ? UInt16(parts[1]) : 27017,
+                  portOptional > 0
+            else {
+                throw MongoError.InternalError(message: "couldn't parse address from \(hostAndPort)")
+            }
+            port = portOptional
+        }
+        self.host = host
         self.port = port
     }
 

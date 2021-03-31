@@ -36,30 +36,26 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// - Throws:
     ///   - `MongoError.InvalidArgumentError` if the input is invalid.
     public init(throwsIfInvalid input: String) throws {
-        let getScheme = input.components(separatedBy: "://")
-        guard getScheme.count > 1, let scheme = Scheme(getScheme[0]) else {
+        let schemeAndRest = input.components(separatedBy: "://")
+        guard schemeAndRest.count == 2, let scheme = Scheme(schemeAndRest[0]) else {
             throw MongoError.InvalidArgumentError(
                 message: "Invalid connection string scheme, expecting \'mongodb\' or \'mongodb+srv\'"
             )
         }
-        let getUser = getScheme[1].components(separatedBy: "@")
-        let userInfo = getUser.count > 1 ? getUser[0].components(separatedBy: ":") : nil
-        let getHost = getUser.count > 1 ? getUser[1].components(separatedBy: "/") :
-            getUser[0].components(separatedBy: "/")
-        guard let hosts = try? getHost[0].components(separatedBy: ",").map(ServerAddress.init) else {
-            throw MongoError.InvalidArgumentError(message: "Invalid URI Host")
+        guard !schemeAndRest[1].isEmpty else {
+            throw MongoError.InvalidArgumentError(message: "Invalid connection string")
         }
-        let getAuth = getHost.count > 1 ? getHost[1].components(separatedBy: "?") : nil
-        let source = (getAuth?[0] ?? "").isEmpty ? nil : getAuth?[0]
-        let cred = userInfo != nil || getAuth != nil ?
-            MongoCredential(username: userInfo?[0], password: userInfo?[1], source: source) : nil
-        let getOptions = getAuth != nil ? getAuth?[1] : nil
-        if let options = getOptions?.components(separatedBy: "&") {
-            self.temporaryOptions = options
+        let identifiersAndOptions = schemeAndRest[1].components(separatedBy: "/")
+        let userAndHost = identifiersAndOptions[0].components(separatedBy: "@")
+        let userInfo = userAndHost.count == 2 ? userAndHost[0].components(separatedBy: ":") : nil
+        guard let hosts = userInfo != nil ?
+            try? userAndHost[1].components(separatedBy: ",").map(ServerAddress.init) :
+            try? userAndHost[0].components(separatedBy: ",").map(ServerAddress.init)
+        else {
+            throw MongoError.InvalidArgumentError(message: "Invalid connection string host")
         }
         self.scheme = scheme
         self.hosts = hosts
-        self.credential = cred
     }
 
     /// `Codable` conformance
@@ -82,15 +78,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     public var description: String {
         var des = ""
         des += "\(self.scheme)://"
-        if let username = credential?.username, let password = credential?.password {
-            des += "\(username):\(password)@"
-        }
         des += self.hosts.map { $0.description }.joined(separator: ",")
-        if let source = credential?.source {
-            des += "/\(source)"
-        } else {
-            des += "/"
-        }
         return des
     }
 
@@ -99,9 +87,4 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
     /// Specifies one or more host/ports to connect to.
     public var hosts: [ServerAddress]
-
-    /// Authentication credentials for the `MongoClient`.
-    public var credential: MongoCredential?
-
-    public var temporaryOptions: [String]?
 }
