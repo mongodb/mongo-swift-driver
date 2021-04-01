@@ -67,17 +67,6 @@ extension ConnectionStringTests {
     static var allTests = [
         ("testURIOptions", testURIOptions),
         ("testConnectionString", testConnectionString),
-        ("testAppNameOption", testAppNameOption),
-        ("testReplSetOption", testReplSetOption),
-        ("testHeartbeatFrequencyMSOption", testHeartbeatFrequencyMSOption),
-        ("testHeartbeatFrequencyMSWithMonitoring", testHeartbeatFrequencyMSWithMonitoring),
-        ("testServerSelectionTimeoutMS", testServerSelectionTimeoutMS),
-        ("testServerSelectionTimeoutMSWithCommand", testServerSelectionTimeoutMSWithCommand),
-        ("testLocalThresholdMSOption", testLocalThresholdMSOption),
-        ("testConnectTimeoutMSOption", testConnectTimeoutMSOption),
-        ("testUnsupportedOptions", testUnsupportedOptions),
-        ("testCompressionOptions", testCompressionOptions),
-        ("testInvalidOptionsCombinations", testInvalidOptionsCombinations),
     ]
 }
 
