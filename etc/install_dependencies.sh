@@ -33,7 +33,7 @@ then
 
 elif [[ $1 = "swiftformat" ]]
 then
-  git clone https://github.com/nicklockwood/SwiftFormat --branch="0.47.3"
+  git clone https://github.com/nicklockwood/SwiftFormat --branch="0.47.13"
   pushd SwiftFormat
   swift build -c release
   popd
