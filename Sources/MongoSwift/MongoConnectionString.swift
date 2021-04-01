@@ -48,12 +48,8 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         let identifiersAndOptions = schemeAndRest[1].components(separatedBy: "/")
         let userAndHost = identifiersAndOptions[0].components(separatedBy: "@")
         let userInfo = userAndHost.count == 2 ? userAndHost[0].components(separatedBy: ":") : nil
-        guard let hosts = userInfo != nil ?
-            try? userAndHost[1].components(separatedBy: ",").map(ServerAddress.init) :
-            try? userAndHost[0].components(separatedBy: ",").map(ServerAddress.init)
-        else {
-            throw MongoError.InvalidArgumentError(message: "Invalid connection string host")
-        }
+        let hostString = userInfo != nil ? userAndHost[1] : userAndHost[0]
+        let hosts = try hostString.components(separatedBy: ",").map(ServerAddress.init)
         self.scheme = scheme
         self.hosts = hosts
     }
