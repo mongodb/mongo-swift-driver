@@ -5,9 +5,9 @@ import Foundation
 public struct ServerAddress: Equatable {
     public enum HostType: String {
         case ipv4
-        case ip_literal
+        case ipLiteral = "ip_literal"
         case hostname
-        case unix
+        case unixDomainSocket
     }
 
     /// The hostname or IP address.
@@ -16,7 +16,7 @@ public struct ServerAddress: Equatable {
     /// The port number.
     public let port: UInt16
 
-    public var type: HostType?
+    private var type: HostType = .hostname
 
     /// Initializes a ServerAddress from an UnsafePointer to a mongoc_host_list_t.
     internal init(_ hostList: UnsafePointer<mongoc_host_list_t>) {
@@ -41,23 +41,29 @@ public struct ServerAddress: Equatable {
         var port: UInt16
 
         // Check if host is an IPv6 literal.
-        let ipLiteralRegex = try NSRegularExpression(pattern: #"^\[(.*)\](?::([0-9]+))?$"#)
         if hostAndPort.first == "[" {
-            guard let match = ipLiteralRegex.firstMatch(
-                in: hostAndPort,
-                range: NSRange(location: 0, length: hostAndPort.utf16.count)
-            ),
+            let ipLiteralRegex = try NSRegularExpression(pattern: #"^\[(.*)\](?::([0-9]+))?$"#)
+            guard
+                let match = ipLiteralRegex.firstMatch(
+                    in: hostAndPort,
+                    range: NSRange(location: 0, length: hostAndPort.utf16.count)
+                ),
                 let hostRange = Range(match.range(at: 1), in: hostAndPort)
             else {
                 throw MongoError.InvalidArgumentError(message: "couldn't parse address from \(hostAndPort)")
             }
             host = String(hostAndPort[hostRange])
-            let rest = hostAndPort[hostRange.upperBound...].split(separator: ":")
-            guard let portOptional = rest.count > 1 ? UInt16(rest[1]) : 27017, portOptional > 0 else {
-                throw MongoError.InvalidArgumentError(message: "couldn't parse address from \(hostAndPort)")
+            if let portRange = Range(match.range(at: 2), in: hostAndPort) {
+                port = UInt16(hostAndPort[portRange]) ?? 27017
+                guard port > 0 else {
+                    throw MongoError.InvalidArgumentError(
+                        message: "port must be a valid, positive unsigned 16 bit integer"
+                    )
+                }
+            } else {
+                port = 27017
             }
-            port = portOptional
-            self.type = HostType.ip_literal
+            self.type = .ipLiteral
         } else {
             let parts = hostAndPort.components(separatedBy: ":")
             host = String(parts[0])
@@ -83,9 +89,10 @@ public struct ServerAddress: Equatable {
 
 extension ServerAddress: CustomStringConvertible {
     public var description: String {
-        if self.type == HostType.ip_literal {
+        switch self.type {
+        case .ipLiteral:
             return "[\(self.host)]:\(self.port)"
-        } else {
+        default:
             return "\(self.host):\(self.port)"
         }
     }
