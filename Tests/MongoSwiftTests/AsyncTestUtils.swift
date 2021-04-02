@@ -21,7 +21,11 @@ extension MongoClient {
             }
         }
         if let apiVersion = MongoSwiftTestCase.apiVersion {
-            opts.serverAPI = MongoServerAPI(version: apiVersion)
+            if opts.serverAPI == nil {
+                opts.serverAPI = MongoServerAPI(version: apiVersion)
+            } else {
+                opts.serverAPI!.version = apiVersion
+            }
         }
         return try MongoClient(uri, using: eventLoopGroup, options: opts)
     }
