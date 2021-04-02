@@ -24,7 +24,7 @@ public struct EstimatedDocumentCountOptions: Codable {
         self.readPreference = readPreference
     }
 
-    private enum CodingKeys: String, CodingKey {
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
         case maxTimeMS, readConcern
     }
 }

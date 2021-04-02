@@ -461,11 +461,23 @@ struct UnifiedCountDocuments: UnifiedOperationProtocol {
 }
 
 struct UnifiedEstimatedDocumentCount: UnifiedOperationProtocol {
-    static var knownArguments: Set<String> { [] }
+    let options: EstimatedDocumentCountOptions?
+
+    static var knownArguments: Set<String> {
+        Set(EstimatedDocumentCountOptions.CodingKeys.allCases.map { $0.stringValue })
+    }
+
+    init(from decoder: Decoder) throws {
+        self.options = try decoder.singleValueContainer().decode(EstimatedDocumentCountOptions.self)
+    }
+
+    init() {
+        self.options = nil
+    }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        let result = try collection.estimatedDocumentCount()
+        let result = try collection.estimatedDocumentCount(options: self.options)
         return .bson(BSON(result))
     }
 }
