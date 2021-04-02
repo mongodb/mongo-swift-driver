@@ -3,7 +3,7 @@ import Foundation
 
 /// A struct representing a network address, consisting of a host and port.
 public struct ServerAddress: Equatable {
-    public enum HostType: String {
+    private enum HostType: String {
         case ipv4
         case ipLiteral = "ip_literal"
         case hostname

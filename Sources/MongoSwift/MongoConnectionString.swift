@@ -47,6 +47,9 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         }
         let identifiersAndOptions = schemeAndRest[1].components(separatedBy: "/")
         let userAndHost = identifiersAndOptions[0].components(separatedBy: "@")
+        if userAndHost.count > 2 {
+            throw MongoError.InvalidArgumentError(message: "Invalid user information")
+        }
         let userInfo = userAndHost.count == 2 ? userAndHost[0].components(separatedBy: ":") : nil
         let hostString = userInfo != nil ? userAndHost[1] : userAndHost[0]
         let hosts = try hostString.components(separatedBy: ",").map(ServerAddress.init)
@@ -57,7 +60,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// `Codable` conformance
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        try container.encode(self)
+        try container.encode(self.description)
     }
 
     public init(from decoder: Decoder) throws {

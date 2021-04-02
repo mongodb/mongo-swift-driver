@@ -211,6 +211,13 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         try self.runTests("connection-string")
     }
 
+    func testCodable() throws {
+        let connStr = try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017")
+        let encodedData = try JSONEncoder().encode(connStr)
+        let result = try JSONDecoder().decode(MongoConnectionString.self, from: encodedData)
+        expect(connStr.description).to(equal(result.description))
+    }
+
     func testAppNameOption() throws {
         // option is set correctly from options struct
         let opts1 = MongoClientOptions(appName: "MyApp")
