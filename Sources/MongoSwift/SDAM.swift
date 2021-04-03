@@ -3,7 +3,7 @@ import Foundation
 
 /// A struct representing a network address, consisting of a host and port.
 public struct ServerAddress: Equatable {
-    static internal func verifyPort(portOptional: UInt16?) throws -> UInt16 {
+    private static func verifyPort(portOptional: UInt16?) throws -> UInt16 {
         guard let port = portOptional, port > 0 else {
             throw MongoError.InvalidArgumentError(
                 message: "port must be a valid, positive unsigned 16 bit integer"
