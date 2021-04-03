@@ -971,7 +971,11 @@ axes:
       - id: "5.3"
         display_name: "Swift 5.3"
         variables:
-          SWIFT_VERSION: "5.3"
+          SWIFT_VERSION: "5.3.3"
+      - id: "5.4-dev"
+        display_name: "Swift 5.4-dev"
+        variables:
+          SWIFT_VERSION: "5.4-DEVELOPMENT-SNAPSHOT-2021-03-25-a"
 
   - id: ssl-auth
     display_name: SSL and Auth
@@ -1059,12 +1063,14 @@ buildvariants:
 # as of now we cannot remove entire buildvariants via rule from the matrices above
 # so we need to split this up due to inability to test 5.3 on macOS 10.14.
 # see EVG-13092
-- matrix_name: "tests-all-5.3"
+- matrix_name: "tests-all-5.3+"
   matrix_spec:
     os-fully-featured:
       - "ubuntu-18.04"
       - "ubuntu-16.04"
-    swift-version: "5.3"
+    swift-version:
+      - "5.3"
+      - "5.4-dev"
     ssl-auth: "*"
   display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
   tasks:
@@ -1084,12 +1090,14 @@ buildvariants:
     then:
       remove_tasks: ".3.6"
 
-- matrix_name: "atlas-connect-5.3"
+- matrix_name: "atlas-connect-5.3+"
   matrix_spec:
     os-fully-featured:
       - "ubuntu-18.04"
       - "ubuntu-16.04"
-    swift-version: "5.3"
+    swift-version:
+      - "5.3"
+      - "5.4-dev"
   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
   tasks:
     - ".atlas-connect"
