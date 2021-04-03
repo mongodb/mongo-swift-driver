@@ -3,6 +3,15 @@ import Foundation
 
 /// A struct representing a network address, consisting of a host and port.
 public struct ServerAddress: Equatable {
+    static internal func verifyPort(portOptional: UInt16?) throws -> UInt16 {
+        guard let port = portOptional, port > 0 else {
+            throw MongoError.InvalidArgumentError(
+                message: "port must be a valid, positive unsigned 16 bit integer"
+            )
+        }
+        return port
+    }
+
     private enum HostType: String {
         case ipv4
         case ipLiteral = "ip_literal"
@@ -16,7 +25,7 @@ public struct ServerAddress: Equatable {
     /// The port number.
     public let port: UInt16
 
-    private var type: HostType = .hostname
+    private let type: HostType
 
     /// Initializes a ServerAddress from an UnsafePointer to a mongoc_host_list_t.
     internal init(_ hostList: UnsafePointer<mongoc_host_list_t>) {
@@ -28,6 +37,7 @@ public struct ServerAddress: Equatable {
             }
             return String(cString: baseAddress.assumingMemoryBound(to: CChar.self))
         }
+        self.type = .hostname
         self.port = hostData.port
     }
 
@@ -54,12 +64,7 @@ public struct ServerAddress: Equatable {
             }
             host = String(hostAndPort[hostRange])
             if let portRange = Range(match.range(at: 2), in: hostAndPort) {
-                port = UInt16(hostAndPort[portRange]) ?? 27017
-                guard port > 0 else {
-                    throw MongoError.InvalidArgumentError(
-                        message: "port must be a valid, positive unsigned 16 bit integer"
-                    )
-                }
+                port = try ServerAddress.verifyPort(portOptional: UInt16(hostAndPort[portRange]))
             } else {
                 port = 27017
             }
@@ -72,10 +77,12 @@ public struct ServerAddress: Equatable {
                     message: "expected only a single port delimiter ':' in \(hostAndPort)"
                 )
             }
-            guard let portOptional = parts.count > 1 ? UInt16(parts[1]) : 27017, portOptional > 0 else {
-                throw MongoError.InvalidArgumentError(message: "port must be a valid, positive unsigned 16 bit integer")
+            if parts.count > 1 {
+                port = try ServerAddress.verifyPort(portOptional: UInt16(parts[1]))
+            } else {
+                port = 27017
             }
-            port = portOptional
+            self.type = .hostname
         }
         self.host = host
         self.port = port
@@ -84,6 +91,7 @@ public struct ServerAddress: Equatable {
     internal init(host: String, port: UInt16) {
         self.host = host
         self.port = port
+        self.type = .hostname
     }
 }
 
