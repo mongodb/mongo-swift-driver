@@ -3,29 +3,11 @@ import Foundation
 
 /// A struct representing a network address, consisting of a host and port.
 public struct ServerAddress: Equatable {
-    private static func verifyPort(from: Substring) throws -> UInt16 {
-        guard let port = UInt16(from), port > 0 else {
-            throw MongoError.InvalidArgumentError(
-                message: "port must be a valid, positive unsigned 16 bit integer"
-            )
-        }
-        return port
-    }
-
-    private enum HostType: String {
-        case ipv4
-        case ipLiteral = "ip_literal"
-        case hostname
-        case unixDomainSocket
-    }
-
     /// The hostname or IP address.
     public let host: String
 
     /// The port number.
     public let port: UInt16
-
-    private let type: HostType
 
     /// Initializes a ServerAddress from an UnsafePointer to a mongoc_host_list_t.
     internal init(_ hostList: UnsafePointer<mongoc_host_list_t>) {
@@ -37,72 +19,28 @@ public struct ServerAddress: Equatable {
             }
             return String(cString: baseAddress.assumingMemoryBound(to: CChar.self))
         }
-        self.type = .hostname
         self.port = hostData.port
     }
 
     /// Initializes a ServerAddress, using the default localhost:27017 if a host/port is not provided.
     internal init(_ hostAndPort: String = "localhost:27017") throws {
-        guard !hostAndPort.contains("?") else {
-            throw MongoError.InvalidArgumentError(message: "\(hostAndPort) contains invalid characters")
+        let parts = hostAndPort.split(separator: ":")
+        self.host = String(parts[0])
+        guard let port = UInt16(parts[1]) else {
+            throw MongoError.InternalError(message: "couldn't parse address from \(hostAndPort)")
         }
-
-        var host: String
-        var port: UInt16
-
-        // Check if host is an IPv6 literal.
-        if hostAndPort.first == "[" {
-            let ipLiteralRegex = try NSRegularExpression(pattern: #"^\[(.*)\](?::([0-9]+))?$"#)
-            guard
-                let match = ipLiteralRegex.firstMatch(
-                    in: hostAndPort,
-                    range: NSRange(location: 0, length: hostAndPort.utf16.count)
-                ),
-                let hostRange = Range(match.range(at: 1), in: hostAndPort)
-            else {
-                throw MongoError.InvalidArgumentError(message: "couldn't parse address from \(hostAndPort)")
-            }
-            host = String(hostAndPort[hostRange])
-            if let portRange = Range(match.range(at: 2), in: hostAndPort) {
-                port = try ServerAddress.verifyPort(from: hostAndPort[portRange])
-            } else {
-                port = 27017
-            }
-            self.type = .ipLiteral
-        } else {
-            let parts = hostAndPort.split(separator: ":")
-            host = String(parts[0])
-            guard parts.count <= 2 else {
-                throw MongoError.InvalidArgumentError(
-                    message: "expected only a single port delimiter ':' in \(hostAndPort)"
-                )
-            }
-            if parts.count > 1 {
-                port = try ServerAddress.verifyPort(from: parts[1])
-            } else {
-                port = 27017
-            }
-            self.type = .hostname
-        }
-        self.host = host
         self.port = port
     }
 
     internal init(host: String, port: UInt16) {
         self.host = host
         self.port = port
-        self.type = .hostname
     }
 }
 
 extension ServerAddress: CustomStringConvertible {
     public var description: String {
-        switch self.type {
-        case .ipLiteral:
-            return "[\(self.host)]:\(self.port)"
-        default:
-            return "\(self.host):\(self.port)"
-        }
+        "\(self.host):\(self.port)"
     }
 }
 
@@ -323,7 +261,6 @@ public struct TopologyDescription: Equatable {
         let topologyType = String(cString: mongoc_topology_description_type(description))
         // swiftlint:disable:next force_unwrapping
         self.type = TopologyType(rawValue: topologyType)! // libmongoc will only give us back valid raw values.
-
         var size = size_t()
         let serverData = mongoc_topology_description_get_servers(description, &size)
         defer { mongoc_server_descriptions_destroy_all(serverData, size) }

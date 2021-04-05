@@ -37,7 +37,7 @@ struct TestServerAddress: Decodable {
 
     /// Compares the test expectation to an actual address. If a field is nil in the expectation we do not need to
     /// assert on it.
-    func matches(_ address: ServerAddress) -> Bool {
+    func matches(_ address: MongoConnectionString.HostIdentifier) -> Bool {
         self.host == address.host && (self.port == nil || self.port == address.port)
     }
 }
@@ -117,7 +117,7 @@ let skipUnsupported: [String: [String]] = [
     "valid-db-with-dotted-name.json": ["*"], // libmongoc doesn't allow db names in dotted form in the URI
 
     // Disabled for MongoConnectionString
-    "invalid-uris.json": ["*"],
+    "invalid-uris.json": ["option", "username", "password"],
     "valid-auth.json": ["*"],
     "valid-options.json": ["*"],
     "valid-unix_socket-absolute.json": ["*"],
@@ -132,7 +132,9 @@ let skipUnsupported: [String: [String]] = [
 ]
 
 func shouldSkip(file: String, test: String) -> Bool {
-    if let skipList = skipUnsupported[file], skipList.contains(test) || skipList.contains("*") {
+    if let skipList = skipUnsupported[file], skipList.contains(where: test.lowercased().contains) ||
+        skipList.contains("*")
+    {
         return true
     }
 
