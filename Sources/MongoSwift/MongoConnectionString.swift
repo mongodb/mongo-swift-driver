@@ -32,7 +32,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         public var description: String { self._scheme.rawValue }
     }
 
-    /// Parses a new `MongoConnectionString` instance from the provided string
+    /// Parses a new `MongoConnectionString` instance from the provided string.
     /// - Throws:
     ///   - `MongoError.InvalidArgumentError` if the input is invalid.
     public init(throwsIfInvalid input: String) throws {
