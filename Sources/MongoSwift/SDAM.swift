@@ -261,6 +261,7 @@ public struct TopologyDescription: Equatable {
         let topologyType = String(cString: mongoc_topology_description_type(description))
         // swiftlint:disable:next force_unwrapping
         self.type = TopologyType(rawValue: topologyType)! // libmongoc will only give us back valid raw values.
+
         var size = size_t()
         let serverData = mongoc_topology_description_get_servers(description, &size)
         defer { mongoc_server_descriptions_destroy_all(serverData, size) }
