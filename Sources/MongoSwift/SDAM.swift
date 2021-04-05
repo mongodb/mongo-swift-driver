@@ -3,8 +3,8 @@ import Foundation
 
 /// A struct representing a network address, consisting of a host and port.
 public struct ServerAddress: Equatable {
-    private static func verifyPort(portOptional: UInt16?) throws -> UInt16 {
-        guard let port = portOptional, port > 0 else {
+    private static func verifyPort(from: Substring) throws -> UInt16 {
+        guard let port = UInt16(from), port > 0 else {
             throw MongoError.InvalidArgumentError(
                 message: "port must be a valid, positive unsigned 16 bit integer"
             )
@@ -64,13 +64,13 @@ public struct ServerAddress: Equatable {
             }
             host = String(hostAndPort[hostRange])
             if let portRange = Range(match.range(at: 2), in: hostAndPort) {
-                port = try ServerAddress.verifyPort(portOptional: UInt16(hostAndPort[portRange]))
+                port = try ServerAddress.verifyPort(from: hostAndPort[portRange])
             } else {
                 port = 27017
             }
             self.type = .ipLiteral
         } else {
-            let parts = hostAndPort.components(separatedBy: ":")
+            let parts = hostAndPort.split(separator: ":")
             host = String(parts[0])
             guard parts.count <= 2 else {
                 throw MongoError.InvalidArgumentError(
@@ -78,7 +78,7 @@ public struct ServerAddress: Equatable {
                 )
             }
             if parts.count > 1 {
-                port = try ServerAddress.verifyPort(portOptional: UInt16(parts[1]))
+                port = try ServerAddress.verifyPort(from: parts[1])
             } else {
                 port = 27017
             }

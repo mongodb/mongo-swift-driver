@@ -32,7 +32,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         public var description: String { self._scheme.rawValue }
     }
 
-    /// Parses `input` into its constituent parts.
+    /// Parses a new `MongoConnectionString` instance from the provided string
     /// - Throws:
     ///   - `MongoError.InvalidArgumentError` if the input is invalid.
     public init(throwsIfInvalid input: String) throws {
@@ -47,7 +47,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         }
         let identifiersAndOptions = schemeAndRest[1].components(separatedBy: "/")
         let userAndHost = identifiersAndOptions[0].components(separatedBy: "@")
-        if userAndHost.count > 2 {
+        guard userAndHost.count <= 2 else {
             throw MongoError.InvalidArgumentError(message: "Invalid user information")
         }
         let userInfo = userAndHost.count == 2 ? userAndHost[0].components(separatedBy: ":") : nil
