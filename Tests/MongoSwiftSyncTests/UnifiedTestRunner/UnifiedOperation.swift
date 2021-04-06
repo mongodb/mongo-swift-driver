@@ -177,7 +177,11 @@ struct UnifiedOperation: Decodable {
         case "endSession":
             self.operation = EndSession()
         case "estimatedDocumentCount":
-            self.operation = UnifiedEstimatedDocumentCount()
+            if container.allKeys.contains(.arguments) {
+                self.operation = try container.decode(UnifiedEstimatedDocumentCount.self, forKey: .arguments)
+            } else {
+                self.operation = UnifiedEstimatedDocumentCount()
+            }
         case "find":
             self.operation = try container.decode(UnifiedFind.self, forKey: .arguments)
         case "findOneAndReplace":

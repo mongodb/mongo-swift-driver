@@ -56,14 +56,20 @@ final class CrudTests: MongoSwiftTestCase {
         print() // for readability of results
     }
 
-    // Run all the tests at the /read path
+    // Run all the tests at the v1/read path
     func testReads() throws {
-        try self.doTests(forSubdirectory: "read")
+        try self.doTests(forSubdirectory: "v1/read")
     }
 
-    // Run all the tests at the /write path
+    // Run all the tests at the v1/write path
     func testWrites() throws {
-        try self.doTests(forSubdirectory: "write")
+        try self.doTests(forSubdirectory: "v1/write")
+    }
+
+    func testCrudUnified() throws {
+        let files = try retrieveSpecTestFiles(specName: "crud", subdirectory: "unified", asType: UnifiedTestFile.self)
+        let runner = try UnifiedTestRunner()
+        try runner.runFiles(files.map { $0.1 })
     }
 }
 

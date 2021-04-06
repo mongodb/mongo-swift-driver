@@ -45,8 +45,7 @@ private struct RetryableReadsTestFile: Decodable, SpecTestFile {
         "gridfs",
         "count.",
         "count-",
-        "mapReduce",
-        "estimatedDocumentCount" // TODO: SWIFT-1099: unskip
+        "mapReduce"
     ]
 }
 
