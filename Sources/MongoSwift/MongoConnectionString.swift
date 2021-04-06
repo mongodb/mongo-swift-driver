@@ -38,7 +38,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// In standard connection strings, this describes the address of a mongod or mongos to connect to.
     /// In mongodb+srv connection strings, this describes a DNS name to be queried for SRV and TXT records.
     public struct HostIdentifier: Equatable, CustomStringConvertible {
-        private static func parsePort(from: String) throws -> UInt16? {
+        private static func parsePort(from: String) throws -> UInt16 {
             guard let port = UInt16(from), port > 0 else {
                 throw MongoError.InvalidArgumentError(
                     message: "port must be a valid, positive unsigned 16 bit integer"
@@ -68,9 +68,6 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 throw MongoError.InvalidArgumentError(message: "\(hostAndPort) contains invalid characters")
             }
 
-            var host: String
-            var port: UInt16?
-
             // Check if host is an IPv6 literal.
             if hostAndPort.first == "[" {
                 let ipLiteralRegex = try NSRegularExpression(pattern: #"^\[(.*)\](?::([0-9]+))?$"#)
@@ -83,26 +80,28 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 else {
                     throw MongoError.InvalidArgumentError(message: "couldn't parse address from \(hostAndPort)")
                 }
-                host = String(hostAndPort[hostRange])
+                self.host = String(hostAndPort[hostRange])
                 if let portRange = Range(match.range(at: 2), in: hostAndPort) {
-                    port = try HostIdentifier.parsePort(from: String(hostAndPort[portRange]))
+                    self.port = try HostIdentifier.parsePort(from: String(hostAndPort[portRange]))
+                } else {
+                    self.port = nil
                 }
                 self.type = .ipLiteral
             } else {
                 let parts = hostAndPort.components(separatedBy: ":")
-                host = String(parts[0])
+                self.host = String(parts[0])
                 guard parts.count <= 2 else {
                     throw MongoError.InvalidArgumentError(
                         message: "expected only a single port delimiter ':' in \(hostAndPort)"
                     )
                 }
                 if parts.count > 1 {
-                    port = try HostIdentifier.parsePort(from: parts[1])
+                    self.port = try HostIdentifier.parsePort(from: parts[1])
+                } else {
+                    self.port = nil
                 }
                 self.type = .hostname
             }
-            self.host = host
-            self.port = port
         }
 
         public var description: String {
@@ -148,7 +147,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         let hostString = userInfo != nil ? userAndHost[1] : userAndHost[0]
         let hosts = try hostString.components(separatedBy: ",").map(HostIdentifier.init)
         if case .srv = scheme {
-            guard hosts.count == 1, hosts[0].port == nil else {
+            guard hosts.count == 1 else {
                 throw MongoError.InvalidArgumentError(
                     message: "Only a single host identifier may be specified in a mongodb+srv connection string")
             }
