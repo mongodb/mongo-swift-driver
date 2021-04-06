@@ -137,7 +137,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         // TODO: SWIFT-1174: handle unescaped slashes in unix domain sockets.
         guard identifiersAndOptions.count <= 2 else {
             throw MongoError.InvalidArgumentError(
-                message: "Connection string contrains an unescaped slash"
+                message: "Connection string contains an unescaped slash"
             )
         }
         let userAndHost = identifiersAndOptions[0].components(separatedBy: "@")
