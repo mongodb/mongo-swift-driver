@@ -77,8 +77,6 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             background: true,
             bits: 32,
             collation: ["locale": "fr"],
-            defaultLanguage: "english",
-            languageOverride: "cat",
             max: 30,
             min: 0,
             name: "testOptions",
@@ -125,6 +123,8 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
     func testTextIndex() throws {
         let textIndexOpts = IndexOptions(
+            defaultLanguage: "english",
+            languageOverride: "languageOverrideField",
             name: "myTextIndex",
             textIndexVersion: 2,
             weights: ["cat": 2, "dog": 1]
