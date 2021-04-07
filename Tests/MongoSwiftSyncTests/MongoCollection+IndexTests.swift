@@ -85,10 +85,8 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             sparse: false,
             sphereIndexVersion: 2,
             storageEngine: ["wiredTiger": ["configString": "access_pattern_hint=random"]],
-            textIndexVersion: 2,
             unique: true,
-            version: 2,
-            weights: ["cat": 0.5, "_id": 0.5]
+            version: 2
         )
 
         // option is no longer supported as of SERVER-47081
@@ -123,6 +121,18 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         var expectedTtlOptions = ttlOptions
         expectedTtlOptions.version = 2
         expect(indexOptions[2]).to(equal(expectedTtlOptions))
+    }
+
+    func testTextIndex() throws {
+        let textIndexOpts = IndexOptions(
+            name: "myTextIndex",
+            textIndexVersion: 2,
+            weights: ["cat": 2, "dog": 1]
+        )
+
+        defer { try? self.coll.dropIndex("myTextIndex") }
+        let model = IndexModel(keys: ["cat": "text", "dog": "text"], options: textIndexOpts)
+        expect(try self.coll.createIndex(model)).to(equal("myTextIndex"))
     }
 
     func testIndexWithWildCard() throws {
