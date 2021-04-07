@@ -52,6 +52,7 @@
 @_exported import struct MongoSwift.ListDatabasesOptions
 @_exported import struct MongoSwift.MongoClientOptions
 @_exported import struct MongoSwift.MongoCollectionOptions
+@_exported import struct MongoSwift.MongoConnectionString
 @_exported import struct MongoSwift.MongoCredential
 @_exported import enum MongoSwift.MongoCursorType
 @_exported import struct MongoSwift.MongoDatabaseOptions
