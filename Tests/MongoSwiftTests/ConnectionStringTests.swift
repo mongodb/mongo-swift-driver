@@ -143,6 +143,7 @@ func shouldSkip(file: String, test: String) -> Bool {
 
 final class ConnectionStringTests: MongoSwiftTestCase {
     // swiftlint:disable:next cyclomatic_complexity
+    // TODO: Test string conversion behavior after changing to MongoConnectionString
     func runTests(_ specName: String) throws {
         let testFiles = try retrieveSpecTestFiles(specName: specName, asType: ConnectionStringTestFile.self)
         for (filename, file) in testFiles {
