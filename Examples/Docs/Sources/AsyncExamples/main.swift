@@ -225,3 +225,51 @@ private func transactions() throws {
     }.wait()
     // End Transactions Retry Example 3
 }
+
+private func versionedAPI() throws {
+    let uri = "mongodb://localhost:27017"
+    let myEventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+    defer { try? myEventLoopGroup.syncShutdownGracefully() }
+
+    do {
+        // Start Versioned API Example 1
+
+        // Declare API version "1" for the client
+        var clientOpts = MongoClientOptions()
+        clientOpts.serverAPI = MongoServerAPI(version: .v1)
+        let client = try MongoClient(uri, using: myEventLoopGroup, options: clientOpts)
+        // End Versioned API Example 1
+
+        try client.syncClose()
+    }
+
+    do {
+        // Start Versioned API Example 2
+
+        // Use the `strict` option
+        var opts = MongoClientOptions()
+        opts.serverAPI = MongoServerAPI(version: .v1, strict: true)
+        let client = try MongoClient(uri, using: myEventLoopGroup, options: opts)
+
+        var findOpts = FindOptions()
+        findOpts.cursorType = .tailable
+        // Fails with an error because `tailable` is not part of version 1
+        let cursor = try client.db("db").collection("coll").find(options: findOpts).wait()
+        // End Versioned API Example 2
+
+        try cursor.kill().wait()
+        try client.syncClose()
+    }
+
+    do {
+        // Start Versioned API Example 3
+
+        // Use the `deprecationErrors` option
+        var opts = MongoClientOptions()
+        opts.serverAPI = MongoServerAPI(version: .v1, deprecationErrors: true)
+        let client = try MongoClient(uri, using: myEventLoopGroup, options: opts)
+        // End Versioned API Example 3
+
+        try client.syncClose()
+    }
+}
