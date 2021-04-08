@@ -549,3 +549,10 @@ mongoc_client_pool_set_server_api (mongoc_client_pool_t *pool,
    bson_mutex_unlock (&pool->topology->mutex);
    return true;
 }
+
+void
+mongoc_client_pool_set_min_heartbeat_frequency_msec (mongoc_client_pool_t *pool,
+                                                     uint64_t freq_msec)
+{
+    pool-> topology-> min_heartbeat_frequency_msec = freq_msec;
+}

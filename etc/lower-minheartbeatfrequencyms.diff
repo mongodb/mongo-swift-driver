@@ -1,5 +1,5 @@
 diff --git a/Sources/CLibMongoC/include/CLibMongoC_mongoc-client-pool.h b/Sources/CLibMongoC/include/CLibMongoC_mongoc-client-pool.h
-index 16d7eb1..bcf1cde 100644
+index 16d7eb1a..bcf1cdee 100644
 --- a/Sources/CLibMongoC/include/CLibMongoC_mongoc-client-pool.h
 +++ b/Sources/CLibMongoC/include/CLibMongoC_mongoc-client-pool.h
 @@ -76,6 +76,10 @@ mongoc_client_pool_set_server_api (mongoc_client_pool_t *pool,
@@ -14,11 +14,11 @@ index 16d7eb1..bcf1cde 100644
  
  
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-client-pool.c b/Sources/CLibMongoC/mongoc/mongoc-client-pool.c
-index ea78c7a..2139330 100644
+index f1321db2..a35616ea 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-client-pool.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-client-pool.c
-@@ -543,3 +543,10 @@ mongoc_client_pool_set_server_api (mongoc_client_pool_t *pool,
-    _mongoc_topology_scanner_set_server_api (pool->topology->scanner, api);
+@@ -549,3 +549,10 @@ mongoc_client_pool_set_server_api (mongoc_client_pool_t *pool,
+    bson_mutex_unlock (&pool->topology->mutex);
     return true;
  }
 +
@@ -29,7 +29,7 @@ index ea78c7a..2139330 100644
 +    pool-> topology-> min_heartbeat_frequency_msec = freq_msec;
 +}
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-topology-private.h b/Sources/CLibMongoC/mongoc/mongoc-topology-private.h
-index 445468b..be181b9 100644
+index b7514a76..3afbb7a3 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-topology-private.h
 +++ b/Sources/CLibMongoC/mongoc/mongoc-topology-private.h
 @@ -28,7 +28,7 @@
