@@ -28,7 +28,7 @@
 #include "mongoc-client-session-private.h"
 #include "mongoc-crypt-private.h"
 
-#define MONGOC_TOPOLOGY_MIN_HEARTBEAT_FREQUENCY_MS 50
+#define MONGOC_TOPOLOGY_MIN_HEARTBEAT_FREQUENCY_MS 500
 #define MONGOC_TOPOLOGY_SOCKET_CHECK_INTERVAL_MS 5000
 #define MONGOC_TOPOLOGY_COOLDOWN_MS 5000
 #define MONGOC_TOPOLOGY_LOCAL_THRESHOLD_MS 15
@@ -197,7 +197,7 @@ void
 _mongoc_topology_do_blocking_scan (mongoc_topology_t *topology,
                                    bson_error_t *error);
 const bson_t *
-_mongoc_topology_get_ismaster (mongoc_topology_t *topology);
+_mongoc_topology_get_handshake_cmd (mongoc_topology_t *topology);
 void
 _mongoc_topology_request_scan (mongoc_topology_t *topology);
 
