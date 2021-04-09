@@ -707,7 +707,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testFindOneAndDelete() throws {
         // test using maxTimeMS
-        let opts1 = FindOneAndDeleteOptions(maxTimeMS: 100)
+        let opts1 = FindOneAndDeleteOptions(maxTimeMS: 1000)
         let result1 = try self.coll.findOneAndDelete(["cat": "cat"], options: opts1)
         expect(result1).to(equal(self.doc2))
         expect(try self.coll.countDocuments()).to(equal(1))
@@ -729,7 +729,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testFindOneAndReplace() throws {
         // test using maxTimeMS
-        let opts1 = FindOneAndReplaceOptions(maxTimeMS: 100)
+        let opts1 = FindOneAndReplaceOptions(maxTimeMS: 1000)
         let result1 = try self.coll.findOneAndReplace(
             filter: ["cat": "cat"],
             replacement: ["cat": "blah"],
@@ -769,7 +769,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
     func testFindOneAndUpdate() throws {
         // test using maxTimeMS
-        let opts1 = FindOneAndUpdateOptions(maxTimeMS: 100)
+        let opts1 = FindOneAndUpdateOptions(maxTimeMS: 1000)
         let result1 = try self.coll.findOneAndUpdate(
             filter: ["cat": "cat"],
             update: ["$set": ["cat": "blah"]],
