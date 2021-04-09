@@ -1159,8 +1159,7 @@ _mongoc_client_new_from_uri (mongoc_topology_t *topology)
       BSON_ASSERT (mongoc_client_set_appname (client, appname));
    }
 
-   /* TODO CDRIVER-3850 pull initial timeoutMS value from the URI */
-   client->timeout_ms = MONGOC_TIMEOUTMS_UNSET;
+   client->timeout_ms = mongoc_uri_get_option_as_int64 (client->uri, MONGOC_URI_TIMEOUTMS, MONGOC_TIMEOUTMS_UNSET);
 
    mongoc_cluster_init (&client->cluster, client->uri, client);
 
@@ -3125,6 +3124,8 @@ mongoc_client_set_server_api (mongoc_client_t *client,
    }
 
    client->api = mongoc_server_api_copy (api);
+   bson_mutex_lock (&client->topology->mutex);
    _mongoc_topology_scanner_set_server_api (client->topology->scanner, api);
+   bson_mutex_unlock (&client->topology->mutex);
    return true;
 }
