@@ -216,8 +216,8 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
     func testCodable() throws {
         let connStr = try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017")
-        let encodedData = try JSONEncoder().encode(connStr)
-        let decodedResult = try JSONDecoder().decode(MongoConnectionString.self, from: encodedData)
+        let encodedData = try ExtendedJSONEncoder().encode(connStr)
+        let decodedResult = try ExtendedJSONDecoder().decode(MongoConnectionString.self, from: encodedData)
         expect(connStr.description).to(equal(decodedResult.description))
         expect(connStr.description).to(equal("mongodb://localhost:27017"))
     }
