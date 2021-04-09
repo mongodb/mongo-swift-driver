@@ -1,3 +1,5 @@
+import CLibMongoC
+
 // TODO: SWIFT-1159: add versioned API docs link.
 /// A type containing options for specifying a MongoDB server API version and related behavior.
 public struct MongoServerAPI: Codable {
@@ -48,6 +50,17 @@ public struct MongoServerAPI: Codable {
             }
             self = Version(version)
         }
+
+        fileprivate var mongocAPIVersion: mongoc_server_api_version_t {
+            switch self {
+            case .v1:
+                return MONGOC_SERVER_API_V1
+            default:
+                // we would only ever get a value besides v1 if we upgraded to a
+                // version of libmongoc that supported a new API version.
+                fatalError("Encountered unexpected API version \(self)")
+            }
+        }
     }
 
     /// Specifies the API version to use.
@@ -64,5 +77,23 @@ public struct MongoServerAPI: Codable {
         self.version = version
         self.strict = strict
         self.deprecationErrors = deprecationErrors
+    }
+
+    /// Creates an equivalent `mongoc_server_api_t` and uses a pointer to it to execute the provided closure, cleaning
+    /// it up afterward. The pointer must not escape the closure.
+    internal func withMongocServerAPI<T>(_ body: (OpaquePointer) throws -> T) rethrows -> T {
+        // this never returns nil
+        guard let api = mongoc_server_api_new(self.version.mongocAPIVersion) else {
+            fatalError("Failed to initialize mongoc_server_api_t")
+        }
+        defer { mongoc_server_api_destroy(api) }
+
+        if let strict = self.strict {
+            mongoc_server_api_strict(api, strict)
+        }
+        if let deprecationErrors = self.deprecationErrors {
+            mongoc_server_api_deprecation_errors(api, deprecationErrors)
+        }
+        return try body(api)
     }
 }

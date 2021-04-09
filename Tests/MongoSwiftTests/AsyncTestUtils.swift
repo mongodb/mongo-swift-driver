@@ -20,6 +20,13 @@ extension MongoClient {
                 opts.tlsCertificateKeyFile = URL(string: keyPath)
             }
         }
+        if let apiVersion = MongoSwiftTestCase.apiVersion {
+            if opts.serverAPI == nil {
+                opts.serverAPI = MongoServerAPI(version: apiVersion)
+            } else {
+                opts.serverAPI!.version = apiVersion
+            }
+        }
         return try MongoClient(uri, using: eventLoopGroup, options: opts)
     }
 

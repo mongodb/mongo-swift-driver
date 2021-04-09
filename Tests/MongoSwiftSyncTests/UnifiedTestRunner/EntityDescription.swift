@@ -38,6 +38,15 @@ enum EntityDescription: Decodable {
         /// will be ignored in addition to configureFailPoint and any commands containing sensitive information (per
         /// the Command Monitoring spec).
         let ignoreCommandMonitoringEvents: [String]?
+
+        /// Optional object to declare an API version on the client entity. A `version` string is required, and test
+        /// runners MUST fail if the given version string is not supported by the driver.
+        let serverAPI: MongoServerAPI?
+
+        enum CodingKeys: String, CodingKey {
+            case id, uriOptions, useMultipleMongoses, observeEvents,
+                 ignoreCommandMonitoringEvents, serverAPI = "serverApi"
+        }
     }
 
     /// Describes a Database entity.
@@ -129,6 +138,7 @@ struct UnifiedTestClient {
             singleMongos: clientDescription.useMultipleMongoses != true
         ).toString()
         var opts = clientDescription.uriOptions ?? MongoClientOptions()
+        opts.serverAPI = clientDescription.serverAPI
         // If the test might execute a configureFailPoint command, for each target client the test runner MAY
         // specify a reduced value for heartbeatFrequencyMS (and minHeartbeatFrequencyMS if possible) to speed
         // up SDAM recovery time and server selection after a failure; however, test runners MUST NOT do so for
