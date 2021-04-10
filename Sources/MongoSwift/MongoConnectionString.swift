@@ -78,7 +78,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                     ),
                     let hostRange = Range(match.range(at: 1), in: hostAndPort)
                 else {
-                    throw MongoError.InvalidArgumentError(message: "couldn't parse address from \(hostAndPort)")
+                    throw MongoError.InvalidArgumentError(message: "Couldn't parse address from \(hostAndPort)")
                 }
                 self.host = String(hostAndPort[hostRange])
                 if let portRange = Range(match.range(at: 2), in: hostAndPort) {
@@ -92,7 +92,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 self.host = String(parts[0])
                 guard parts.count <= 2 else {
                     throw MongoError.InvalidArgumentError(
-                        message: "expected only a single port delimiter ':' in \(hostAndPort)"
+                        message: "Expected only a single port delimiter ':' in \(hostAndPort)"
                     )
                 }
                 if parts.count > 1 {
@@ -116,6 +116,33 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 ret += ":\(port)"
             }
             return ret
+        }
+    }
+
+    private static func percentDecode(from: String?) throws -> String? {
+        if from == nil {
+            return nil
+        }
+        let decodedOptional = from?.removingPercentEncoding
+        guard let decoded = decodedOptional else {
+            throw MongoError.InvalidArgumentError(
+                message: "Contains an unescaped percent sign"
+            )
+        }
+        return decoded
+    }
+
+    private mutating func defaultAuth() throws {
+        switch self.credential?.mechanism {
+        case MongoCredential.Mechanism.gssAPI:
+            self.credential?.source = "$external"
+            if self.credential?.mechanismProperties == nil {
+                self.credential?.mechanismProperties = ["SERVICE_NAME":"mongodb"]
+            }
+        default:
+            if self.credential?.source == nil {
+                self.credential?.source = "admin"
+            }
         }
     }
 
@@ -156,8 +183,115 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                     message: "A port cannot be specified in a mongodb+srv connection string")
             }
         }
+        let authAndOptions = identifiersAndOptions.count == 2 ?
+            identifiersAndOptions[1].components(separatedBy: "?") : nil
+        guard authAndOptions?.count ?? 0 <= 2 else {
+            throw MongoError.InvalidArgumentError(
+                message: "Connection string contains an unexpected '?'"
+            )
+        }
+
+        var authSource = try MongoConnectionString.percentDecode(from: authAndOptions?[0])
+        if authSource == "" {
+            authSource = nil
+        }
+        if userInfo != nil || authSource != nil {
+            guard userInfo?.count ?? 0 <= 2 else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Expected only a single auth info delimiter ':'"
+                )
+            }
+            self.credential = MongoCredential(
+                username: try MongoConnectionString.percentDecode(from: userInfo?[0]),
+                password: userInfo?.count == 2 ? try MongoConnectionString.percentDecode(from: userInfo?[1]) : nil,
+                source: try MongoConnectionString.percentDecode(from: authSource) ?? nil
+            )
+        }
+        let optionString = authAndOptions?.count ?? 0 == 2 ? authAndOptions?[1] : nil
+        if let options = optionString?.components(separatedBy: "&") {
+            for option in options {
+                let keyValue = option.components(separatedBy: "=")
+                guard keyValue.count == 2 else {
+                    throw MongoError.InvalidArgumentError(
+                        message: "Invalid key value pair for option \(keyValue)"
+                    )
+                }
+                let key = keyValue[0]
+                let value = keyValue[1]
+                switch key {
+                // authentication options.
+                case "authSource":
+                    guard self.credential != nil else {
+                        throw MongoError.InvalidArgumentError(
+                            message: "Authentication mechanism requires username"
+                        )
+                    }
+                    if let cred = self.credential?.mechanism {
+                        if cred == MongoCredential.Mechanism.plain ||
+                            cred == MongoCredential.Mechanism.gssAPI {
+                            guard value == "$external" else {
+                                throw MongoError.InvalidArgumentError(
+                                    message: "Authentication database must be 'external' for this mechanism"
+                                )
+                            }
+                        }
+                    }
+                    self.credential?.source = value
+                case "authMechanism":
+                    guard self.credential != nil else {
+                        throw MongoError.InvalidArgumentError(
+                            message: "Authentication mechanism requires username"
+                        )
+                    }
+                    self.credential?.mechanism = MongoCredential.Mechanism(value)
+                case "authMechanismProperties":
+                    guard self.credential != nil else {
+                        throw MongoError.InvalidArgumentError(
+                            message: "Authentication mechanism requires username"
+                        )
+                    }
+                    var authMechanismProperties = BSONDocument()
+                    for property in value.components(separatedBy: ",") {
+                        let propertyKeyValue = property.components(separatedBy: ":")
+                        guard propertyKeyValue.count == 2 else {
+                            throw MongoError.InvalidArgumentError(
+                                message: "Invalid key value pair for authMechanismProperties \(propertyKeyValue)"
+                            )
+                        }
+                        let propertyKey = propertyKeyValue[0]
+                        let propertyValue = propertyKeyValue[1]
+                        switch propertyKey {
+                        case "SERVICE_NAME", "SERVICE_REALM":
+                            if let cred = self.credential?.mechanism {
+                                guard cred == MongoCredential.Mechanism.gssAPI else {
+                                    throw MongoError.InvalidArgumentError(
+                                        message: "\(key) option is only valid using GSSAPI authentication mechanism"
+                                    )
+                                }
+                            }
+                            authMechanismProperties[propertyKey] = .string(propertyValue)
+                        case "CANONICALIZE_HOST_NAME":
+                            guard let canonicalize = Bool(propertyValue) else {
+                                throw MongoError.InvalidArgumentError(
+                                    message: "CANONICALIZE_HOST_NAME must be 'true' or 'false' \(propertyKeyValue)"
+                                )
+                            }
+                            authMechanismProperties[propertyKey] = .bool(canonicalize)
+                        default:
+                            throw MongoError.InvalidArgumentError(
+                                message: "Unknown authMechanismProperties option \(propertyKey)"
+                            )
+                        }
+                    }
+                    self.credential?.mechanismProperties = authMechanismProperties
+                default:
+                    break
+                }
+            }
+        }
         self.scheme = scheme
         self.hosts = hosts
+        try defaultAuth()
     }
 
     /// `Codable` conformance
@@ -180,7 +314,36 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     public var description: String {
         var des = ""
         des += "\(self.scheme)://"
+        if let username = self.credential?.username {
+            des += username
+            if let password = self.credential?.password {
+                des += ":\(password)"
+            }
+            des += "@"
+        }
         des += self.hosts.map { $0.description }.joined(separator: ",")
+        if let authSource = self.credential?.source {
+            des += "/\(authSource)"
+        }
+        var options: [String] = []
+        if let mechanism = self.credential?.mechanism {
+            options.append("authMechanism=\(mechanism)")
+        }
+        if let mechanismProperty = self.credential?.mechanismProperties {
+            var properties: [String] = []
+            // TODO: SWIFT-1177 Remove after BSON conforms to CustomStringConvertible
+            for (k, v) in mechanismProperty {
+                if let value = v.stringValue {
+                    properties.append("\(k):\(value)")
+                } else if let value = v.boolValue {
+                    properties.append("\(k):\(String(value))")
+                }
+            }
+            options.append("authMechanismProperties=\(properties.joined(separator: ","))")
+        }
+        if !options.isEmpty {
+            des += "?\(options.joined(separator: "&"))"
+        }
         return des
     }
 
@@ -189,4 +352,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
     /// Specifies one or more host/ports to connect to.
     public var hosts: [HostIdentifier]
+
+    /// Returns the credential configured on this URI. Will be empty if no options are set.
+    public var credential: MongoCredential?
 }

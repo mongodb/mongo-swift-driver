@@ -27,8 +27,9 @@ final class AuthTests: MongoSwiftTestCase {
 
         for (_, file) in testFiles {
             for testCase in file.tests {
+                print(testCase.uri, testCase.valid)
                 guard testCase.valid else {
-                    expect(try ConnectionString(testCase.uri))
+                    expect(try MongoConnectionString(throwsIfInvalid: testCase.uri))
                         .to(
                             throwError(errorType: MongoError.InvalidArgumentError.self),
                             description: testCase.description
@@ -36,9 +37,8 @@ final class AuthTests: MongoSwiftTestCase {
                     return
                 }
 
-                let connString = try ConnectionString(testCase.uri)
-                if var credential = testCase.credential {
-                    var connStringCredential = connString.credential
+                let connString = try MongoConnectionString(throwsIfInvalid: testCase.uri)
+                if var credential = testCase.credential, var connStringCredential = connString.credential {
                     expect(connStringCredential).toNot(beNil(), description: testCase.description)
 
                     if credential.mechanismProperties != nil {

@@ -117,8 +117,7 @@ let skipUnsupported: [String: [String]] = [
     "valid-db-with-dotted-name.json": ["*"], // libmongoc doesn't allow db names in dotted form in the URI
 
     // Disabled for MongoConnectionString
-    "invalid-uris.json": ["option", "username", "password"],
-    "valid-auth.json": ["*"],
+    "invalid-uris.json": ["option"],
     "valid-options.json": ["*"],
     "valid-unix_socket-absolute.json": ["*"],
     "valid-unix_socket-relative.json": ["*"],
@@ -195,13 +194,14 @@ final class ConnectionStringTests: MongoSwiftTestCase {
                 }
 
                 // Assert that auth matches, if present
-//                if let expectedAuth = testCase.auth {
-//                    let actual = connString.credential
-//                    guard expectedAuth.matches(actual) else {
-//                        XCTFail("Expected credentials: \(expectedAuth) do not match parsed credentials: \(actual)")
-//                        continue
-//                    }
-//                }
+                if let expectedAuth = testCase.auth {
+                    if let actual = connString.credential {
+                        guard expectedAuth.matches(actual) else {
+                            XCTFail("Expected credentials: \(expectedAuth) do not match parsed credentials: \(actual)")
+                            continue
+                        }
+                    }
+                }
             }
         }
     }
