@@ -126,7 +126,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         let decodedOptional = from?.removingPercentEncoding
         guard let decoded = decodedOptional else {
             throw MongoError.InvalidArgumentError(
-                message: "Contains an unescaped percent sign"
+                message: "Connection string contains an unescaped percent sign"
             )
         }
         return decoded
