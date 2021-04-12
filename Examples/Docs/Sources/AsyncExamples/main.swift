@@ -254,13 +254,13 @@ private func versionedAPI() throws {
         var findOpts = FindOptions()
         findOpts.cursorType = .tailable
         // Fails with an error because `tailable` is not part of version 1
-        do {
-            let cursor = try client.db("db").collection("coll").find(options: findOpts).wait()
-        } catch {
+        let cursorFuture = client.db("db").collection("coll").find(options: findOpts)
+        cursorFuture.whenFailure { error in
             // error
         }
-        // End Versioned API Example 2
 
+        // End Versioned API Example 2
+        try? cursorFuture.wait()
         try client.syncClose()
     }
 
