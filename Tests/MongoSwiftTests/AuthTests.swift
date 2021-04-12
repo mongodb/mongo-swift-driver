@@ -39,16 +39,17 @@ final class AuthTests: MongoSwiftTestCase {
                 let connString = try MongoConnectionString(throwsIfInvalid: testCase.uri)
                 if var credential = testCase.credential, var connStringCredential = connString.credential {
                     expect(connStringCredential).toNot(beNil(), description: testCase.description)
-                    
+
                     // Ignore default properties for now.
                     if credential.source == "admin" && connStringCredential.source == nil {
                         credential.source = nil
                     }
                     if credential.mechanism == MongoCredential.Mechanism.gssAPI {
-                        let defProperty: BSONDocument = ["SERVICE_NAME":"mongodb"]
+                        let defProperty: BSONDocument = ["SERVICE_NAME": "mongodb"]
                         let defSource = "$external"
                         if credential.mechanismProperties == defProperty &&
-                            connStringCredential.mechanismProperties == nil {
+                            connStringCredential.mechanismProperties == nil
+                        {
                             credential.mechanismProperties = nil
                         }
                         if credential.source == defSource && connStringCredential.source == nil {

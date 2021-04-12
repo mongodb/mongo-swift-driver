@@ -283,7 +283,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         self.scheme = scheme
         self.hosts = hosts
         self.database = database
-        try verifyAuth()
+        try self.verifyAuth()
     }
 
     /// `Codable` conformance
