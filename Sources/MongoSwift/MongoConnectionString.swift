@@ -120,16 +120,67 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     }
 
     private static func percentDecode(from: String?) throws -> String? {
-        if from == nil {
+        guard let from = from else {
             return nil
         }
-        let decodedOptional = from?.removingPercentEncoding
-        guard let decoded = decodedOptional else {
+        guard let decoded = from.removingPercentEncoding else {
             throw MongoError.InvalidArgumentError(
                 message: "Connection string contains an unescaped percent sign"
             )
         }
         return decoded
+    }
+
+    private mutating func applyAuthOptions(authOptions: [String: String]) throws {
+        for (key, value) in authOptions {
+            switch key {
+            case "authSource":
+                self.credential?.source = value
+            case "authMechanism":
+                if value == "GSSAPI", self.credential?.source == self.database {
+                    self.credential?.source = nil
+                }
+                self.credential?.mechanism = MongoCredential.Mechanism(value)
+            case "authMechanismProperties":
+                var authMechanismProperties = BSONDocument()
+                for property in value.components(separatedBy: ",") {
+                    let propertyKeyValue = property.components(separatedBy: ":")
+                    guard propertyKeyValue.count == 2 else {
+                        throw MongoError.InvalidArgumentError(
+                            message: "Invalid key value pair for authMechanismProperties \(propertyKeyValue)"
+                        )
+                    }
+                    let propertyKey = propertyKeyValue[0]
+                    let propertyValue = propertyKeyValue[1]
+                    switch propertyKey {
+                    case "SERVICE_NAME", "SERVICE_REALM":
+                        if let cred = self.credential?.mechanism {
+                            guard cred == MongoCredential.Mechanism.gssAPI else {
+                                throw MongoError.InvalidArgumentError(
+                                    message: "\(key) option is only valid using GSSAPI authentication mechanism"
+                                )
+                            }
+                        }
+                        authMechanismProperties[propertyKey] = .string(propertyValue)
+                    case "CANONICALIZE_HOST_NAME":
+                        guard let canonicalize = Bool(propertyValue) else {
+                            throw MongoError.InvalidArgumentError(
+                                message: "CANONICALIZE_HOST_NAME must be 'true' or 'false' \(propertyKeyValue)"
+                            )
+                        }
+                        authMechanismProperties[propertyKey] = .bool(canonicalize)
+                    default:
+                        throw MongoError.InvalidArgumentError(
+                            message: "Unknown authMechanismProperties option \(propertyKey)"
+                        )
+                    }
+                }
+                self.credential?.mechanismProperties = authMechanismProperties
+            default:
+                break
+            }
+        }
+        try self.verifyAuth()
     }
 
     private func verifyAuth() throws {
@@ -204,6 +255,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 source: database
             )
         }
+        var authOptions: [String: String] = [:]
         let optionString = authAndOptions?.count ?? 0 == 2 ? authAndOptions?[1] : nil
         if let options = optionString?.components(separatedBy: "&") {
             for option in options {
@@ -217,63 +269,13 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 let value = keyValue[1]
                 switch key {
                 // authentication options.
-                case "authSource":
+                case "authSource", "authMechanism", "authMechanismProperties":
                     guard self.credential != nil else {
                         throw MongoError.InvalidArgumentError(
                             message: "Authentication mechanism requires username"
                         )
                     }
-                    self.credential?.source = value
-                case "authMechanism":
-                    guard self.credential != nil else {
-                        throw MongoError.InvalidArgumentError(
-                            message: "Authentication mechanism requires username"
-                        )
-                    }
-                    if value == "GSSAPI", self.credential?.source == database {
-                        self.credential?.source = nil
-                    }
-                    self.credential?.mechanism = MongoCredential.Mechanism(value)
-                case "authMechanismProperties":
-                    guard self.credential != nil else {
-                        throw MongoError.InvalidArgumentError(
-                            message: "Authentication mechanism requires username"
-                        )
-                    }
-                    var authMechanismProperties = BSONDocument()
-                    for property in value.components(separatedBy: ",") {
-                        let propertyKeyValue = property.components(separatedBy: ":")
-                        guard propertyKeyValue.count == 2 else {
-                            throw MongoError.InvalidArgumentError(
-                                message: "Invalid key value pair for authMechanismProperties \(propertyKeyValue)"
-                            )
-                        }
-                        let propertyKey = propertyKeyValue[0]
-                        let propertyValue = propertyKeyValue[1]
-                        switch propertyKey {
-                        case "SERVICE_NAME", "SERVICE_REALM":
-                            if let cred = self.credential?.mechanism {
-                                guard cred == MongoCredential.Mechanism.gssAPI else {
-                                    throw MongoError.InvalidArgumentError(
-                                        message: "\(key) option is only valid using GSSAPI authentication mechanism"
-                                    )
-                                }
-                            }
-                            authMechanismProperties[propertyKey] = .string(propertyValue)
-                        case "CANONICALIZE_HOST_NAME":
-                            guard let canonicalize = Bool(propertyValue) else {
-                                throw MongoError.InvalidArgumentError(
-                                    message: "CANONICALIZE_HOST_NAME must be 'true' or 'false' \(propertyKeyValue)"
-                                )
-                            }
-                            authMechanismProperties[propertyKey] = .bool(canonicalize)
-                        default:
-                            throw MongoError.InvalidArgumentError(
-                                message: "Unknown authMechanismProperties option \(propertyKey)"
-                            )
-                        }
-                    }
-                    self.credential?.mechanismProperties = authMechanismProperties
+                    authOptions[key] = value
                 default:
                     // Ignore unrecognized options.
                     break
@@ -283,7 +285,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         self.scheme = scheme
         self.hosts = hosts
         self.database = database
-        try self.verifyAuth()
+        try self.applyAuthOptions(authOptions: authOptions)
     }
 
     /// `Codable` conformance
@@ -314,11 +316,6 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             des += "@"
         }
         des += self.hosts.map { $0.description }.joined(separator: ",")
-//        if let database = self.database {
-//            des += "/\(database)"
-//        } else {
-//            des += "/"
-//        }
         var options: [String] = []
         if let mechanism = self.credential?.mechanism {
             options.append("authMechanism=\(mechanism)")
@@ -359,8 +356,9 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// Specifies one or more host/ports to connect to.
     public var hosts: [HostIdentifier]
 
-    /// Returns the credential configured on this URI. Will be empty if no options are set.
+    /// Returns the credential configured on this URI. Will be nil if no options are set.
     public var credential: MongoCredential?
 
+    /// Specifies the default auth database. Will be nil if not specified.
     public var database: String?
 }

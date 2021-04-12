@@ -200,6 +200,9 @@ final class ConnectionStringTests: MongoSwiftTestCase {
                             XCTFail("Expected credentials: \(expectedAuth) do not match parsed credentials: \(actual)")
                             continue
                         }
+                    } else {
+                        XCTFail("Expected credentials: \(expectedAuth) but could not parse credentials)")
+                        continue
                     }
                 }
             }
