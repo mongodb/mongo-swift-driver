@@ -63,13 +63,15 @@ public struct MongoServerAPI: Codable {
         }
     }
 
-    /// Specifies the API version to use.
+    /// Declares an API version to use.
     public var version: Version
 
-    /// Specifies whether the server should return errors for features that are not part of the API version.
+    /// Specifies whether the server should reject all commands that are not part of the declare API version. This
+    /// includes command options and aggregation pipeline stages.
     public var strict: Bool?
 
-    /// Specifies whether the server should return errors for deprecated features.
+    /// Specifies whether the server should return command failures when functionality that is deprecated in the
+    /// specified API version is used.
     public var deprecationErrors: Bool?
 
     /// Convenience initializer allowing optional parameters to be optional or omitted.
