@@ -195,7 +195,7 @@ private func versionedAPI() throws {
         } catch {
             // error
         }
-        
+
         // End Versioned API Example 2
     }
 

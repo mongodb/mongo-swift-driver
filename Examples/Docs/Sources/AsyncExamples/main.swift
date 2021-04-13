@@ -257,6 +257,7 @@ private func versionedAPI() throws {
         let cursorFuture = client.db("db").collection("coll").find(options: findOpts)
         cursorFuture.whenFailure { error in
             // error
+            print(error)
         }
 
         // End Versioned API Example 2
