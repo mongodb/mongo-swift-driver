@@ -21,6 +21,44 @@ struct AuthTestCase: Decodable {
     let credential: MongoCredential?
 }
 
+extension MongoCredential {
+    func matches(testCredential: MongoCredential, description: String) throws {
+        var connStringCredential = self
+        var credential = testCredential
+
+        expect(connStringCredential).toNot(beNil(), description: description)
+
+        // Ignore default properties for now.
+        if credential.source == "admin" && connStringCredential.source == nil {
+            credential.source = nil
+        }
+        if credential.mechanism == MongoCredential.Mechanism.gssAPI {
+            let defProperty: BSONDocument = ["SERVICE_NAME": "mongodb"]
+            let defSource = "$external"
+            if credential.mechanismProperties == defProperty &&
+                connStringCredential.mechanismProperties == nil
+            {
+                credential.mechanismProperties = nil
+            }
+            if credential.source == defSource && connStringCredential.source == nil {
+                credential.source = nil
+            }
+        }
+
+        if credential.mechanismProperties != nil {
+            // Can't guarantee mechanismProperties was decoded from JSON in a particular order,
+            // so we compare it separately without considering order.
+            expect(connStringCredential.mechanismProperties)
+                .to(sortedEqual(credential.mechanismProperties), description: description)
+            credential.mechanismProperties = nil
+            connStringCredential.mechanismProperties = nil
+        }
+
+        // compare rest of non-document options normally
+        expect(connStringCredential).to(equal(credential), description: description)
+    }
+}
+
 final class AuthTests: MongoSwiftTestCase {
     func testAuthConnectionStrings() throws {
         let testFiles = try retrieveSpecTestFiles(specName: "auth", asType: AuthTestFile.self)
@@ -37,41 +75,11 @@ final class AuthTests: MongoSwiftTestCase {
                 }
 
                 let connString = try MongoConnectionString(throwsIfInvalid: testCase.uri)
-                if var credential = testCase.credential {
-                    if var connStringCredential = connString.credential {
-                        expect(connStringCredential).toNot(beNil(), description: testCase.description)
-
-                        // Ignore default properties for now.
-                        if credential.source == "admin" && connStringCredential.source == nil {
-                            credential.source = nil
-                        }
-                        if credential.mechanism == MongoCredential.Mechanism.gssAPI {
-                            let defProperty: BSONDocument = ["SERVICE_NAME": "mongodb"]
-                            let defSource = "$external"
-                            if credential.mechanismProperties == defProperty &&
-                                connStringCredential.mechanismProperties == nil
-                            {
-                                credential.mechanismProperties = nil
-                            }
-                            if credential.source == defSource && connStringCredential.source == nil {
-                                credential.source = nil
-                            }
-                        }
-
-                        if credential.mechanismProperties != nil {
-                            // Can't guarantee mechanismProperties was decoded from JSON in a particular order,
-                            // so we compare it separately without considering order.
-                            expect(connStringCredential.mechanismProperties)
-                                .to(sortedEqual(credential.mechanismProperties), description: testCase.description)
-                            credential.mechanismProperties = nil
-                            connStringCredential.mechanismProperties = nil
-                        }
-
-                        // compare rest of non-document options normally
-                        expect(connStringCredential).to(equal(credential), description: testCase.description)
-                    } else {
-                        expect(connString.credential).to(beNil(), description: testCase.description)
-                    }
+                if let credential = testCase.credential, let connStringCredential = connString.credential {
+                    try connStringCredential.matches(testCredential: credential, description: testCase.description)
+                } else {
+                    expect(connString.credential).to(beNil(), description: testCase.description)
+                    expect(testCase.credential).to(beNil(), description: testCase.description)
                 }
             }
         }
