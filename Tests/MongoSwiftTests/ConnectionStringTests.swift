@@ -147,6 +147,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         let testFiles = try retrieveSpecTestFiles(specName: specName, asType: ConnectionStringTestFile.self)
         for (filename, file) in testFiles {
             for testCase in file.tests {
+                print(testCase.uri)
                 guard !shouldSkip(file: filename, test: testCase.description) else {
                     continue
                 }
@@ -217,6 +218,10 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         try self.runTests("connection-string")
     }
 
+    func testA() throws {
+        let a = try MongoConnectionString(throwsIfInvalid: "mongodb://user:password@localhost/foo")
+        print(a.credential)
+    }
     func testCodable() throws {
         let connStr = try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017")
         let encodedData = try ExtendedJSONEncoder().encode(connStr)

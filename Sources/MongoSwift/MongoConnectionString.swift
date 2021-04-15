@@ -132,22 +132,32 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     }
 
     private mutating func applyAndValidateAuthOptions(authOptions: [String: String]) throws {
-        guard self.credential != nil else {
-            throw MongoError.InvalidArgumentError(
-                message: "Authentication mechanism requires username"
-            )
-        }
         for (key, value) in authOptions {
             switch key {
             case "authSource":
+                guard self.credential != nil else {
+                    throw MongoError.InvalidArgumentError(
+                        message: "Authentication mechanism requires username"
+                    )
+                }
                 self.credential?.source = value
             case "authMechanism":
-                // Ignore the specified database to use default auth source for GSSAPI.
-                if value == "GSSAPI", self.credential?.source == self.database {
-                    self.credential?.source = nil
+                if self.credential == nil, value == "MONGODB-X509" {
+                    self.credential = MongoCredential(mechanism: .mongodbX509)
+                } else {
+                    guard self.credential != nil else {
+                        throw MongoError.InvalidArgumentError(
+                            message: "Authentication mechanism requires username"
+                        )
+                    }
+                    self.credential?.mechanism = MongoCredential.Mechanism(value)
                 }
-                self.credential?.mechanism = MongoCredential.Mechanism(value)
             case "authMechanismProperties":
+                guard self.credential != nil else {
+                    throw MongoError.InvalidArgumentError(
+                        message: "Authentication mechanism requires username"
+                    )
+                }
                 var authMechanismProperties = BSONDocument()
                 for property in value.components(separatedBy: ",") {
                     let propertyKeyValue = property.components(separatedBy: ":")
@@ -176,16 +186,44 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 }
                 self.credential?.mechanismProperties = authMechanismProperties
             default:
-                break
+                throw MongoError.InternalError(
+                    message: "Unreachable case statement"
+                )
             }
         }
-        if let source = self.credential?.source, let mech = self.credential?.mechanism {
-            if mech == MongoCredential.Mechanism.gssAPI || mech == MongoCredential.Mechanism.plain {
-                guard source == "$external" else {
-                    throw MongoError.InvalidArgumentError(
-                        message: "AuthSource must be '$external' for this mechanism \(mech)"
-                    )
-                }
+
+        switch self.credential?.mechanism {
+        case MongoCredential.Mechanism.gssAPI:
+            guard
+                self.credential?.username != nil,
+                self.credential?.source ?? "$external" == "$external" else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Invalid options for GSSAPI mechanism"
+                )
+            }
+        case MongoCredential.Mechanism.mongodbX509:
+            guard
+                self.credential?.password == nil,
+                self.credential?.mechanismProperties == nil else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Invalid options for MONGODB-X509 mechanism"
+                )
+            }
+        case MongoCredential.Mechanism.plain, MongoCredential.Mechanism.scramSHA1, MongoCredential.Mechanism.scramSHA256:
+            guard
+                self.credential?.username != nil,
+                self.credential?.password != nil,
+                self.credential?.mechanismProperties == nil else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Invalid options for \(String(describing: self.credential?.mechanism)) mechanism"
+                )
+            }
+            if self.credential?.source == nil {
+                self.credential?.source = self.defaultAuthDB
+            }
+        default:
+            if self.credential?.source == nil {
+                self.credential?.source = self.defaultAuthDB
             }
         }
     }
@@ -241,25 +279,22 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                     try MongoConnectionString.percentDecode(from: userInfoExists[1]) : nil
             )
         }
-        guard let authAndOptions = identifiersAndOptions.count == 2 ?
+        guard let authDBAndOptions = identifiersAndOptions.count == 2 ?
             identifiersAndOptions[1].components(separatedBy: "?") : nil
         else {
             return
         }
-        guard authAndOptions.count <= 2 else {
+        guard authDBAndOptions.count <= 2 else {
             throw MongoError.InvalidArgumentError(
                 message: "Connection string contains an unexpected '?'"
             )
         }
-        var database = try MongoConnectionString.percentDecode(from: authAndOptions[0])
-        if (database ?? "").isEmpty {
-            database = nil
-        }
-        if self.credential != nil {
-            self.credential?.source = database
+        var defaultAuthDB = try MongoConnectionString.percentDecode(from: authDBAndOptions[0])
+        if (defaultAuthDB ?? "").isEmpty {
+            defaultAuthDB = nil
         }
         var authOptions: [String: String] = [:]
-        let optionString = authAndOptions.count == 2 ? authAndOptions[1] : nil
+        let optionString = authDBAndOptions.count == 2 ? authDBAndOptions[1] : nil
         if let options = optionString?.components(separatedBy: "&") {
             for option in options {
                 let keyValue = option.components(separatedBy: "=")
@@ -280,10 +315,8 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 }
             }
         }
-        self.database = database
-        if !authOptions.isEmpty {
-            try self.applyAndValidateAuthOptions(authOptions: authOptions)
-        }
+        self.defaultAuthDB = defaultAuthDB
+        try self.applyAndValidateAuthOptions(authOptions: authOptions)
     }
 
     /// `Codable` conformance
@@ -318,10 +351,11 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         if let mechanism = self.credential?.mechanism {
             options.append("authMechanism=\(mechanism)")
         }
-        if (self.database ?? "").isEmpty, let authSource = self.credential?.source {
+        if (self.defaultAuthDB ?? "").isEmpty, let authSource = self.credential?.source {
             options.append("authSource=\(authSource)")
         }
-        if let mechanismProperty = self.credential?.mechanismProperties {
+        if let mechanismProperty = self.credential?.mechanismProperties,
+           !mechanismProperty.isEmpty {
             var properties: [String] = []
             // TODO: SWIFT-1177 Remove after BSON conforms to CustomStringConvertible
             for (k, v) in mechanismProperty {
@@ -334,15 +368,15 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             options.append("authMechanismProperties=\(properties.joined(separator: ","))")
         }
         if !options.isEmpty {
-            if let database = self.database {
-                des += "/\(database)"
+            if let defaultAuthDB = self.defaultAuthDB {
+                des += "/\(defaultAuthDB)"
             } else {
                 des += "/"
             }
             des += "?\(options.joined(separator: "&"))"
         } else {
-            if let database = self.database {
-                des += "/\(database)"
+            if let defaultAuthDB = self.defaultAuthDB {
+                des += "/\(defaultAuthDB)"
             }
         }
         return des
@@ -357,6 +391,8 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// Returns the credential configured on this URI. Will be nil if no options are set.
     public var credential: MongoCredential?
 
-    /// Specifies the default auth database. Will be nil if not specified.
-    public var database: String?
+    /// Specifies the authentication database to use when username and password are specified but
+    /// authSource is unspecified.
+    /// Will be `admin` if both `defaultAuthDB` and `authSource` are unspecified.
+    public var defaultAuthDB: String?
 }

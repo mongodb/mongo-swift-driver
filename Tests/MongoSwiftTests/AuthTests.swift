@@ -23,39 +23,40 @@ struct AuthTestCase: Decodable {
 
 extension MongoCredential {
     func matches(testCredential: MongoCredential, description: String) throws {
-        var connStringCredential = self
-        var credential = testCredential
+        var actual = self
+        var expected = testCredential
 
-        expect(connStringCredential).toNot(beNil(), description: description)
+        expect(actual).toNot(beNil(), description: description)
 
-        // Ignore default properties for now.
-        if credential.source == "admin" && connStringCredential.source == nil {
-            credential.source = nil
+        // Expected test credentials are populated with default values for properties.
+        // However, we do not fill those in MongoConnectionString.
+        if expected.source == "admin" && actual.source == nil {
+            expected.source = nil
         }
-        if credential.mechanism == MongoCredential.Mechanism.gssAPI {
+        if expected.mechanism == MongoCredential.Mechanism.gssAPI {
             let defProperty: BSONDocument = ["SERVICE_NAME": "mongodb"]
             let defSource = "$external"
-            if credential.mechanismProperties == defProperty &&
-                connStringCredential.mechanismProperties == nil
+            if expected.mechanismProperties == defProperty &&
+                actual.mechanismProperties == nil
             {
-                credential.mechanismProperties = nil
+                expected.mechanismProperties = nil
             }
-            if credential.source == defSource && connStringCredential.source == nil {
-                credential.source = nil
+            if expected.source == defSource && actual.source == nil {
+                expected.source = nil
             }
         }
 
-        if credential.mechanismProperties != nil {
+        if expected.mechanismProperties != nil {
             // Can't guarantee mechanismProperties was decoded from JSON in a particular order,
             // so we compare it separately without considering order.
-            expect(connStringCredential.mechanismProperties)
-                .to(sortedEqual(credential.mechanismProperties), description: description)
-            credential.mechanismProperties = nil
-            connStringCredential.mechanismProperties = nil
+            expect(actual.mechanismProperties)
+                .to(sortedEqual(expected.mechanismProperties), description: description)
+            expected.mechanismProperties = nil
+            actual.mechanismProperties = nil
         }
 
         // compare rest of non-document options normally
-        expect(connStringCredential).to(equal(credential), description: description)
+        expect(actual).to(equal(expected), description: description)
     }
 }
 
