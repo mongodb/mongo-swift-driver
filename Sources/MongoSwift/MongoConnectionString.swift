@@ -196,7 +196,8 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         case MongoCredential.Mechanism.gssAPI:
             guard
                 self.credential?.username != nil,
-                self.credential?.source ?? "$external" == "$external" else {
+                self.credential?.source ?? "$external" == "$external"
+            else {
                 throw MongoError.InvalidArgumentError(
                     message: "Invalid options for GSSAPI mechanism"
                 )
@@ -204,16 +205,20 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         case MongoCredential.Mechanism.mongodbX509:
             guard
                 self.credential?.password == nil,
-                self.credential?.mechanismProperties == nil else {
+                self.credential?.mechanismProperties == nil
+            else {
                 throw MongoError.InvalidArgumentError(
                     message: "Invalid options for MONGODB-X509 mechanism"
                 )
             }
-        case MongoCredential.Mechanism.plain, MongoCredential.Mechanism.scramSHA1, MongoCredential.Mechanism.scramSHA256:
+        case MongoCredential.Mechanism.plain,
+             MongoCredential.Mechanism.scramSHA1,
+             MongoCredential.Mechanism.scramSHA256:
             guard
                 self.credential?.username != nil,
                 self.credential?.password != nil,
-                self.credential?.mechanismProperties == nil else {
+                self.credential?.mechanismProperties == nil
+            else {
                 throw MongoError.InvalidArgumentError(
                     message: "Invalid options for \(String(describing: self.credential?.mechanism)) mechanism"
                 )
@@ -355,7 +360,8 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             options.append("authSource=\(authSource)")
         }
         if let mechanismProperty = self.credential?.mechanismProperties,
-           !mechanismProperty.isEmpty {
+           !mechanismProperty.isEmpty
+        {
             var properties: [String] = []
             // TODO: SWIFT-1177 Remove after BSON conforms to CustomStringConvertible
             for (k, v) in mechanismProperty {
