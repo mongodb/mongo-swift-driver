@@ -1,4 +1,3 @@
-[![Code Coverage](https://codecov.io/gh/mongodb/mongo-swift-driver/branch/main/graph/badge.svg)](https://codecov.io/gh/mongodb/mongo-swift-driver/branch/main)
 [![sswg:sandbox|94x20](https://img.shields.io/badge/sswg-sandbox-lightgrey.svg)](https://github.com/swift-server/sswg/blob/main/process/incubation.md#sandbox-level)
 
 # MongoSwift
