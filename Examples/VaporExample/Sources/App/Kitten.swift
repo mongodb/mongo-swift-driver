@@ -11,9 +11,13 @@ enum CatFood: String, Codable {
          beef
 }
 
-/// The structure of a food update request.
-struct FoodUpdate: Codable {
+/// The structure of an update request.
+struct KittenUpdate: Codable {
+    /// The new favorite food.
     let favoriteFood: CatFood
+
+    /// The new last update time.
+    let lastUpdateTime: Date
 }
 
 /// Represents a kitten.
@@ -26,6 +30,8 @@ struct Kitten: Content {
     let color: String
     /// Favorite food.
     let favoriteFood: CatFood
+    /// Last updated time.
+    let lastUpdateTime: Date
 }
 
 /// Context struct for the index page.

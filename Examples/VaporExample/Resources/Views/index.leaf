@@ -25,12 +25,14 @@
     <th>Name</th>
     <th>Color</th>
     <th>Favorite Food</th>
+    <th>Last Updated</th>
 </tr>
 #for(kitten in kittens):
  <tr>
      <td><a href="/kittens/#(kitten.name)">#(kitten.name)</a></td>
      <td>#(kitten.color)</td>
      <td>#(kitten.favoriteFood)</td>
+     <td>#date(kitten.lastUpdateTime, "MM-dd-y HH:mm")</td>
  </tr>
 #endfor   
 </table>
@@ -67,11 +69,17 @@
       var name = $("\#name").val();
       var color = $("\#color").val();
       var food = $("\#favoriteFood").val();
-      // Serialize request data to extended JSON.
+      var updateTime = new Date();
+      // Serialize request data to extended JSON. We use extended JSON
+      // both here, and for serializing/deserializing request data on
+      // the frontend, in order to ensure all MongoDB type information
+      // is preserved.
+      // See: https://docs.mongodb.com/manual/reference/mongodb-extended-json
       var data = BSON.EJSON.stringify({
         'name': name,
         'color': color,
-        'favoriteFood': food
+        'favoriteFood': food,
+        'lastUpdateTime': updateTime
       })
 
       $.ajax({

@@ -112,7 +112,7 @@ extension Request {
     func updateKitten() throws -> EventLoopFuture<Response> {
         let nameFilter = try self.getNameFilter()
         // Parse the update data from the request.
-        let update = try self.content.decode(FoodUpdate.self)
+        let update = try self.content.decode(KittenUpdate.self)
         /// Create a document using MongoDB update syntax that specifies we want to set a field.
         let updateDocument: BSONDocument = ["$set": .document(try BSONEncoder().encode(update))]
 

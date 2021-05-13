@@ -33,7 +33,7 @@ And the following types of API requests:
 1. A GET request at the URL `/rest` returns a list of kittens.
 1. A POST request at the URL `/rest` adds a new kitten.
 1. A GET request at the URL `rest/kittens/{name}` returns information about the kitten with the specified name.
-1. A PATCH request at the URL `rest/kittens/{name}` edits the `favoriteFood` property for the kitten with the specified name.
+1. A PATCH request at the URL `rest/kittens/{name}` edits the `favoriteFood` property for the kitten with the specified name, and updates the kitten's `lastUpdateTime`.
 1. A DELETE request at the URL `rest/kittens/{name}` deletes the kitten with the specified name.
 
 ### MongoDB Usage
@@ -72,7 +72,7 @@ let collection = req.mongoDB.client.db("home").collection("kittens", withType: K
 
 This will instantiate a `MongoCollection<Kitten>`. You can then use `Kitten` directly with many API methods -- for example, `insertOne` will directly accept a `Kitten` instance, and `findOne` will return an `EventLoopFuture<Kitten>`.
 
-Sometimes you may need to work with the `BSONDocument` type as well, for example when providing a query filter. If you want to construct these documents from `Codable` types you may do so using `BSONEncoder`, as we do with the `updateDocument` in the `updateKitten()` method.
+Sometimes you may need to work with the `BSONDocument` type as well, for example when providing a query filter. If you want to construct these documents from `Codable` types you may do so using `BSONEncoder`, as we do with the `updateDocument` in the `updateKitten()` method via the `KittenUpdate` struct.
 
 The driver also exposes a `BSONDecoder` for initializing `Decodable` types from `BSONDocument`s if you need to do the reverse.
 
