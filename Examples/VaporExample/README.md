@@ -32,9 +32,9 @@ The server will handle the following types of web requests:
 And the following types of API requests:
 1. A GET request at the URL `/rest` returns a list of kittens.
 1. A POST request at the URL `/rest` adds a new kitten.
-1. A GET request at the URL `rest/kittens/{name}` returns information about the kitten with the specified name.
-1. A PATCH request at the URL `rest/kittens/{name}` edits the `favoriteFood` property for the kitten with the specified name, and updates the kitten's `lastUpdateTime`.
-1. A DELETE request at the URL `rest/kittens/{name}` deletes the kitten with the specified name.
+1. A GET request at the URL `/rest/kittens/{name}` returns information about the kitten with the specified name.
+1. A PATCH request at the URL `/rest/kittens/{name}` edits the `favoriteFood` property for the kitten with the specified name, and updates the kitten's `lastUpdateTime`.
+1. A DELETE request at the URL `/rest/kittens/{name}` deletes the kitten with the specified name.
 
 ### MongoDB Usage
 This application connects to a local standalone MongoDB server running on the default host/port, `localhost:27017`. It uses the collection "kittens" in the database "home". The "kittens" collection has a [unique index](https://docs.mongodb.com/manual/core/index-unique/) on the "name" field, ensuring that no two kittens in the collection can have the same name.
