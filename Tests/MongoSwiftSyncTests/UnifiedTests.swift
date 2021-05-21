@@ -60,7 +60,10 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             // Because we use an enum to represent ReturnDocument, the invalid string present in this file "Invalid"
             // gives us a decoding error, and therefore we cannot decode it. Other drivers may not report an error
             // until runtime.
-            "returnDocument-enum-invalid.json"
+            "returnDocument-enum-invalid.json",
+            // This has the same problem as the previous file, where an invalid string is provided and we fail
+            // while decoding rather than at runtime.
+            "entity-client-apiVersion-unsupported.json"
         ]
 
         let validFailTests = try retrieveSpecTestFiles(
