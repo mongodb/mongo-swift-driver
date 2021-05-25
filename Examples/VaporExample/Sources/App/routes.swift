@@ -7,7 +7,7 @@ func webRoutes(_ app: Application) throws {
     app.get { req -> EventLoopFuture<View> in
         req.findKittens().flatMap { kittens in
             // Return the corresponding Leaf view, providing the list of kittens as context.
-            req.view.render("index.leaf", IndexContext(kittens: kittens))
+            req.view.render("index.leaf", ["kittens": kittens])
         }
     }
 

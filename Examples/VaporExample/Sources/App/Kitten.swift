@@ -34,7 +34,3 @@ struct Kitten: Content {
     let lastUpdateTime: Date
 }
 
-/// Context struct for the index page.
-struct IndexContext: Encodable {
-    let kittens: [Kitten]
-}
