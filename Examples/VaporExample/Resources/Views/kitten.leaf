@@ -15,7 +15,7 @@
     }
   </style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="../bson.bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bson@4.4.0/dist/bson.bundle.js"></script>
 </head>
 <body>
 <h1>#(name) 🐱</h1>
