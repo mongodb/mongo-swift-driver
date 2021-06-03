@@ -33,4 +33,3 @@ struct Kitten: Content {
     /// Last updated time.
     let lastUpdateTime: Date
 }
-
