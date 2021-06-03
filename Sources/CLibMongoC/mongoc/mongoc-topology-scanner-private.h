@@ -83,8 +83,8 @@ typedef struct mongoc_topology_scanner {
    mongoc_async_t *async;
    int64_t connect_timeout_msec;
    mongoc_topology_scanner_node_t *nodes;
-   bson_t ismaster_cmd;
-   bson_t ismaster_cmd_with_handshake;
+   bson_t hello_cmd;
+   bson_t hello_cmd_with_handshake;
    bson_t cluster_time;
    bool handshake_ok_to_send;
    const char *appname;
@@ -187,7 +187,7 @@ _mongoc_topology_scanner_add_speculative_authentication (
 
 void
 _mongoc_topology_scanner_parse_speculative_authentication (
-   const bson_t *ismaster, bson_t *speculative_authenticate);
+   const bson_t *hello, bson_t *speculative_authenticate);
 
 const char *
 _mongoc_topology_scanner_get_speculative_auth_mechanism (

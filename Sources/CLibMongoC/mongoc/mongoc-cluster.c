@@ -87,7 +87,7 @@ _bson_error_message_printf (bson_error_t *error, const char *format, ...)
    BSON_GNUC_PRINTF (2, 3);
 
 static void
-_handle_not_master_error (mongoc_cluster_t *cluster,
+_handle_not_primary_error (mongoc_cluster_t *cluster,
                           const mongoc_server_stream_t *server_stream,
                           const bson_t *reply)
 {
@@ -285,10 +285,11 @@ mongoc_cluster_run_command_opquery (mongoc_cluster_t *cluster,
    _mongoc_rpc_gather (&rpc, &cluster->iov);
    _mongoc_rpc_swab_to_le (&rpc);
 
-   if (compressor_id != -1 && IS_NOT_COMMAND ("ismaster") &&
-       IS_NOT_COMMAND ("saslstart") && IS_NOT_COMMAND ("saslcontinue") &&
-       IS_NOT_COMMAND ("getnonce") && IS_NOT_COMMAND ("authenticate") &&
-       IS_NOT_COMMAND ("createuser") && IS_NOT_COMMAND ("updateuser")) {
+   if (compressor_id != -1 && IS_NOT_COMMAND (HANDSHAKE_CMD_LEGACY_HELLO) &&
+       IS_NOT_COMMAND ("hello") && IS_NOT_COMMAND ("saslstart") &&
+       IS_NOT_COMMAND ("saslcontinue") && IS_NOT_COMMAND ("getnonce") &&
+       IS_NOT_COMMAND ("authenticate") && IS_NOT_COMMAND ("createuser") &&
+       IS_NOT_COMMAND ("updateuser")) {
       output = _mongoc_rpc_compress (cluster, compressor_id, &rpc, error);
       if (output == NULL) {
          GOTO (done);
@@ -600,7 +601,7 @@ mongoc_cluster_run_command_monitored (mongoc_cluster_t *cluster,
       mongoc_apm_command_failed_cleanup (&failed_event);
    }
 
-   _handle_not_master_error (cluster, server_stream, reply);
+   _handle_not_primary_error (cluster, server_stream, reply);
 
    _handle_txn_error_labels (retval, error, cmd, reply);
 
@@ -675,7 +676,7 @@ mongoc_cluster_run_command_private (mongoc_cluster_t *cluster,
       retval =
          mongoc_cluster_run_command_opquery (cluster, cmd, -1, reply, error);
    }
-   _handle_not_master_error (cluster, server_stream, reply);
+   _handle_not_primary_error (cluster, server_stream, reply);
    if (reply == &reply_local) {
       bson_destroy (&reply_local);
    }
@@ -730,11 +731,11 @@ mongoc_cluster_run_command_parts (mongoc_cluster_t *cluster,
 /*
  *--------------------------------------------------------------------------
  *
- * _mongoc_stream_run_ismaster --
+ * _mongoc_stream_run_hello --
  *
- *       Run an ismaster command on the given stream. If
+ *       Run a hello command on the given stream. If
  *       @negotiate_sasl_supported_mechs is true, then saslSupportedMechs is
- *       added to the ismaster command.
+ *       added to the hello command.
  *
  * Returns:
  *       A mongoc_server_description_t you must destroy or NULL. If the call
@@ -743,18 +744,18 @@ mongoc_cluster_run_command_parts (mongoc_cluster_t *cluster,
  *--------------------------------------------------------------------------
  */
 static mongoc_server_description_t *
-_mongoc_stream_run_ismaster (mongoc_cluster_t *cluster,
-                             mongoc_stream_t *stream,
-                             const char *address,
-                             uint32_t server_id,
-                             bool negotiate_sasl_supported_mechs,
-                             mongoc_scram_cache_t *scram_cache,
-                             mongoc_scram_t *scram,
-                             bson_t *speculative_auth_response /* OUT */,
-                             bson_error_t *error)
+_mongoc_stream_run_hello (mongoc_cluster_t *cluster,
+                          mongoc_stream_t *stream,
+                          const char *address,
+                          uint32_t server_id,
+                          bool negotiate_sasl_supported_mechs,
+                          mongoc_scram_cache_t *scram_cache,
+                          mongoc_scram_t *scram,
+                          bson_t *speculative_auth_response /* OUT */,
+                          bson_error_t *error)
 {
    const bson_t *command;
-   mongoc_cmd_t ismaster_cmd;
+   mongoc_cmd_t hello_cmd;
    bson_t reply;
    int64_t start;
    int64_t rtt_msec;
@@ -809,24 +810,24 @@ _mongoc_stream_run_ismaster (mongoc_cluster_t *cluster,
       RETURN (NULL);
    }
 
-   /* Always use OP_QUERY for the isMaster handshake, regardless of whether the
-    * last known ismaster indicates the server supports a newer wire protocol.
+   /* Always use OP_QUERY for the handshake, regardless of whether the last
+    * known hello indicates the server supports a newer wire protocol.
     */
    server_stream->sd->max_wire_version = WIRE_VERSION_MIN;
-   memset (&ismaster_cmd, 0, sizeof (ismaster_cmd));
-   ismaster_cmd.db_name = "admin";
-   ismaster_cmd.command = command;
-   ismaster_cmd.command_name = _mongoc_get_command_name (command);
-   ismaster_cmd.query_flags = MONGOC_QUERY_SLAVE_OK;
-   ismaster_cmd.server_stream = server_stream;
+   memset (&hello_cmd, 0, sizeof (hello_cmd));
+   hello_cmd.db_name = "admin";
+   hello_cmd.command = command;
+   hello_cmd.command_name = _mongoc_get_command_name (command);
+   hello_cmd.query_flags = MONGOC_QUERY_SECONDARY_OK;
+   hello_cmd.server_stream = server_stream;
 
    if (!mongoc_cluster_run_command_private (
-          cluster, &ismaster_cmd, &reply, error)) {
+          cluster, &hello_cmd, &reply, error)) {
       if (negotiate_sasl_supported_mechs) {
          if (bson_iter_init_find (&iter, &reply, "ok") &&
              !bson_iter_as_bool (&iter)) {
-            /* ismaster response returned ok: 0. According to auth spec: "If the
-             * isMaster of the MongoDB Handshake fails with an error, drivers
+            /* hello response returned ok: 0. According to auth spec: "If the
+             * hello of the MongoDB Handshake fails with an error, drivers
              * MUST treat this an authentication error." */
             error->domain = MONGOC_ERROR_CLIENT;
             error->code = MONGOC_ERROR_CLIENT_AUTHENTICATE;
@@ -845,8 +846,8 @@ _mongoc_stream_run_ismaster (mongoc_cluster_t *cluster,
       sizeof (mongoc_server_description_t));
 
    mongoc_server_description_init (sd, address, server_id);
-   /* send the error from run_command IN to handle_ismaster */
-   mongoc_server_description_handle_ismaster (sd, &reply, rtt_msec, error);
+   /* send the error from run_command IN to handle_hello */
+   mongoc_server_description_handle_hello (sd, &reply, rtt_msec, error);
 
    if (cluster->requires_auth && speculative_auth_response) {
       _mongoc_topology_scanner_parse_speculative_authentication (
@@ -877,9 +878,9 @@ _mongoc_stream_run_ismaster (mongoc_cluster_t *cluster,
 /*
  *--------------------------------------------------------------------------
  *
- * _mongoc_cluster_run_ismaster --
+ * _mongoc_cluster_run_hello --
  *
- *       Run an initial ismaster command for the given node and handle result.
+ *       Run an initial hello command for the given node and handle result.
  *
  * Returns:
  *       mongoc_server_description_t on success, NULL otherwise.
@@ -887,18 +888,18 @@ _mongoc_stream_run_ismaster (mongoc_cluster_t *cluster,
  *
  * Side effects:
  *       Makes a blocking I/O call, updates cluster->topology->description
- *       with ismaster result.
+ *       with hello result.
  *
  *--------------------------------------------------------------------------
  */
 static mongoc_server_description_t *
-_mongoc_cluster_run_ismaster (mongoc_cluster_t *cluster,
-                              mongoc_cluster_node_t *node,
-                              uint32_t server_id,
-                              mongoc_scram_cache_t *scram_cache,
-                              mongoc_scram_t *scram /* OUT */,
-                              bson_t *speculative_auth_response /* OUT */,
-                              bson_error_t *error /* OUT */)
+_mongoc_cluster_run_hello (mongoc_cluster_t *cluster,
+                           mongoc_cluster_node_t *node,
+                           uint32_t server_id,
+                           mongoc_scram_cache_t *scram_cache,
+                           mongoc_scram_t *scram /* OUT */,
+                           bson_t *speculative_auth_response /* OUT */,
+                           bson_error_t *error /* OUT */)
 {
    mongoc_server_description_t *sd;
 
@@ -908,7 +909,7 @@ _mongoc_cluster_run_ismaster (mongoc_cluster_t *cluster,
    BSON_ASSERT (node);
    BSON_ASSERT (node->stream);
 
-   sd = _mongoc_stream_run_ismaster (
+   sd = _mongoc_stream_run_hello (
       cluster,
       node->stream,
       node->connection_address,
@@ -1058,7 +1059,7 @@ _mongoc_cluster_auth_node_cr (mongoc_cluster_t *cluster,
    bson_init (&command);
    bson_append_int32 (&command, "getnonce", 8, 1);
    mongoc_cmd_parts_init (
-      &parts, cluster->client, auth_source, MONGOC_QUERY_SLAVE_OK, &command);
+      &parts, cluster->client, auth_source, MONGOC_QUERY_SECONDARY_OK, &command);
    parts.prohibit_lsid = true;
    server_stream = _mongoc_cluster_create_server_stream (
       cluster->client->topology, sd->id, stream, error);
@@ -1105,7 +1106,7 @@ _mongoc_cluster_auth_node_cr (mongoc_cluster_t *cluster,
     * checks for {ok: 1} in the response.
     */
    mongoc_cmd_parts_init (
-      &parts, cluster->client, auth_source, MONGOC_QUERY_SLAVE_OK, &command);
+      &parts, cluster->client, auth_source, MONGOC_QUERY_SECONDARY_OK, &command);
    parts.prohibit_lsid = true;
    ret = mongoc_cluster_run_command_parts (
       cluster, server_stream, &parts, &reply, error);
@@ -1192,7 +1193,7 @@ _mongoc_cluster_auth_node_plain (mongoc_cluster_t *cluster,
    BSON_APPEND_INT32 (&b, "autoAuthorize", 1);
 
    mongoc_cmd_parts_init (
-      &parts, cluster->client, "$external", MONGOC_QUERY_SLAVE_OK, &b);
+      &parts, cluster->client, "$external", MONGOC_QUERY_SECONDARY_OK, &b);
    parts.prohibit_lsid = true;
    server_stream = _mongoc_cluster_create_server_stream (
       cluster->client->topology, sd->id, stream, error);
@@ -1306,7 +1307,7 @@ _mongoc_cluster_auth_node_x509 (mongoc_cluster_t *cluster,
    }
 
    mongoc_cmd_parts_init (
-      &parts, cluster->client, "$external", MONGOC_QUERY_SLAVE_OK, &cmd);
+      &parts, cluster->client, "$external", MONGOC_QUERY_SECONDARY_OK, &cmd);
    parts.prohibit_lsid = true;
    server_stream = _mongoc_cluster_create_server_stream (
       cluster->client->topology, sd->id, stream, error);
@@ -1353,7 +1354,7 @@ _mongoc_cluster_init_scram (const mongoc_cluster_t *cluster,
  *
  *       Generates the saslStart command for scram authentication. Used
  *       during explicit authentication as well as speculative
- *       authentication during isMaster.
+ *       authentication during hello.
  *
  *
  * Returns:
@@ -1442,7 +1443,7 @@ _mongoc_cluster_run_scram_command (mongoc_cluster_t *cluster,
    }
 
    mongoc_cmd_parts_init (
-      &parts, cluster->client, auth_source, MONGOC_QUERY_SLAVE_OK, cmd);
+      &parts, cluster->client, auth_source, MONGOC_QUERY_SECONDARY_OK, cmd);
    parts.prohibit_lsid = true;
    server_stream = _mongoc_cluster_create_server_stream (
       cluster->client->topology, server_id, stream, error);
@@ -1618,7 +1619,7 @@ _mongoc_cluster_scram_handle_reply (mongoc_scram_t *scram,
  *
  *       Continues the scram conversation from the reply to a saslStart
  *       command, either sent explicitly or received through speculative
- *       authentication during isMaster.
+ *       authentication during hello.
  *
  *
  * Returns:
@@ -1849,7 +1850,7 @@ _mongoc_cluster_auth_node (
           * used as the default, regardless of whether SCRAM-SHA-1 is in the
           * list. Drivers MUST NOT attempt to use any other mechanism (e.g.
           * PLAIN) as the default." [...] "If saslSupportedMechs is not present
-          * in the isMaster results for mechanism negotiation, then SCRAM-SHA-1
+          * in the hello results for mechanism negotiation, then SCRAM-SHA-1
           * MUST be used when talking to servers >= 3.0." */
          mechanism = "SCRAM-SHA-256";
       } else {
@@ -1997,7 +1998,7 @@ _mongoc_cluster_finish_speculative_auth (mongoc_cluster_t *cluster,
 
 #ifdef MONGOC_ENABLE_SSL
    if (strcasecmp (mechanism, "MONGODB-X509") == 0) {
-      /* For X509, a successful ismaster with speculativeAuthenticate field
+      /* For X509, a successful hello with speculativeAuthenticate field
        * indicates successful auth */
       ret = true;
       auth_handled = true;
@@ -2091,22 +2092,22 @@ _mongoc_cluster_add_node (mongoc_cluster_t *cluster,
        * generation. */
    }
 
-   /* take critical fields from a fresh ismaster */
+   /* take critical fields from a fresh hello */
    cluster_node =
       _mongoc_cluster_node_new (stream, generation, host->host_and_port);
 
-   sd = _mongoc_cluster_run_ismaster (cluster,
-                                      cluster_node,
-                                      server_id,
-                                      cluster->scram_cache,
-                                      &scram,
-                                      &speculative_auth_response,
-                                      error);
+   sd = _mongoc_cluster_run_hello (cluster,
+                                   cluster_node,
+                                   server_id,
+                                   cluster->scram_cache,
+                                   &scram,
+                                   &speculative_auth_response,
+                                   error);
    if (!sd) {
       GOTO (error);
    }
 
-   _mongoc_handshake_parse_sasl_supported_mechs (&sd->last_is_master,
+   _mongoc_handshake_parse_sasl_supported_mechs (&sd->last_hello_response,
                                                  &sasl_supported_mechs);
 
    if (cluster->requires_auth) {
@@ -2425,6 +2426,12 @@ mongoc_cluster_fetch_stream_single (mongoc_cluster_t *cluster,
       _mongoc_scram_destroy (&scanner_node->scram);
 #endif
 
+      if (!scanner_node->stream) {
+         memcpy (error, &sd->error, sizeof *error);
+         mongoc_server_description_destroy (sd);
+         return NULL;
+      }
+
       if (!has_speculative_auth &&
           !_mongoc_cluster_auth_node (cluster,
                                       scanner_node->stream,
@@ -2561,7 +2568,7 @@ mongoc_cluster_fetch_stream_pooled (mongoc_cluster_t *cluster,
           * invalidated.
           * This may have happened if:
           * - A background scan removed the server description.
-          * - A network error or a "not master"/"node is recovering" error
+          * - A network error or a "not primary"/"node is recovering" error
           *   occurred on an app connection.
           * - A network error occurred on the monitor connection.
           */
@@ -3037,7 +3044,7 @@ mongoc_cluster_check_interval (mongoc_cluster_t *cluster, uint32_t server_id)
       bson_init (&command);
       BSON_APPEND_INT32 (&command, "ping", 1);
       mongoc_cmd_parts_init (
-         &parts, cluster->client, "admin", MONGOC_QUERY_SLAVE_OK, &command);
+         &parts, cluster->client, "admin", MONGOC_QUERY_SECONDARY_OK, &command);
       parts.prohibit_lsid = true;
       server_stream = _mongoc_cluster_create_server_stream (
          cluster->client->topology, server_id, stream, &error);
