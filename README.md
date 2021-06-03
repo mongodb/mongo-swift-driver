@@ -57,7 +57,7 @@ import PackageDescription
 let package = Package(
     name: "MyPackage",
     dependencies: [
-        .package(url: "https://github.com/mongodb/mongo-swift-driver.git", from: "VERSION.STRING.HERE"),
+        .package(url: "https://github.com/mongodb/mongo-swift-driver", .upToNextMajor(from: "1.1.0"))
     ],
     targets: [
         // Async module

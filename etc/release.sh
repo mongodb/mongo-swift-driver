@@ -38,8 +38,12 @@ sourcery --sources Sources/MongoSwift \
         --output Sources/MongoSwift/MongoSwiftVersion.swift \
         --args versionString=${version}
 
+# update the README with the version string
+etc/sed.sh -i "s/mongo-swift-driver\", .upToNextMajor[^)]*)/mongo-swift-driver\", .upToNextMajor(from: \"${version}\")/" README.md
+
 # commit changes
 git add Sources/MongoSwift/MongoSwiftVersion.swift
+git add README.md
 git commit -m "${version}"
 
 # tag release 
@@ -50,4 +54,5 @@ git push
 git push --tags
 
 # go to GitHub to publish release notes
-open "https://github.com/mongodb/mongo-swift-driver/releases/tag/v${version}"
+echo "Successfully tagged release! \
+Go here to publish release notes: https://github.com/mongodb/mongo-swift-driver/releases/tag/v${version}"
