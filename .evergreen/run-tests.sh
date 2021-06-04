@@ -33,9 +33,9 @@ export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
 export PATH="${SWIFTENV_ROOT}/bin:$PATH"
 eval "$(swiftenv init -)"
 
-# select the latest Xcode for Swift 5.1 support on MacOS
+# select the latest Xcode for Swift 5.3+ support on MacOS
 if [ "$OS" == "darwin" ]; then
-    sudo xcode-select -s /Applications/Xcode11.3.app
+    sudo xcode-select -s /Applications/Xcode12.app
 fi
 
 # switch swift version, and run tests

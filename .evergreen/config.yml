@@ -931,16 +931,16 @@ axes:
           PYTHON: "/opt/mongodbtoolchain/v3/bin/python3"
           VENV_BIN_DIR: "bin"
 
-      - id: ubuntu-16.04
-        display_name: "Ubuntu 16.04"
-        run_on: ubuntu1604-test
+      - id: ubuntu-20.04
+        display_name: "Ubuntu 20.04"
+        run_on: ubuntu2004-test
         variables:
           PYTHON: "/opt/mongodbtoolchain/v3/bin/python3"
           VENV_BIN_DIR: "bin"
 
-      - id: macos-10.14
-        display_name: "macOS 10.14"
-        run_on: macos-1014
+      - id: macos-10.15
+        display_name: "macOS 10.15"
+        run_on: macos-1015
         variables:
           PYTHON: "/opt/mongodbtoolchain/v3/bin/python3"
           VENV_BIN_DIR: "bin"
@@ -974,11 +974,15 @@ axes:
       - id: "5.3"
         display_name: "Swift 5.3"
         variables:
-          SWIFT_VERSION: "5.3.3"
-      - id: "5.4-dev"
-        display_name: "Swift 5.4-dev"
+          SWIFT_VERSION: "5.3.3"      
+      - id: "5.4"
+        display_name: "Swift 5.4"
         variables:
-          SWIFT_VERSION: "5.4-DEVELOPMENT-SNAPSHOT-2021-03-25-a"
+          SWIFT_VERSION: "5.4.1"
+      - id: "5.5-dev"
+        display_name: "Swift 5.5-dev"
+        variables:
+          SWIFT_VERSION: "DEVELOPMENT-SNAPSHOT-2021-04-26-a"
 
   - id: ssl-auth
     display_name: SSL and Auth
@@ -1032,9 +1036,7 @@ buildvariants:
 - matrix_name: "tests-all"
   matrix_spec:
     os-fully-featured: "*"
-    swift-version:
-      - "5.1"
-      - "5.2"
+    swift-version: "*"
     ssl-auth: "*"
   display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
   tasks:
@@ -1044,11 +1046,13 @@ buildvariants:
      - ".4.0"
      - ".3.6"
   rules:
-  # pre 4.0 we are just using legacy linux mongoDB since ubuntu 18.04 didn't
+  # pre 4.0 we are just using legacy linux mongoDB since ubuntu 18.04/20.04 didn't
   # exist when 3.6 came out. legacy doesn't link to OpenSSL so we can't run
   # SSL tests there.
   - if:
-      os-fully-featured: "ubuntu-18.04"
+      os-fully-featured:
+        - "ubuntu-18.04"
+        - "ubuntu-20.04"
       swift-version: "*"
       ssl-auth: "ssl-auth"
     then:
@@ -1068,7 +1072,7 @@ buildvariants:
   matrix_spec:
     os-fully-featured:
       - "ubuntu-18.04"
-      - "ubuntu-16.04"
+      - "ubuntu-20.04"
     versions:
       - latest
       - 4.4
@@ -1082,7 +1086,7 @@ buildvariants:
 - matrix_name: "ocsp-macos"
   matrix_spec:
     os-fully-featured:
-      - macos-10.14
+      - macos-10.15
     swift-version:
       - 5.2
     versions:
@@ -1105,45 +1109,15 @@ buildvariants:
     # Versioned API was introduced in MongoDB 4.7
     - "test-latest-standalone"
 
-# define separate matrices for swift 5.3 that excludes macOS 10.14. unfortunately
-# as of now we cannot remove entire buildvariants via rule from the matrices above
-# so we need to split this up due to inability to test 5.3 on macOS 10.14.
-# see EVG-13092
-- matrix_name: "tests-all-5.3+"
-  matrix_spec:
-    os-fully-featured:
-      - "ubuntu-18.04"
-      - "ubuntu-16.04"
-    swift-version:
-      - "5.3"
-      - "5.4-dev"
-    ssl-auth: "*"
-  display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
-  tasks:
-     - ".latest"
-     - ".4.4"
-     - ".4.2"
-     - ".4.0"
-     - ".3.6"
-  rules:
-  # pre 4.0 we are just using legacy linux mongoDB since ubuntu 18.04 didn't
-  # exist when 3.6 came out. legacy doesn't link to OpenSSL so we can't run
-  # SSL tests there.
-  - if:
-      os-fully-featured: "ubuntu-18.04"
-      swift-version: "*"
-      ssl-auth: "ssl-auth"
-    then:
-      remove_tasks: ".3.6"
-
 - matrix_name: "atlas-connect-5.3+"
   matrix_spec:
     os-fully-featured:
       - "ubuntu-18.04"
-      - "ubuntu-16.04"
+      - "ubuntu-20.04"
     swift-version:
       - "5.3"
-      - "5.4-dev"
+      - "5.4"
+      - "5.5-dev"
   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
   tasks:
     - ".atlas-connect"
@@ -1160,7 +1134,7 @@ buildvariants:
 - matrix_name: "check-sourcery"
   display_name: "Check Sourcery"
   matrix_spec:
-    os-fully-featured: "macos-10.14"
+    os-fully-featured: "macos-10.15"
     swift-version: "5.2"
   tasks:
     - name: "check-sourcery"
