@@ -1140,12 +1140,26 @@ buildvariants:
         - ".4.0"
         - ".4.2"
 
+# there are no 5.1 toolchains for Ubuntu 20.04. unfortunately as of now we cannot remove
+# entire buildvariants via rule from the main matrix so we need to split this up. see EVG-13092
+- matrix_name: "atlas-connect-5.1"
+  matrix_spec:
+    os-fully-featured:
+      - "macos-10.15"
+      - "ubuntu-18.04"
+    swift-version: "5.1"
+  display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
+  tasks:
+    - ".atlas-connect"
+
 - matrix_name: "atlas-connect"
   matrix_spec:
     os-fully-featured: "*"
     swift-version:
-      - "5.1"
       - "5.2"
+      - "5.3"
+      - "5.4"
+      - "5.5-dev"
   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
   tasks:
     - ".atlas-connect"
@@ -1201,19 +1215,6 @@ buildvariants:
   tasks:
     # Versioned API was introduced in MongoDB 4.7
     - "test-latest-standalone"
-
-- matrix_name: "atlas-connect-5.3+"
-  matrix_spec:
-    os-fully-featured:
-      - "ubuntu-18.04"
-      - "ubuntu-20.04"
-    swift-version:
-      - "5.3"
-      - "5.4"
-      - "5.5-dev"
-  display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
-  tasks:
-    - ".atlas-connect"
 
 - matrix_name: "format-lint"
   display_name: "Format and Lint"
