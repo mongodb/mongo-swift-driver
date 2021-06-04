@@ -15,6 +15,7 @@
     }
   </style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://unpkg.com/bson@^4/dist/bson.browser.umd.js"></script>
 </head>
 <body>
 <h1>#(name) 🐱</h1>
@@ -58,7 +59,7 @@ $(document).ready(() => {
   $("\#delete-btn").click(() => {
     $.ajax({
         type:'DELETE',
-        url:'/kittens/#(name)',
+        url:'/rest/kittens/#(name)',
         success: () => {
           window.location.href = '/';
         },
@@ -74,8 +75,18 @@ $(document).ready(() => {
     $.ajax({
         type:'PATCH',
         contentType : 'application/json',
-        url:'/kittens/#(name)',
-        data: JSON.stringify({"favoriteFood": newFood}),
+        url:'/rest/kittens/#(name)',
+        // Serialize request data to extended JSON. We use extended JSON
+        // both here, and for serializing/deserializing request data on
+        // the backend, in order to ensure all MongoDB type information
+        // is preserved.
+        // See: https://docs.mongodb.com/manual/reference/mongodb-extended-json
+        data: BSON.EJSON.stringify(
+          {
+            "favoriteFood": newFood,
+            "lastUpdateTime": new Date()
+          }
+        ),
         success: () => {
           window.location.href = '/kittens/#(name)';
         },

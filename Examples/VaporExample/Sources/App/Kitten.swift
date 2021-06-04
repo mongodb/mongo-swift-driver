@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwift
+import MongoDBVapor
 import Vapor
 
 /// Possible cat food choices.
@@ -11,9 +11,13 @@ enum CatFood: String, Codable {
          beef
 }
 
-/// The structure of a food update request.
-struct FoodUpdate: Codable {
+/// The structure of an update request.
+struct KittenUpdate: Codable {
+    /// The new favorite food.
     let favoriteFood: CatFood
+
+    /// The new last update time.
+    let lastUpdateTime: Date
 }
 
 /// Represents a kitten.
@@ -26,9 +30,6 @@ struct Kitten: Content {
     let color: String
     /// Favorite food.
     let favoriteFood: CatFood
-}
-
-/// Context struct for the index page.
-struct IndexContext: Encodable {
-    let kittens: [Kitten]
+    /// Last updated time.
+    let lastUpdateTime: Date
 }

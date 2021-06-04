@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Kittens</title>
+  <style type="text/css">
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+    }
+    h1, h2, th, td, label {
+      font-family: "Trebuchet MS", Helvetica, sans-serif;
+    }
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://unpkg.com/bson@^4/dist/bson.browser.umd.js"></script>
+</head>
+<body>
+  
+  <h1>Kittens 🐱🐱</h1>
+<table>
+<tr>
+    <th>Name</th>
+    <th>Color</th>
+    <th>Favorite Food</th>
+    <th>Last Updated</th>
+</tr>
+#for(kitten in kittens):
+ <tr>
+     <td><a href="/kittens/#(kitten.name)">#(kitten.name)</a></td>
+     <td>#(kitten.color)</td>
+     <td>#(kitten.favoriteFood)</td>
+     <td>#date(kitten.lastUpdateTime, "MM-dd-y HH:mm")</td>
+ </tr>
+#endfor   
+</table>
+<br>
+<br>
+<h2>Add a new kitten</h2>
+<form onsubmit="return false;">
+    <div>
+    <label for="name">Name</label>
+    <input name="name" id="name">
+  </div>
+  <div>
+    <label for="color">Color</label>
+    <input name="color" id="color">
+  <div>
+    <label for="favoriteFood">Favorite Food</label>
+    <select id="favoriteFood" name="favoriteFood">
+      <option value="" selected disabled hidden>Select</option>
+      <option value="salmon">salmon</option>
+      <option value="turkey">turkey</option>
+      <option value="chicken">chicken</option>
+      <option value="tuna">tuna</option>
+      <option value="beef">beef</option>
+    </select>
+  </div>
+  <div>
+    <button id="add-btn">Add</button>
+  </div>
+</form>
+
+<script type="text/javascript">
+  $(document).ready(() => {
+    $("\#add-btn").click(() => {
+      var name = $("\#name").val();
+      var color = $("\#color").val();
+      var food = $("\#favoriteFood").val();
+      var updateTime = new Date();
+      // Serialize request data to extended JSON. We use extended JSON
+      // both here, and for serializing/deserializing request data on
+      // the backend, in order to ensure all MongoDB type information
+      // is preserved.
+      // See: https://docs.mongodb.com/manual/reference/mongodb-extended-json
+      var data = BSON.EJSON.stringify({
+        'name': name,
+        'color': color,
+        'favoriteFood': food,
+        'lastUpdateTime': updateTime
+      })
+
+      $.ajax({
+          type:'POST',
+          contentType : 'application/json',
+          url:'/rest',
+          data: data,
+          success: () => {
+            window.location.href = '/';
+          },
+          error: (req, status, message) => {
+            alert("Error: " + message);
+          }
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

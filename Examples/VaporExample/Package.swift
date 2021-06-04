@@ -7,14 +7,22 @@ let package = Package(
         .macOS(.v10_15)
     ],
     dependencies: [
-        // The driver depends on SwiftNIO 2 and therefore is only compatible with Vapor 4.
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.2.1"),
-        .package(url: "https://github.com/mongodb/mongo-swift-driver", .upToNextMajor(from: "1.0.0"))
+        .package(url: "https://github.com/vapor/vapor", .upToNextMajor(from: "4.7.0")),
+        .package(url: "https://github.com/vapor/leaf", .upToNextMajor(from: "4.0.0")),
+        .package(url: "https://github.com/mongodb/mongodb-vapor", .exact("1.0.0-beta.0"))
     ],
     targets: [
-        .target(name: "VaporExample", dependencies: [
-            .product(name: "MongoSwift", package: "mongo-swift-driver"),
-            .product(name: "Vapor", package: "vapor"),
+        .target(
+            name: "App",
+            dependencies: [
+                .product(name: "Vapor", package: "vapor"),
+                .product(name: "Leaf", package: "leaf"),
+                .product(name: "MongoDBVapor", package: "mongodb-vapor")
+            ]
+        ),
+        .target(name: "Run", dependencies: [
+            .target(name: "App"),
+            .product(name: "MongoDBVapor", package: "mongodb-vapor")
         ])
     ]
 )
