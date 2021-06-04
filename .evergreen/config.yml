@@ -1087,16 +1087,16 @@ buildvariants:
      - ".4.0"
      - ".3.6"
   rules:
-  # pre 4.0 we are just using legacy linux mongoDB since ubuntu 18.04 didn't
-  # exist when 3.6 came out. legacy doesn't link to OpenSSL so we can't run
-  # SSL tests there.
+  # MongoDB 3.6 does not have Ubuntu 18.04-specific Linux releases, so we just use
+  # generic Linux there. This do not link to OpenSSL, so we have to skip SSL tests.
   - if:
       os-fully-featured:
         - "ubuntu-18.04"
       swift-version: "*"
       ssl-auth: "ssl-auth"
     then:
-      remove_tasks: ".3.6"
+      remove_tasks:
+      - ".3.6"
 
 - matrix_name: "tests-all"
   matrix_spec:
@@ -1116,17 +1116,29 @@ buildvariants:
      - ".4.0"
      - ".3.6"
   rules:
-  # pre 4.0 we are just using legacy linux mongoDB since ubuntu 18.04/20.04 didn't
-  # exist when 3.6 came out. legacy doesn't link to OpenSSL so we can't run
-  # SSL tests there.
+  # MongoDB 3.6 does not have Ubuntu 18.04-specific Linux releases, so we just use
+  # generic Linux there. This do not link to OpenSSL, so we have to skip SSL tests.
   - if:
       os-fully-featured:
         - "ubuntu-18.04"
-        - "ubuntu-20.04"
       swift-version: "*"
       ssl-auth: "ssl-auth"
     then:
-      remove_tasks: ".3.6"
+      remove_tasks:
+        - ".3.6"
+  # There are no  Ubuntu 20.04-specific Linux releases until 4.4, and the last server
+  # version with generic Linux releases is 4.0, so we can't just use generic releases
+  # for earlier versions. For simplicity, and since we already have Ubuntu and < 4.4
+  # coverage on Ubuntu 18.04, we only test 4.4+ on Ubuntu 20.04.
+  - if:
+      os-fully-featured: "ubuntu-20.04"
+      swift-version: "*"
+      ssl-auth: "*"
+    then:
+      remove_tasks:
+        - ".3.6"
+        - ".4.0"
+        - ".4.2"
 
 - matrix_name: "atlas-connect"
   matrix_spec:
@@ -1145,6 +1157,7 @@ buildvariants:
       - "ubuntu-20.04"
     versions:
       - latest
+      - 5.0
       - 4.4
     swift-version:
       - 5.2
@@ -1152,6 +1165,13 @@ buildvariants:
   batchtime: 20160 # 14 days
   tasks:
     - ".ocsp"
+  rules:
+  - if:
+      os-fully-featured: "ubuntu-18.04"
+    then:
+      remove_tasks:
+        # OCSP stapling support was removed from Ubuntu 18.04, see SERVER-51364
+        - ".ocsp-staple"
 
 - matrix_name: "ocsp-macos"
   matrix_spec:
@@ -1161,6 +1181,7 @@ buildvariants:
       - 5.2
     versions:
       - latest
+      - 5.0
       - 4.4
   display_name: "OCSP ${swift-version} ${os-fully-featured} ${versions}"
   batchtime: 20160 # 14 days
