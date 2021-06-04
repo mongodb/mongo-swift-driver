@@ -1168,6 +1168,8 @@ buildvariants:
   rules:
   - if:
       os-fully-featured: "ubuntu-18.04"
+      versions: "*"
+      swift-version: "*"
     then:
       remove_tasks:
         # OCSP stapling support was removed from Ubuntu 18.04, see SERVER-51364
