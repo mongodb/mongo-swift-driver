@@ -498,6 +498,39 @@ tasks:
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
 
+    - name: "test-5.0-standalone"
+      tags: ["5.0", "standalone"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "5.0"
+            TOPOLOGY: "server"
+        - func: "run tests"
+
+    - name: "test-5.0-replica_set"
+      tags: ["5.0", "replica_set"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "5.0"
+            TOPOLOGY: "replica_set"
+        - func: "run tests"
+
+    - name: "test-5.0-sharded_cluster"
+      tags: ["5.0", "sharded_cluster"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "5.0"
+            TOPOLOGY: "sharded_cluster"
+        - func: "run tests"
+
     - name: "test-latest-standalone"
       tags: ["latest", "standalone"]
       commands:
@@ -904,6 +937,10 @@ axes:
         display_name: "latest"
         variables:
            MONGODB_VERSION: "latest"
+      - id: "5.0"
+        display_name: "5.0"
+        variables:
+          MONGODB_VERSION: "5.0"
       - id: "4.4"
         display_name: "4.4"
         variables:
@@ -978,7 +1015,7 @@ axes:
       - id: "5.4"
         display_name: "Swift 5.4"
         variables:
-          SWIFT_VERSION: "5.4.1"
+          SWIFT_VERSION: "5.4"
       - id: "5.5-dev"
         display_name: "Swift 5.5-dev"
         variables:
@@ -1032,15 +1069,48 @@ axes:
           TEST_FILTER: "VersionedAPITests"
 
 buildvariants:
-
-- matrix_name: "tests-all"
+# there are no 5.1 toolchains for Ubuntu 20.04. unfortunately as of now we cannot remove
+# entire buildvariants via rule from the main matrix so we need to split this up. see EVG-13092
+- matrix_name: "tests-5.1"
   matrix_spec:
-    os-fully-featured: "*"
-    swift-version: "*"
+    os-fully-featured:
+      - "ubuntu-18.04"
+      - "macos-10.15"
+    swift-version: "5.1"
     ssl-auth: "*"
   display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
   tasks:
      - ".latest"
+     - ".5.0"
+     - ".4.4"
+     - ".4.2"
+     - ".4.0"
+     - ".3.6"
+  rules:
+  # pre 4.0 we are just using legacy linux mongoDB since ubuntu 18.04 didn't
+  # exist when 3.6 came out. legacy doesn't link to OpenSSL so we can't run
+  # SSL tests there.
+  - if:
+      os-fully-featured:
+        - "ubuntu-18.04"
+      swift-version: "*"
+      ssl-auth: "ssl-auth"
+    then:
+      remove_tasks: ".3.6"
+
+- matrix_name: "tests-all"
+  matrix_spec:
+    os-fully-featured: "*"
+    swift-version:
+      - "5.2"
+      - "5.3"
+      - "5.4"
+      - "5.5-dev"
+    ssl-auth: "*"
+  display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
+  tasks:
+     - ".latest"
+     - ".5.0"
      - ".4.4"
      - ".4.2"
      - ".4.0"
