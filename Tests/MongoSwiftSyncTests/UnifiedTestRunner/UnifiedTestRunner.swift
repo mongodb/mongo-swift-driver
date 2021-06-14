@@ -27,7 +27,7 @@ struct UnifiedTestRunner {
         // Using the internal MongoClient, execute the killAllSessions command on either the primary or, if
         // connected to a sharded cluster, all mongos servers.
         switch self.topologyType {
-        case .single:
+        case .single, .loadBalancer:
             return
         case .replicaSet:
             // The test runner MAY ignore any command failure with error Interrupted(11601) to work around

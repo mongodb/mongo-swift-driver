@@ -153,6 +153,8 @@ public enum TestTopologyConfiguration: String, Decodable {
     case shardedReplicaSet = "sharded-replicaset"
     /// A standalone server.
     case single
+    /// A load balancer.
+    case loadBalancer = "load-balanced"
 
     /// Returns a Bool indicating whether this topology is either sharded configuration.
     public var isSharded: Bool {
