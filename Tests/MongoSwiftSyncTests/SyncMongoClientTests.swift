@@ -333,7 +333,12 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         failOptions.serverSelectionTimeoutMS = 1000
         let timeoutClient = try MongoClient.makeTestClient(options: failOptions)
 
-        let fp = FailPoint.failCommand(failCommands: ["isMaster"], mode: .alwaysOn, blockTimeMS: 500)
+        let fp = FailPoint.failCommand(
+            // when an API version is declared, "hello" will be used (DRIVERS-1633)
+            failCommands: ["isMaster", "hello"],
+            mode: .alwaysOn,
+            blockTimeMS: 500
+        )
         try fp.enable()
         defer { fp.disable() }
 
