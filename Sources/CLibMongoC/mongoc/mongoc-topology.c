@@ -56,7 +56,7 @@ _mongoc_topology_reconcile_add_nodes (mongoc_server_description_t *sd,
 }
 
 /* Called from:
- * - the topology scanner callback (when an ismaster was just received)
+ * - the topology scanner callback (when a hello was just received)
  * - at the start of a single-threaded scan (mongoc_topology_scan_once)
  * Not called for multi threaded monitoring.
  */
@@ -92,13 +92,13 @@ mongoc_topology_reconcile (mongoc_topology_t *topology)
 /* call this while already holding the lock */
 static bool
 _mongoc_topology_update_no_lock (uint32_t id,
-                                 const bson_t *ismaster_response,
+                                 const bson_t *hello_response,
                                  int64_t rtt_msec,
                                  mongoc_topology_t *topology,
                                  const bson_error_t *error /* IN */)
 {
-   mongoc_topology_description_handle_ismaster (
-      &topology->description, id, ismaster_response, rtt_msec, error);
+   mongoc_topology_description_handle_hello (
+      &topology->description, id, hello_response, rtt_msec, error);
 
    /* return false if server removed from topology */
    return mongoc_topology_description_server_by_id (
@@ -128,11 +128,11 @@ _mongoc_topology_scanner_setup_err_cb (uint32_t id,
 
    topology = (mongoc_topology_t *) data;
 
-   mongoc_topology_description_handle_ismaster (&topology->description,
-                                                id,
-                                                NULL /* ismaster reply */,
-                                                -1 /* rtt_msec */,
-                                                error);
+   mongoc_topology_description_handle_hello (&topology->description,
+                                             id,
+                                             NULL /* hello reply */,
+                                             -1 /* rtt_msec */,
+                                             error);
 }
 
 
@@ -141,7 +141,7 @@ _mongoc_topology_scanner_setup_err_cb (uint32_t id,
  *
  * _mongoc_topology_scanner_cb --
  *
- *       Callback method to handle ismaster responses received by async
+ *       Callback method to handle hello responses received by async
  *       command objects.
  *
  *       NOTE: This method locks the given topology's mutex.
@@ -152,7 +152,7 @@ _mongoc_topology_scanner_setup_err_cb (uint32_t id,
 
 void
 _mongoc_topology_scanner_cb (uint32_t id,
-                             const bson_t *ismaster_response,
+                             const bson_t *hello_response,
                              int64_t rtt_msec,
                              void *data,
                              const bson_error_t *error /* IN */)
@@ -168,7 +168,7 @@ _mongoc_topology_scanner_cb (uint32_t id,
    sd = mongoc_topology_description_server_by_id (
       &topology->description, id, NULL);
 
-   if (!ismaster_response) {
+   if (!hello_response) {
       /* Server monitoring: When a server check fails due to a network error
        * (including a network timeout), the client MUST clear its connection
        * pool for the server */
@@ -178,18 +178,18 @@ _mongoc_topology_scanner_cb (uint32_t id,
    /* Server Discovery and Monitoring Spec: "Once a server is connected, the
     * client MUST change its type to Unknown only after it has retried the
     * server once." */
-   if (!ismaster_response && sd && sd->type != MONGOC_SERVER_UNKNOWN) {
+   if (!hello_response && sd && sd->type != MONGOC_SERVER_UNKNOWN) {
       _mongoc_topology_update_no_lock (
-         id, ismaster_response, rtt_msec, topology, error);
+         id, hello_response, rtt_msec, topology, error);
 
-      /* add another ismaster call to the current scan - the scan continues
+      /* add another hello call to the current scan - the scan continues
        * until all commands are done */
       mongoc_topology_scanner_scan (topology->scanner, sd->id);
    } else {
       _mongoc_topology_update_no_lock (
-         id, ismaster_response, rtt_msec, topology, error);
+         id, hello_response, rtt_msec, topology, error);
 
-      /* The processing of the ismaster results above may have added/removed
+      /* The processing of the hello results above may have added/removed
        * server descriptions. We need to reconcile that with our monitoring
        * agents
        */
@@ -584,9 +584,9 @@ mongoc_topology_apply_scanned_srv_hosts (mongoc_uri_t *uri,
    bool had_valid_hosts = false;
 
    /* Validate that the hosts have a matching domain.
-   * If validation fails, log it.
-   * If no valid hosts remain, do not update the topology description.
-   */
+    * If validation fails, log it.
+    * If no valid hosts remain, do not update the topology description.
+    */
    LL_FOREACH (hosts, host)
    {
       if (mongoc_uri_validate_srv_result (uri, host->host, error)) {
@@ -617,20 +617,21 @@ mongoc_topology_apply_scanned_srv_hosts (mongoc_uri_t *uri,
  *--------------------------------------------------------------------------
  *
  * mongoc_topology_should_rescan_srv --
- * 
+ *
  *      Checks whether it is valid to rescan SRV records on the topology.
  *      Namely, that the topology type is Sharded or Unknown, and that
  *      the topology URI was configured with SRV.
- * 
+ *
  *      If this returns false, caller can stop scanning SRV records
  *      and does not need to try again in the future.
- * 
+ *
  *      NOTE: this method expects @topology's mutex to be locked on entry.
  *
  * --------------------------------------------------------------------------
  */
 bool
-mongoc_topology_should_rescan_srv (mongoc_topology_t *topology) {
+mongoc_topology_should_rescan_srv (mongoc_topology_t *topology)
+{
    const char *service;
 
    MONGOC_DEBUG_ASSERT (COMMON_PREFIX (mutex_is_locked) (&topology->mutex));
@@ -758,12 +759,13 @@ mongoc_topology_scan_once (mongoc_topology_t *topology, bool obey_cooldown)
    MONGOC_DEBUG_ASSERT (COMMON_PREFIX (mutex_is_locked) (&topology->mutex));
 
    if (mongoc_topology_should_rescan_srv (topology)) {
-      /* Prior to scanning hosts, update the list of SRV hosts, if applicable. */
+      /* Prior to scanning hosts, update the list of SRV hosts, if applicable.
+       */
       mongoc_topology_rescan_srv (topology);
    }
 
    /* since the last scan, members may be added or removed from the topology
-    * description based on ismaster responses in connection handshakes, see
+    * description based on hello responses in connection handshakes, see
     * _mongoc_topology_update_from_handshake. retire scanner nodes for removed
     * members and create scanner nodes for new ones. */
    mongoc_topology_reconcile (topology);
@@ -1286,8 +1288,11 @@ _mongoc_topology_update_from_handshake (mongoc_topology_t *topology,
    bson_mutex_lock (&topology->mutex);
 
    /* return false if server was removed from topology */
-   has_server = _mongoc_topology_update_no_lock (
-      sd->id, &sd->last_is_master, sd->round_trip_time_msec, topology, NULL);
+   has_server = _mongoc_topology_update_no_lock (sd->id,
+                                                 &sd->last_hello_response,
+                                                 sd->round_trip_time_msec,
+                                                 topology,
+                                                 NULL);
 
    /* if pooled, wake threads waiting in mongoc_topology_server_by_id */
    mongoc_cond_broadcast (&topology->cond_client);
@@ -1584,7 +1589,7 @@ _mongoc_topology_end_sessions_cmd (mongoc_topology_t *topology, bson_t *cmd)
  *       handshake on the topology scanner.
  *
  * Returns:
- *      A bson_t representing an ismaster command.
+ *      A bson_t representing a hello command.
  *
  *--------------------------------------------------------------------------
  */
@@ -1648,7 +1653,7 @@ _mongoc_topology_clear_connection_pool (mongoc_topology_t *topology,
 
 /* Handle an error from an app connection.
  *
- * This can be a network error or "not master" / "node is recovering" error.
+ * This can be a network error or "not primary" / "node is recovering" error.
  * Caller must lock topology->mutex.
  * Returns true if pool was cleared.
  */
@@ -1714,14 +1719,14 @@ _mongoc_topology_handle_app_error (mongoc_topology_t *topology,
       }
 
       if (!_mongoc_error_is_state_change (&cmd_error)) {
-         /* Not a "not master" or "node is recovering" error. */
+         /* Not a "not primary" or "node is recovering" error. */
          return false;
       }
 
       /* Check if the error is "stale", i.e. the topologyVersion refers to an
-      * older
-      * version of the server than we have stored in the topology description.
-      */
+       * older
+       * version of the server than we have stored in the topology description.
+       */
       _find_topology_version (reply, &incoming_topology_version);
       if (mongoc_server_description_topology_version_cmp (
              &sd->topology_version, &incoming_topology_version) >= 0) {
@@ -1734,7 +1739,7 @@ _mongoc_topology_handle_app_error (mongoc_topology_t *topology,
          sd, &incoming_topology_version);
       bson_destroy (&incoming_topology_version);
 
-      /* SDAM: When handling a "not master" or "node is recovering" error, the
+      /* SDAM: When handling a "not primary" or "node is recovering" error, the
        * client MUST clear the server's connection pool if and only if the error
        * is "node is shutting down" or the error originated from server version
        * < 4.2.
@@ -1745,7 +1750,7 @@ _mongoc_topology_handle_app_error (mongoc_topology_t *topology,
          pool_cleared = true;
       }
 
-      /* SDAM: When the client sees a "not master" or "node is recovering" error
+      /* SDAM: When the client sees a "not primary" or "node is recovering" error
        * and the error's topologyVersion is strictly greater than the current
        * ServerDescription's topologyVersion it MUST replace the server's
        * description with a ServerDescription of type Unknown. */
@@ -1753,11 +1758,11 @@ _mongoc_topology_handle_app_error (mongoc_topology_t *topology,
          &topology->description, server_id, &cmd_error);
 
       if (topology->single_threaded) {
-         /* SDAM: For single-threaded clients, in the case of a "not master" or
+         /* SDAM: For single-threaded clients, in the case of a "not primary" or
           * "node is shutting down" error, the client MUST mark the topology as
           * "stale"
           */
-         if (_mongoc_error_is_not_master (&cmd_error)) {
+         if (_mongoc_error_is_not_primary (&cmd_error)) {
             topology->stale = true;
          }
       } else {

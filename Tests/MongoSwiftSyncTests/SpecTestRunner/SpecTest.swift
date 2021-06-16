@@ -189,7 +189,7 @@ extension SpecTestFile {
         // if connected to a replica set, use the provided client to execute killAllSessions on the primary.
         // if connected to a sharded cluster, use the per-mongos clients to execute killAllSessions on each mongos.
         switch try client.topologyType() {
-        case .single:
+        case .single, .loadBalancer:
             return
         case .replicaSet:
             // The test runner MAY ignore any command failure with error Interrupted(11601) to work around

@@ -50,7 +50,9 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         let skipRunningValid: [String: [String]] = [
             // unsupported APIs
             "poc-transactions-convenient-api": ["*"],
-            "poc-gridfs": ["*"]
+            "poc-gridfs": ["*"],
+            // temporarily skipped due to SWIFT-1228
+            "poc-command-monitoring": ["A successful find event with a getmore and the server kills the cursor"]
         ]
 
         let runner = try UnifiedTestRunner()

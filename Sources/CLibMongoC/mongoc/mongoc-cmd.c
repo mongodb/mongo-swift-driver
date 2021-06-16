@@ -475,22 +475,22 @@ _mongoc_cmd_parts_assemble_mongos (mongoc_cmd_parts_t *parts,
 
    /* Server Selection Spec says:
     *
-    * For mode 'primary', drivers MUST NOT set the slaveOK wire protocol flag
+    * For mode 'primary', drivers MUST NOT set the secondaryOk wire protocol flag
     *   and MUST NOT use $readPreference
     *
-    * For mode 'secondary', drivers MUST set the slaveOK wire protocol flag and
+    * For mode 'secondary', drivers MUST set the secondaryOk wire protocol flag and
     *   MUST also use $readPreference
     *
-    * For mode 'primaryPreferred', drivers MUST set the slaveOK wire protocol
+    * For mode 'primaryPreferred', drivers MUST set the secondaryOk wire protocol
     *   flag and MUST also use $readPreference
     *
-    * For mode 'secondaryPreferred', drivers MUST set the slaveOK wire protocol
+    * For mode 'secondaryPreferred', drivers MUST set the secondaryOk wire protocol
     *   flag. If the read preference contains a non-empty tag_sets parameter,
     *   maxStalenessSeconds is a positive integer, or the hedge parameter is
     *   non-empty, drivers MUST use $readPreference; otherwise, drivers MUST NOT
     *   use $readPreference
     *
-    * For mode 'nearest', drivers MUST set the slaveOK wire protocol flag and
+    * For mode 'nearest', drivers MUST set the secondaryOk wire protocol flag and
     *   MUST also use $readPreference
     */
    switch (mode) {
@@ -501,13 +501,13 @@ _mongoc_cmd_parts_assemble_mongos (mongoc_cmd_parts_t *parts,
           !bson_empty0 (hedge)) {
          add_read_prefs = true;
       }
-      parts->assembled.query_flags |= MONGOC_QUERY_SLAVE_OK;
+      parts->assembled.query_flags |= MONGOC_QUERY_SECONDARY_OK;
       break;
    case MONGOC_READ_PRIMARY_PREFERRED:
    case MONGOC_READ_SECONDARY:
    case MONGOC_READ_NEAREST:
    default:
-      parts->assembled.query_flags |= MONGOC_QUERY_SLAVE_OK;
+      parts->assembled.query_flags |= MONGOC_QUERY_SECONDARY_OK;
       add_read_prefs = true;
    }
 
@@ -603,24 +603,24 @@ _mongoc_cmd_parts_assemble_mongod (mongoc_cmd_parts_t *parts,
       switch (server_stream->topology_type) {
       case MONGOC_TOPOLOGY_SINGLE:
          /* Server Selection Spec: for topology type single and server types
-          * besides mongos, "clients MUST always set the slaveOK wire
+          * besides mongos, "clients MUST always set the secondaryOk wire
           * protocol flag on reads to ensure that any server type can handle
           * the request."
           */
-         parts->assembled.query_flags |= MONGOC_QUERY_SLAVE_OK;
+         parts->assembled.query_flags |= MONGOC_QUERY_SECONDARY_OK;
          break;
 
       case MONGOC_TOPOLOGY_RS_NO_PRIMARY:
       case MONGOC_TOPOLOGY_RS_WITH_PRIMARY:
          /* Server Selection Spec: for RS topology types, "For all read
-          * preferences modes except primary, clients MUST set the slaveOK wire
+          * preferences modes except primary, clients MUST set the secondaryOk wire
           * protocol flag to ensure that any suitable server can handle the
-          * request. Clients MUST  NOT set the slaveOK wire protocol flag if the
+          * request. Clients MUST  NOT set the secondaryOk wire protocol flag if the
           * read preference mode is primary.
           */
          if (parts->read_prefs &&
              parts->read_prefs->mode != MONGOC_READ_PRIMARY) {
-            parts->assembled.query_flags |= MONGOC_QUERY_SLAVE_OK;
+            parts->assembled.query_flags |= MONGOC_QUERY_SECONDARY_OK;
          }
 
          break;
@@ -782,22 +782,6 @@ _is_retryable_read (const mongoc_cmd_parts_t *parts,
    }
 
    return true;
-}
-
-
-static bool
-_txn_in_progress (mongoc_cmd_parts_t *parts)
-{
-   mongoc_client_session_t *cs;
-
-   cs = parts->prohibit_lsid ? NULL : parts->assembled.session;
-   if (!cs) {
-      return false;
-   }
-
-   return (_mongoc_client_session_txn_in_progress (cs)
-      /* commitTransaction and abortTransaction count as in progress, too. */
-      || parts->assembled.is_txn_finish);
 }
 
 
@@ -988,13 +972,10 @@ mongoc_cmd_parts_assemble (mongoc_cmd_parts_t *parts,
             &parts->assembled_body, "$clusterTime", 12, cluster_time);
       }
 
-      /* Add versioned server api, if it is set. Do not add api if we are
-         sending a getmore, or if we are in a transaction. */
+      /* Add versioned server api, if it is set. */
       if (parts->client->api) {
-         if (!is_get_more && !_txn_in_progress (parts)) {
-            _mongoc_cmd_append_server_api (&parts->assembled_body,
-                                           parts->client->api);
-         }
+         _mongoc_cmd_append_server_api (&parts->assembled_body,
+                                        parts->client->api);
       }
 
       if (!is_get_more) {
@@ -1073,7 +1054,8 @@ mongoc_cmd_is_compressible (mongoc_cmd_t *cmd)
    BSON_ASSERT (cmd);
    BSON_ASSERT (cmd->command_name);
 
-   return !!strcasecmp (cmd->command_name, "ismaster") &&
+   return !!strcasecmp (cmd->command_name, "hello") &&
+          !!strcasecmp (cmd->command_name, HANDSHAKE_CMD_LEGACY_HELLO) &&
           !!strcasecmp (cmd->command_name, "authenticate") &&
           !!strcasecmp (cmd->command_name, "getnonce") &&
           !!strcasecmp (cmd->command_name, "saslstart") &&
