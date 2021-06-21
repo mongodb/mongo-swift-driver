@@ -143,6 +143,7 @@ extension MongoClient {
             }
         }
 
+        // serverless tests are required to use compression.
         if MongoSwiftTestCase.serverless {
             opts.compressors = [.zlib]
         }
