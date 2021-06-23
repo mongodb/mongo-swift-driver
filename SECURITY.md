@@ -9,4 +9,4 @@ MongoDB the company has a [process](https://docs.mongodb.com/manual/tutorial/cre
 
 As this library is taking part in the Swift Server Work Group (SSWG) incubation process, also note the following: 
 * Vulnerabilities found in this library will be privately reported to the [Swift Server Work Group](https://github.com/swift-server/sswg) as per their [security guidelines](https://github.com/swift-server/sswg/blob/main/security/package-maintainer-received-vulnerability-report.md) within 10 days of the report.
-* Once vulnerabilities are fixed and released, vulnerabilities will also be announced in the Swift Forums [Server > Security Updates](https://forums.swift.org/c/server/security-updates) area.
+* Once vulnerabilities are fixed and released, they will also be announced in the Swift Forums [Server > Security Updates](https://forums.swift.org/c/server/security-updates) area.
