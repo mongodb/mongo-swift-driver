@@ -120,8 +120,19 @@ extension MongoClient {
     ) throws -> MongoClient {
         var opts = options ?? MongoClientOptions()
         if MongoSwiftTestCase.ssl {
-            opts.tlsCAFile = URL(string: MongoSwiftTestCase.sslCAFilePath ?? "")
-            opts.tlsCertificateKeyFile = URL(string: MongoSwiftTestCase.sslPEMKeyFilePath ?? "")
+            opts.tls = true
+            if let caPath = MongoSwiftTestCase.sslCAFilePath {
+                opts.tlsCAFile = URL(string: caPath)
+            }
+            if let certPath = MongoSwiftTestCase.sslPEMKeyFilePath {
+                opts.tlsCertificateKeyFile = URL(string: certPath)
+            }
+        }
+
+        if MongoSwiftTestCase.auth {
+            if let scramUser = MongoSwiftTestCase.scramUser, let scramPass = MongoSwiftTestCase.scramPassword {
+                opts.credential = MongoCredential(username: scramUser, password: scramPass)
+            }
         }
 
         if let apiVersion = MongoSwiftTestCase.apiVersion {
@@ -131,6 +142,12 @@ extension MongoClient {
                 opts.serverAPI!.version = apiVersion
             }
         }
+
+        // serverless tests are required to use compression.
+        if MongoSwiftTestCase.serverless {
+            opts.compressors = [.zlib]
+        }
+
         return try MongoClient(uri, options: opts)
     }
 

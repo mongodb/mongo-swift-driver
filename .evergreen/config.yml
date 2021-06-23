@@ -179,6 +179,22 @@ functions:
           ATLAS_REPL_SRV='${ATLAS_REPL_SRV}' ATLAS_SHRD_SRV='${ATLAS_SHRD_SRV}' ATLAS_FREE_SRV='${ATLAS_FREE_SRV}' ATLAS_TLS11_SRV='${ATLAS_TLS11_SRV}' ATLAS_TLS12_SRV='${ATLAS_TLS12_SRV}' \
           sh ${PROJECT_DIRECTORY}/.evergreen/run-atlas-tests.sh
 
+  "run serverless tests":
+    - command: shell.exec
+      type: test
+      params:
+        working_dir: "src"
+        script: |
+          ${PREPARE_SHELL}
+          set +o xtrace
+
+          MONGODB_URI="${MONGODB_URI}" \
+          MONGODB_API_VERSION=${MONGODB_API_VERSION} \
+          SERVERLESS_ATLAS_USER="${SERVERLESS_ATLAS_USER}" \
+          SERVERLESS_ATLAS_PASSWORD="${SERVERLESS_ATLAS_PASSWORD}" \
+          SWIFT_VERSION="${SWIFT_VERSION}" \
+            sh ${PROJECT_DIRECTORY}/.evergreen/run-serverless-tests.sh
+
   "run ocsp test":
     - command: shell.exec
       type: test
@@ -568,6 +584,11 @@ tasks:
       tags: ["atlas-connect"]
       commands:
         - func: "run atlas tests"
+
+    - name: "test-serverless"
+      tags: ["serverless"]
+      commands:
+        - func: "run serverless tests"
 
     - name: test-ocsp-rsa-valid-cert-server-staples
       tags: ["ocsp", "ocsp-rsa", "ocsp-staple"]
@@ -1044,7 +1065,7 @@ axes:
           AUTH: "auth"
 
   - id: versionedAPI
-    display_name: API Version
+    display_name: Versioned API
     values:
     # Test against a cluster with requireApiVersion=1.
       - id: requireApiVersion1
@@ -1067,6 +1088,41 @@ axes:
         variables:
           ORCHESTRATION_FILE: "versioned-api-testing.json"
           TEST_FILTER: "VersionedAPITests"
+
+task_groups:
+  - name: serverless_task_group
+    setup_group_can_fail_task: true
+    setup_group_timeout_secs: 1800 # 30 minutes
+    setup_group:
+      - func: "fetch source"
+      - func: "install swift"
+      - func: "prepare resources"
+      - command: shell.exec
+        params:
+          shell: "bash"
+          script: |
+            ${PREPARE_SHELL}
+            set +o xtrace
+            SERVERLESS_DRIVERS_GROUP=${SERVERLESS_DRIVERS_GROUP} \
+            SERVERLESS_API_PUBLIC_KEY=${SERVERLESS_API_PUBLIC_KEY} \
+            SERVERLESS_API_PRIVATE_KEY=${SERVERLESS_API_PRIVATE_KEY} \
+              bash ${DRIVERS_TOOLS}/.evergreen/serverless/create-instance.sh
+      - command: expansions.update
+        params:
+          file: serverless-expansion.yml
+    teardown_group:
+      - command: shell.exec
+        params:
+          script: |
+            ${PREPARE_SHELL}
+            set +o xtrace
+            SERVERLESS_DRIVERS_GROUP=${SERVERLESS_DRIVERS_GROUP} \
+            SERVERLESS_API_PUBLIC_KEY=${SERVERLESS_API_PUBLIC_KEY} \
+            SERVERLESS_API_PRIVATE_KEY=${SERVERLESS_API_PRIVATE_KEY} \
+            SERVERLESS_INSTANCE_NAME=${SERVERLESS_INSTANCE_NAME} \
+              bash ${DRIVERS_TOOLS}/.evergreen/serverless/delete-instance.sh
+    tasks:
+      - ".serverless"
 
 buildvariants:
 # there are no 5.1 toolchains for Ubuntu 20.04. unfortunately as of now we cannot remove
@@ -1163,6 +1219,16 @@ buildvariants:
   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
   tasks:
     - ".atlas-connect"
+
+- matrix_name: "serverless"
+  matrix_spec:
+    os-fully-featured:
+      - "ubuntu-18.04"
+    swift-version:
+      - 5.4
+  display_name: "Serverless ${swift-version} ${os-fully-featured}"
+  tasks:
+    - "serverless_task_group"
 
 - matrix_name: "ocsp"
   matrix_spec:

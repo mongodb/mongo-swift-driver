@@ -222,7 +222,16 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
     // TODO: remove with SWIFT-780
     func testAggregateWithListLocalSessions() throws {
+        guard !MongoSwiftTestCase.serverless else {
+            printSkipMessage(
+                testName: "testAggregateWithListLocalSessions",
+                reason: "$listLocalSessions not supported in serverless"
+            )
+            return
+        }
+
         let client = try MongoClient.makeTestClient()
+
         let db = client.db("admin")
         let result1 = try db.aggregate([
             ["$listLocalSessions": [:]],

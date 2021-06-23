@@ -49,8 +49,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamError() throws {
         try self.withTestClient { client in
             let testRequirements = TestRequirement(
-                maxServerVersion: ServerVersion(major: 4, minor: 3, patch: 3),
-                acceptableTopologies: [.sharded, .replicaSet]
+                acceptableTopologies: [.sharded, .replicaSet, .shardedReplicaSet]
             )
             let unmetRequirement = try client.getUnmetRequirement(testRequirements)
             guard unmetRequirement == nil else {

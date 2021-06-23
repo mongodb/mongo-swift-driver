@@ -13,10 +13,13 @@ extension HasListableProperties {
 extension BulkWriteOptions: HasListableProperties {}
 extension FindOneAndReplaceOptions: HasListableProperties {}
 extension FindOneAndUpdateOptions: HasListableProperties {}
+extension FindOneAndDeleteOptions: HasListableProperties {}
 extension DeleteOptions: HasListableProperties {}
 extension ReplaceOptions: HasListableProperties {}
+extension EstimatedDocumentCountOptions: HasListableProperties {}
 extension InsertOneOptions: HasListableProperties {}
 extension DeleteModelOptions: HasListableProperties {}
 extension UpdateModelOptions: HasListableProperties {}
+extension UpdateOptions: HasListableProperties {}
 extension ReplaceOneModelOptions: HasListableProperties {}
 extension ChangeStreamOptions: HasListableProperties {}

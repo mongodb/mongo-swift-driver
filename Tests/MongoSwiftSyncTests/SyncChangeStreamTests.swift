@@ -397,7 +397,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamMissingId() throws {
         let testRequirements = TestRequirement(
-            acceptableTopologies: [.replicaSet, .sharded]
+            acceptableTopologies: [.replicaSet, .sharded, .shardedReplicaSet]
         )
 
         let unmetRequirement = try MongoClient.makeTestClient().getUnmetRequirement(testRequirements)

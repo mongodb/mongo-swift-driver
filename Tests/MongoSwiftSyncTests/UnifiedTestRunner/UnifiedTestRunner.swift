@@ -9,7 +9,7 @@ struct UnifiedTestRunner {
     let serverParameters: BSONDocument
 
     static let minSchemaVersion = SchemaVersion(rawValue: "1.0.0")!
-    static let maxSchemaVersion = SchemaVersion(rawValue: "1.1.0")!
+    static let maxSchemaVersion = SchemaVersion(rawValue: "1.4.0")!
 
     init() throws {
         let connStr = MongoSwiftTestCase.getConnectionString(singleMongos: false).toString()
@@ -27,7 +27,9 @@ struct UnifiedTestRunner {
         // Using the internal MongoClient, execute the killAllSessions command on either the primary or, if
         // connected to a sharded cluster, all mongos servers.
         switch self.topologyType {
-        case .single, .loadBalancer:
+        case .single,
+             .loadBalancer,
+             _ where MongoSwiftTestCase.serverless:
             return
         case .replicaSet:
             // The test runner MAY ignore any command failure with error Interrupted(11601) to work around
@@ -154,7 +156,7 @@ struct UnifiedTestRunner {
                 // Workaround for SERVER-39704:  a test runners MUST execute a non-transactional distinct command on
                 // each mongos server before running any test that might execute distinct within a transaction. To ease
                 // the implementation, test runners MAY execute distinct before every test.
-                if self.topologyType.isSharded {
+                if self.topologyType.isSharded && !MongoSwiftTestCase.serverless {
                     let collEntities = context.entities.values.compactMap { try? $0.asCollection() }
                     for address in MongoSwiftTestCase.getHosts() {
                         for entity in collEntities {

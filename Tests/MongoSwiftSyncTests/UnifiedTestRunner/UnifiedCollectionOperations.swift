@@ -228,7 +228,8 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(BSONDocument.self, forKey: .filter)
-        self.update = try container.decode(BSONDocument.self, forKey: .update)
+        // TODO: SWIFT-560 handle decoding pipelines properly
+        self.update = (try? container.decode(BSONDocument.self, forKey: .update)) ?? [:]
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
@@ -250,13 +251,28 @@ struct UnifiedFindOneAndDelete: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
 
+    let options: FindOneAndDeleteOptions?
+
     static var knownArguments: Set<String> {
-        ["filter"]
+        Set(
+            CodingKeys.allCases.map { $0.rawValue } +
+                FindOneAndDeleteOptions().propertyNames
+        )
+    }
+
+    enum CodingKeys: String, CodingKey, CaseIterable {
+        case filter
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.options = try decoder.singleValueContainer().decode(FindOneAndDeleteOptions.self)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        guard let result = try collection.findOneAndDelete(filter) else {
+        guard let result = try collection.findOneAndDelete(filter, options: self.options) else {
             return .none
         }
         return .rootDocument(result)
@@ -306,13 +322,28 @@ struct UnifiedDeleteMany: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
 
+    let options: DeleteOptions?
+
     static var knownArguments: Set<String> {
-        ["filter"]
+        Set(
+            CodingKeys.allCases.map { $0.rawValue } +
+                DeleteOptions().propertyNames
+        )
+    }
+
+    enum CodingKeys: String, CodingKey, CaseIterable {
+        case filter
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.options = try decoder.singleValueContainer().decode(DeleteOptions.self)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        guard let result = try collection.deleteMany(filter) else {
+        guard let result = try collection.deleteMany(filter, options: self.options) else {
             return .none
         }
         let encoded = try BSONEncoder().encode(result)
@@ -507,13 +538,30 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
     /// Update to perform.
     let update: BSONDocument
 
+    let options: UpdateOptions?
+
     static var knownArguments: Set<String> {
-        ["update", "filter"]
+        Set(
+            CodingKeys.allCases.map { $0.rawValue } +
+                UpdateOptions().propertyNames
+        )
+    }
+
+    enum CodingKeys: String, CodingKey, CaseIterable {
+        case filter, update
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.options = try decoder.singleValueContainer().decode(UpdateOptions.self)
+        // TODO: SWIFT-560 handle decoding pipelines properly
+        self.update = (try? container.decode(BSONDocument.self, forKey: .update)) ?? [:]
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        guard let result = try collection.updateOne(filter: filter, update: update) else {
+        guard let result = try collection.updateOne(filter: filter, update: update, options: self.options) else {
             return .none
         }
         let encoded = try BSONEncoder().encode(result)
@@ -528,13 +576,30 @@ struct UnifiedUpdateMany: UnifiedOperationProtocol {
     /// Update to perform.
     let update: BSONDocument
 
+    let options: UpdateOptions?
+
     static var knownArguments: Set<String> {
-        ["update", "filter"]
+        Set(
+            CodingKeys.allCases.map { $0.rawValue } +
+                UpdateOptions().propertyNames
+        )
+    }
+
+    enum CodingKeys: String, CodingKey, CaseIterable {
+        case filter, update
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        // TODO: SWIFT-560 handle decoding pipelines properly
+        self.update = (try? container.decode(BSONDocument.self, forKey: .update)) ?? [:]
+        self.options = try decoder.singleValueContainer().decode(UpdateOptions.self)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        guard let result = try collection.updateMany(filter: filter, update: update) else {
+        guard let result = try collection.updateMany(filter: filter, update: update, options: self.options) else {
             return .none
         }
         let encoded = try BSONEncoder().encode(result)
