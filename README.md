@@ -199,7 +199,7 @@ all available. However, runtime guarantees are not yet met for many of these
 methods.
 
 ### Usage With Kitura, Vapor, and Perfect
-The `Examples/` directory contains sample projects that use the driver with [Kitura](https://github.com/mongodb/mongo-swift-driver/tree/main/Examples/KituraExample), [Vapor](https://github.com/mongodb/mongo-swift-driver/tree/main/Examples/ComplexVaporExample), and [Perfect](https://github.com/mongodb/mongo-swift-driver/tree/main/Examples/PerfectExample).
+The `Examples/` directory contains sample projects that use the driver with [Kitura](https://github.com/mongodb/mongo-swift-driver/tree/main/Examples/KituraExample), [Vapor](https://github.com/mongodb/mongo-swift-driver/tree/main/Examples/VaporExample), and [Perfect](https://github.com/mongodb/mongo-swift-driver/tree/main/Examples/PerfectExample).
 
 Please note that the driver is built using SwiftNIO 2, and therefore is incompatible with frameworks built upon SwiftNIO 1. SwiftNIO 2 is used as of Vapor 4.0 and Kitura 2.5.
 
