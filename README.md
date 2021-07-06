@@ -32,6 +32,9 @@ Think you've found a bug? Want to see a new feature in `mongo-swift-driver`? Ple
 Bug reports in JIRA for all driver projects (i.e. NODE, PYTHON, CSHARP, JAVA) and the
 Core Server (i.e. SERVER) project are **public**.
 
+## Security Concerns
+Please see [SECURITY.md](SECURITY.md) for details on our security process.
+
 ## Installation
 The driver supports use with Swift 5.1+. The minimum macOS version required to build the driver is 10.14. The driver is tested in continuous integration against macOS 10.14, Ubuntu 16.04, and Ubuntu 18.04.
 
