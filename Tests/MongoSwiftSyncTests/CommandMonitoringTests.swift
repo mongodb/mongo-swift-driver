@@ -261,20 +261,12 @@ private struct CommandStartedExpectation: ExpectationType, Decodable {
 private func normalizeCommand(_ input: BSONDocument) -> BSONDocument {
     var output = BSONDocument()
     for (k, v) in input {
-        // temporary fix pending resolution of SPEC-1049. removes the field
-        // from the expected command unless if it is set to true, because none of the
-        // tests explicitly provide upsert: false or multi: false, yet they
-        // are in the expected commands anyway.
-        if ["upsert", "multi"].contains(k), let bV = v.boolValue {
-            if bV { output[k] = true } else { continue }
-
-            // The tests don't explicitly store maxTimeMS as an Int64, so libmongoc
-            // parses it as an Int32 which we convert to Int. convert to Int64 here because we
-            // (as per the crud spec) use an Int64 for maxTimeMS and send that to
-            // the server in our actual commands.
-        } else if k == "maxTimeMS", let iV = v.toInt64() {
+        // The tests don't explicitly store maxTimeMS as an Int64, so libmongoc
+        // parses it as an Int32 which we convert to Int. convert to Int64 here because we
+        // (as per the crud spec) use an Int64 for maxTimeMS and send that to
+        // the server in our actual commands.
+        if k == "maxTimeMS", let iV = v.toInt64() {
             output[k] = .int64(iV)
-
             // recursively normalize if it's a document
         } else if let docVal = v.documentValue {
             output[k] = .document(normalizeCommand(docVal))
