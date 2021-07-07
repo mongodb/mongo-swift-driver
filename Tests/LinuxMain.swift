@@ -1,6 +1,5 @@
-// Generated using Sourcery 1.0.0 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 1.3.4 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
-
 
 @testable import BSONTests
 @testable import MongoSwiftTests
@@ -58,7 +57,9 @@ extension ClientSessionTests {
 
 extension CommandMonitoringTests {
     static var allTests = [
-        ("testCommandMonitoring", testCommandMonitoring),
+        ("testCommandMonitoringLegacy", testCommandMonitoringLegacy),
+        ("testCommandMonitoringUnified", testCommandMonitoringUnified),
+        ("testSensitiveCommandRedaction", testSensitiveCommandRedaction),
     ]
 }
 
