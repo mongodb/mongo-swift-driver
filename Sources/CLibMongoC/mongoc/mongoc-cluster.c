@@ -507,6 +507,7 @@ mongoc_cluster_run_command_monitored (mongoc_cluster_t *cluster,
    bson_t encrypted = BSON_INITIALIZER;
    bson_t decrypted = BSON_INITIALIZER;
    mongoc_cmd_t encrypted_cmd;
+   bool is_redacted = false;
 
    server_stream = cmd->server_stream;
    server_id = server_stream->sd->id;
@@ -533,8 +534,11 @@ mongoc_cluster_run_command_monitored (mongoc_cluster_t *cluster,
    }
 
    if (callbacks->started) {
-      mongoc_apm_command_started_init_with_cmd (
-         &started_event, cmd, request_id, cluster->client->apm_context);
+      mongoc_apm_command_started_init_with_cmd (&started_event,
+                                                cmd,
+                                                request_id,
+                                                &is_redacted,
+                                                cluster->client->apm_context);
 
       callbacks->started (&started_event);
       mongoc_apm_command_started_cleanup (&started_event);
@@ -578,6 +582,7 @@ mongoc_cluster_run_command_monitored (mongoc_cluster_t *cluster,
                                          cmd->operation_id,
                                          &server_stream->sd->host,
                                          server_id,
+                                         is_redacted,
                                          cluster->client->apm_context);
 
       callbacks->succeeded (&succeeded_event);
@@ -594,6 +599,7 @@ mongoc_cluster_run_command_monitored (mongoc_cluster_t *cluster,
                                       cmd->operation_id,
                                       &server_stream->sd->host,
                                       server_id,
+                                      is_redacted,
                                       cluster->client->apm_context);
 
       callbacks->failed (&failed_event);
@@ -2425,6 +2431,12 @@ mongoc_cluster_fetch_stream_single (mongoc_cluster_t *cluster,
 #ifdef MONGOC_ENABLE_CRYPTO
       _mongoc_scram_destroy (&scanner_node->scram);
 #endif
+
+      if (!scanner_node->stream) {
+         memcpy (error, &sd->error, sizeof *error);
+         mongoc_server_description_destroy (sd);
+         return NULL;
+      }
 
       if (!has_speculative_auth &&
           !_mongoc_cluster_auth_node (cluster,

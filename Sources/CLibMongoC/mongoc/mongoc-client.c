@@ -302,6 +302,24 @@ typedef bool (*mongoc_rr_callback_t) (const char *service,
                                       mongoc_rr_data_t *rr_data,
                                       bson_error_t *error);
 
+static const char *
+_mongoc_hstrerror (int code)
+{
+   switch (code) {
+   case HOST_NOT_FOUND:
+      return "The specified host is unknown.";
+   case NO_ADDRESS:
+      return "The requested name is valid but does not have an IP address.";
+   case NO_RECOVERY:
+      return "A nonrecoverable name server error occurred.";
+   case TRY_AGAIN:
+      return "A temporary error occurred on an authoritative name server. Try "
+             "again later.";
+   default:
+      return "An unknown error occurred.";
+   }
+}
+
 static bool
 srv_callback (const char *service,
               ns_msg *ns_answer,
@@ -331,7 +349,7 @@ srv_callback (const char *service,
    if (size < 1) {
       DNS_ERROR ("Invalid record in SRV answer for \"%s\": \"%s\"",
                  service,
-                 strerror (h_errno));
+                 _mongoc_hstrerror (h_errno));
    }
 
    if (!_mongoc_host_list_from_hostport_with_err (
@@ -476,7 +494,7 @@ _mongoc_get_rr_search (const char *service,
          DNS_ERROR ("Failed to look up %s record \"%s\": %s",
                     rr_type_name,
                     service,
-                    strerror (h_errno));
+                    _mongoc_hstrerror (h_errno));
       }
    } while (size >= buffer_size);
 
@@ -497,7 +515,7 @@ _mongoc_get_rr_search (const char *service,
                     i,
                     rr_type_name,
                     service,
-                    strerror (h_errno));
+                    _mongoc_hstrerror (h_errno));
       }
 
       /* Skip records that don't match the ones we requested. CDRIVER-3628 shows
@@ -2341,6 +2359,7 @@ _mongoc_client_monitor_op_killcursors (mongoc_cluster_t *cluster,
                                     operation_id,
                                     &server_stream->sd->host,
                                     server_stream->sd->id,
+                                    NULL,
                                     client->apm_context);
 
    client->apm_callbacks.started (&event);
@@ -2387,6 +2406,7 @@ _mongoc_client_monitor_op_killcursors_succeeded (
                                       operation_id,
                                       &server_stream->sd->host,
                                       server_stream->sd->id,
+                                      false,
                                       client->apm_context);
 
    client->apm_callbacks.succeeded (&event);
@@ -2429,6 +2449,7 @@ _mongoc_client_monitor_op_killcursors_failed (
                                    operation_id,
                                    &server_stream->sd->host,
                                    server_stream->sd->id,
+                                   false,
                                    client->apm_context);
 
    client->apm_callbacks.failed (&event);
