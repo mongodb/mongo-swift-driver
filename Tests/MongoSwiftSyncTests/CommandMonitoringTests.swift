@@ -19,7 +19,11 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
 
-        let tests = try retrieveSpecTestFiles(specName: "command-monitoring", subdirectory: "legacy", asType: CMTestFile.self)
+        let tests = try retrieveSpecTestFiles(
+            specName: "command-monitoring",
+            subdirectory: "legacy",
+            asType: CMTestFile.self
+        )
         for (filename, testFile) in tests {
             // read in the file data and parse into a struct
             let name = filename.components(separatedBy: ".")[0]
@@ -65,7 +69,11 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
     }
 
     func testCommandMonitoringUnified() throws {
-        let tests = try retrieveSpecTestFiles(specName: "command-monitoring", subdirectory: "unified", asType: UnifiedTestFile.self).map { $0.1 }
+        let tests = try retrieveSpecTestFiles(
+            specName: "command-monitoring",
+            subdirectory: "unified",
+            asType: UnifiedTestFile.self
+        ).map { $0.1 }
         let runner = try UnifiedTestRunner()
         try runner.runFiles(tests)
     }

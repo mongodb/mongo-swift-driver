@@ -40,7 +40,7 @@ struct UnifiedDropCollection: UnifiedOperationProtocol {
 struct UnifiedRunCommand: UnifiedOperationProtocol {
     /// The command to run.
     let command: BSONDocument
-    
+
     /// The name of the command to run. Used for reordering the document to put the command name first.
     let commandName: String
 
@@ -51,8 +51,8 @@ struct UnifiedRunCommand: UnifiedOperationProtocol {
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let db = try context.entities.getEntity(from: object).asDatabase()
         var ordered: BSONDocument = [:]
-        ordered[commandName] = self.command[commandName]!
-        for (k, v) in self.command where k != commandName {
+        ordered[commandName] = self.command[self.commandName]!
+        for (k, v) in self.command where k != self.commandName {
             ordered[k] = v
         }
         let result = try db.runCommand(ordered)
