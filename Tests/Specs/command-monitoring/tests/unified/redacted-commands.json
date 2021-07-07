@@ -1,6 +1,6 @@
 {
   "description": "redacted-commands",
-  "schemaVersion": "1.5",
+  "schemaVersion": "1.0",
   "runOnRequirements": [
     {
       "minServerVersion": "5.0",
