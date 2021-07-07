@@ -59,7 +59,6 @@ extension CommandMonitoringTests {
     static var allTests = [
         ("testCommandMonitoringLegacy", testCommandMonitoringLegacy),
         ("testCommandMonitoringUnified", testCommandMonitoringUnified),
-        ("testSensitiveCommandRedaction", testSensitiveCommandRedaction),
     ]
 }
 
