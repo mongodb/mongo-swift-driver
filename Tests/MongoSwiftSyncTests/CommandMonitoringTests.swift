@@ -10,7 +10,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         self.continueAfterFailure = false
     }
 
-    func testCommandMonitoring() throws {
+    func testCommandMonitoringLegacy() throws {
         guard MongoSwiftTestCase.topologyType != .sharded else {
             print(unsupportedTopologyMessage(testName: self.name))
             return
@@ -19,7 +19,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
 
-        let tests = try retrieveSpecTestFiles(specName: "command-monitoring", asType: CMTestFile.self)
+        let tests = try retrieveSpecTestFiles(specName: "command-monitoring", subdirectory: "legacy", asType: CMTestFile.self)
         for (filename, testFile) in tests {
             // read in the file data and parse into a struct
             let name = filename.components(separatedBy: ".")[0]
@@ -62,6 +62,12 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
                 try db.drop()
             }
         }
+    }
+
+    func testCommandMonitoringUnified() throws {
+        let tests = try retrieveSpecTestFiles(specName: "command-monitoring", subdirectory: "unified", asType: UnifiedTestFile.self).map { $0.1 }
+        let runner = try UnifiedTestRunner()
+        try runner.runFiles(tests)
     }
 }
 
@@ -155,7 +161,7 @@ private struct CMTest: Decodable {
 
         case "insertMany":
             let documents = (self.op.args["documents"]?.arrayValue?.compactMap { $0.documentValue })!
-            let options = InsertManyOptions(ordered: self.op.args["ordered"]?.boolValue)
+            let options = InsertManyOptions(ordered: self.op.args["options"]?.documentValue?["ordered"]?.boolValue)
             _ = try? collection.insertMany(documents, options: options)
 
         case "insertOne":
