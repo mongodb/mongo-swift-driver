@@ -10,7 +10,7 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         self.continueAfterFailure = false
     }
 
-    func testCommandMonitoring() throws {
+    func testCommandMonitoringLegacy() throws {
         guard MongoSwiftTestCase.topologyType != .sharded else {
             print(unsupportedTopologyMessage(testName: self.name))
             return
@@ -19,7 +19,11 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
 
-        let tests = try retrieveSpecTestFiles(specName: "command-monitoring", asType: CMTestFile.self)
+        let tests = try retrieveSpecTestFiles(
+            specName: "command-monitoring",
+            subdirectory: "legacy",
+            asType: CMTestFile.self
+        )
         for (filename, testFile) in tests {
             // read in the file data and parse into a struct
             let name = filename.components(separatedBy: ".")[0]
@@ -62,6 +66,16 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
                 try db.drop()
             }
         }
+    }
+
+    func testCommandMonitoringUnified() throws {
+        let tests = try retrieveSpecTestFiles(
+            specName: "command-monitoring",
+            subdirectory: "unified",
+            asType: UnifiedTestFile.self
+        ).map { $0.1 }
+        let runner = try UnifiedTestRunner()
+        try runner.runFiles(tests)
     }
 }
 
@@ -155,7 +169,7 @@ private struct CMTest: Decodable {
 
         case "insertMany":
             let documents = (self.op.args["documents"]?.arrayValue?.compactMap { $0.documentValue })!
-            let options = InsertManyOptions(ordered: self.op.args["ordered"]?.boolValue)
+            let options = InsertManyOptions(ordered: self.op.args["options"]?.documentValue?["ordered"]?.boolValue)
             _ = try? collection.insertMany(documents, options: options)
 
         case "insertOne":
@@ -247,20 +261,12 @@ private struct CommandStartedExpectation: ExpectationType, Decodable {
 private func normalizeCommand(_ input: BSONDocument) -> BSONDocument {
     var output = BSONDocument()
     for (k, v) in input {
-        // temporary fix pending resolution of SPEC-1049. removes the field
-        // from the expected command unless if it is set to true, because none of the
-        // tests explicitly provide upsert: false or multi: false, yet they
-        // are in the expected commands anyway.
-        if ["upsert", "multi"].contains(k), let bV = v.boolValue {
-            if bV { output[k] = true } else { continue }
-
-            // The tests don't explicitly store maxTimeMS as an Int64, so libmongoc
-            // parses it as an Int32 which we convert to Int. convert to Int64 here because we
-            // (as per the crud spec) use an Int64 for maxTimeMS and send that to
-            // the server in our actual commands.
-        } else if k == "maxTimeMS", let iV = v.toInt64() {
+        // The tests don't explicitly store maxTimeMS as an Int64, so libmongoc
+        // parses it as an Int32 which we convert to Int. convert to Int64 here because we
+        // (as per the crud spec) use an Int64 for maxTimeMS and send that to
+        // the server in our actual commands.
+        if k == "maxTimeMS", let iV = v.toInt64() {
             output[k] = .int64(iV)
-
             // recursively normalize if it's a document
         } else if let docVal = v.documentValue {
             output[k] = .document(normalizeCommand(docVal))

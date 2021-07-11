@@ -188,6 +188,8 @@ struct UnifiedOperation: Decodable {
             self.operation = UnifiedListDatabases()
         case "replaceOne":
             self.operation = try container.decode(UnifiedReplaceOne.self, forKey: .arguments)
+        case "runCommand":
+            self.operation = try container.decode(UnifiedRunCommand.self, forKey: .arguments)
         case "startTransaction":
             self.operation = UnifiedStartTransaction()
         case "targetedFailPoint":
