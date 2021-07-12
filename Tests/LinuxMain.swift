@@ -67,7 +67,6 @@ extension ConnectionStringTests {
     static var allTests = [
         ("testURIOptions", testURIOptions),
         ("testConnectionString", testConnectionString),
-        ("testCodable", testCodable),
         ("testAppNameOption", testAppNameOption),
         ("testReplSetOption", testReplSetOption),
         ("testHeartbeatFrequencyMSOption", testHeartbeatFrequencyMSOption),
