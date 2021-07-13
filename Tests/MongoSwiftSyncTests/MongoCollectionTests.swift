@@ -90,7 +90,6 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         )
 
         expect(try self.coll.insertOne(["_id": 1])).to(throwError(expectedError))
-        expect(try self.coll.insertOne(["$asf": 12])).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
     func testInsertOneWithUnacknowledgedWriteConcern() throws {
