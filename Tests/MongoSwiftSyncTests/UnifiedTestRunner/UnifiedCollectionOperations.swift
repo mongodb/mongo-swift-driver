@@ -540,6 +540,8 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
 
     let options: UpdateOptions?
 
+    let session: String?
+
     static var knownArguments: Set<String> {
         Set(
             CodingKeys.allCases.map { $0.rawValue } +
@@ -548,20 +550,27 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
     }
 
     enum CodingKeys: String, CodingKey, CaseIterable {
-        case filter, update
+        case filter, update, session
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.filter = try container.decode(BSONDocument.self, forKey: .filter)
         self.options = try decoder.singleValueContainer().decode(UpdateOptions.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
         // TODO: SWIFT-560 handle decoding pipelines properly
         self.update = (try? container.decode(BSONDocument.self, forKey: .update)) ?? [:]
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        guard let result = try collection.updateOne(filter: filter, update: update, options: self.options) else {
+        let session = try context.entities.resolveSession(id: self.session)
+        guard let result = try collection.updateOne(
+            filter: filter,
+            update: update,
+            options: self.options,
+            session: session
+        ) else {
             return .none
         }
         let encoded = try BSONEncoder().encode(result)
