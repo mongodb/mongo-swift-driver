@@ -434,6 +434,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
      */
     func testChangeStreamAutomaticResume() throws {
         let testRequirements = TestRequirement(
+            // TODO: SWIFT-1257: remove server version requirement
+            maxServerVersion: ServerVersion(major: 4, minor: 9, patch: 0),
             acceptableTopologies: [.replicaSet, .sharded]
         )
 
