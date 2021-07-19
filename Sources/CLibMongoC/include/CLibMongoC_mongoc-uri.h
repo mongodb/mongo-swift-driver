@@ -33,8 +33,6 @@
 #define MONGOC_DEFAULT_PORT 27017
 #endif
 
-#define MONGOC_TIMEOUTMS_UNSET -1
-
 #define MONGOC_URI_APPNAME "appname"
 #define MONGOC_URI_AUTHMECHANISM "authmechanism"
 #define MONGOC_URI_AUTHMECHANISMPROPERTIES "authmechanismproperties"
@@ -63,7 +61,6 @@
 #define MONGOC_URI_SLAVEOK "slaveok"
 #define MONGOC_URI_SOCKETCHECKINTERVALMS "socketcheckintervalms"
 #define MONGOC_URI_SOCKETTIMEOUTMS "sockettimeoutms"
-#define MONGOC_URI_TIMEOUTMS "timeoutms"
 #define MONGOC_URI_TLS "tls"
 #define MONGOC_URI_TLSCERTIFICATEKEYFILE "tlscertificatekeyfile"
 #define MONGOC_URI_TLSCERTIFICATEKEYFILEPASSWORD "tlscertificatekeyfilepassword"

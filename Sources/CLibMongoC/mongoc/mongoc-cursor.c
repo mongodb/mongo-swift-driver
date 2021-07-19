@@ -711,6 +711,7 @@ _mongoc_cursor_monitor_command (mongoc_cursor_t *cursor,
                                     cursor->operation_id,
                                     &server_stream->sd->host,
                                     server_stream->sd->id,
+                                    NULL,
                                     client->apm_context);
 
    client->apm_callbacks.started (&event);
@@ -791,6 +792,7 @@ _mongoc_cursor_monitor_succeeded (mongoc_cursor_t *cursor,
                                       cursor->operation_id,
                                       &stream->sd->host,
                                       stream->sd->id,
+                                      false,
                                       client->apm_context);
 
    client->apm_callbacks.succeeded (&event);
@@ -835,6 +837,7 @@ _mongoc_cursor_monitor_failed (mongoc_cursor_t *cursor,
                                    cursor->operation_id,
                                    &stream->sd->host,
                                    stream->sd->id,
+                                   false,
                                    client->apm_context);
 
    client->apm_callbacks.failed (&event);
@@ -1709,7 +1712,7 @@ _mongoc_cursor_prepare_getmore_command (mongoc_cursor_t *cursor,
       bson_append_int64 (command,
                          MONGOC_CURSOR_BATCH_SIZE,
                          MONGOC_CURSOR_BATCH_SIZE_LEN,
-                         batch_size);
+                         abs (_mongoc_n_return (cursor)));
    }
 
    /* Find, getMore And killCursors Commands Spec: "In the case of a tailable
