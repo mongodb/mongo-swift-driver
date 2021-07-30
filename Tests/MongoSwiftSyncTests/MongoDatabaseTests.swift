@@ -84,7 +84,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             ["storageEngine": ["wiredTiger": ["configString": "access_pattern_hint=random"]]]
 
         // test non-view options
-        let fooOptions = CreateCollectionOptions(
+        var fooOptions = CreateCollectionOptions(
             capped: true,
             collation: ["locale": "fr"],
             indexOptionDefaults: indexOpts,
@@ -96,6 +96,12 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             validator: ["phone": ["$type": "string"]],
             writeConcern: .majority
         )
+        // some options not supported by serverless
+        if MongoSwiftTestCase.serverless {
+            fooOptions.collation = nil
+            fooOptions.storageEngine = nil
+            fooOptions.indexOptionDefaults = nil
+        }
         expect(try db.createCollection("foo", options: fooOptions)).toNot(throwError())
 
         // test view options
@@ -107,7 +113,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         var collectionInfo = try Array(db.listCollections().all())
         collectionInfo.sort { $0.name < $1.name }
-        expect(collectionInfo).to(haveCount(3))
+        expect(collectionInfo.count).to(beGreaterThanOrEqualTo(2))
 
         let fooInfo = CollectionSpecificationInfo.new(readOnly: false, uuid: UUID())
         let fooIndex = IndexModel(keys: ["_id": 1] as BSONDocument, options: IndexOptions(name: "_id_"))
@@ -129,8 +135,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             idIndex: nil
         )
         expect(collectionInfo[1]).to(equal(expectedView))
-
-        expect(collectionInfo[2].name).to(equal("system.views"))
     }
 
     func testListCollections() throws {

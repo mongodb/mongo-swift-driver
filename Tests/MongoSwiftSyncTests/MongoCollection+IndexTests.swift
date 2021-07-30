@@ -96,6 +96,13 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             options.hidden = true
         }
 
+        // some options not supported by serverless
+        if MongoSwiftTestCase.serverless {
+            options.storageEngine = nil
+            options.collation = nil
+            options.version = nil
+        }
+
         let model = IndexModel(keys: ["cat": 1, "_id": -1], options: options)
         expect(try self.coll.createIndex(model)).to(equal("testOptions"))
 
@@ -113,6 +120,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         // testOptions index
         var expectedTestOptions = options
         expectedTestOptions.name = "testOptions"
+        expectedTestOptions.version = 2
         expect(indexOptions[1]).to(equal(expectedTestOptions))
 
         // ttl index
