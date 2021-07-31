@@ -111,7 +111,7 @@ struct UnifiedBulkWrite: UnifiedOperationProtocol {
             return .unacknowledgedWrite
         }
         let encodedResult = try BSONEncoder().encode(result)
-        return .bson(.document(encodedResult))
+        return .rootDocument(encodedResult)
     }
 }
 
@@ -195,7 +195,7 @@ struct UnifiedFindOneAndReplace: UnifiedOperationProtocol {
         ) else {
             return .unacknowledgedWrite
         }
-        return .bson(.document(result))
+        return .rootDocument(result)
     }
 }
 
@@ -314,7 +314,7 @@ struct UnifiedDeleteOne: UnifiedOperationProtocol {
             return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }
 
@@ -347,7 +347,7 @@ struct UnifiedDeleteMany: UnifiedOperationProtocol {
             return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }
 
@@ -472,7 +472,7 @@ struct UnifiedReplaceOne: UnifiedOperationProtocol {
             return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }
 
@@ -574,7 +574,7 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
             return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }
 
@@ -612,6 +612,6 @@ struct UnifiedUpdateMany: UnifiedOperationProtocol {
             return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }
