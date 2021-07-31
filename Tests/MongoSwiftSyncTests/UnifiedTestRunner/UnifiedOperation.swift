@@ -18,6 +18,11 @@ enum UnifiedOperationResult {
     case rootDocumentArray([BSONDocument])
     case none
 
+    /// Some tests for unacknowledged writes assume that the result is non-nil with an "acknowledged" field
+    /// that is $$unsetOrMatches false. Since our CRUD methods return nil, there is nothing to assert
+    /// on, so we need this placeholder result for the corresponding operations to return instead.
+    static let unacknowledgedWrite: Self = .bson(.document(["acknowledged": false]))
+
     func asEntity() throws -> Entity {
         switch self {
         case let .changeStream(cs):
