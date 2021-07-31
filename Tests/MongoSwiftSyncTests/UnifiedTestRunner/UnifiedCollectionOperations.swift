@@ -229,7 +229,7 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(BSONDocument.self, forKey: .filter)
         // TODO: SWIFT-560 handle decoding pipelines properly
-        self.update = (try? container.decode(BSONDocument.self, forKey: .update)) ?? [:]
+        self.update = try container.decode(BSONDocument.self, forKey: .update)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
@@ -385,7 +385,7 @@ struct UnifiedInsertOne: UnifiedOperationProtocol {
         guard let result = try collection.insertOne(self.document, options: self.options, session: session) else {
             return .none
         }
-        return .bson(.document(try BSONEncoder().encode(result)))
+        return .rootDocument(try BSONEncoder().encode(result))
     }
 }
 
@@ -424,7 +424,7 @@ struct UnifiedInsertMany: UnifiedOperationProtocol {
             return .none
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }
 
@@ -559,7 +559,7 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(UpdateOptions.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
         // TODO: SWIFT-560 handle decoding pipelines properly
-        self.update = (try? container.decode(BSONDocument.self, forKey: .update)) ?? [:]
+        self.update = try container.decode(BSONDocument.self, forKey: .update)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
@@ -602,7 +602,7 @@ struct UnifiedUpdateMany: UnifiedOperationProtocol {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.filter = try container.decode(BSONDocument.self, forKey: .filter)
         // TODO: SWIFT-560 handle decoding pipelines properly
-        self.update = (try? container.decode(BSONDocument.self, forKey: .update)) ?? [:]
+        self.update = try container.decode(BSONDocument.self, forKey: .update)
         self.options = try decoder.singleValueContainer().decode(UpdateOptions.self)
     }
 
