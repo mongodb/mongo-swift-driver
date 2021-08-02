@@ -158,11 +158,14 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
             options: UpdateOptions(writeConcern: wc3)
         )).toNot(throwError())
 
-        let coll2 = try db.createCollection(self.getCollectionName(suffix: "2"))
-        defer { try? coll2.drop() }
+        // $out not supported by serverless
+        if !MongoSwiftTestCase.serverless {
+            let coll2 = try db.createCollection(self.getCollectionName(suffix: "2"))
+            defer { try? coll2.drop() }
 
-        let pipeline: [BSONDocument] = [["$out": .string("\(db.name).\(coll2.name)")]]
-        expect(try coll.aggregate(pipeline, options: AggregateOptions(writeConcern: wc1))).toNot(throwError())
+            let pipeline: [BSONDocument] = [["$out": .string("\(db.name).\(coll2.name)")]]
+            expect(try coll.aggregate(pipeline, options: AggregateOptions(writeConcern: wc1))).toNot(throwError())
+        }
 
         expect(try coll.replaceOne(
             filter: ["x": 5],

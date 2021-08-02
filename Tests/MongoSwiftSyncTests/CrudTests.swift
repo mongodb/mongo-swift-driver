@@ -28,6 +28,13 @@ final class CrudTests: MongoSwiftTestCase {
                 continue
             }
 
+            if let serverlessRequirement = file.serverless {
+                if let unmet = serverlessRequirement.validate() {
+                    print("Skipping tests from file\(filename), unmet serverless requirement: \(unmet)")
+                    continue
+                }
+            }
+
             print("\n------------\nExecuting tests from file \(dir)/\(filename)...\n")
 
             // For each file, execute the test cases contained in it
@@ -103,9 +110,10 @@ private struct CrudTestFile: Decodable {
 
     let minServerVersion: String?
     let maxServerVersion: String?
+    let serverless: TestRequirement.ServerlessRequirement?
 
     enum CodingKeys: String, CodingKey {
-        case data, testDocs = "tests", minServerVersion, maxServerVersion
+        case data, testDocs = "tests", minServerVersion, maxServerVersion, serverless
     }
 }
 

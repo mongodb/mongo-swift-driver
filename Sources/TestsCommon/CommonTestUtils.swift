@@ -230,6 +230,22 @@ public struct TestRequirement: Decodable {
         case require
         case forbid
         case allow
+
+        public func validate() -> UnmetRequirement? {
+            switch self {
+            case .allow:
+                break
+            case .forbid:
+                guard !MongoSwiftTestCase.serverless else {
+                    return .serverless(required: self)
+                }
+            case .require:
+                guard MongoSwiftTestCase.serverless else {
+                    return .serverless(required: self)
+                }
+            }
+            return nil
+        }
     }
 
     private let minServerVersion: ServerVersion?
@@ -296,17 +312,8 @@ public struct TestRequirement: Decodable {
         }
 
         if let serverlessRequirement = self.serverless {
-            switch serverlessRequirement {
-            case .allow:
-                break
-            case .forbid:
-                guard !MongoSwiftTestCase.serverless else {
-                    return .serverless(required: serverlessRequirement)
-                }
-            case .require:
-                guard MongoSwiftTestCase.serverless else {
-                    return .serverless(required: serverlessRequirement)
-                }
+            if let unmet = serverlessRequirement.validate() {
+                return unmet
             }
         }
 
