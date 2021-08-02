@@ -58,14 +58,14 @@ enum TestWriteModel: Decodable {
         } else if let nested = try? container.nestedContainer(keyedBy: UpdateKeys.self, forKey: .updateOne) {
             let filter = try nested.decode(BSONDocument.self, forKey: .filter)
             // TODO: SWIFT-560 handle decoding pipelines properly
-            let update = (try? nested.decode(BSONDocument.self, forKey: .update)) ?? [:]
+            let update = try nested.decode(BSONDocument.self, forKey: .update)
             let options = try container.decode(UpdateModelOptions.self, forKey: .updateOne)
             self = .updateOne(filter: filter, update: update, options: options)
             matchedKey = .updateOne
         } else if let nested = try? container.nestedContainer(keyedBy: UpdateKeys.self, forKey: .updateMany) {
             let filter = try nested.decode(BSONDocument.self, forKey: .filter)
             // TODO: SWIFT-560 handle decoding pipelines properly
-            let update = (try? nested.decode(BSONDocument.self, forKey: .update)) ?? [:]
+            let update = try nested.decode(BSONDocument.self, forKey: .update)
             let options = try container.decode(UpdateModelOptions.self, forKey: .updateMany)
             self = .updateMany(filter: filter, update: update, options: options)
             matchedKey = .updateMany

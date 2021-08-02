@@ -108,10 +108,10 @@ struct UnifiedBulkWrite: UnifiedOperationProtocol {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
         guard let result = try collection.bulkWrite(self.requests, options: self.options, session: session) else {
-            return .none
+            return .unacknowledgedWrite
         }
         let encodedResult = try BSONEncoder().encode(result)
-        return .bson(.document(encodedResult))
+        return .rootDocument(encodedResult)
     }
 }
 
@@ -193,9 +193,9 @@ struct UnifiedFindOneAndReplace: UnifiedOperationProtocol {
             options: options,
             session: session
         ) else {
-            return .none
+            return .unacknowledgedWrite
         }
-        return .bson(.document(result))
+        return .rootDocument(result)
     }
 }
 
@@ -229,7 +229,7 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(BSONDocument.self, forKey: .filter)
         // TODO: SWIFT-560 handle decoding pipelines properly
-        self.update = (try? container.decode(BSONDocument.self, forKey: .update)) ?? [:]
+        self.update = try container.decode(BSONDocument.self, forKey: .update)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
@@ -241,7 +241,7 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
             options: options,
             session: session
         ) else {
-            return .none
+            return .unacknowledgedWrite
         }
         return .rootDocument(result)
     }
@@ -273,7 +273,7 @@ struct UnifiedFindOneAndDelete: UnifiedOperationProtocol {
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         guard let result = try collection.findOneAndDelete(filter, options: self.options) else {
-            return .none
+            return .unacknowledgedWrite
         }
         return .rootDocument(result)
     }
@@ -311,10 +311,10 @@ struct UnifiedDeleteOne: UnifiedOperationProtocol {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
         guard let result = try collection.deleteOne(filter, options: options, session: session) else {
-            return .none
+            return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }
 
@@ -344,10 +344,10 @@ struct UnifiedDeleteMany: UnifiedOperationProtocol {
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         guard let result = try collection.deleteMany(filter, options: self.options) else {
-            return .none
+            return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }
 
@@ -383,9 +383,9 @@ struct UnifiedInsertOne: UnifiedOperationProtocol {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
         guard let result = try collection.insertOne(self.document, options: self.options, session: session) else {
-            return .none
+            return .unacknowledgedWrite
         }
-        return .bson(.document(try BSONEncoder().encode(result)))
+        return .rootDocument(try BSONEncoder().encode(result))
     }
 }
 
@@ -421,10 +421,10 @@ struct UnifiedInsertMany: UnifiedOperationProtocol {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
         guard let result = try collection.insertMany(self.documents, options: options, session: session) else {
-            return .none
+            return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }
 
@@ -469,10 +469,10 @@ struct UnifiedReplaceOne: UnifiedOperationProtocol {
             options: options,
             session: session
         ) else {
-            return .none
+            return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }
 
@@ -559,7 +559,7 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(UpdateOptions.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
         // TODO: SWIFT-560 handle decoding pipelines properly
-        self.update = (try? container.decode(BSONDocument.self, forKey: .update)) ?? [:]
+        self.update = try container.decode(BSONDocument.self, forKey: .update)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
@@ -571,10 +571,10 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
             options: self.options,
             session: session
         ) else {
-            return .none
+            return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }
 
@@ -602,16 +602,16 @@ struct UnifiedUpdateMany: UnifiedOperationProtocol {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.filter = try container.decode(BSONDocument.self, forKey: .filter)
         // TODO: SWIFT-560 handle decoding pipelines properly
-        self.update = (try? container.decode(BSONDocument.self, forKey: .update)) ?? [:]
+        self.update = try container.decode(BSONDocument.self, forKey: .update)
         self.options = try decoder.singleValueContainer().decode(UpdateOptions.self)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         guard let result = try collection.updateMany(filter: filter, update: update, options: self.options) else {
-            return .none
+            return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
-        return .bson(.document(encoded))
+        return .rootDocument(encoded)
     }
 }

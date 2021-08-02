@@ -75,11 +75,22 @@ final class CrudTests: MongoSwiftTestCase {
     }
 
     func testCrudUnified() throws {
-        let files = try retrieveSpecTestFiles(specName: "crud", subdirectory: "unified", asType: UnifiedTestFile.self)
+        let files = try retrieveSpecTestFiles(
+            specName: "crud",
+            subdirectory: "unified",
+            excludeFiles: [
+                // TODO: SWIFT-560 unskip these files
+                "bulkWrite-updateMany-dots_and_dollars.json",
+                "bulkWrite-updateOne-dots_and_dollars.json",
+                "updateMany-dots_and_dollars.json",
+                "updateOne-dots_and_dollars.json",
+                "findOneAndUpdate-dots_and_dollars.json",
+                "updateWithPipelines.json"
+            ],
+            asType: UnifiedTestFile.self
+        )
         let runner = try UnifiedTestRunner()
         let skipList: [String: [String]] = [
-            // TODO: SWIFT-560 unskip this test
-            "updateWithPipelines": ["*"],
             // libmongoc chose not to implement CDRIVER-3630 in anticipation of DRIVERS-1340,
             // so we cannot pass these tests for now.
             // TODO: DRIVERS-1340 unskip
