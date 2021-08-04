@@ -172,29 +172,21 @@ private func versionedAPI() throws {
     do {
         // Start Versioned API Example 1
 
-        // Declare API version "1" for the client
-        var clientOpts = MongoClientOptions()
-        clientOpts.serverAPI = MongoServerAPI(version: .v1)
-        let client = try MongoClient(uri, options: clientOpts)
+        let opts = MongoClientOptions(
+            serverAPI: MongoServerAPI(version: .v1)
+        )
+        let client = try MongoClient(uri, options: opts)
+
         // End Versioned API Example 1
     }
 
     do {
         // Start Versioned API Example 2
 
-        // Use the `strict` option
-        var opts = MongoClientOptions()
-        opts.serverAPI = MongoServerAPI(version: .v1, strict: true)
+        let opts = MongoClientOptions(
+            serverAPI: MongoServerAPI(version: .v1, strict: true)
+        )
         let client = try MongoClient(uri, options: opts)
-
-        var findOpts = FindOptions()
-        findOpts.cursorType = .tailable
-        // Fails with an error because `tailable` is not part of version 1
-        do {
-            let cursor = try client.db("db").collection("coll").find(options: findOpts)
-        } catch {
-            // error
-        }
 
         // End Versioned API Example 2
     }
@@ -202,10 +194,69 @@ private func versionedAPI() throws {
     do {
         // Start Versioned API Example 3
 
-        // Use the `deprecationErrors` option
-        var opts = MongoClientOptions()
-        opts.serverAPI = MongoServerAPI(version: .v1, deprecationErrors: true)
+        let opts = MongoClientOptions(
+            serverAPI: MongoServerAPI(version: .v1, strict: false)
+        )
         let client = try MongoClient(uri, options: opts)
+
         // End Versioned API Example 3
     }
+
+    do {
+        // Start Versioned API Example 4
+
+        let opts = MongoClientOptions(
+            serverAPI: MongoServerAPI(version: .v1, deprecationErrors: true)
+        )
+        let client = try MongoClient(uri, options: opts)
+
+        // End Versioned API Example 4
+    }
 }
+
+private func versionedAPIMigrationExample() throws {
+    let options = MongoClientOptions(
+        serverAPI: MongoServerAPI(version: .v1, strict: true)
+    )
+    let client = try MongoClient(options: options)
+    try client.db("test").drop()
+
+    let dateFormatter = ISO8601DateFormatter()
+    dateFormatter.formatOptions = [.withInternetDateTime]
+
+    // swiftlint:disable line_length
+    // 1. Populate a test sales collection
+    let insertResult = try client.db("test").collection("sales").insertMany([
+        ["_id": 1, "item": "abc", "price": 10, "quantity": 2, "date": .datetime(dateFormatter.date(from: "2021-01-01T08:00:00Z")!)],
+        ["_id": 2, "item": "jkl", "price": 20, "quantity": 1, "date": .datetime(dateFormatter.date(from: "2021-02-03T09:00:00Z")!)],
+        ["_id": 3, "item": "xyz", "price": 5, "quantity": 5, "date": .datetime(dateFormatter.date(from: "2021-02-03T09:00:00Z")!)],
+        ["_id": 4, "item": "abc", "price": 10, "quantity": 10, "date": .datetime(dateFormatter.date(from: "2021-02-15T08:00:00Z")!)],
+        ["_id": 5, "item": "xyz", "price": 5, "quantity": 10, "date": .datetime(dateFormatter.date(from: "2021-02-15T09:05:00Z")!)],
+        ["_id": 6, "item": "xyz", "price": 5, "quantity": 5, "date": .datetime(dateFormatter.date(from: "2021-02-15T12:05:10Z")!)],
+        ["_id": 7, "item": "xyz", "price": 5, "quantity": 10, "date": .datetime(dateFormatter.date(from: "2021-02-15T14:12:12Z")!)],
+        ["_id": 8, "item": "abc", "price": 10, "quantity": 5, "date": .datetime(dateFormatter.date(from: "2021-03-16T20:20:13Z")!)]
+    ])
+    // End step 1
+    // swiftlint:enable line_length
+
+    // 2. Run "count" using a strict client, observe error
+    do {
+        let countResult = try client.db("test").runCommand(["count": "sales"])
+    } catch {
+        print(error) // prints:
+        // MongoSwift.MongoError.CommandError(
+        //     code: 323,
+        //     codeName: "APIStrictError",
+        //     message: "Provided apiStrict:true, but the command count is not in API Version 1",
+        //     errorLabels: nil
+        // )
+    }
+    // End step 2
+
+    // 3. New way to count documents
+    let newCountResult = try client.db("test").collection("sales").countDocuments()
+    print(newCountResult) // prints: 8
+    // End step 3
+}
+
+try versionedAPIMigrationExample()
