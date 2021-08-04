@@ -331,7 +331,7 @@ extension SpecTest {
         let connectionString = MongoSwiftTestCase.getConnectionString(singleMongos: self.useMultipleMongoses != true)
 
         // We need to lower heartbeat frequency to speed up tests on 4.4+ since failpoints don't trigger proper
-        // topology updates when using streamable ismaster. See CDRIVER-3793 for more information.
+        // topology updates when using streamable hello. See CDRIVER-3793 for more information.
         var options = self.clientOptions ?? MongoClientOptions()
 
         if options.heartbeatFrequencyMS == nil {

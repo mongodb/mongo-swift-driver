@@ -81,7 +81,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
     // list of operations on MongoDatabase that take in a session
     let databaseSessionOps = [
         DatabaseSessionOp(name: "listCollections") { _ = try $0.listCollections(session: $1).next() },
-        DatabaseSessionOp(name: "runCommand") { try $0.runCommand(["isMaster": 0], session: $1) },
+        DatabaseSessionOp(name: "runCommand") { try $0.runCommand([LEGACY_HELLO: 0], session: $1) },
         DatabaseSessionOp(name: "createCollection") { _ = try $0.createCollection("asdf", session: $1) },
         DatabaseSessionOp(name: "createCollection1") {
             _ = try $0.createCollection("asf", withType: BSONDocument.self, session: $1)

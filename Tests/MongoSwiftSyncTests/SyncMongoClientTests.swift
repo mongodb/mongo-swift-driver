@@ -248,7 +248,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
 
         // db is still alive, so client should be too, and should be open
         expect(weakClientRef).toNot(beNil())
-        expect(try db!.runCommand(["isMaster": 1])).toNot(throwError())
+        expect(try db!.runCommand([LEGACY_HELLO: 1])).toNot(throwError())
 
         // once the DB ref goes away, so should the client
         db = nil
@@ -335,7 +335,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
 
         let fp = FailPoint.failCommand(
             // when an API version is declared, "hello" will be used (DRIVERS-1633)
-            failCommands: ["isMaster", "hello"],
+            failCommands: [LEGACY_HELLO, "hello"],
             mode: .alwaysOn,
             blockTimeMS: 500
         )

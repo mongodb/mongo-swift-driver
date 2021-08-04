@@ -3,6 +3,9 @@ import MongoSwiftSync
 
 private let configs = ["ATLAS_REPL", "ATLAS_SHRD", "ATLAS_FREE", "ATLAS_TLS11", "ATLAS_TLS12"]
 private let srvConfigs = configs.map { $0 + "_SRV" }
+/// Currently, almost all of the Atlas test instances are running server versions that do not yet support the new
+/// "hello" command.
+private let legacyHello = "ismaster"
 
 for config in configs + srvConfigs {
     print("Testing config \(config)... ", terminator: "")
@@ -14,9 +17,9 @@ for config in configs + srvConfigs {
 
     do {
         let client = try MongoClient(uri)
-        // run isMaster
+        // run legacy hello command
         let db = client.db("test")
-        _ = try db.runCommand(["isMaster": 1])
+        _ = try db.runCommand([legacyHello: 1])
         // findOne
         let coll = db.collection("test")
         _ = try coll.findOne()
