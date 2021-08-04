@@ -248,7 +248,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
 
         // db is still alive, so client should be too, and should be open
         expect(weakClientRef).toNot(beNil())
-        expect(try db!.runCommand([LEGACY_HELLO: 1])).toNot(throwError())
+        expect(try db!.runCommand(["hello": 1])).toNot(throwError())
 
         // once the DB ref goes away, so should the client
         db = nil

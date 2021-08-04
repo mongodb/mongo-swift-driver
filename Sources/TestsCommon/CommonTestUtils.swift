@@ -4,8 +4,6 @@ import Foundation
 import Nimble
 import XCTest
 
-/// We test against server versions that do not yet support the new "hello" command so we need to use the legacy name
-/// sometimes.
 public let LEGACY_HELLO = "ismaster"
 
 extension String {
@@ -208,7 +206,7 @@ public enum TestTopologyConfiguration: String, Decodable {
                 }
             }
             self = .shardedReplicaSet
-        } else if helloReply[LEGACY_HELLO] == true && helloReply["setName"] != nil {
+        } else if helloReply["isWritablePrimary"] == true && helloReply["setName"] != nil {
             self = .replicaSet
         } else {
             throw TestError(

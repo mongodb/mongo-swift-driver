@@ -33,7 +33,7 @@ final class ClientSessionTests: MongoSwiftTestCase {
             var escapedSession: ClientSession?
             let res2: EventLoopFuture<BSONDocument> = client.withSession { session in
                 escapedSession = session
-                return db.runCommand([LEGACY_HELLO: 1], session: session)
+                return db.runCommand(["hello": 1], session: session)
             }
             expect(try res2.wait()).toNot(throwError())
             expect(escapedSession?.active).to(beFalse())

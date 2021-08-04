@@ -68,7 +68,7 @@ extension MongoClient {
     }
 
     internal func topologyType() throws -> TestTopologyConfiguration {
-        let helloReply = try self.db("admin").runCommand([LEGACY_HELLO: 1])
+        let helloReply = try self.db("admin").runCommand(["hello": 1])
         let shards = try self.db("config").collection("shards").find().map { try $0.get() }
         return try TestTopologyConfiguration(helloReply: helloReply, shards: shards)
     }
@@ -94,7 +94,7 @@ extension MongoClient {
     /// Get the max wire version of the primary.
     internal func maxWireVersion() throws -> Int {
         let options = RunCommandOptions(readPreference: .primary)
-        let hello = try self.db("admin").runCommand([LEGACY_HELLO: 1], options: options)
+        let hello = try self.db("admin").runCommand(["hello": 1], options: options)
         guard let max = hello["maxWireVersion"]?.toInt() else {
             throw TestError(message: "hello reply missing maxwireversion: \(hello)")
         }
