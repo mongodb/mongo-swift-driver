@@ -23,7 +23,7 @@
  *
  * BSON major version component (e.g. 1 if %BSON_VERSION is 1.2.3)
  */
-#define BSON_MAJOR_VERSION (1)
+#define BSON_MAJOR_VERSION (__LIBMONGOC_MAJOR_VERSION__)
 
 
 /**
@@ -31,7 +31,7 @@
  *
  * BSON minor version component (e.g. 2 if %BSON_VERSION is 1.2.3)
  */
-#define BSON_MINOR_VERSION (17)
+#define BSON_MINOR_VERSION (__LIBMONGOC_MINOR_VERSION__)
 
 
 /**
@@ -39,7 +39,7 @@
  *
  * BSON micro version component (e.g. 3 if %BSON_VERSION is 1.2.3)
  */
-#define BSON_MICRO_VERSION (4)
+#define BSON_MICRO_VERSION (__LIBMONGOC_PATCH_VERSION__)
 
 
 /**
@@ -47,14 +47,14 @@
  *
  * BSON prerelease version component (e.g. pre if %BSON_VERSION is 1.2.3-pre)
  */
-#define BSON_PRERELEASE_VERSION ()
+#define BSON_PRERELEASE_VERSION (__LIBMONGOC_PRERELEASE_VERSION__)
 
 /**
  * BSON_VERSION:
  *
  * BSON version.
  */
-#define BSON_VERSION (1.17.4)
+#define BSON_VERSION (__LIBMONGOC_FULL_VERSION__)
 
 
 /**
@@ -63,7 +63,7 @@
  * BSON version, encoded as a string, useful for printing and
  * concatenation.
  */
-#define BSON_VERSION_S "1.17.4"
+#define BSON_VERSION_S "__LIBMONGOC_FULL_VERSION__"
 
 
 /**

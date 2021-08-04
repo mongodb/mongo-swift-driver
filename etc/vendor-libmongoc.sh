@@ -3,8 +3,14 @@
 set -eou pipefail
 
 PWD=`pwd`
-LIBMONGOC_VERSION=1.18.0
-TARBALL_URL=https://github.com/mongodb/mongo-c-driver/releases/download/$LIBMONGOC_VERSION/mongo-c-driver-$LIBMONGOC_VERSION.tar.gz
+LIBMONGOC_MAJOR_VERSION=1
+LIBMONGOC_MINOR_VERSION=18
+LIBMONGOC_PATCH_VERSION=0
+LIBMONGOC_PRERELEASE_VERSION=
+
+LIBMONGOC_FULL_VERSION=${LIBMONGOC_MAJOR_VERSION}.${LIBMONGOC_MINOR_VERSION}.${LIBMONGOC_PATCH_VERSION}${LIBMONGOC_PRERELEASE_VERSION:+-$LIBMONGOC_PRERELEASE_VERSION}
+
+TARBALL_URL=https://github.com/mongodb/mongo-c-driver/releases/download/$LIBMONGOC_FULL_VERSION/mongo-c-driver-$LIBMONGOC_FULL_VERSION.tar.gz
 TARBALL_NAME=`basename $TARBALL_URL`
 TARBALL_DIR=`basename -s .tar.gz $TARBALL_NAME`
 
@@ -79,6 +85,17 @@ echo "COPYING libmongoc"
 # the config files
 echo "COPYING generated files"
 cp $ETC_DIR/generated_headers/* $CLIBMONGOC_INCLUDE_PATH
+
+# Embed libmongoc version info in generated headers
+echo "PATCHING header files to include libmongoc version info"
+(
+  find $CLIBMONGOC_INCLUDE_PATH -name "*.h" | \
+    xargs $sed -i -e "s+__LIBMONGOC_MAJOR_VERSION__+${LIBMONGOC_MAJOR_VERSION}+" \
+                  -e "s+__LIBMONGOC_MINOR_VERSION__+${LIBMONGOC_MINOR_VERSION}+" \
+                  -e "s+__LIBMONGOC_PATCH_VERSION__+${LIBMONGOC_PATCH_VERSION}+" \
+                  -e "s+__LIBMONGOC_PRERELEASE_VERSION__+${LIBMONGOC_PRERELEASE_VERSION}+" \
+                  -e "s+__LIBMONGOC_FULL_VERSION__+${LIBMONGOC_FULL_VERSION}+" \
+)
 
 # This is perhaps the most complicated step of the vendoring process. In the previous step
 # we are building a single, monolithic version of `libmongoc` and `libbson` in our `CLibMongoC`
