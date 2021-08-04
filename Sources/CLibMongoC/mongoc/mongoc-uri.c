@@ -760,6 +760,7 @@ mongoc_uri_option_is_bool (const char *key)
           !strcasecmp (key, MONGOC_URI_TLSALLOWINVALIDHOSTNAMES) ||
           !strcasecmp (key, MONGOC_URI_TLSDISABLECERTIFICATEREVOCATIONCHECK) ||
           !strcasecmp (key, MONGOC_URI_TLSDISABLEOCSPENDPOINTCHECK) ||
+          !strcasecmp (key, MONGOC_URI_LOADBALANCED) ||
           /* deprecated options */
           !strcasecmp (key, MONGOC_URI_SSL) ||
           !strcasecmp (key, MONGOC_URI_SSLALLOWINVALIDCERTIFICATES) ||
@@ -845,11 +846,12 @@ static bool
 dns_option_allowed (const char *lkey)
 {
    /* Initial DNS Seedlist Discovery Spec: "A Client MUST only support the
-    * authSource and replicaSet options through a TXT record, and MUST raise an
-    * error if any other option is encountered."
+    * authSource, replicaSet, and loadBalanced options through a TXT record, and
+    * MUST raise an error if any other option is encountered."
     */
    return !strcmp (lkey, MONGOC_URI_AUTHSOURCE) ||
-          !strcmp (lkey, MONGOC_URI_REPLICASET);
+          !strcmp (lkey, MONGOC_URI_REPLICASET) ||
+          !strcmp (lkey, MONGOC_URI_LOADBALANCED);
 }
 
 
@@ -891,8 +893,8 @@ mongoc_uri_split_option (mongoc_uri_t *uri,
    mongoc_lowercase (key, lkey);
 
    /* Initial DNS Seedlist Discovery Spec: "A Client MUST only support the
-    * authSource and replicaSet options through a TXT record, and MUST raise an
-    * error if any other option is encountered."*/
+    * authSource, replicaSet, and loadBalanced options through a TXT record, and
+    * MUST raise an error if any other option is encountered."*/
    if (from_dns && !dns_option_allowed (lkey)) {
       MONGOC_URI_ERROR (
          error, "URI option \"%s\" prohibited in TXT record", key);
@@ -1550,6 +1552,9 @@ mongoc_uri_parse (mongoc_uri_t *uri, const char *str, bson_error_t *error)
       }
    }
 
+   /* TODO (CDRIVER-3723) Consider moving all "finalize" calls into one function
+    * that is additionally called after initial SRV and TXT records are applied
+    * in mongoc_topology_new. */
    if (!mongoc_uri_finalize_tls (uri, error)) {
       goto error;
    }
@@ -1560,6 +1565,10 @@ mongoc_uri_parse (mongoc_uri_t *uri, const char *str, bson_error_t *error)
    }
 
    if (!mongoc_uri_finalize_directconnection (uri, error)) {
+      goto error;
+   }
+
+   if (!mongoc_uri_finalize_loadbalanced (uri, error)) {
       goto error;
    }
 
@@ -2618,7 +2627,6 @@ _mongoc_uri_set_option_as_int32_with_error (mongoc_uri_t *uri,
          return false;
       }
    }
-
    option_lowercase = lowercase_str_new (option);
    if (!bson_append_int32 (&uri->options, option_lowercase, -1, value)) {
       bson_free (option_lowercase);
@@ -3103,3 +3111,40 @@ _mongoc_uri_init_scram (const mongoc_uri_t *uri,
    _mongoc_scram_set_user (scram, mongoc_uri_get_username (uri));
 }
 #endif
+
+bool
+mongoc_uri_finalize_loadbalanced (const mongoc_uri_t *uri, bson_error_t *error)
+{
+   if (!mongoc_uri_get_option_as_bool (uri, MONGOC_URI_LOADBALANCED, false)) {
+      return true;
+   }
+
+   if (!uri->hosts || (uri->hosts && uri->hosts->next)) {
+      MONGOC_URI_ERROR (error,
+                        "URI with \"%s\" enabled must contain exactly one host",
+                        MONGOC_URI_LOADBALANCED);
+      return false;
+   }
+
+   if (mongoc_uri_has_option (uri, MONGOC_URI_REPLICASET)) {
+      MONGOC_URI_ERROR (
+         error,
+         "URI with \"%s\" enabled must not contain option \"%s\"",
+         MONGOC_URI_LOADBALANCED,
+         MONGOC_URI_REPLICASET);
+      return false;
+   }
+
+   if (mongoc_uri_has_option (uri, MONGOC_URI_DIRECTCONNECTION) &&
+       mongoc_uri_get_option_as_bool (
+          uri, MONGOC_URI_DIRECTCONNECTION, false)) {
+      MONGOC_URI_ERROR (
+         error,
+         "URI with \"%s\" enabled must not contain option \"%s\" enabled",
+         MONGOC_URI_LOADBALANCED,
+         MONGOC_URI_DIRECTCONNECTION);
+      return false;
+   }
+
+   return true;
+}

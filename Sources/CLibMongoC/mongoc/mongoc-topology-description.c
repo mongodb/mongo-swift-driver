@@ -39,6 +39,7 @@ _is_data_node (mongoc_server_description_t *sd)
    case MONGOC_SERVER_STANDALONE:
    case MONGOC_SERVER_RS_SECONDARY:
    case MONGOC_SERVER_RS_PRIMARY:
+   case MONGOC_SERVER_LOAD_BALANCER:
       return true;
    case MONGOC_SERVER_RS_OTHER:
    case MONGOC_SERVER_RS_ARBITER:
@@ -354,6 +355,14 @@ _mongoc_topology_description_server_is_candidate (
       default:
          return false;
       }
+
+   /* Note, there is no call path that leads to the
+    * MONGOC_TOPOLOGY_LOAD_BALANCED case. Server selection for load balanced
+    * topologies bypasses this logic. This silences compiler warnings on
+    * unhandled enum values. */
+   case MONGOC_TOPOLOGY_LOAD_BALANCED:
+      return desc_type == MONGOC_SERVER_LOAD_BALANCER;
+
    default:
       return false;
    }
@@ -712,6 +721,16 @@ mongoc_topology_description_suitable_servers (
    if (topology->type == MONGOC_TOPOLOGY_SHARDED) {
       mongoc_set_for_each (
          topology->servers, _mongoc_find_suitable_mongos_cb, &data);
+   }
+
+   /* Load balanced clusters --
+    * Always select the only server. */
+   if (topology->type == MONGOC_TOPOLOGY_LOAD_BALANCED) {
+      BSON_ASSERT (topology->servers->items_len == 1);
+      server = (mongoc_server_description_t *) mongoc_set_get_item (
+         topology->servers, 0);
+      _mongoc_array_append_val (set, server);
+      goto DONE;
    }
 
    /* Ways to get here:
@@ -1133,6 +1152,11 @@ mongoc_topology_description_invalidate_server (
    const bson_error_t *error /* IN */)
 {
    BSON_ASSERT (error);
+
+   if (topology->type == MONGOC_TOPOLOGY_LOAD_BALANCED) {
+      /* Load balancers must never be marked unknown. */
+      return;
+   }
 
    /* send NULL hello reply */
    mongoc_topology_description_handle_hello (
@@ -1795,6 +1819,8 @@ _mongoc_topology_description_type (mongoc_topology_description_t *topology)
       return "RSWithPrimary";
    case MONGOC_TOPOLOGY_SINGLE:
       return "Single";
+   case MONGOC_TOPOLOGY_LOAD_BALANCED:
+      return "LoadBalanced";
    case MONGOC_TOPOLOGY_DESCRIPTION_TYPES:
    default:
       MONGOC_ERROR ("Invalid mongoc_topology_description_type_t type");
@@ -2142,6 +2168,8 @@ mongoc_topology_description_type (const mongoc_topology_description_t *td)
       return "ReplicaSetWithPrimary";
    case MONGOC_TOPOLOGY_SINGLE:
       return "Single";
+   case MONGOC_TOPOLOGY_LOAD_BALANCED:
+      return "LoadBalanced";
    case MONGOC_TOPOLOGY_DESCRIPTION_TYPES:
    default:
       fprintf (stderr, "ERROR: Unknown topology type %d\n", td->type);

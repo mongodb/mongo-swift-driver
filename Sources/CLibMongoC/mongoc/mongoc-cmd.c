@@ -475,23 +475,23 @@ _mongoc_cmd_parts_assemble_mongos (mongoc_cmd_parts_t *parts,
 
    /* Server Selection Spec says:
     *
-    * For mode 'primary', drivers MUST NOT set the secondaryOk wire protocol flag
-    *   and MUST NOT use $readPreference
+    * For mode 'primary', drivers MUST NOT set the secondaryOk wire protocol
+    * flag and MUST NOT use $readPreference
     *
-    * For mode 'secondary', drivers MUST set the secondaryOk wire protocol flag and
-    *   MUST also use $readPreference
+    * For mode 'secondary', drivers MUST set the secondaryOk wire protocol flag
+    * and MUST also use $readPreference
     *
-    * For mode 'primaryPreferred', drivers MUST set the secondaryOk wire protocol
-    *   flag and MUST also use $readPreference
+    * For mode 'primaryPreferred', drivers MUST set the secondaryOk wire
+    * protocol flag and MUST also use $readPreference
     *
-    * For mode 'secondaryPreferred', drivers MUST set the secondaryOk wire protocol
-    *   flag. If the read preference contains a non-empty tag_sets parameter,
-    *   maxStalenessSeconds is a positive integer, or the hedge parameter is
-    *   non-empty, drivers MUST use $readPreference; otherwise, drivers MUST NOT
-    *   use $readPreference
+    * For mode 'secondaryPreferred', drivers MUST set the secondaryOk wire
+    * protocol flag. If the read preference contains a non-empty tag_sets
+    * parameter, maxStalenessSeconds is a positive integer, or the hedge
+    * parameter is non-empty, drivers MUST use $readPreference; otherwise,
+    * drivers MUST NOT use $readPreference
     *
-    * For mode 'nearest', drivers MUST set the secondaryOk wire protocol flag and
-    *   MUST also use $readPreference
+    * For mode 'nearest', drivers MUST set the secondaryOk wire protocol flag
+    * and MUST also use $readPreference
     */
    switch (mode) {
    case MONGOC_READ_PRIMARY:
@@ -613,10 +613,10 @@ _mongoc_cmd_parts_assemble_mongod (mongoc_cmd_parts_t *parts,
       case MONGOC_TOPOLOGY_RS_NO_PRIMARY:
       case MONGOC_TOPOLOGY_RS_WITH_PRIMARY:
          /* Server Selection Spec: for RS topology types, "For all read
-          * preferences modes except primary, clients MUST set the secondaryOk wire
-          * protocol flag to ensure that any suitable server can handle the
-          * request. Clients MUST  NOT set the secondaryOk wire protocol flag if the
-          * read preference mode is primary.
+          * preferences modes except primary, clients MUST set the secondaryOk
+          * wire protocol flag to ensure that any suitable server can handle the
+          * request. Clients MUST  NOT set the secondaryOk wire protocol flag if
+          * the read preference mode is primary.
           */
          if (parts->read_prefs &&
              parts->read_prefs->mode != MONGOC_READ_PRIMARY) {
@@ -626,9 +626,10 @@ _mongoc_cmd_parts_assemble_mongod (mongoc_cmd_parts_t *parts,
          break;
       case MONGOC_TOPOLOGY_SHARDED:
       case MONGOC_TOPOLOGY_UNKNOWN:
+      case MONGOC_TOPOLOGY_LOAD_BALANCED:
       case MONGOC_TOPOLOGY_DESCRIPTION_TYPES:
       default:
-         /* must not call this function w/ sharded or unknown topology type */
+         /* must not call this function w/ sharded, load balanced, or unknown topology type */
          BSON_ASSERT (false);
       }
    } /* if (!parts->is_write_command) */
@@ -980,6 +981,19 @@ mongoc_cmd_parts_assemble (mongoc_cmd_parts_t *parts,
 
       if (!is_get_more) {
          if (cs) {
+            /* Snapshot Sessions Spec: "Snapshot reads require MongoDB 5.0+."
+             * Throw an error if snapshot is enabled and wire version is less
+             * than 13 before potentially appending "snapshot" read concern. */
+            if (mongoc_session_opts_get_snapshot (&cs->opts) &&
+                server_stream->sd->max_wire_version <
+                   WIRE_VERSION_SNAPSHOT_READS) {
+               bson_set_error (error,
+                               MONGOC_ERROR_CLIENT,
+                               MONGOC_ERROR_CLIENT_SESSION_FAILURE,
+                               "Snapshot reads require MongoDB 5.0 or later");
+               GOTO (done);
+            }
+
             _mongoc_cmd_parts_ensure_copied (parts);
             _mongoc_client_session_append_read_concern (
                cs,

@@ -38,13 +38,9 @@ struct _mongoc_transaction_opt_t {
    int64_t max_commit_time_ms;
 };
 
-typedef enum {
-   MONGOC_SESSION_NO_OPTS = 0,
-   MONGOC_SESSION_CAUSAL_CONSISTENCY = (1 << 0),
-} mongoc_session_flag_t;
-
 struct _mongoc_session_opt_t {
-   mongoc_session_flag_t flags;
+   mongoc_optional_t causal_consistency;
+   mongoc_optional_t snapshot;
    mongoc_transaction_opt_t default_txn_opts;
 };
 
@@ -83,6 +79,9 @@ struct _mongoc_client_session_t {
    uint32_t client_generation;
    uint32_t server_id;
    bson_t *recovery_token;
+   uint32_t snapshot_time_timestamp;
+   uint32_t snapshot_time_increment;
+   bool snapshot_time_set;
 
    /* For testing only */
    int64_t with_txn_timeout_ms;
@@ -100,6 +99,7 @@ _mongoc_cluster_time_greater (const bson_t *new, const bson_t *old);
 void
 _mongoc_client_session_handle_reply (mongoc_client_session_t *session,
                                      bool is_acknowledged,
+                                     const char *cmd_name,
                                      const bson_t *reply);
 
 mongoc_server_session_t *
@@ -152,5 +152,12 @@ void
 _mongoc_client_session_pin (mongoc_client_session_t *session,
                             uint32_t server_id);
 
+void
+_mongoc_client_session_set_snapshot_time (mongoc_client_session_t *session,
+                                          uint32_t t,
+                                          uint32_t i);
+
+void
+_mongoc_client_session_clear_snapshot_time (mongoc_client_session_t *session);
 
 #endif /* MONGOC_CLIENT_SESSION_PRIVATE_H */

@@ -20,6 +20,7 @@
 #define MONGOC_SERVER_DESCRIPTION_PRIVATE_H
 
 #include "CLibMongoC_mongoc-server-description.h"
+#include "mongoc-generation-map-private.h"
 
 
 #define MONGOC_DEFAULT_WIRE_VERSION 0
@@ -54,6 +55,7 @@ typedef enum {
    MONGOC_SERVER_RS_ARBITER,
    MONGOC_SERVER_RS_OTHER,
    MONGOC_SERVER_RS_GHOST,
+   MONGOC_SERVER_LOAD_BALANCER,
    MONGOC_SERVER_DESCRIPTION_TYPES,
 } mongoc_server_description_type_t;
 
@@ -107,10 +109,20 @@ struct _mongoc_server_description_t {
    1. a monitor receives a network error
    2. an app thread receives any network error before completing a handshake
    3. an app thread receives a non-timeout network error after the handshake
-   4. an app thread receives a "not primary" or "node is recovering" error from a
-   pre-4.2 server.
+   4. an app thread receives a "not primary" or "node is recovering" error from
+   a pre-4.2 server.
    */
+
+   /* generation only applies to a server description tied to a connection.
+    * It represents the generation number for this connection. */
    uint32_t generation;
+
+   /* generation_map stores all generations for all service IDs associated with
+    * this server. generation_map is only accessed on the server description for
+    * monitoring. In non-load-balanced mode, there are no service IDs. The only
+    * server generation is mapped from kZeroServiceID */
+   mongoc_generation_map_t *generation_map;
+   bson_oid_t service_id;
 };
 
 void
@@ -181,5 +193,11 @@ mongoc_server_description_topology_version_cmp (const bson_t *tv1,
 void
 mongoc_server_description_set_topology_version (mongoc_server_description_t *sd,
                                                 const bson_t *tv);
+
+extern const bson_oid_t kZeroServiceId;
+
+bool
+mongoc_server_description_has_service_id (
+   const mongoc_server_description_t *description);
 
 #endif
