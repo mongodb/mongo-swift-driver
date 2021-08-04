@@ -44,11 +44,6 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
                     continue
                 }
 
-                if test.description == "A successful find event with a getmore and the server kills the cursor" {
-                    print("Skipping test case \(test.description), see SWIFT-1228")
-                    continue
-                }
-
                 print("Test case: \(test.description)")
 
                 // Setup the specified DB and collection with provided data
