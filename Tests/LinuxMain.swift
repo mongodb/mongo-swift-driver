@@ -59,7 +59,8 @@ extension ClientSessionTests {
 
 extension CommandMonitoringTests {
     static var allTests = [
-        ("testCommandMonitoring", testCommandMonitoring),
+        ("testCommandMonitoringLegacy", testCommandMonitoringLegacy),
+        ("testCommandMonitoringUnified", testCommandMonitoringUnified),
     ]
 }
 
