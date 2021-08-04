@@ -173,8 +173,8 @@ public enum TestTopologyConfiguration: String, Decodable {
         self == .sharded || self == .shardedReplicaSet
     }
 
-    /// Determines the topologyType of a client based on the reply returned by running an isMaster command and the
-    /// first document in the config.shards collection.
+    /// Determines the topologyType of a client based on the reply returned by running a "hello"/legacy "hello" command
+    /// and the first document in the config.shards collection.
     public init(isMasterReply: BSONDocument, shards: [BSONDocument]) throws {
         // Check for symptoms of different topologies
         if isMasterReply["msg"] != "isdbgrid" &&

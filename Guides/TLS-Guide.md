@@ -97,7 +97,7 @@ used.
 
 By default, all of these options are set to false.
 
-It is not recommended to change these defaults as it exposes the client to Man In The Middle attacks (when
+It is not recommended to change these defaults as it exposes the client to on-path-attackers (when
 `tlsAllowInvalidHostnames` is set), invalid certificates (when `tlsAllowInvalidCertificates` is set), or potentially
 revoked certificates (when `tlsDisableOCSPEndpointCheck` or `tlsDisableCertificateRevocationCheck` are set).
 

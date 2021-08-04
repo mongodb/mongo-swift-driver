@@ -88,15 +88,15 @@ public struct ServerDescription {
         case unknown = "Unknown"
     }
 
-    /// The hostname or IP and the port number that the client connects to. Note that this is not the
-    /// server's ismaster.me field, in the case that the server reports an address different from the
+    /// The hostname or IP and the port number that the client connects to. Note that this is not the "me" field in the
+    /// server's hello or legacy hello response, in the case that the server reports an address different from the
     /// address the client uses.
     public let address: ServerAddress
 
     /// Opaque identifier for this server, used for testing only.
     internal let serverId: UInt32
 
-    /// The duration in milliseconds of the server's last ismaster call.
+    /// The duration in milliseconds of the server's last "hello" call.
     public let roundTripTime: Int?
 
     /// The date of the most recent write operation seen by this server.
