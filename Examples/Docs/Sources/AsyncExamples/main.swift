@@ -312,8 +312,8 @@ private func versionedAPIMigrationExample() throws {
 
     try insertResult.wait()
 
-    // 2. Run "count" using a strict client, observe error
-    let countResult = client.db("test").runCommand(["count": "sales"])
+    // 2. After insert is complete, run "count" using a strict client, observe error
+    let countResult = insertResult.flatMap { _ in client.db("test").runCommand(["count": "sales"]) }
 
     countResult.whenFailure { error in
         print(error) // prints:
@@ -328,8 +328,8 @@ private func versionedAPIMigrationExample() throws {
 
     try? countResult.wait()
 
-    // 3. New way to count documents
-    let newCountResult = client.db("test").collection("sales").countDocuments()
+    // 3. New way to count documents: after insert is complete, use countDocuments()
+    let newCountResult = insertResult.flatMap { _ in client.db("test").collection("sales").countDocuments() }
     newCountResult.whenSuccess { result in
         print(result) // prints: 8
     }
