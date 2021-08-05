@@ -9,7 +9,8 @@
     {
       "minServerVersion": "4.1.7",
       "topology": [
-        "sharded"
+        "sharded",
+        "load-balanced"
       ]
     }
   ],
@@ -17,11 +18,15 @@
     {
       "_id": 1,
       "x": 11
+    },
+    {
+      "_id": 2,
+      "x": 22
     }
   ],
   "tests": [
     {
-      "description": "InsertMany succeeds after PrimarySteppedDown",
+      "description": "FindOneAndDelete succeeds after PrimarySteppedDown",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -29,7 +34,7 @@
         },
         "data": {
           "failCommands": [
-            "insert"
+            "findAndModify"
           ],
           "errorCode": 189,
           "errorLabels": [
@@ -38,50 +43,35 @@
         }
       },
       "operation": {
-        "name": "insertMany",
+        "name": "findOneAndDelete",
         "arguments": {
-          "documents": [
-            {
-              "_id": 2,
-              "x": 22
-            },
-            {
-              "_id": 3,
-              "x": 33
+          "filter": {
+            "x": {
+              "$gte": 11
             }
-          ],
-          "options": {
-            "ordered": true
+          },
+          "sort": {
+            "x": 1
           }
         }
       },
       "outcome": {
         "result": {
-          "insertedIds": {
-            "0": 2,
-            "1": 3
-          }
+          "_id": 1,
+          "x": 11
         },
         "collection": {
           "data": [
             {
-              "_id": 1,
-              "x": 11
-            },
-            {
               "_id": 2,
               "x": 22
-            },
-            {
-              "_id": 3,
-              "x": 33
             }
           ]
         }
       }
     },
     {
-      "description": "InsertMany succeeds after WriteConcernError ShutdownInProgress",
+      "description": "FindOneAndDelete succeeds after WriteConcernError ShutdownInProgress",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -89,7 +79,7 @@
         },
         "data": {
           "failCommands": [
-            "insert"
+            "findAndModify"
           ],
           "writeConcernError": {
             "code": 91,
@@ -101,50 +91,35 @@
         }
       },
       "operation": {
-        "name": "insertMany",
+        "name": "findOneAndDelete",
         "arguments": {
-          "documents": [
-            {
-              "_id": 2,
-              "x": 22
-            },
-            {
-              "_id": 3,
-              "x": 33
+          "filter": {
+            "x": {
+              "$gte": 11
             }
-          ],
-          "options": {
-            "ordered": true
+          },
+          "sort": {
+            "x": 1
           }
         }
       },
       "outcome": {
         "result": {
-          "insertedIds": {
-            "0": 2,
-            "1": 3
-          }
+          "_id": 1,
+          "x": 11
         },
         "collection": {
           "data": [
             {
-              "_id": 1,
-              "x": 11
-            },
-            {
               "_id": 2,
               "x": 22
-            },
-            {
-              "_id": 3,
-              "x": 33
             }
           ]
         }
       }
     },
     {
-      "description": "InsertMany fails with a RetryableWriteError label after two connection failures",
+      "description": "FindOneAndDelete fails with a RetryableWriteError label after two connection failures",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -152,26 +127,21 @@
         },
         "data": {
           "failCommands": [
-            "insert"
+            "findAndModify"
           ],
           "closeConnection": true
         }
       },
       "operation": {
-        "name": "insertMany",
+        "name": "findOneAndDelete",
         "arguments": {
-          "documents": [
-            {
-              "_id": 2,
-              "x": 22
-            },
-            {
-              "_id": 3,
-              "x": 33
+          "filter": {
+            "x": {
+              "$gte": 11
             }
-          ],
-          "options": {
-            "ordered": true
+          },
+          "sort": {
+            "x": 1
           }
         }
       },
@@ -187,6 +157,10 @@
             {
               "_id": 1,
               "x": 11
+            },
+            {
+              "_id": 2,
+              "x": 22
             }
           ]
         }

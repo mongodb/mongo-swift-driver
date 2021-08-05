@@ -9,7 +9,8 @@
     {
       "minServerVersion": "4.1.7",
       "topology": [
-        "sharded"
+        "sharded",
+        "load-balanced"
       ]
     }
   ],
@@ -25,7 +26,7 @@
   ],
   "tests": [
     {
-      "description": "DeleteOne succeeds after PrimarySteppedDown",
+      "description": "FindOneAndReplace succeeds after PrimarySteppedDown",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -33,7 +34,7 @@
         },
         "data": {
           "failCommands": [
-            "delete"
+            "findAndModify"
           ],
           "errorCode": 189,
           "errorLabels": [
@@ -42,19 +43,29 @@
         }
       },
       "operation": {
-        "name": "deleteOne",
+        "name": "findOneAndReplace",
         "arguments": {
           "filter": {
             "_id": 1
-          }
+          },
+          "replacement": {
+            "_id": 1,
+            "x": 111
+          },
+          "returnDocument": "Before"
         }
       },
       "outcome": {
         "result": {
-          "deletedCount": 1
+          "_id": 1,
+          "x": 11
         },
         "collection": {
           "data": [
+            {
+              "_id": 1,
+              "x": 111
+            },
             {
               "_id": 2,
               "x": 22
@@ -64,7 +75,7 @@
       }
     },
     {
-      "description": "DeleteOne succeeds after WriteConcernError ShutdownInProgress",
+      "description": "FindOneAndReplace succeeds after WriteConcernError ShutdownInProgress",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -72,7 +83,7 @@
         },
         "data": {
           "failCommands": [
-            "delete"
+            "findAndModify"
           ],
           "writeConcernError": {
             "code": 91,
@@ -84,19 +95,29 @@
         }
       },
       "operation": {
-        "name": "deleteOne",
+        "name": "findOneAndReplace",
         "arguments": {
           "filter": {
             "_id": 1
-          }
+          },
+          "replacement": {
+            "_id": 1,
+            "x": 111
+          },
+          "returnDocument": "Before"
         }
       },
       "outcome": {
         "result": {
-          "deletedCount": 1
+          "_id": 1,
+          "x": 11
         },
         "collection": {
           "data": [
+            {
+              "_id": 1,
+              "x": 111
+            },
             {
               "_id": 2,
               "x": 22
@@ -106,7 +127,7 @@
       }
     },
     {
-      "description": "DeleteOne fails with RetryableWriteError label after two connection failures",
+      "description": "FindOneAndReplace fails with a RetryableWriteError label after two connection failures",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -114,17 +135,22 @@
         },
         "data": {
           "failCommands": [
-            "delete"
+            "findAndModify"
           ],
           "closeConnection": true
         }
       },
       "operation": {
-        "name": "deleteOne",
+        "name": "findOneAndReplace",
         "arguments": {
           "filter": {
             "_id": 1
-          }
+          },
+          "replacement": {
+            "_id": 1,
+            "x": 111
+          },
+          "returnDocument": "Before"
         }
       },
       "outcome": {

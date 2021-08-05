@@ -9,7 +9,8 @@
     {
       "minServerVersion": "4.1.7",
       "topology": [
-        "sharded"
+        "sharded",
+        "load-balanced"
       ]
     }
   ],
@@ -25,7 +26,7 @@
   ],
   "tests": [
     {
-      "description": "FindOneAndReplace succeeds after PrimarySteppedDown",
+      "description": "ReplaceOne succeeds after PrimarySteppedDown",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -33,7 +34,7 @@
         },
         "data": {
           "failCommands": [
-            "findAndModify"
+            "update"
           ],
           "errorCode": 189,
           "errorLabels": [
@@ -42,7 +43,7 @@
         }
       },
       "operation": {
-        "name": "findOneAndReplace",
+        "name": "replaceOne",
         "arguments": {
           "filter": {
             "_id": 1
@@ -50,14 +51,14 @@
           "replacement": {
             "_id": 1,
             "x": 111
-          },
-          "returnDocument": "Before"
+          }
         }
       },
       "outcome": {
         "result": {
-          "_id": 1,
-          "x": 11
+          "matchedCount": 1,
+          "modifiedCount": 1,
+          "upsertedCount": 0
         },
         "collection": {
           "data": [
@@ -74,7 +75,7 @@
       }
     },
     {
-      "description": "FindOneAndReplace succeeds after WriteConcernError ShutdownInProgress",
+      "description": "ReplaceOne succeeds after WriteConcernError ShutdownInProgress",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -82,7 +83,7 @@
         },
         "data": {
           "failCommands": [
-            "findAndModify"
+            "update"
           ],
           "writeConcernError": {
             "code": 91,
@@ -94,7 +95,7 @@
         }
       },
       "operation": {
-        "name": "findOneAndReplace",
+        "name": "replaceOne",
         "arguments": {
           "filter": {
             "_id": 1
@@ -102,14 +103,14 @@
           "replacement": {
             "_id": 1,
             "x": 111
-          },
-          "returnDocument": "Before"
+          }
         }
       },
       "outcome": {
         "result": {
-          "_id": 1,
-          "x": 11
+          "matchedCount": 1,
+          "modifiedCount": 1,
+          "upsertedCount": 0
         },
         "collection": {
           "data": [
@@ -126,7 +127,7 @@
       }
     },
     {
-      "description": "FindOneAndReplace fails with a RetryableWriteError label after two connection failures",
+      "description": "ReplaceOne fails with a RetryableWriteError label after two connection failures",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -134,13 +135,13 @@
         },
         "data": {
           "failCommands": [
-            "findAndModify"
+            "update"
           ],
           "closeConnection": true
         }
       },
       "operation": {
-        "name": "findOneAndReplace",
+        "name": "replaceOne",
         "arguments": {
           "filter": {
             "_id": 1
@@ -148,8 +149,7 @@
           "replacement": {
             "_id": 1,
             "x": 111
-          },
-          "returnDocument": "Before"
+          }
         }
       },
       "outcome": {

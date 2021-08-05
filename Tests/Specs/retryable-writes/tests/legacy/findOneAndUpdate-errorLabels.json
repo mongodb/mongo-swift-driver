@@ -4,7 +4,8 @@
       "minServerVersion": "4.3.1",
       "topology": [
         "replicaset",
-        "sharded"
+        "sharded",
+        "load-balanced"
       ]
     }
   ],
@@ -20,7 +21,7 @@
   ],
   "tests": [
     {
-      "description": "ReplaceOne succeeds with RetryableWriteError from server",
+      "description": "FindOneAndUpdate succeeds with RetryableWriteError from server",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -28,7 +29,7 @@
         },
         "data": {
           "failCommands": [
-            "update"
+            "findAndModify"
           ],
           "errorCode": 112,
           "errorLabels": [
@@ -37,28 +38,29 @@
         }
       },
       "operation": {
-        "name": "replaceOne",
+        "name": "findOneAndUpdate",
         "arguments": {
           "filter": {
             "_id": 1
           },
-          "replacement": {
-            "_id": 1,
-            "x": 111
-          }
+          "update": {
+            "$inc": {
+              "x": 1
+            }
+          },
+          "returnDocument": "Before"
         }
       },
       "outcome": {
         "result": {
-          "matchedCount": 1,
-          "modifiedCount": 1,
-          "upsertedCount": 0
+          "_id": 1,
+          "x": 11
         },
         "collection": {
           "data": [
             {
               "_id": 1,
-              "x": 111
+              "x": 12
             },
             {
               "_id": 2,
@@ -69,7 +71,7 @@
       }
     },
     {
-      "description": "ReplaceOne fails if server does not return RetryableWriteError",
+      "description": "FindOneAndUpdate fails if server does not return RetryableWriteError",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -77,22 +79,24 @@
         },
         "data": {
           "failCommands": [
-            "update"
+            "findAndModify"
           ],
           "errorCode": 11600,
           "errorLabels": []
         }
       },
       "operation": {
-        "name": "replaceOne",
+        "name": "findOneAndUpdate",
         "arguments": {
           "filter": {
             "_id": 1
           },
-          "replacement": {
-            "_id": 1,
-            "x": 111
-          }
+          "update": {
+            "$inc": {
+              "x": 1
+            }
+          },
+          "returnDocument": "Before"
         }
       },
       "outcome": {
