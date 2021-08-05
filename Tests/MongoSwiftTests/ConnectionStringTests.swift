@@ -109,11 +109,13 @@ let shouldWarnButLibmongocErrors: [String: [String]] = [
 
 // tests we skip because we don't support the specified behavior.
 let skipUnsupported: [String: [String]] = [
-    // we don't support maxIdleTimeMS.
     "connection-pool-options.json": [
+        // we don't support maxIdleTimeMS.
         "Too low maxIdleTimeMS causes a warning",
         "Non-numeric maxIdleTimeMS causes a warning",
-        "Valid connection pool options are parsed correctly"
+        "Valid connection pool options are parsed correctly",
+        // We don't support minPoolSize.
+        "minPoolSize=0 does not error"
     ],
     // requires maxIdleTimeMS
     "connection-options.json": [

@@ -40,6 +40,9 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Defaults to 10 seconds (10,000 ms). Must be at least 500ms.
     public var heartbeatFrequencyMS: Int?
 
+    /// Indicates whether the driver is connecting to a load balancer.
+    public var loadBalanced: Bool?
+
     /// The size (in milliseconds) of the permitted latency window beyond the fastest round-trip time amongst all
     /// servers. By default, only servers within 15ms of the fastest round-trip time receive queries.
     public var localThresholdMS: Int?
@@ -145,6 +148,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         dateCodingStrategy: DateCodingStrategy? = nil,
         directConnection: Bool? = nil,
         heartbeatFrequencyMS: Int? = nil,
+        loadBalanced: Bool? = nil,
         localThresholdMS: Int? = nil,
         maxPoolSize: Int? = nil,
         readConcern: ReadConcern? = nil,
@@ -173,6 +177,7 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.dateCodingStrategy = dateCodingStrategy
         self.directConnection = directConnection
         self.heartbeatFrequencyMS = heartbeatFrequencyMS
+        self.loadBalanced = loadBalanced
         self.localThresholdMS = localThresholdMS
         self.maxPoolSize = maxPoolSize
         self.minHeartbeatFrequencyMS = nil

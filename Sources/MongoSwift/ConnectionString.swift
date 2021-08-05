@@ -399,6 +399,10 @@ internal class ConnectionString {
 
             try self.setInt32Option(MONGOC_URI_HEARTBEATFREQUENCYMS, to: value)
         }
+
+        if let loadBalanced = options?.loadBalanced {
+            try self.setBoolOption(MONGOC_URI_LOADBALANCED, to: loadBalanced)
+        }
     }
 
     /// Sets and validates server selection-related on the underlying `mongoc_uri_t`.
