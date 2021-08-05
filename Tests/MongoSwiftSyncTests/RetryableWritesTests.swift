@@ -63,8 +63,12 @@ final class RetryableWritesTests: MongoSwiftTestCase {
         }
     }
 
-    func testRetryableWrites() throws {
-        let tests = try retrieveSpecTestFiles(specName: "retryable-writes", asType: RetryableWritesTestFile.self)
+    func testRetryableWritesLegacy() throws {
+        let tests = try retrieveSpecTestFiles(
+            specName: "retryable-writes",
+            subdirectory: "legacy",
+            asType: RetryableWritesTestFile.self
+        )
         for (fileName, testFile) in tests {
             let setupClient = try MongoClient.makeTestClient()
 
@@ -137,5 +141,16 @@ final class RetryableWritesTests: MongoSwiftTestCase {
                 }
             }
         }
+    }
+
+    func testRetryableWritesUnified() throws {
+        let tests = try retrieveSpecTestFiles(
+            specName: "retryable-writes",
+            subdirectory: "unified",
+            asType: UnifiedTestFile.self
+        ).map { $0.1 }
+
+        let runner = try UnifiedTestRunner()
+        try runner.runFiles(tests)
     }
 }
