@@ -285,14 +285,14 @@ public enum SDAMEvent: Publishable {
     /// Published when a server is removed from a topology and no longer monitored.
     case serverClosed(ServerClosedEvent)
 
-    /// Published when the server monitor’s ismaster command is started - immediately before
-    /// the ismaster command is serialized into raw BSON and written to the socket.
+    /// Published when the server monitor’s "hello" command is started - immediately before
+    /// the "hello" command is serialized into raw BSON and written to the socket.
     case serverHeartbeatStarted(ServerHeartbeatStartedEvent)
 
-    /// Published when the server monitor’s ismaster succeeds.
+    /// Published when the server monitor’s "hello" command succeeds.
     case serverHeartbeatSucceeded(ServerHeartbeatSucceededEvent)
 
-    /// Published when the server monitor’s ismaster fails, either with an “ok: 0” or a socket exception.
+    /// Published when the server monitor’s "hello" command fails, either with an “ok: 0” or a socket exception.
     case serverHeartbeatFailed(ServerHeartbeatFailedEvent)
 
     fileprivate func publish(to client: MongoClient) {
@@ -534,8 +534,8 @@ public struct TopologyClosedEvent: MongoSwiftEvent {
     }
 }
 
-/// Published when the server monitor’s ismaster command is started - immediately before
-/// the ismaster command is serialized into raw BSON and written to the socket.
+/// Published when the server monitor’s "hello" command is started - immediately before
+/// the "hello" command is serialized into raw BSON and written to the socket.
 public struct ServerHeartbeatStartedEvent: MongoSwiftEvent {
     /// Wrapper around a `mongoc_apm_server_heartbeat_started_t`.
     fileprivate struct MongocServerHeartbeatStartedEvent: MongocEvent {
@@ -564,7 +564,7 @@ public struct ServerHeartbeatStartedEvent: MongoSwiftEvent {
     }
 }
 
-/// Published when the server monitor’s ismaster succeeds.
+/// Published when the server monitor’s "hello" command succeeds.
 public struct ServerHeartbeatSucceededEvent: MongoSwiftEvent {
     /// Wrapper around a `mongoc_apm_server_heartbeat_succeeded_t`.
     fileprivate struct MongocServerHeartbeatSucceededEvent: MongocEvent {
@@ -602,7 +602,7 @@ public struct ServerHeartbeatSucceededEvent: MongoSwiftEvent {
     }
 }
 
-/// Published when the server monitor’s ismaster fails, either with an “ok: 0” or a socket exception.
+/// Published when the server monitor’s "hello" command fails, either with an “ok: 0” or a socket exception.
 public struct ServerHeartbeatFailedEvent: MongoSwiftEvent {
     /// Wrapper around a `mongoc_apm_server_heartbeat_failed_t`.
     fileprivate struct MongocServerHeartbeatFailedEvent: MongocEvent {

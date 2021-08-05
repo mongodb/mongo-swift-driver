@@ -4,6 +4,8 @@ import Foundation
 import Nimble
 import XCTest
 
+public let LEGACY_HELLO = "ismaster"
+
 extension String {
     /// Removes the first occurrence of the specified substring from the string. If the substring is not present, has
     /// no effect.
@@ -173,20 +175,20 @@ public enum TestTopologyConfiguration: String, Decodable {
         self == .sharded || self == .shardedReplicaSet
     }
 
-    /// Determines the topologyType of a client based on the reply returned by running an isMaster command and the
+    /// Determines the topologyType of a client based on the reply returned by running a hello command and the
     /// first document in the config.shards collection.
-    public init(isMasterReply: BSONDocument, shards: [BSONDocument]) throws {
+    public init(helloReply: BSONDocument, shards: [BSONDocument]) throws {
         // Check for symptoms of different topologies
-        if isMasterReply["msg"] != "isdbgrid" &&
-            isMasterReply["setName"] == nil &&
-            isMasterReply["isreplicaset"] != true
+        if helloReply["msg"] != "isdbgrid" &&
+            helloReply["setName"] == nil &&
+            helloReply["isreplicaset"] != true
         {
             self = .single
-        } else if isMasterReply["msg"] == "isdbgrid" {
+        } else if helloReply["msg"] == "isdbgrid" {
             // Serverless proxy reports as a mongos but presents no shards
             guard !shards.isEmpty || MongoSwiftTestCase.serverless else {
                 throw TestError(
-                    message: "isMasterReply \(isMasterReply) implies a sharded cluster, but config.shards is empty"
+                    message: "helloReply \(helloReply) implies a sharded cluster, but config.shards is empty"
                 )
             }
             for shard in shards {
@@ -204,12 +206,12 @@ public enum TestTopologyConfiguration: String, Decodable {
                 }
             }
             self = .shardedReplicaSet
-        } else if isMasterReply["ismaster"] == true && isMasterReply["setName"] != nil {
+        } else if helloReply["isWritablePrimary"] == true && helloReply["setName"] != nil {
             self = .replicaSet
         } else {
             throw TestError(
                 message:
-                "Invalid test topology configuration given by isMaster reply: \(isMasterReply) and shards: \(shards)"
+                "Invalid test topology configuration given by hello reply: \(helloReply) and shards: \(shards)"
             )
         }
     }

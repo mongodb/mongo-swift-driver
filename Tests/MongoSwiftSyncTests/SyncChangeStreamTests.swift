@@ -206,7 +206,7 @@ internal struct ChangeStreamTest: Decodable, FailPointConfigured {
 
         if let expectations = self.expectations {
             let commandEvents = monitor.commandStartedEvents()
-                .filter { !["isMaster", "killCursors"].contains($0.commandName) }
+                .filter { ![LEGACY_HELLO, "hello", "killCursors"].contains($0.commandName) }
                 .map { TestCommandStartedEvent(from: $0) }
             expect(commandEvents).to(match(expectations), description: self.description)
         }
@@ -429,8 +429,8 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
     /**
      * Prose test 3 of change stream spec.
      *
-     * `ChangeStream` will automatically resume one time on a resumable error (including not master) with the initial
-     * pipeline and options, except for the addition/update of a resumeToken.
+     * `ChangeStream` will automatically resume one time on a resumable error (including not writable primary) with the
+     * initial pipeline and options, except for the addition/update of a resumeToken.
      */
     func testChangeStreamAutomaticResume() throws {
         let testRequirements = TestRequirement(
@@ -462,7 +462,7 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
                     try coll.insertOne(["x": .int64(Int64(x))])
                 }
 
-                // notMaster error
+                // notWritablePrimary error
                 let failPoint = FailPoint.failCommand(
                     failCommands: ["getMore"],
                     mode: .times(1),

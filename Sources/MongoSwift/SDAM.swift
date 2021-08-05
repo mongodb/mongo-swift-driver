@@ -44,7 +44,7 @@ extension ServerAddress: CustomStringConvertible {
     }
 }
 
-private struct IsMasterResponse: Decodable {
+private struct HelloResponse: Decodable {
     fileprivate struct LastWrite: Decodable {
         public let lastWriteDate: Date?
     }
@@ -88,15 +88,15 @@ public struct ServerDescription {
         case unknown = "Unknown"
     }
 
-    /// The hostname or IP and the port number that the client connects to. Note that this is not the
-    /// server's ismaster.me field, in the case that the server reports an address different from the
+    /// The hostname or IP and the port number that the client connects to. Note that this is not the "me" field in the
+    /// server's hello or legacy hello response, in the case that the server reports an address different from the
     /// address the client uses.
     public let address: ServerAddress
 
     /// Opaque identifier for this server, used for testing only.
     internal let serverId: UInt32
 
-    /// The duration in milliseconds of the server's last ismaster call.
+    /// The duration in milliseconds of the server's last "hello" call.
     public let roundTripTime: Int?
 
     /// The date of the most recent write operation seen by this server.
@@ -154,31 +154,31 @@ public struct ServerDescription {
         self.lastUpdateTime = Date(msSinceEpoch: mongoc_server_description_last_update_time(description))
         self.type = ServerType(rawValue: String(cString: mongoc_server_description_type(description))) ?? .unknown
 
-        // initialize the rest of the values from the isMaster response.
+        // initialize the rest of the values from the hello response.
         // we have to copy because libmongoc owns the pointer.
-        let isMasterDoc = BSONDocument(copying: mongoc_server_description_ismaster(description))
+        let helloDoc = BSONDocument(copying: mongoc_server_description_hello_response(description))
         // TODO: SWIFT-349 log errors encountered here
-        let isMaster = try? BSONDecoder().decode(IsMasterResponse.self, from: isMasterDoc)
+        let hello = try? BSONDecoder().decode(HelloResponse.self, from: helloDoc)
 
-        self.lastWriteDate = isMaster?.lastWrite?.lastWriteDate
-        self.minWireVersion = isMaster?.minWireVersion ?? 0
-        self.maxWireVersion = isMaster?.maxWireVersion ?? 0
-        self.me = try? isMaster?.me.map(ServerAddress.init) // TODO: SWIFT-349 log error
-        self.setName = isMaster?.setName
-        self.setVersion = isMaster?.setVersion
-        self.electionID = isMaster?.electionID
-        self.primary = try? isMaster?.primary.map(ServerAddress.init) // TODO: SWIFT-349 log error
-        self.logicalSessionTimeoutMinutes = isMaster?.logicalSessionTimeoutMinutes
-        self.hosts = isMaster?.hosts?.compactMap { host in
+        self.lastWriteDate = hello?.lastWrite?.lastWriteDate
+        self.minWireVersion = hello?.minWireVersion ?? 0
+        self.maxWireVersion = hello?.maxWireVersion ?? 0
+        self.me = try? hello?.me.map(ServerAddress.init) // TODO: SWIFT-349 log error
+        self.setName = hello?.setName
+        self.setVersion = hello?.setVersion
+        self.electionID = hello?.electionID
+        self.primary = try? hello?.primary.map(ServerAddress.init) // TODO: SWIFT-349 log error
+        self.logicalSessionTimeoutMinutes = hello?.logicalSessionTimeoutMinutes
+        self.hosts = hello?.hosts?.compactMap { host in
             try? ServerAddress(host) // TODO: SWIFT-349 log error
         } ?? []
-        self.passives = isMaster?.passives?.compactMap { passive in
+        self.passives = hello?.passives?.compactMap { passive in
             try? ServerAddress(passive) // TODO: SWIFT-349 log error
         } ?? []
-        self.arbiters = isMaster?.arbiters?.compactMap { arbiter in
+        self.arbiters = hello?.arbiters?.compactMap { arbiter in
             try? ServerAddress(arbiter) // TODO: SWIFT-349 log error
         } ?? []
-        self.tags = isMaster?.tags ?? [:]
+        self.tags = hello?.tags ?? [:]
     }
 }
 

@@ -62,7 +62,7 @@ extension Request {
 ### Codable Usage
 Throughout the application, we frequently use [`Codable`](https://developer.apple.com/documentation/swift/codable) Swift types. These are very useful as they allow us to convert seamlessly from BSON, the format MongoDB stores data in, to Swift types used in the server, to JSON to send to the client. The same is true for the opposite direction.
 
-Note that Vapor's[`Content`](https://api.vapor.codes/vapor/master/Vapor/Protocols/Content.html) protocol, which specifies types that can be initialized from HTTP requests and serialized to HTTP responses, inherits from `Codable`.
+Note that Vapor's[`Content`](https://api.vapor.codes/vapor/main/Vapor/Content/) protocol, which specifies types that can be initialized from HTTP requests and serialized to HTTP responses, inherits from `Codable`.
 
 #### BSON <-> Swift types
 When creating a `MongoCollection`, you can pass in the name of a `Codable` type:
