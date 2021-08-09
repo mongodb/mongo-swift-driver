@@ -9,7 +9,8 @@
     {
       "minServerVersion": "4.1.7",
       "topology": [
-        "sharded"
+        "sharded",
+        "load-balanced"
       ]
     }
   ],
@@ -25,7 +26,7 @@
   ],
   "tests": [
     {
-      "description": "UpdateOne succeeds after PrimarySteppedDown",
+      "description": "FindOneAndUpdate succeeds after PrimarySteppedDown",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -33,7 +34,7 @@
         },
         "data": {
           "failCommands": [
-            "update"
+            "findAndModify"
           ],
           "errorCode": 189,
           "errorLabels": [
@@ -42,7 +43,7 @@
         }
       },
       "operation": {
-        "name": "updateOne",
+        "name": "findOneAndUpdate",
         "arguments": {
           "filter": {
             "_id": 1
@@ -51,14 +52,14 @@
             "$inc": {
               "x": 1
             }
-          }
+          },
+          "returnDocument": "Before"
         }
       },
       "outcome": {
         "result": {
-          "matchedCount": 1,
-          "modifiedCount": 1,
-          "upsertedCount": 0
+          "_id": 1,
+          "x": 11
         },
         "collection": {
           "data": [
@@ -75,7 +76,7 @@
       }
     },
     {
-      "description": "UpdateOne succeeds after WriteConcernError ShutdownInProgress",
+      "description": "FindOneAndUpdate succeeds after WriteConcernError ShutdownInProgress",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -83,7 +84,7 @@
         },
         "data": {
           "failCommands": [
-            "update"
+            "findAndModify"
           ],
           "writeConcernError": {
             "code": 91,
@@ -95,7 +96,7 @@
         }
       },
       "operation": {
-        "name": "updateOne",
+        "name": "findOneAndUpdate",
         "arguments": {
           "filter": {
             "_id": 1
@@ -104,14 +105,14 @@
             "$inc": {
               "x": 1
             }
-          }
+          },
+          "returnDocument": "Before"
         }
       },
       "outcome": {
         "result": {
-          "matchedCount": 1,
-          "modifiedCount": 1,
-          "upsertedCount": 0
+          "_id": 1,
+          "x": 11
         },
         "collection": {
           "data": [
@@ -128,7 +129,7 @@
       }
     },
     {
-      "description": "UpdateOne fails with a RetryableWriteError label after two connection failures",
+      "description": "FindOneAndUpdate fails with a RetryableWriteError label after two connection failures",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -136,13 +137,13 @@
         },
         "data": {
           "failCommands": [
-            "update"
+            "findAndModify"
           ],
           "closeConnection": true
         }
       },
       "operation": {
-        "name": "updateOne",
+        "name": "findOneAndUpdate",
         "arguments": {
           "filter": {
             "_id": 1
@@ -151,7 +152,8 @@
             "$inc": {
               "x": 1
             }
-          }
+          },
+          "returnDocument": "Before"
         }
       },
       "outcome": {

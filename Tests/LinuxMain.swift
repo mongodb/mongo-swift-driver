@@ -285,7 +285,8 @@ extension RetryableReadsTests {
 
 extension RetryableWritesTests {
     static var allTests = [
-        ("testRetryableWrites", testRetryableWrites),
+        ("testRetryableWritesLegacy", testRetryableWritesLegacy),
+        ("testRetryableWritesUnified", testRetryableWritesUnified),
     ]
 }
 

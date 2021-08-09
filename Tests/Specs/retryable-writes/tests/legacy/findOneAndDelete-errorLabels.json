@@ -4,7 +4,8 @@
       "minServerVersion": "4.3.1",
       "topology": [
         "replicaset",
-        "sharded"
+        "sharded",
+        "load-balanced"
       ]
     }
   ],
@@ -20,7 +21,7 @@
   ],
   "tests": [
     {
-      "description": "DeleteOne succeeds with RetryableWriteError from server",
+      "description": "FindOneAndDelete succeeds with RetryableWriteError from server",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -28,7 +29,7 @@
         },
         "data": {
           "failCommands": [
-            "delete"
+            "findAndModify"
           ],
           "errorCode": 112,
           "errorLabels": [
@@ -37,16 +38,22 @@
         }
       },
       "operation": {
-        "name": "deleteOne",
+        "name": "findOneAndDelete",
         "arguments": {
           "filter": {
-            "_id": 1
+            "x": {
+              "$gte": 11
+            }
+          },
+          "sort": {
+            "x": 1
           }
         }
       },
       "outcome": {
         "result": {
-          "deletedCount": 1
+          "_id": 1,
+          "x": 11
         },
         "collection": {
           "data": [
@@ -59,7 +66,7 @@
       }
     },
     {
-      "description": "DeleteOne fails if server does not return RetryableWriteError",
+      "description": "FindOneAndDelete fails if server does not return RetryableWriteError",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -67,17 +74,22 @@
         },
         "data": {
           "failCommands": [
-            "delete"
+            "findAndModify"
           ],
           "errorCode": 11600,
           "errorLabels": []
         }
       },
       "operation": {
-        "name": "deleteOne",
+        "name": "findOneAndDelete",
         "arguments": {
           "filter": {
-            "_id": 1
+            "x": {
+              "$gte": 11
+            }
+          },
+          "sort": {
+            "x": 1
           }
         }
       },

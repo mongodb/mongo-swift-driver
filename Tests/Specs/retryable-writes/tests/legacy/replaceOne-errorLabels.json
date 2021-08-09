@@ -4,14 +4,24 @@
       "minServerVersion": "4.3.1",
       "topology": [
         "replicaset",
-        "sharded"
+        "sharded",
+        "load-balanced"
       ]
     }
   ],
-  "data": [],
+  "data": [
+    {
+      "_id": 1,
+      "x": 11
+    },
+    {
+      "_id": 2,
+      "x": 22
+    }
+  ],
   "tests": [
     {
-      "description": "InsertOne succeeds with RetryableWriteError from server",
+      "description": "ReplaceOne succeeds with RetryableWriteError from server",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -19,7 +29,7 @@
         },
         "data": {
           "failCommands": [
-            "insert"
+            "update"
           ],
           "errorCode": 112,
           "errorLabels": [
@@ -28,30 +38,39 @@
         }
       },
       "operation": {
-        "name": "insertOne",
+        "name": "replaceOne",
         "arguments": {
-          "document": {
+          "filter": {
+            "_id": 1
+          },
+          "replacement": {
             "_id": 1,
-            "x": 11
+            "x": 111
           }
         }
       },
       "outcome": {
         "result": {
-          "insertedId": 1
+          "matchedCount": 1,
+          "modifiedCount": 1,
+          "upsertedCount": 0
         },
         "collection": {
           "data": [
             {
               "_id": 1,
-              "x": 11
+              "x": 111
+            },
+            {
+              "_id": 2,
+              "x": 22
             }
           ]
         }
       }
     },
     {
-      "description": "InsertOne fails if server does not return RetryableWriteError",
+      "description": "ReplaceOne fails if server does not return RetryableWriteError",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -59,18 +78,21 @@
         },
         "data": {
           "failCommands": [
-            "insert"
+            "update"
           ],
           "errorCode": 11600,
           "errorLabels": []
         }
       },
       "operation": {
-        "name": "insertOne",
+        "name": "replaceOne",
         "arguments": {
-          "document": {
+          "filter": {
+            "_id": 1
+          },
+          "replacement": {
             "_id": 1,
-            "x": 11
+            "x": 111
           }
         }
       },
@@ -82,7 +104,16 @@
           ]
         },
         "collection": {
-          "data": []
+          "data": [
+            {
+              "_id": 1,
+              "x": 11
+            },
+            {
+              "_id": 2,
+              "x": 22
+            }
+          ]
         }
       }
     }

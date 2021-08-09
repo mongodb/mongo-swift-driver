@@ -4,7 +4,8 @@
       "minServerVersion": "4.3.1",
       "topology": [
         "replicaset",
-        "sharded"
+        "sharded",
+        "load-balanced"
       ]
     }
   ],
@@ -20,7 +21,7 @@
   ],
   "tests": [
     {
-      "description": "FindOneAndUpdate succeeds with RetryableWriteError from server",
+      "description": "UpdateOne succeeds with RetryableWriteError from server",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -28,7 +29,7 @@
         },
         "data": {
           "failCommands": [
-            "findAndModify"
+            "update"
           ],
           "errorCode": 112,
           "errorLabels": [
@@ -37,7 +38,7 @@
         }
       },
       "operation": {
-        "name": "findOneAndUpdate",
+        "name": "updateOne",
         "arguments": {
           "filter": {
             "_id": 1
@@ -46,14 +47,14 @@
             "$inc": {
               "x": 1
             }
-          },
-          "returnDocument": "Before"
+          }
         }
       },
       "outcome": {
         "result": {
-          "_id": 1,
-          "x": 11
+          "matchedCount": 1,
+          "modifiedCount": 1,
+          "upsertedCount": 0
         },
         "collection": {
           "data": [
@@ -70,7 +71,7 @@
       }
     },
     {
-      "description": "FindOneAndUpdate fails if server does not return RetryableWriteError",
+      "description": "UpdateOne fails if server does not return RetryableWriteError",
       "failPoint": {
         "configureFailPoint": "failCommand",
         "mode": {
@@ -78,14 +79,14 @@
         },
         "data": {
           "failCommands": [
-            "findAndModify"
+            "update"
           ],
           "errorCode": 11600,
           "errorLabels": []
         }
       },
       "operation": {
-        "name": "findOneAndUpdate",
+        "name": "updateOne",
         "arguments": {
           "filter": {
             "_id": 1
@@ -94,8 +95,7 @@
             "$inc": {
               "x": 1
             }
-          },
-          "returnDocument": "Before"
+          }
         }
       },
       "outcome": {
