@@ -17,10 +17,6 @@ struct UnifiedTestRunner {
         self.serverVersion = try self.internalClient.serverVersion()
         self.topologyType = try self.internalClient.topologyType()
         self.serverParameters = try self.internalClient.serverParameters()
-
-        // The test runner SHOULD terminate any open transactions using the internal MongoClient before executing any
-        // tests.
-        try self.terminateOpenTransactions()
     }
 
     func terminateOpenTransactions() throws {
@@ -57,17 +53,6 @@ struct UnifiedTestRunner {
     /// strings indicating cases to skip. If the array contains a single string "*" all tests in the file will be
     /// skipped.
     func runFiles(_ files: [UnifiedTestFile], skipTests: [String: [String]] = [:]) throws {
-        // Test runners SHOULD terminate all open transactions after each failed test by killing all sessions in the
-        // cluster. Since we stop running the provided files as soon we encounter a failure, we just always run this on
-        // method exit for simplicity.
-        defer {
-            do {
-                try self.terminateOpenTransactions()
-            } catch {
-                print("Failed to terminate open transactions: \(error)")
-            }
-        }
-
         for file in files {
             // Upon loading a file, the test runner MUST read the schemaVersion field and determine if the test file
             // can be processed further.
@@ -122,8 +107,6 @@ struct UnifiedTestRunner {
                     }
                 }
 
-                fileLevelLog("Running test \"\(test.description)\" from file \"\(file.description)\"")
-
                 // If initialData is specified, for each collectionData therein the test runner MUST drop the
                 // collection and insert the specified documents (if any) using a "majority" write concern. If no
                 // documents are specified, the test runner MUST create the collection with a "majority" write concern.
@@ -168,54 +151,70 @@ struct UnifiedTestRunner {
                     }
                 }
 
-                for (i, operation) in test.operations.enumerated() {
-                    try context.withPushedElt("Operation \(i) (\(operation.name))") {
-                        try operation.executeAndCheckResult(context: context)
-                    }
-                }
+                fileLevelLog("Running test \"\(test.description)\" from file \"\(file.description)\"")
 
-                var clientEvents = [String: [CommandEvent]]()
-                // If any event listeners were enabled on any client entities, the test runner MUST now disable those
-                // event listeners.
-                for (id, client) in context.entities.compactMapValues({ try? $0.asTestClient() }) {
-                    clientEvents[id] = try client.stopCapturingEvents()
-                }
-
-                if let expectEvents = test.expectEvents {
-                    for expectedEventList in expectEvents {
-                        let clientId = expectedEventList.client
-
-                        guard let actualEvents = clientEvents[clientId] else {
-                            throw TestError(message: "No client entity found with id \(clientId)")
+                do {
+                    for (i, operation) in test.operations.enumerated() {
+                        try context.withPushedElt("Operation \(i) (\(operation.name))") {
+                            try operation.executeAndCheckResult(context: context)
                         }
+                    }
 
-                        try context.withPushedElt("Expected events for client \(clientId)") {
-                            try matchesEvents(
-                                expected: expectedEventList.events,
-                                actual: actualEvents,
-                                context: context
+                    var clientEvents = [String: [CommandEvent]]()
+                    // If any event listeners were enabled on any client entities, the test runner MUST now disable
+                    // those event listeners.
+                    for (id, client) in context.entities.compactMapValues({ try? $0.asTestClient() }) {
+                        clientEvents[id] = try client.stopCapturingEvents()
+                    }
+
+                    if let expectEvents = test.expectEvents {
+                        for expectedEventList in expectEvents {
+                            let clientId = expectedEventList.client
+
+                            guard let actualEvents = clientEvents[clientId] else {
+                                throw TestError(message: "No client entity found with id \(clientId)")
+                            }
+
+                            try context.withPushedElt("Expected events for client \(clientId)") {
+                                try matchesEvents(
+                                    expected: expectedEventList.events,
+                                    actual: actualEvents,
+                                    context: context
+                                )
+                            }
+                        }
+                    }
+
+                    if let expectedOutcome = test.outcome {
+                        for collectionData in expectedOutcome {
+                            let collection = self.internalClient
+                                .db(collectionData.databaseName)
+                                .collection(collectionData.collectionName)
+                            let opts = FindOptions(
+                                readConcern: .local,
+                                readPreference: .primary,
+                                sort: ["_id": 1]
                             )
+                            let documents = try collection.find(options: opts).map { try $0.get() }
+
+                            expect(documents.count).to(equal(collectionData.documents.count))
+                            for (expected, actual) in zip(collectionData.documents, documents) {
+                                expect(actual).to(
+                                    sortedEqual(expected),
+                                    description: "Test outcome did not match expected"
+                                )
+                            }
                         }
                     }
-                }
-
-                if let expectedOutcome = test.outcome {
-                    for collectionData in expectedOutcome {
-                        let collection = self.internalClient
-                            .db(collectionData.databaseName)
-                            .collection(collectionData.collectionName)
-                        let opts = FindOptions(
-                            readConcern: .local,
-                            readPreference: .primary,
-                            sort: ["_id": 1]
-                        )
-                        let documents = try collection.find(options: opts).map { try $0.get() }
-
-                        expect(documents.count).to(equal(collectionData.documents.count))
-                        for (expected, actual) in zip(collectionData.documents, documents) {
-                            expect(actual).to(sortedEqual(expected), description: "Test outcome did not match expected")
-                        }
+                } catch let testErr {
+                    // Test runners SHOULD terminate all open transactions after each failed test by killing all
+                    // sessions in the cluster.
+                    do {
+                        try self.terminateOpenTransactions()
+                    } catch {
+                        print("Failed to terminate open transactions: \(error)")
                     }
+                    throw testErr
                 }
             }
         }
