@@ -142,26 +142,7 @@ private struct CMTest: Decodable {
             _ = try? collection.deleteOne(filter)
 
         case "find":
-            let modifiers = self.op.args["modifiers"]?.documentValue
-            var hint: IndexHint?
-            if let hintDoc = modifiers?["$hint"]?.documentValue {
-                hint = .indexSpec(hintDoc)
-            }
-            let options = FindOptions(
-                batchSize: self.op.args["batchSize"]?.toInt(),
-                comment: modifiers?["$comment"]?.stringValue,
-                hint: hint,
-                limit: self.op.args["limit"]?.toInt(),
-                max: modifiers?["$max"]?.documentValue,
-                maxTimeMS: modifiers?["$maxTimeMS"]?.toInt(),
-                min: modifiers?["$min"]?.documentValue,
-                readPreference: self.op.readPreference,
-                returnKey: modifiers?["$returnKey"]?.boolValue,
-                showRecordID: modifiers?["$showDiskLoc"]?.boolValue,
-                skip: self.op.args["skip"]?.toInt(),
-                sort: self.op.args["sort"]?.documentValue
-            )
-
+            let options = try BSONDecoder().decode(FindOptions.self, from: self.op.args)
             do {
                 let cursor = try collection.find(filter, options: options)
                 for _ in cursor {}
