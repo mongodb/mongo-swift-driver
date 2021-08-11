@@ -583,5 +583,33 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         // directConnection=true cannot be used with multiple seeds
         expect(try ConnectionString("mongodb://localhost:27017,localhost:27018", options: opts))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // The cases where the conflicting options are all in the connection string are already covered by the URI
+        // options tests, so here we only check behavior for cases where 1+ option is specified via the options struct.
+
+        // loadBalanced=true cannot be used with multiple seeds
+        opts = MongoClientOptions(loadBalanced: true)
+        expect(try ConnectionString("mongodb://localhost:27017,localhost:27018", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // loadBalanced=true cannot be used with replica set option
+        expect(try ConnectionString("mongodb://localhost:27017/?replicaSet=xyz", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        opts.replicaSet = "xyz"
+        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // loadBalanced=true cannot be used with directConnection=true
+        opts = MongoClientOptions(directConnection: true, loadBalanced: true)
+        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        opts = MongoClientOptions(directConnection: true)
+        expect(try ConnectionString("mongodb://localhost:27017/?loadBalanced=true", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        opts = MongoClientOptions(loadBalanced: true)
+        expect(try ConnectionString("mongodb://localhost:27017/?directConnection=true", options: opts))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 }
