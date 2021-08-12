@@ -76,12 +76,12 @@ public enum CommandEvent: Publishable {
         self.event.commandName
     }
 
-    /// The driver generated request id.
+    /// The driver generated request ID.
     public var requestID: Int64 {
         self.event.requestID
     }
 
-    /// The driver generated operation id. This is used to link events together such
+    /// The driver generated operation ID. This is used to link events together such
     /// as bulk write operations.
     public var operationID: Int64 {
         self.event.operationID
@@ -91,6 +91,11 @@ public enum CommandEvent: Publishable {
     public var serverAddress: ServerAddress {
         self.event.serverAddress
     }
+
+    /// The service ID for the command, if the driver is in load balancer mode.
+    public var serviceID: BSONObjectID? {
+        self.event.serviceID
+    }
 }
 
 /// A protocol for command monitoring events to implement, specifying the command name and other shared fields.
@@ -98,15 +103,18 @@ private protocol CommandEventProtocol {
     /// The command name.
     var commandName: String { get }
 
-    /// The driver generated request id.
+    /// The driver generated request ID.
     var requestID: Int64 { get }
 
-    /// The driver generated operation id. This is used to link events together such
+    /// The driver generated operation ID. This is used to link events together such
     /// as bulk write operations.
     var operationID: Int64 { get }
 
     /// The address of the server the command was run against.
     var serverAddress: ServerAddress { get }
+
+    /// The service ID for the command, if the driver is in load balancer mode.
+    var serviceID: BSONObjectID? { get }
 }
 
 /// An event published when a command starts.
@@ -145,6 +153,9 @@ public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
     /// The address of the server the command was run against.
     public let serverAddress: ServerAddress
 
+    /// The service ID for the command, if the driver is in load balancer mode.
+    public let serviceID: BSONObjectID?
+
     fileprivate init(mongocEvent: MongocCommandStartedEvent) {
         // we have to copy because libmongoc owns the pointer.
         self.command = BSONDocument(copying: mongoc_apm_command_started_get_command(mongocEvent.ptr))
@@ -153,6 +164,11 @@ public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
         self.requestID = mongoc_apm_command_started_get_request_id(mongocEvent.ptr)
         self.operationID = mongoc_apm_command_started_get_operation_id(mongocEvent.ptr)
         self.serverAddress = ServerAddress(mongoc_apm_command_started_get_host(mongocEvent.ptr))
+        if let serviceID = mongoc_apm_command_started_get_service_id(mongocEvent.ptr) {
+            self.serviceID = BSONObjectID(bsonOid: serviceID.pointee)
+        } else {
+            self.serviceID = nil
+        }
     }
 
     fileprivate func toPublishable() -> CommandEvent {
@@ -196,6 +212,9 @@ public struct CommandSucceededEvent: MongoSwiftEvent, CommandEventProtocol {
     /// The address of the server the command was run against.
     public let serverAddress: ServerAddress
 
+    /// The service ID for the command, if the driver is in load balancer mode.
+    public let serviceID: BSONObjectID?
+
     fileprivate init(mongocEvent: MongocCommandSucceededEvent) {
         // TODO: SWIFT-349 add logging to check and warn of unlikely int size issues
         self.duration = Int(mongoc_apm_command_succeeded_get_duration(mongocEvent.ptr))
@@ -205,6 +224,11 @@ public struct CommandSucceededEvent: MongoSwiftEvent, CommandEventProtocol {
         self.requestID = mongoc_apm_command_succeeded_get_request_id(mongocEvent.ptr)
         self.operationID = mongoc_apm_command_succeeded_get_operation_id(mongocEvent.ptr)
         self.serverAddress = ServerAddress(mongoc_apm_command_succeeded_get_host(mongocEvent.ptr))
+        if let serviceID = mongoc_apm_command_succeeded_get_service_id(mongocEvent.ptr) {
+            self.serviceID = BSONObjectID(bsonOid: serviceID.pointee)
+        } else {
+            self.serviceID = nil
+        }
     }
 
     fileprivate func toPublishable() -> CommandEvent {
@@ -248,6 +272,9 @@ public struct CommandFailedEvent: MongoSwiftEvent, CommandEventProtocol {
     /// The connection id for the command.
     public let serverAddress: ServerAddress
 
+    /// The service ID for the command, if the driver is in load balancer mode.
+    public let serviceID: BSONObjectID?
+
     fileprivate init(mongocEvent: MongocCommandFailedEvent) {
         self.duration = Int(mongoc_apm_command_failed_get_duration(mongocEvent.ptr))
         self.commandName = String(cString: mongoc_apm_command_failed_get_command_name(mongocEvent.ptr))
@@ -258,6 +285,11 @@ public struct CommandFailedEvent: MongoSwiftEvent, CommandEventProtocol {
         self.requestID = mongoc_apm_command_failed_get_request_id(mongocEvent.ptr)
         self.operationID = mongoc_apm_command_failed_get_operation_id(mongocEvent.ptr)
         self.serverAddress = ServerAddress(mongoc_apm_command_failed_get_host(mongocEvent.ptr))
+        if let serviceID = mongoc_apm_command_failed_get_service_id(mongocEvent.ptr) {
+            self.serviceID = BSONObjectID(bsonOid: serviceID.pointee)
+        } else {
+            self.serviceID = nil
+        }
     }
 
     fileprivate func toPublishable() -> CommandEvent {
