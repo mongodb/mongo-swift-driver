@@ -143,13 +143,13 @@ index f82d3ab1..90f1afb5 100644
  #undef MONGOC_LOG_DOMAIN
  #define MONGOC_LOG_DOMAIN "collection"
  
-diff --git a/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket-file.c b/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket-file.c
-index f483337..a7e5ed3 100644
+ diff --git a/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket-file.c b/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket-file.c
+index ab7bc798..205d2be5 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket-file.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-gridfs-bucket-file.c
-@@ -22,6 +22,10 @@
- #include "mongoc-stream-gridfs-upload-private.h"
+@@ -23,6 +23,10 @@
  #include "mongoc-collection-private.h"
+ #include "mongoc-util-private.h"
  
 +#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
 +#include <inttypes.h>
@@ -174,11 +174,11 @@ index ecc7d8a..6ecdc40 100644
   *
   * _mongoc_gridfs_find_file_with_id --
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-gridfs-file.c b/Sources/CLibMongoC/mongoc/mongoc-gridfs-file.c
-index e7ca585..1f4da06 100644
+index 5dbc7609..85b9c325 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-gridfs-file.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-gridfs-file.c
-@@ -35,6 +35,10 @@
- #include "mongoc-trace-private.h"
+@@ -36,6 +36,10 @@
+ #include "mongoc-util-private.h"
  #include "CLibMongoC_mongoc-error.h"
  
 +#if !defined(_MSC_VER) || (_MSC_VER >= 1800)

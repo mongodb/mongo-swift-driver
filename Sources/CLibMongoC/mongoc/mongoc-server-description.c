@@ -31,6 +31,8 @@
 
 static bson_oid_t kObjectIdZero = {{0}};
 
+const bson_oid_t kZeroServiceId = {{0}};
+
 static bool
 _match_tag_set (const mongoc_server_description_t *sd,
                 bson_iter_t *tag_set_iter);
@@ -48,6 +50,7 @@ mongoc_server_description_cleanup (mongoc_server_description_t *sd)
    bson_destroy (&sd->tags);
    bson_destroy (&sd->compressors);
    bson_destroy (&sd->topology_version);
+   mongoc_generation_map_destroy (sd->generation_map);
 }
 
 /* Reset fields inside this sd, but keep same id, host information, RTT,
@@ -92,6 +95,7 @@ mongoc_server_description_reset (mongoc_server_description_t *sd)
    sd->current_primary = NULL;
    sd->set_version = MONGOC_NO_SET_VERSION;
    bson_oid_copy_unsafe (&kObjectIdZero, &sd->election_id);
+   bson_oid_copy_unsafe (&kObjectIdZero, &sd->service_id);
 }
 
 /*
@@ -122,6 +126,9 @@ mongoc_server_description_init (mongoc_server_description_t *sd,
    sd->id = id;
    sd->type = MONGOC_SERVER_UNKNOWN;
    sd->round_trip_time_msec = MONGOC_RTT_UNSET;
+   sd->generation = 0;
+   sd->opened = 0;
+   sd->generation_map = mongoc_generation_map_new ();
 
    if (!_mongoc_host_list_from_string (&sd->host, address)) {
       MONGOC_WARNING ("Failed to parse uri for %s", address);
@@ -361,6 +368,8 @@ mongoc_server_description_type (const mongoc_server_description_t *description)
       return "RSOther";
    case MONGOC_SERVER_RS_GHOST:
       return "RSGhost";
+   case MONGOC_SERVER_LOAD_BALANCER:
+      return "LoadBalancer";
    case MONGOC_SERVER_DESCRIPTION_TYPES:
    default:
       MONGOC_ERROR ("Invalid mongoc_server_description_t type");
@@ -719,6 +728,10 @@ mongoc_server_description_handle_hello (mongoc_server_description_t *sd,
          mongoc_server_description_set_topology_version (
             sd, &incoming_topology_version);
          bson_destroy (&incoming_topology_version);
+      } else if (strcmp ("serviceId", bson_iter_key (&iter)) == 0) {
+          if (!BSON_ITER_HOLDS_OID (&iter))
+            goto failure;
+         bson_oid_copy_unsafe (bson_iter_oid (&iter), &sd->service_id);
       }
    }
 
@@ -794,6 +807,7 @@ mongoc_server_description_new_copy (
    bson_init (&copy->tags);
    bson_init (&copy->compressors);
    bson_copy_to (&description->topology_version, &copy->topology_version);
+   bson_oid_copy (&description->service_id, &copy->service_id);
 
    if (description->has_hello_response) {
       /* calls mongoc_server_description_reset */
@@ -803,12 +817,17 @@ mongoc_server_description_new_copy (
                                               &description->error);
    } else {
       mongoc_server_description_reset (copy);
+      /* preserve the original server description type, which is manually set
+       * for a LoadBalancer server */
+      copy->type = description->type;
    }
 
    /* Preserve the error */
    memcpy (&copy->error, &description->error, sizeof copy->error);
 
    copy->generation = description->generation;
+   copy->generation_map =
+      mongoc_generation_map_copy (description->generation_map);
    return copy;
 }
 
@@ -1231,4 +1250,12 @@ mongoc_server_description_set_topology_version (mongoc_server_description_t *sd,
    BSON_ASSERT (tv);
    bson_destroy (&sd->topology_version);
    bson_copy_to (tv, &sd->topology_version);
+}
+
+bool
+mongoc_server_description_has_service_id (const mongoc_server_description_t *description) {
+   if (0 == bson_oid_compare (&description->service_id, &kZeroServiceId)) {
+      return false;
+   }
+   return true;
 }

@@ -46,6 +46,28 @@ typedef enum {
 struct _mongoc_background_monitor_t;
 struct _mongoc_client_pool_t;
 
+typedef enum { MONGOC_RR_SRV, MONGOC_RR_TXT } mongoc_rr_type_t;
+
+typedef struct _mongoc_rr_data_t {
+   /* Number of records returned by DNS. */
+   uint32_t count;
+
+   /* Set to lowest TTL found when polling SRV records. */
+   uint32_t min_ttl;
+
+   /* Set to the resulting host list when polling SRV records */
+   mongoc_host_list_t *hosts;
+
+   /* Set to the TXT record when polling for TXT */
+   char *txt_record_opts;
+} mongoc_rr_data_t;
+
+typedef bool (*_mongoc_rr_resolver_fn) (const char *service,
+                                        mongoc_rr_type_t rr_type,
+                                        mongoc_rr_data_t *rr_data,
+                                        size_t initial_buffer_size,
+                                        bson_error_t *error);
+
 typedef struct _mongoc_topology_t {
    mongoc_topology_description_t description;
    /* topology->uri is initialized as a copy of the client/pool's URI.
@@ -104,6 +126,9 @@ typedef struct _mongoc_topology_t {
    mongoc_set_t *server_monitors;
    mongoc_set_t *rtt_monitors;
    bson_mutex_t apm_mutex;
+
+   /* This is overridable for SRV polling tests to mock DNS records. */
+   _mongoc_rr_resolver_fn rr_resolver;
 } mongoc_topology_t;
 
 mongoc_topology_t *
@@ -218,15 +243,53 @@ _mongoc_topology_handle_app_error (mongoc_topology_t *topology,
                                    const bson_t *reply,
                                    const bson_error_t *why,
                                    uint32_t max_wire_version,
-                                   uint32_t generation);
+                                   uint32_t generation,
+                                   const bson_oid_t *service_id);
 
+/* Invalidate open connections to a server.
+ * This is not applicable to single-threaded clients, which only have one
+ * or zero connections to any single server.
+ * service_id is only applicable to load balanced deployments.
+ * Pass kZeroServiceID as service_id to clear connections that have no
+ * associated service ID. */
 void
 _mongoc_topology_clear_connection_pool (mongoc_topology_t *topology,
-                                        uint32_t server_id);
+                                        uint32_t server_id,
+                                        const bson_oid_t* service_id);
 
 void
 mongoc_topology_rescan_srv (mongoc_topology_t *topology);
 
 bool
 mongoc_topology_should_rescan_srv (mongoc_topology_t *topology);
+
+/* _mongoc_topology_set_rr_resolver is called by tests to mock DNS responses for
+ * SRV polling.
+ * This is necessarily called after initial seedlist discovery completes in
+ * mongoc_topology_new.
+ * Callers should call this before monitoring starts.
+ * Callers must lock topology->mutex.
+ */
+void
+_mongoc_topology_set_rr_resolver (mongoc_topology_t *topology,
+                                  _mongoc_rr_resolver_fn rr_resolver);
+
+/* _mongoc_topology_set_srv_polling_rescan_interval_ms is called by tests to
+ * shorten the rescan interval.
+ * Callers should call this before monitoring starts.
+ * Callers must lock topology->mutex.
+ */
+void
+_mongoc_topology_set_srv_polling_rescan_interval_ms (
+   mongoc_topology_t *topology, int64_t val);
+
+/* Return the latest connection generation for the server_id and/or service_id.
+ * Use this generation for newly established connections.
+ * Pass kZeroServiceID connections do not have an associated service ID.
+ * Callers must lock topology->mutex if topology is pooled. */
+uint32_t
+_mongoc_topology_get_connection_pool_generation (mongoc_topology_t *topology,
+                                                 uint32_t server_id,
+                                                 const bson_oid_t *service_id);
+
 #endif

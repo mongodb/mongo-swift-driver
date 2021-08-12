@@ -30,6 +30,7 @@
 #include "mongoc-scram-private.h"
 #include "CLibMongoC_mongoc-ssl.h"
 #include "mongoc-crypto-private.h"
+#include "mongoc-server-description-private.h"
 
 BSON_BEGIN_DECLS
 
@@ -78,6 +79,10 @@ typedef struct mongoc_topology_scanner_node {
    bool negotiated_sasl_supported_mechs;
    bson_t speculative_auth_response;
    mongoc_scram_t scram;
+
+   /* handshake_sd is a server description constructed from the response of the
+    * initial handshake. It is bound to the lifetime of stream. */
+   mongoc_server_description_t *handshake_sd;
 } mongoc_topology_scanner_node_t;
 
 typedef struct mongoc_topology_scanner {
@@ -113,6 +118,7 @@ typedef struct mongoc_topology_scanner {
    bool speculative_authentication;
 
    mongoc_server_api_t *api;
+   bool loadbalanced;
 } mongoc_topology_scanner_t;
 
 mongoc_topology_scanner_t *
@@ -235,6 +241,9 @@ mongoc_topology_scanner_node_in_cooldown (mongoc_topology_scanner_node_t *node,
 void
 _mongoc_topology_scanner_set_server_api (mongoc_topology_scanner_t *ts,
                                          const mongoc_server_api_t *api);
+
+void
+_mongoc_topology_scanner_set_loadbalanced (mongoc_topology_scanner_t *ts, bool val);
 
 /* for testing. */
 mongoc_stream_t *

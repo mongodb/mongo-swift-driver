@@ -278,6 +278,10 @@ _build_handshake_cmd (mongoc_topology_scanner_t *ts)
    }
    bson_append_array_end (doc, &subdoc);
 
+   if (ts->loadbalanced) {
+      BSON_APPEND_BOOL (doc, "loadBalanced", true);
+   }
+
    /* Return whether the handshake doc fit the size limit */
    return res;
 }
@@ -531,6 +535,8 @@ mongoc_topology_scanner_node_disconnect (mongoc_topology_scanner_node_t *node,
       node->negotiated_sasl_supported_mechs = false;
       bson_reinit (&node->speculative_auth_response);
    }
+   mongoc_server_description_destroy (node->handshake_sd);
+   node->handshake_sd = NULL;
 }
 
 void
@@ -643,6 +649,17 @@ _async_success (mongoc_async_cmd_t *acmd,
    BSON_ASSERT (!node->stream);
    node->stream = stream;
 
+   if (!node->handshake_sd) {
+      mongoc_server_description_t sd;
+
+      /* Store a server description associated with the handshake. */
+      mongoc_server_description_init (&sd, node->host.host_and_port, node->id);
+      mongoc_server_description_handle_hello (
+         &sd, hello_response, duration_usec / 1000, &acmd->error);
+      node->handshake_sd = mongoc_server_description_new_copy (&sd);
+      mongoc_server_description_cleanup (&sd);
+   }
+
    if (ts->negotiate_sasl_supported_mechs &&
        !node->negotiated_sasl_supported_mechs) {
       _mongoc_handshake_parse_sasl_supported_mechs (
@@ -716,6 +733,9 @@ _async_error_or_timeout (mongoc_async_cmd_t *acmd,
       /* call the topology scanner callback. cannot connect to this node.
        * callback takes rtt_msec, not usec. */
       ts->cb (node->id, NULL, duration_usec / 1000, ts->cb_data, error);
+
+      mongoc_server_description_destroy (node->handshake_sd);
+      node->handshake_sd = NULL;
    } else {
       /* there are still more commands left for this node or it succeeded
        * with another stream. skip the topology scanner callback. */
@@ -1377,4 +1397,14 @@ _mongoc_topology_scanner_set_server_api (mongoc_topology_scanner_t *ts,
    mongoc_server_api_destroy (ts->api);
    ts->api = mongoc_server_api_copy (api);
    _reset_hello (ts);
+}
+
+/* This must be called before the handshake command is constructed. Caller does
+ * not need to lock the topology->mutex. */
+void
+_mongoc_topology_scanner_set_loadbalanced (mongoc_topology_scanner_t *ts,
+                                           bool val)
+{
+   BSON_ASSERT (bson_empty (&ts->handshake_cmd));
+   ts->loadbalanced = true;
 }
