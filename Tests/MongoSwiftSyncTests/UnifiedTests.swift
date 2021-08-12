@@ -41,20 +41,33 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
     }
 
     func testSampleUnifiedTests() throws {
+        let skipValidPassFiles = [
+            // we don't support convenient txns API.
+            "poc-transactions-convenient-api.json",
+            // we don't support GridFS.
+            "poc-gridfs.json",
+            // libmongoc does not support connection monitoring, so neither do we.
+            "entity-client-cmap-events.json",
+            // libmongoc does not implement CMAP or expose this information to us.
+            "assertNumberConnectionsCheckedOut.json",
+            // we only support command events, and this file tests the ability to parse
+            // expected command events.
+            "expectedEventsForClient-eventType.json",
+            // we have not implemented this test runner feature yet. TODO: SWIFT-1288
+            "observeSensitiveCommands.json",
+            // We don't support storeEventsAsEntities yet. TODO: SWIFT-1077
+            "entity-client-storeEventsAsEntities.json"
+        ]
+
         let validPassTests = try retrieveSpecTestFiles(
             specName: "unified-test-format",
             subdirectory: "valid-pass",
+            excludeFiles: skipValidPassFiles,
             asType: UnifiedTestFile.self
         ).map { $0.1 }
 
-        let skipRunningValid: [String: [String]] = [
-            // unsupported APIs
-            "poc-transactions-convenient-api": ["*"],
-            "poc-gridfs": ["*"]
-        ]
-
         let runner = try UnifiedTestRunner()
-        try runner.runFiles(validPassTests, skipTests: skipRunningValid)
+        try runner.runFiles(validPassTests)
 
         let skipValidFailFiles = [
             // Because we use an enum to represent ReturnDocument, the invalid string present in this file "Invalid"
@@ -63,7 +76,17 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             "returnDocument-enum-invalid.json",
             // This has the same problem as the previous file, where an invalid string is provided and we fail
             // while decoding rather than at runtime.
-            "entity-client-apiVersion-unsupported.json"
+            "entity-client-apiVersion-unsupported.json",
+            // This test uses a malformed operation so we cannot parse it.
+            "ignoreResultAndError-malformed.json",
+            // libmongoc does not implement CMAP or expose this information to us.
+            "assertNumberConnectionsCheckedOut.json",
+            // TEMPORARY pending DRIVERS-1883 discussion
+            "entity-find-cursor.json",
+            // We don't support storeEventsAsEntities yet. TODO: SWIFT-1077
+            "entity-client-storeEventsAsEntities-conflict_within_different_array.json",
+            "entity-client-storeEventsAsEntities-conflict_within_same_array.json",
+            "entity-client-storeEventsAsEntities-conflict_with_client_id.json"
         ]
 
         let validFailTests = try retrieveSpecTestFiles(
