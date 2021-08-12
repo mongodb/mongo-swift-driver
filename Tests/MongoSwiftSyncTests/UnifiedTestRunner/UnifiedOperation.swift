@@ -119,7 +119,8 @@ struct UnifiedOperation: Decodable {
             case let .error(expectedError):
                 guard let mongoError = error as? MongoErrorProtocol else {
                     throw TestError(
-                        message: "Expected operation to throw an error conforming to MongoErrorProtocol, but got \(error)"
+                        message:
+                        "Expected operation to throw an error conforming to MongoErrorProtocol, but got \(error)"
                     )
                 }
 

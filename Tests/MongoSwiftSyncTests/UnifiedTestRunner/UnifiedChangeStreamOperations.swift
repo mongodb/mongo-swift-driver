@@ -101,5 +101,5 @@ struct UnifiedCloseCursor: UnifiedOperationProtocol {
         }
 
         return .none
-    }   
+    }
 }

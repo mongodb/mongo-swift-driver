@@ -186,6 +186,7 @@ struct UnifiedCreateFindCursor: UnifiedOperationProtocol {
         return .findCursor(try collection.find(self.filter, options: self.options, session: session))
     }
 }
+
 struct UnifiedFindOneAndReplace: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
