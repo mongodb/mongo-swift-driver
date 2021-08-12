@@ -13,6 +13,7 @@ protocol UnifiedOperationProtocol: Decodable {
 
 enum UnifiedOperationResult {
     case changeStream(ChangeStream<BSONDocument>)
+    case findCursor(MongoCursor<BSONDocument>)
     case bson(BSON)
     case rootDocument(BSONDocument)
     case rootDocumentArray([BSONDocument])
@@ -27,6 +28,8 @@ enum UnifiedOperationResult {
         switch self {
         case let .changeStream(cs):
             return .changeStream(cs)
+        case let .findCursor(c):
+            return .findCursor(c)
         case let .bson(bson):
             return .bson(bson)
         case let .rootDocument(document):
@@ -102,24 +105,27 @@ struct UnifiedOperation: Decodable {
                         try actualResult.matches(expected: expected, context: context)
                     }
                 }
-            case .none:
+            case .ignoreResultAndError, .none:
                 return
             }
         } catch {
-            guard case let .error(expectedError) = self.expectedResult else {
+            switch self.expectedResult {
+            case .ignoreResultAndError:
+                return
+            case .result, .none:
                 throw TestError(
                     message: "Expected operation to succeed, but got error: \(error). Path: \(context.path)"
                 )
-            }
+            case let .error(expectedError):
+                guard let mongoError = error as? MongoErrorProtocol else {
+                    throw TestError(
+                        message: "Expected operation to throw an error conforming to MongoErrorProtocol, but got \(error)"
+                    )
+                }
 
-            guard let mongoError = error as? MongoErrorProtocol else {
-                throw TestError(
-                    message: "Expected operation to throw an error conforming to MongoErrorProtocol, but got \(error)"
-                )
-            }
-
-            try context.withPushedElt("expectError") {
-                try mongoError.matches(expectedError, context: context)
+                try context.withPushedElt("expectError") {
+                    try mongoError.matches(expectedError, context: context)
+                }
             }
         }
     }
@@ -161,6 +167,8 @@ struct UnifiedOperation: Decodable {
             self.operation = try container.decode(UnifiedAssertSessionTransactionState.self, forKey: .arguments)
         case "bulkWrite":
             self.operation = try container.decode(UnifiedBulkWrite.self, forKey: .arguments)
+        case "close":
+            self.operation = UnifiedCloseCursor()
         case "commitTransaction":
             self.operation = UnifiedCommitTransaction()
         case "countDocuments":
@@ -169,6 +177,8 @@ struct UnifiedOperation: Decodable {
             self.operation = try container.decode(CreateChangeStream.self, forKey: .arguments)
         case "createCollection":
             self.operation = try container.decode(UnifiedCreateCollection.self, forKey: .arguments)
+        case "createFindCursor":
+            self.operation = try container.decode(UnifiedCreateFindCursor.self, forKey: .arguments)
         case "createIndex":
             self.operation = try container.decode(UnifiedCreateIndex.self, forKey: .arguments)
         case "deleteOne":
@@ -270,9 +280,11 @@ enum ExpectedOperationResult: Decodable {
     /// - saveAsEntity: If specified, the actual result returned by the operation (if any) will be saved with this
     ///       name in the Entity Map.
     case result(result: BSON?, saveAsEntity: String?)
+    /// Both the error and result for the operation MUST be ignored.
+    case ignoreResultAndError
 
     private enum CodingKeys: String, CodingKey {
-        case expectError, expectResult, saveResultAsEntity
+        case expectError, expectResult, saveResultAsEntity, ignoreResultAndError
     }
 
     init(from decoder: Decoder) throws {
@@ -280,6 +292,11 @@ enum ExpectedOperationResult: Decodable {
 
         if let expectError = try container.decodeIfPresent(ExpectedError.self, forKey: .expectError) {
             self = .error(expectError)
+            return
+        }
+
+        if let ignore = try container.decodeIfPresent(Bool.self, forKey: .ignoreResultAndError), ignore {
+            self = .ignoreResultAndError
             return
         }
 

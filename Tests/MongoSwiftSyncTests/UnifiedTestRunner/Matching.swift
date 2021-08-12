@@ -35,6 +35,8 @@ extension UnifiedOperationResult {
             actual = .none
         case let .changeStream(cs):
             throw NonMatchingError(expected: expected, actual: cs, context: context)
+        case let .findCursor(c):
+            throw NonMatchingError(expected: expected, actual: c, context: context)
         }
 
         try actual.matches(expected, context: context)
@@ -337,6 +339,13 @@ func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], context: C
                         try equals(expected: expectedDb, actual: actualStarted.databaseName, context: context)
                     }
                 }
+
+                if let hasServiceId = expectedStarted.hasServiceId {
+                    try context.withPushedElt("hasServiceId") {
+                        try equals(expected: hasServiceId, actual: actualStarted.serviceID != nil, context: context)
+                    }
+                }
+
             case let (.commandSucceeded(expectedSucceeded), .succeeded(actualSucceeded)):
                 if let expectedName = expectedSucceeded.commandName {
                     try context.withPushedElt("commandName") {
@@ -350,12 +359,26 @@ func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], context: C
                         try actual.matches(.document(expectedReply), context: context)
                     }
                 }
+
+                if let hasServiceId = expectedSucceeded.hasServiceId {
+                    try context.withPushedElt("hasServiceId") {
+                        try equals(expected: hasServiceId, actual: actualSucceeded.serviceID != nil, context: context)
+                    }
+                }
+
             case let (.commandFailed(expectedFailed), .failed(actualFailed)):
                 if let expectedName = expectedFailed.commandName {
                     try context.withPushedElt("commandName") {
                         try equals(expected: expectedName, actual: actualFailed.commandName, context: context)
                     }
                 }
+
+                if let hasServiceId = expectedFailed.hasServiceId {
+                    try context.withPushedElt("hasServiceId") {
+                        try equals(expected: hasServiceId, actual: actualFailed.serviceID != nil, context: context)
+                    }
+                }
+
             default:
                 throw NonMatchingError(expected: expectedEvent, actual: actualEvent, context: context)
             }

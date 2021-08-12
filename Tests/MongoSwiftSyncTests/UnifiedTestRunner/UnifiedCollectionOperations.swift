@@ -152,6 +152,40 @@ struct UnifiedFind: UnifiedOperationProtocol {
     }
 }
 
+struct UnifiedCreateFindCursor: UnifiedOperationProtocol {
+    /// Filter to use for the operation.
+    let filter: BSONDocument
+
+    /// Options to use for the operation.
+    let options: FindOptions
+
+    /// Optional identifier for a session entity to use.
+    let session: String?
+
+    private enum CodingKeys: String, CodingKey, CaseIterable {
+        case session, filter
+    }
+
+    static var knownArguments: Set<String> {
+        Set(
+            CodingKeys.allCases.map { $0.rawValue } +
+                FindOptions.CodingKeys.allCases.map { $0.rawValue }
+        )
+    }
+
+    init(from decoder: Decoder) throws {
+        self.options = try decoder.singleValueContainer().decode(FindOptions.self)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+    }
+
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let collection = try context.entities.getEntity(from: object).asCollection()
+        let session = try context.entities.resolveSession(id: self.session)
+        return .findCursor(try collection.find(self.filter, options: self.options, session: session))
+    }
+}
 struct UnifiedFindOneAndReplace: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
