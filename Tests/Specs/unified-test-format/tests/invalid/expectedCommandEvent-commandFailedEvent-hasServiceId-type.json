@@ -1,6 +1,6 @@
 {
-  "description": "expectedEventsForClient-events-items",
-  "schemaVersion": "1.0",
+  "description": "expectedCommandEvent-commandFailedEvent-hasServiceId-type",
+  "schemaVersion": "1.3",
   "createEntities": [
     {
       "client": {
@@ -16,7 +16,11 @@
         {
           "client": "client0",
           "events": [
-            0
+            {
+              "commandFailedEvent": {
+                "hasServiceId": "foo"
+              }
+            }
           ]
         }
       ]
