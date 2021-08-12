@@ -76,10 +76,6 @@ internal class ConnectionString {
             self.readConcern = rc
         }
 
-        if let replicaSet = options?.replicaSet {
-            try self.setUTF8Option(MONGOC_URI_REPLICASET, to: replicaSet)
-        }
-
         if let rr = options?.retryReads {
             try self.setBoolOption(MONGOC_URI_RETRYREADS, to: rr)
         }
@@ -360,24 +356,15 @@ internal class ConnectionString {
 
     /// Sets and validates SDAM-related on the underlying `mongoc_uri_t`.
     private func applyAndValidateSDAMOptions(_ options: MongoClientOptions?) throws {
+        // First, apply all the options...
+
+        if let replicaSet = options?.replicaSet {
+            try self.setUTF8Option(MONGOC_URI_REPLICASET, to: replicaSet)
+        }
+
         // Per SDAM spec: If the ``directConnection`` option is not specified, newly developed drivers MUST behave as
         // if it was specified with the false value.
         if let dc = options?.directConnection {
-            guard !(dc && self.usesDNSSeedlistFormat) else {
-                throw MongoError.InvalidArgumentError(
-                    message: "\(MONGOC_URI_DIRECTCONNECTION)=true is incompatible with mongodb+srv connection strings"
-                )
-            }
-
-            if let hosts = self.hosts {
-                guard !(dc && hosts.count > 1) else {
-                    throw MongoError.InvalidArgumentError(
-                        message: "\(MONGOC_URI_DIRECTCONNECTION)=true is incompatible with multiple seeds. " +
-                            "got seeds: \(hosts)"
-                    )
-                }
-            }
-
             try self.setBoolOption(MONGOC_URI_DIRECTCONNECTION, to: dc)
         } else if !self.hasOption(MONGOC_URI_DIRECTCONNECTION) {
             try self.setBoolOption(MONGOC_URI_DIRECTCONNECTION, to: false)
@@ -398,6 +385,52 @@ internal class ConnectionString {
             }
 
             try self.setInt32Option(MONGOC_URI_HEARTBEATFREQUENCYMS, to: value)
+        }
+
+        if let loadBalanced = options?.loadBalanced {
+            try self.setBoolOption(MONGOC_URI_LOADBALANCED, to: loadBalanced)
+        }
+
+        // Then, validate them...
+        let lb = self.options?[MONGOC_URI_LOADBALANCED]?.boolValue
+        let dc = self.options?[MONGOC_URI_DIRECTCONNECTION]?.boolValue
+        let hosts = self.hosts ?? []
+
+        if dc == true {
+            guard !self.usesDNSSeedlistFormat else {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(MONGOC_URI_DIRECTCONNECTION)=true is incompatible with mongodb+srv connection strings"
+                )
+            }
+
+            guard lb != true else {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(MONGOC_URI_DIRECTCONNECTION)=true is incompatible with \(MONGOC_URI_LOADBALANCED)=true"
+                )
+            }
+
+            guard hosts.count <= 1 else {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(MONGOC_URI_DIRECTCONNECTION)=true is incompatible with multiple seeds. " +
+                        "got seeds: \(hosts)"
+                )
+            }
+        }
+
+        if lb == true {
+            guard self.replicaSet == nil else {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(MONGOC_URI_LOADBALANCED)=true is incompatible with replicaSet option: found option " +
+                        "\(MONGOC_URI_REPLICASET)=\(self.replicaSet ?? "")"
+                )
+            }
+
+            guard hosts.count <= 1 else {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(MONGOC_URI_LOADBALANCED)=true is incompatible with multiple seeds. " +
+                        "got seeds: \(hosts)"
+                )
+            }
         }
     }
 
