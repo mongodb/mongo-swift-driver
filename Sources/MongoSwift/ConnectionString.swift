@@ -275,7 +275,7 @@ internal class ConnectionString {
             }
         }
 
-        // libmongoc incorrectly permits an empty string as auth source. this logic could be removed once CDRIVER-1298
+        // libmongoc incorrectly permits an empty string as auth source. this logic could be removed once CDRIVER-3517
         // is complete (Swift work tracked by SWIFT-1298), however we are likely to be using the pure Swift URI parser
         // by the time that happens anyway.
         if let authSource = self.authSource {
