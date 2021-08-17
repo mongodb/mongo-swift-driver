@@ -242,38 +242,47 @@ internal class ConnectionString {
 
     /// Sets and validates authentication-related on the underlying `mongoc_uri_t`.
     private func applyAndValidateAuthOptions(_ options: MongoClientOptions?) throws {
-        guard let credential = options?.credential else {
-            return
-        }
+        if let credential = options?.credential {
+            if let username = credential.username {
+                guard mongoc_uri_set_username(self._uri, username) else {
+                    throw self.failedToSet("username", to: username)
+                }
+            }
 
-        if let username = credential.username {
-            guard mongoc_uri_set_username(self._uri, username) else {
-                throw self.failedToSet("username", to: username)
+            if let password = credential.password {
+                guard mongoc_uri_set_password(self._uri, password) else {
+                    throw MongoError.InvalidArgumentError(message: "Failed to set password")
+                }
+            }
+
+            if let authSource = credential.source {
+                guard mongoc_uri_set_auth_source(self._uri, authSource) else {
+                    throw self.failedToSet(MONGOC_URI_AUTHSOURCE, to: authSource)
+                }
+            }
+
+            if let mechanism = credential.mechanism {
+                guard mongoc_uri_set_auth_mechanism(self._uri, mechanism.name) else {
+                    throw self.failedToSet(MONGOC_URI_AUTHMECHANISM, to: mechanism)
+                }
+            }
+
+            try credential.mechanismProperties?.withBSONPointer { mechanismPropertiesPtr in
+                guard mongoc_uri_set_mechanism_properties(self._uri, mechanismPropertiesPtr) else {
+                    let desc = String(describing: credential.mechanismProperties)
+                    throw self.failedToSet(MONGOC_URI_AUTHMECHANISMPROPERTIES, to: desc)
+                }
             }
         }
 
-        if let password = credential.password {
-            guard mongoc_uri_set_password(self._uri, password) else {
-                throw MongoError.InvalidArgumentError(message: "Failed to set password")
-            }
-        }
-
-        if let authSource = credential.source {
-            guard mongoc_uri_set_auth_source(self._uri, authSource) else {
-                throw self.failedToSet(MONGOC_URI_AUTHSOURCE, to: authSource)
-            }
-        }
-
-        if let mechanism = credential.mechanism {
-            guard mongoc_uri_set_auth_mechanism(self._uri, mechanism.name) else {
-                throw self.failedToSet(MONGOC_URI_AUTHMECHANISM, to: mechanism)
-            }
-        }
-
-        try credential.mechanismProperties?.withBSONPointer { mechanismPropertiesPtr in
-            guard mongoc_uri_set_mechanism_properties(self._uri, mechanismPropertiesPtr) else {
-                let desc = String(describing: credential.mechanismProperties)
-                throw self.failedToSet(MONGOC_URI_AUTHMECHANISMPROPERTIES, to: desc)
+        // libmongoc incorrectly permits an empty string as auth source. this logic could be removed once CDRIVER-3517
+        // is complete (Swift work tracked by SWIFT-1298), however we are likely to be using the pure Swift URI parser
+        // by the time that happens anyway.
+        if let authSource = self.authSource {
+            guard !authSource.isEmpty else {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(MONGOC_URI_AUTHSOURCE) cannot be set to an empty string"
+                )
             }
         }
     }

@@ -27,12 +27,6 @@ final class AuthTests: MongoSwiftTestCase {
 
         for (_, file) in testFiles {
             for testCase in file.tests {
-                // skipping due to CDRIVER-3517
-                // TODO: SWIFT-1298 unskip this test
-                guard testCase.description != "must raise an error when the authSource is empty" else {
-                    continue
-                }
-
                 guard testCase.valid else {
                     expect(try ConnectionString(testCase.uri))
                         .to(
