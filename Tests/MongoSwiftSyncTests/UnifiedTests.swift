@@ -69,25 +69,29 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         let runner = try UnifiedTestRunner()
         try runner.runFiles(validPassTests)
 
-        let skipValidFailFiles = [
+        // These are test files that we cannot/should not be able to decode because they operations they contain are
+        // malformed.
+        let undecodableFiles = [
             // Because we use an enum to represent ReturnDocument, the invalid string present in this file "Invalid"
-            // gives us a decoding error, and therefore we cannot decode it. Other drivers may not report an error
-            // until runtime.
+            // gives us a decoding error.
             "returnDocument-enum-invalid.json",
-            // This has the same problem as the previous file, where an invalid string is provided and we fail
-            // while decoding rather than at runtime.
+            // This has the same problem as the previous file, where an invalid string is provided, this time for
+            // apiVersion.
             "entity-client-apiVersion-unsupported.json",
-            // This test uses a malformed operation so we cannot parse it.
+            // This test specifies a non-existent argument "foo" for an insertOne operation.
             "ignoreResultAndError-malformed.json",
+            // This test is missing a required argument, "filter", for a find operation.
+            "entity-findCursor-malformed.json"
+        ]
+
+        let skipValidFailFiles = [
             // libmongoc does not implement CMAP or expose this information to us.
             "assertNumberConnectionsCheckedOut.json",
-            // TEMPORARY pending DRIVERS-1883 discussion
-            "entity-find-cursor.json",
             // We don't support storeEventsAsEntities yet. TODO: SWIFT-1077
             "entity-client-storeEventsAsEntities-conflict_within_different_array.json",
             "entity-client-storeEventsAsEntities-conflict_within_same_array.json",
             "entity-client-storeEventsAsEntities-conflict_with_client_id.json"
-        ]
+        ] + undecodableFiles
 
         let validFailTests = try retrieveSpecTestFiles(
             specName: "unified-test-format",
