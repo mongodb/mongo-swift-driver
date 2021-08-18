@@ -51,6 +51,9 @@ enum ExpectedEvent: Decodable {
 
         /// Name of the database the command is run against.
         let databaseName: String?
+
+        /// Specifies whether the serviceId field of the event is set.
+        let hasServiceId: Bool?
     }
 
     /// Represents expectations for a CommandSucceededEvent.
@@ -60,11 +63,17 @@ enum ExpectedEvent: Decodable {
 
         /// Name of the command.
         let commandName: String?
+
+        /// Specifies whether the serviceId field of the event is set.
+        let hasServiceId: Bool?
     }
 
     /// Represents expectations for a CommandStartedEvent.
     struct CommandFailedExpectation: Decodable {
         /// Name of the command.
         let commandName: String?
+
+        /// Specifies whether the serviceId field of the event is set.
+        let hasServiceId: Bool?
     }
 }

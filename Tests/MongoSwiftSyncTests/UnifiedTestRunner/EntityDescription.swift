@@ -214,6 +214,7 @@ enum Entity {
     case session(ClientSession)
     case changeStream(ChangeStream<BSONDocument>)
     case bson(BSON)
+    case findCursor(MongoCursor<BSONDocument>)
 
     func asTestClient() throws -> UnifiedTestClient {
         guard case let .client(client) = self else {

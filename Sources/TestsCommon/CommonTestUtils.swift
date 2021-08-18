@@ -224,6 +224,7 @@ public enum UnmetRequirement {
     case topology(actual: TestTopologyConfiguration, required: [TestTopologyConfiguration])
     case serverParameter(name: String, actual: BSON?, required: BSON)
     case serverless(required: TestRequirement.ServerlessRequirement)
+    case auth(actual: Bool, required: Bool)
 }
 
 /// Struct representing conditions that a deployment must meet in order for a test file to be run.
@@ -255,6 +256,7 @@ public struct TestRequirement: Decodable {
     private let topologies: [TestTopologyConfiguration]?
     private let serverParameters: BSONDocument?
     private let serverless: ServerlessRequirement?
+    private let auth: Bool?
 
     public static let failCommandSupport: [TestRequirement] = [
         TestRequirement(
@@ -278,13 +280,15 @@ public struct TestRequirement: Decodable {
         maxServerVersion: ServerVersion? = nil,
         acceptableTopologies: [TestTopologyConfiguration]? = nil,
         serverlessRequirement: ServerlessRequirement? = nil,
-        serverParameters: BSONDocument? = nil
+        serverParameters: BSONDocument? = nil,
+        auth: Bool? = nil
     ) {
         self.minServerVersion = minServerVersion
         self.maxServerVersion = maxServerVersion
         self.topologies = acceptableTopologies
         self.serverParameters = serverParameters
         self.serverless = serverlessRequirement
+        self.auth = auth
     }
 
     /// Determines if the given deployment meets this requirement.
@@ -340,11 +344,17 @@ public struct TestRequirement: Decodable {
             }
         }
 
+        if let auth = self.auth {
+            guard auth == MongoSwiftTestCase.auth else {
+                return .auth(actual: MongoSwiftTestCase.auth, required: auth)
+            }
+        }
+
         return nil
     }
 
     private enum CodingKeys: String, CodingKey {
-        case minServerVersion, maxServerVersion, topology, topologies, serverless, serverParameters
+        case minServerVersion, maxServerVersion, topology, topologies, serverless, serverParameters, auth
     }
 
     public init(from decoder: Decoder) throws {
@@ -361,6 +371,7 @@ public struct TestRequirement: Decodable {
         }
         self.serverParameters = try container.decodeIfPresent(BSONDocument.self, forKey: .serverParameters)
         self.serverless = try container.decodeIfPresent(ServerlessRequirement.self, forKey: .serverless)
+        self.auth = try container.decodeIfPresent(Bool.self, forKey: .auth)
     }
 }
 
@@ -471,6 +482,8 @@ public func printSkipMessage(
         case .require:
             reason = "this test must be run against a Serverless instance"
         }
+    case let .auth(actual, required):
+        reason = "Test requires auth is \(required ? "on" : "off") but auth is \(actual ? "on" : "off")"
     }
     printSkipMessage(testName: testName, reason: reason)
 }

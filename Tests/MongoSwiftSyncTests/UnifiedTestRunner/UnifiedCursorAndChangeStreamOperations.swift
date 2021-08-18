@@ -68,10 +68,38 @@ struct IterateUntilDocumentOrError: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
-        let cs = try context.entities.getEntity(from: object).asChangeStream()
-        guard let next = cs.next() else {
-            throw TestError(message: "Change stream unexpectedly exhausted")
+        let entity = try context.entities.getEntity(from: object)
+        switch entity {
+        case let .changeStream(cs):
+            guard let next = cs.next() else {
+                throw TestError(message: "Change stream unexpectedly exhausted")
+            }
+            return .rootDocument(try next.get())
+        case let .findCursor(c):
+            guard let next = c.next() else {
+                throw TestError(message: "Cursor unexpectedly exhausted")
+            }
+            return .rootDocument(try next.get())
+        default:
+            throw TestError(message: "Unsupported entity type \(entity) for IterateUntilDocumentOrError operation")
         }
-        return .rootDocument(try next.get())
+    }
+}
+
+struct UnifiedCloseCursor: UnifiedOperationProtocol {
+    static var knownArguments: Set<String> { [] }
+
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let entity = try context.entities.getEntity(from: object)
+        switch entity {
+        case let .changeStream(cs):
+            cs.kill()
+        case let .findCursor(c):
+            c.kill()
+        default:
+            throw TestError(message: "Unsupported entity type \(entity) for close operation")
+        }
+
+        return .none
     }
 }
