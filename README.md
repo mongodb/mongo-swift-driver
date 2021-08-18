@@ -1,4 +1,4 @@
-[![sswg:incubating|104x20](https://img.shields.io/badge/sswg-incubating-blue.svg)](https://github.com/swift-server/sswg/blob/master/process/incubation.md#incubating-level)
+[![sswg:incubating|104x20](https://img.shields.io/badge/sswg-incubating-blue.svg)](https://github.com/swift-server/sswg/blob/main/process/incubation.md#incubating-level)
 
 # MongoSwift
 The official [MongoDB](https://www.mongodb.com/) driver for Swift applications on macOS and Linux.
