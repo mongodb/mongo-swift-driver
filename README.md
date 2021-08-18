@@ -1,4 +1,4 @@
-[![sswg:sandbox|94x20](https://img.shields.io/badge/sswg-sandbox-lightgrey.svg)](https://github.com/swift-server/sswg/blob/main/process/incubation.md#sandbox-level)
+[![sswg:incubating|104x20](https://img.shields.io/badge/sswg-incubating-blue.svg)](https://github.com/swift-server/sswg/blob/master/process/incubation.md#incubating-level)
 
 # MongoSwift
 The official [MongoDB](https://www.mongodb.com/) driver for Swift applications on macOS and Linux.
@@ -7,8 +7,8 @@ The official [MongoDB](https://www.mongodb.com/) driver for Swift applications o
 - [Documentation](#documentation)
 - [Bugs/Feature Requests](#bugs--feature-requests)
 - [Installation](#installation)
-    - [Step 1: Install Required System Libraries (Linux Only)](#step-1-install-required-systems-libraries)
-    - [Step 2: Install MongoSwift](#step-2-install-mongoswift)
+    - [Step 1: Install Required System Libraries (Linux Only)](#step-1-install-required-system-libraries-linux-only)
+    - [Step 2: Install MongoSwift](#step-2-install-the-driver)
 - [Example Usage](#example-usage)
     - [Connect to MongoDB and Create a Collection](#connect-to-mongodb-and-create-a-collection)
     - [Create and Insert a Document](#create-and-insert-a-document)
