@@ -67,25 +67,68 @@ private struct HelloResponse: Decodable {
 /// A struct describing a mongod or mongos process.
 public struct ServerDescription {
     /// The possible types for a server.
-    public enum ServerType: String, Equatable {
+    public struct ServerType: RawRepresentable, Equatable {
         /// A standalone mongod server.
-        case standalone = "Standalone"
+        public static let standalone = ServerType(.standalone)
+
         /// A router to a sharded cluster, i.e. a mongos server.
-        case mongos = "Mongos"
+        public static let mongos = ServerType(.mongos)
+
         /// A replica set member which is not yet checked, but another member thinks it is the primary.
-        case possiblePrimary = "PossiblePrimary"
+        public static let possiblePrimary = ServerType(.possiblePrimary)
+
         /// A replica set primary.
-        case rsPrimary = "RSPrimary"
+        public static let rsPrimary = ServerType(.rsPrimary)
+
         /// A replica set secondary.
-        case rsSecondary = "RSSecondary"
+        public static let rsSecondary = ServerType(.rsSecondary)
+
         /// A replica set arbiter.
-        case rsArbiter = "RSArbiter"
+        public static let rsArbiter = ServerType(.rsArbiter)
+
         /// A replica set member that is none of the other types (a passive, for example).
-        case rsOther = "RSOther"
+        public static let rsOther = ServerType(.rsOther)
+
         /// A replica set member that does not report a set name or a hosts list.
-        case rsGhost = "RSGhost"
+        public static let rsGhost = ServerType(.rsGhost)
+
         /// A server type that is not yet known.
-        case unknown = "Unknown"
+        public static let unknown = ServerType(.unknown)
+
+        /// A load balancer.
+        public static let loadBalancer = ServerType(.loadBalancer)
+
+        /// Internal representation of server type. If enums could be marked non-exhaustive in Swift, this would be the
+        /// public representation too.
+        private enum _ServerType: String, Equatable {
+            case standalone = "Standalone"
+            case mongos = "Mongos"
+            case possiblePrimary = "PossiblePrimary"
+            case rsPrimary = "RSPrimary"
+            case rsSecondary = "RSSecondary"
+            case rsArbiter = "RSArbiter"
+            case rsOther = "RSOther"
+            case rsGhost = "RSGhost"
+            case unknown = "Unknown"
+            case loadBalancer = "LoadBalancer"
+        }
+
+        private let _serverType: _ServerType
+
+        private init(_ _type: _ServerType) {
+            self._serverType = _type
+        }
+
+        public var rawValue: String {
+            self._serverType.rawValue
+        }
+
+        public init?(rawValue: String) {
+            guard let _type = _ServerType(rawValue: rawValue) else {
+                return nil
+            }
+            self._serverType = _type
+        }
     }
 
     /// The hostname or IP and the port number that the client connects to. Note that this is not the "me" field in the
@@ -206,17 +249,52 @@ extension ServerDescription: Equatable {
 /// which servers are up, what type of servers they are, which is primary, and so on.
 public struct TopologyDescription: Equatable {
     /// The possible types for a topology.
-    public enum TopologyType: String, Equatable {
+    public struct TopologyType: RawRepresentable, Equatable {
         /// A single mongod server.
-        case single = "Single"
+        public static let single = TopologyType(.single)
+
         /// A replica set with no primary.
-        case replicaSetNoPrimary = "ReplicaSetNoPrimary"
+        public static let replicaSetNoPrimary = TopologyType(.replicaSetNoPrimary)
+
         /// A replica set with a primary.
-        case replicaSetWithPrimary = "ReplicaSetWithPrimary"
+        public static let replicaSetWithPrimary = TopologyType(.replicaSetWithPrimary)
+
         /// Sharded topology.
-        case sharded = "Sharded"
+        public static let sharded = TopologyType(.sharded)
+
         /// A topology whose type is not yet known.
-        case unknown = "Unknown"
+        public static let unknown = TopologyType(.unknown)
+
+        /// A topology with a load balancer in front.
+        public static let loadBalanced = TopologyType(.loadBalanced)
+
+        /// Internal representation of topology type. If enums could be marked non-exhaustive in Swift, this would be
+        /// the public representation too.
+        private enum _TopologyType: String, Equatable {
+            case single = "Single"
+            case replicaSetNoPrimary = "ReplicaSetNoPrimary"
+            case replicaSetWithPrimary = "ReplicaSetWithPrimary"
+            case sharded = "Sharded"
+            case unknown = "Unknown"
+            case loadBalanced = "LoadBalanced"
+        }
+
+        private let _topologyType: _TopologyType
+
+        private init(_ _type: _TopologyType) {
+            self._topologyType = _type
+        }
+
+        public var rawValue: String {
+            self._topologyType.rawValue
+        }
+
+        public init?(rawValue: String) {
+            guard let _type = _TopologyType(rawValue: rawValue) else {
+                return nil
+            }
+            self._topologyType = _type
+        }
     }
 
     /// The type of this topology.
