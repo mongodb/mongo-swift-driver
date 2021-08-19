@@ -680,3 +680,10 @@ extension InsertManyResult {
         InsertManyResult(from: result)
     }
 }
+
+// TODO: SWIFT-1319 Remove this method and usages of it.
+/// Sets the libmongoc global variable indicating whether to include mock serviceIds in hello responses to the
+/// provided value. This is necessary for load balancer testing until SERVER-58500 is complete.
+public func setMockServiceId(to value: Bool) {
+    mongoc_global_mock_service_id = value
+}
