@@ -10,35 +10,7 @@ extension MongoClient {
         eventLoopGroup: EventLoopGroup,
         options: MongoClientOptions? = nil
     ) throws -> MongoClient {
-        var opts = options ?? MongoClientOptions()
-        // if SSL is on and custom TLS options were not provided, enable them
-        if MongoSwiftTestCase.ssl {
-            opts.tls = true
-            if let caPath = MongoSwiftTestCase.sslCAFilePath {
-                opts.tlsCAFile = URL(string: caPath)
-            }
-            if let certPath = MongoSwiftTestCase.sslPEMKeyFilePath {
-                opts.tlsCertificateKeyFile = URL(string: certPath)
-            }
-        }
-        if let apiVersion = MongoSwiftTestCase.apiVersion {
-            if opts.serverAPI == nil {
-                opts.serverAPI = MongoServerAPI(version: apiVersion)
-            } else {
-                opts.serverAPI!.version = apiVersion
-            }
-        }
-
-        if MongoSwiftTestCase.auth {
-            if let scramUser = MongoSwiftTestCase.scramUser, let scramPass = MongoSwiftTestCase.scramPassword {
-                opts.credential = MongoCredential(username: scramUser, password: scramPass)
-            }
-        }
-
-        // serverless tests are required to use compression.
-        if MongoSwiftTestCase.serverless {
-            opts.compressors = [.zlib]
-        }
+        let opts = resolveClientOptions(options)
         return try MongoClient(uri, using: eventLoopGroup, options: opts)
     }
 

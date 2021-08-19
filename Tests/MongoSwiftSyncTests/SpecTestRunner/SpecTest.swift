@@ -190,7 +190,7 @@ extension SpecTestFile {
         // if connected to a sharded cluster, use the per-mongos clients to execute killAllSessions on each mongos.
         switch try client.topologyType() {
         case .single,
-             .loadBalancer,
+             .loadBalanced,
              _ where MongoSwiftTestCase.serverless:
             return
         case .replicaSet:
@@ -346,7 +346,7 @@ extension SpecTest {
 
         if let failPoint = self.failPoint {
             // if only using a single mongos, make sure to enable the failpoint on the correct mongos.
-            if MongoSwiftTestCase.topologyType == .sharded, self.useMultipleMongoses != true {
+            if try client.topologyType().isSharded, self.useMultipleMongoses != true {
                 try self.activateFailPoint(failPoint, using: setupClient, on: connectionString.hosts![0])
             } else {
                 try self.activateFailPoint(failPoint, using: setupClient)

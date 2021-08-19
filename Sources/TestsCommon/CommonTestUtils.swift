@@ -42,18 +42,29 @@ open class MongoSwiftTestCase: XCTestCase {
     /// will return a default of "mongodb://127.0.0.1/". If singleMongos is true and this is a sharded topology, will
     /// edit $MONGODB_URI as needed so that it only contains a single host.
     public static func getConnectionString(singleMongos: Bool = true) -> ConnectionString {
-        // we only need to manipulate the URI if singleMongos is requested and the topology is sharded.
-        guard singleMongos && MongoSwiftTestCase.topologyType == .sharded else {
+        switch (MongoSwiftTestCase.topologyType, singleMongos) {
+        case (.sharded, true):
+            let hosts = self.getHosts()
+            var output = Self.uri
+            // remove all but the first host so we connect to a single mongos.
+            for host in hosts[1...] {
+                output.removeSubstring(",\(host.description)")
+            }
+            return try! ConnectionString(output)
+        case (.loadBalanced, true):
+            guard let uri = Self.singleMongosLoadBalancedURI else {
+                fatalError("Missing SINGLE_MONGOS_LB_URI environment variable")
+            }
+            return try! ConnectionString(uri)
+        case (.loadBalanced, false):
+            guard let uri = Self.multipleMongosLoadBalancedURI else {
+                fatalError("Missing MULTIPLE_MONGOS_LB_URI environment variable")
+            }
+            return try! ConnectionString(uri)
+        default:
+            // just return as-is.
             return try! ConnectionString(Self.uri)
         }
-
-        let hosts = self.getHosts()
-        var output = Self.uri
-        // remove all but the first host so we connect to a single mongos.
-        for host in hosts[1...] {
-            output.removeSubstring(",\(host.description)")
-        }
-        return try! ConnectionString(output)
     }
 
     /// Get a connection string for the specified host only.
@@ -116,6 +127,14 @@ open class MongoSwiftTestCase: XCTestCase {
         return uri
     }
 
+    public static var singleMongosLoadBalancedURI: String? {
+        ProcessInfo.processInfo.environment["SINGLE_MONGOS_LB_URI"]
+    }
+
+    public static var multipleMongosLoadBalancedURI: String? {
+        ProcessInfo.processInfo.environment["MULTIPLE_MONGOS_LB_URI"]
+    }
+
     /// Indicates that we are running the tests with SSL enabled, determined by the environment variable $SSL.
     public static var ssl: Bool {
         ProcessInfo.processInfo.environment["SSL"] == "ssl"
@@ -168,7 +187,7 @@ public enum TestTopologyConfiguration: String, Decodable {
     /// A standalone server.
     case single
     /// A load balancer.
-    case loadBalancer = "load-balanced"
+    case loadBalanced = "load-balanced"
 
     /// Returns a Bool indicating whether this topology is either sharded configuration.
     public var isSharded: Bool {
@@ -184,6 +203,9 @@ public enum TestTopologyConfiguration: String, Decodable {
             helloReply["isreplicaset"] != true
         {
             self = .single
+            // TODO: SWIFT-1319: eventually, we should be able to just check for serviceId here.
+        } else if helloReply["serviceId"] != nil || MongoSwiftTestCase.topologyType == .loadBalanced {
+            self = .loadBalanced
         } else if helloReply["msg"] == "isdbgrid" {
             // Serverless proxy reports as a mongos but presents no shards
             guard !shards.isEmpty || MongoSwiftTestCase.serverless else {
@@ -509,6 +531,8 @@ extension TopologyDescription.TopologyType {
             self = .sharded
         case "replicaset", "replica_set":
             self = .replicaSetWithPrimary
+        case "loadbalanced", "load_balanced":
+            self = .loadBalanced
         default:
             self = .single
         }
@@ -686,4 +710,44 @@ extension InsertManyResult {
 /// provided value. This is necessary for load balancer testing until SERVER-58500 is complete.
 public func setMockServiceId(to value: Bool) {
     mongoc_global_mock_service_id = value
+}
+
+/// Resolves programmatically provided client options with those specified via environment variables.
+public func resolveClientOptions(_ options: MongoClientOptions? = nil) -> MongoClientOptions {
+    var opts = options ?? MongoClientOptions()
+    // if SSL is on and custom TLS options were not provided, enable them
+    if MongoSwiftTestCase.ssl {
+        opts.tls = true
+        if let caPath = MongoSwiftTestCase.sslCAFilePath {
+            opts.tlsCAFile = URL(string: caPath)
+        }
+        if let certPath = MongoSwiftTestCase.sslPEMKeyFilePath {
+            opts.tlsCertificateKeyFile = URL(string: certPath)
+        }
+    }
+    if let apiVersion = MongoSwiftTestCase.apiVersion {
+        if opts.serverAPI == nil {
+            opts.serverAPI = MongoServerAPI(version: apiVersion)
+        } else {
+            opts.serverAPI!.version = apiVersion
+        }
+    }
+
+    if MongoSwiftTestCase.auth {
+        if let scramUser = MongoSwiftTestCase.scramUser, let scramPass = MongoSwiftTestCase.scramPassword {
+            opts.credential = MongoCredential(username: scramUser, password: scramPass)
+        }
+    }
+
+    // serverless tests are required to use compression.
+    if MongoSwiftTestCase.serverless {
+        opts.compressors = [.zlib]
+    }
+
+    // TODO: SWIFT-1319 Remove this.
+    if MongoSwiftTestCase.topologyType == .loadBalanced {
+        setMockServiceId(to: true)
+    }
+
+    return opts
 }

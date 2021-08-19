@@ -45,7 +45,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         let topSize = dbInfo.map { $0.sizeOnDisk }.max()!
         expect(try client.listDatabases(["sizeOnDisk": ["$gt": BSON(topSize)]])).to(beEmpty())
 
-        if MongoSwiftTestCase.topologyType == .sharded {
+        if try client.topologyType().isSharded {
             expect(dbInfo.first?.shards).toNot(beNil())
         }
 
@@ -323,6 +323,14 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
 
     func testConnectionTimeout() throws {
         let setupClient = try MongoClient.makeTestClient()
+        // connectTimeoutMS applies to the amount of time it takes us to establish a connection to the server, which in
+        // the load balanced case is the time to connect to the load balancer. We don't have a way to make that go
+        // slowly on purpose, so we can't test it in the same way we do other topologies.
+        guard try setupClient.topologyType() != .loadBalanced else {
+            printSkipMessage(testName: self.name, reason: "Test cannot be run on load balanced topology")
+            return
+        }
+
         guard try setupClient.supportsBlockTime() else {
             printSkipMessage(testName: self.name, reason: "blockTime not supported")
             return
