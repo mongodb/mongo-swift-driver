@@ -184,7 +184,7 @@ extension SpecTestFile {
 
     func terminateOpenTransactions(
         using client: MongoSwiftSync.MongoClient,
-        mongosClients: [MongoSwiftSync.MongoClient]?
+        mongosClients: [ServerAddress: MongoSwiftSync.MongoClient]
     ) throws {
         // if connected to a replica set, use the provided client to execute killAllSessions on the primary.
         // if connected to a sharded cluster, use the per-mongos clients to execute killAllSessions on each mongos.
@@ -201,7 +201,7 @@ extension SpecTestFile {
                 _ = try client.db("admin").runCommand(["killAllSessions": []], options: opts)
             } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
         case .sharded, .shardedReplicaSet:
-            for mongosClient in mongosClients! {
+            for (_, mongosClient) in mongosClients {
                 do {
                     _ = try mongosClient.db("admin").runCommand(["killAllSessions": []])
                     break
@@ -218,9 +218,7 @@ extension SpecTestFile {
             return
         }
 
-        // setup client needs to be able to talk to all mongoses for targetedFailPoint and for
-        // the distinct workaround.
-        let connString = MongoSwiftTestCase.getConnectionString(singleMongos: false).toString()
+        let connString = MongoSwiftTestCase.getConnectionString().toString()
         var setupClientOptions = MongoClientOptions()
         setupClientOptions.minHeartbeatFrequencyMS = 50
         setupClientOptions.heartbeatFrequencyMS = 50
@@ -235,12 +233,15 @@ extension SpecTestFile {
 
         let topologyType = try setupClient.topologyType()
 
-        var mongosClients: [MongoClient]?
+        var mongosClients: [ServerAddress: MongoClient] = [:]
         if topologyType.isSharded {
             var opts = setupClientOptions
             opts.directConnection = true // connect directly to mongoses
-            mongosClients = try MongoSwiftTestCase.getConnectionStringPerHost()
-                .map { try MongoClient.makeTestClient($0.toString(), options: opts) }
+            for host in MongoSwiftTestCase.getHosts() {
+                let connString = MongoSwiftTestCase.getConnectionString(forHost: host)
+                let client = try MongoClient.makeTestClient(connString.toString(), options: opts)
+                mongosClients[host] = client
+            }
         }
 
         fileLevelLog("Executing tests from file \(self.name)...")
@@ -255,12 +256,17 @@ extension SpecTestFile {
             // Due to strange behavior in mongos, a "distinct" command needs to be run against each mongos
             // before the tests run to prevent certain errors from ocurring. (SERVER-39704)
             if topologyType.isSharded, test.description.contains("distinct"), let collName = self.collectionName {
-                for client in mongosClients! {
+                for (_, client) in mongosClients {
                     _ = try client.db(self.databaseName).runCommand(["distinct": .string(collName), "key": "_id"])
                 }
             }
 
-            try test.run(setupClient: setupClient, dbName: self.databaseName, collName: self.collectionName)
+            try test.run(
+                setupClient: setupClient,
+                mongosClients: mongosClients,
+                dbName: self.databaseName,
+                collName: self.collectionName
+            )
         }
     }
 }
@@ -318,6 +324,7 @@ extension SpecTest {
 
     internal mutating func run(
         setupClient: MongoClient,
+        mongosClients: [ServerAddress: MongoClient],
         dbName: String,
         collName: String?
     ) throws {
@@ -345,12 +352,7 @@ extension SpecTest {
         let monitor = client.addCommandMonitor()
 
         if let failPoint = self.failPoint {
-            // if only using a single mongos, make sure to enable the failpoint on the correct mongos.
-            if try client.topologyType().isSharded, self.useMultipleMongoses != true {
-                try self.activateFailPoint(failPoint, using: setupClient, on: connectionString.hosts![0])
-            } else {
-                try self.activateFailPoint(failPoint, using: setupClient)
-            }
+            try self.activateFailPoint(failPoint, using: setupClient)
         }
         // this defer will cover any failpoints set in `validateExecution` as well.
         defer {
@@ -370,6 +372,7 @@ extension SpecTest {
                     test: &self,
                     setupClient: setupClient,
                     client: client,
+                    mongosClients: mongosClients,
                     dbName: dbName,
                     collName: collName,
                     sessions: sessions

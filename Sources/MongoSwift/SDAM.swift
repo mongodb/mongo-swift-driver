@@ -2,7 +2,7 @@ import CLibMongoC
 import Foundation
 
 /// A struct representing a network address, consisting of a host and port.
-public struct ServerAddress: Equatable {
+public struct ServerAddress: Equatable, Hashable {
     /// The hostname or IP address.
     public let host: String
 

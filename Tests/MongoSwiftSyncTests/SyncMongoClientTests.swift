@@ -45,7 +45,7 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
         let topSize = dbInfo.map { $0.sizeOnDisk }.max()!
         expect(try client.listDatabases(["sizeOnDisk": ["$gt": BSON(topSize)]])).to(beEmpty())
 
-        if try client.topologyType().isSharded {
+        if MongoSwiftTestCase.topologyType == .sharded {
             expect(dbInfo.first?.shards).toNot(beNil())
         }
 
