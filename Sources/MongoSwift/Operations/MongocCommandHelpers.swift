@@ -33,6 +33,32 @@ internal func runMongocCommandWithReply(
     }
 }
 
+/**
+ * Calls the provided mongoc command method using pointers to the specified command and options. Returns the resulting
+ * filled-out `bson_t` from libmongoc.
+ * The caller of this method is responsible for ensuring the reply `bson_t` is properly cleaned up.
+ * If you need a `BSONDocument` reply, use `runMongocCommandWithReply` instead.
+ * If you don't need the reply, use `runMongocCommand` instead.
+ */
+internal func runMongocCommandWithCReply(
+    command: BSONDocument,
+    options: BSONDocument?,
+    body: MongocCommandFunc
+) throws -> bson_t {
+    var reply = bson_t()
+    do {
+        try withUnsafeMutablePointer(to: &reply) { replyPtr in
+            try _runMongocCommand(command: command, options: options, replyPtr: replyPtr, body: body)
+        }
+    } catch {
+        withUnsafeMutablePointer(to: &reply) { ptr in
+            bson_destroy(ptr)
+        }
+        throw error
+    }
+    return reply
+}
+
 /// Calls the provided mongoc command method using pointers to the specified command and options.
 internal func runMongocCommand(command: BSONDocument, options: BSONDocument?, body: MongocCommandFunc) throws {
     try withStackAllocatedMutableBSONPointer { replyPtr in

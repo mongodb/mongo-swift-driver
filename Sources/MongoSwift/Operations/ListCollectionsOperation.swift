@@ -106,23 +106,59 @@ internal struct ListCollectionsOperation: Operation {
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> ListCollectionsResults {
-        var opts = try encodeOptions(options: self.options, session: session) ?? BSONDocument()
-        opts["nameOnly"] = .bool(self.nameOnly)
+        // Drivers MUST run listCollections on the primary node when in a replica set topology, unless directly
+        // connected to a secondary node in Single topology.
+        let readPref = ReadPreference.primary
+
+        var cmd: BSONDocument = ["listCollections": 1, "nameOnly": .bool(self.nameOnly)]
         if let filterDoc = self.filter {
-            opts["filter"] = .document(filterDoc)
+            cmd["filter"] = .document(filterDoc)
 
             // If `listCollectionNames` is called with a non-name filter key, change server-side nameOnly flag to false.
+            // per spec: drivers MUST NOT set nameOnly if a filter specifies any keys other than name.
             if self.nameOnly && filterDoc.keys.contains(where: { $0 != "name" }) {
-                opts["nameOnly"] = false
+                cmd["nameOnly"] = false
             }
         }
 
-        let collections: OpaquePointer = self.database.withMongocDatabase(from: connection) { dbPtr in
-            opts.withBSONPointer { optsPtr in
-                guard let collections = mongoc_database_find_collections_with_opts(dbPtr, optsPtr) else {
-                    fatalError(failedToRetrieveCursorMessage)
+        var cursorOpts: BSONDocument = [:]
+
+        if let batchSize = options?.batchSize {
+            guard let i32 = Int32(exactly: batchSize) else {
+                throw MongoError.InvalidArgumentError(
+                    message: "batchSize option must be representable as an Int32. Got: \(batchSize)"
+                )
+            }
+            cursorOpts = ["batchSize": .int32(i32)]
+        }
+
+        let commandOpts = try encodeOptions(options: nil as BSONDocument?, session: session) ?? BSONDocument()
+        cursorOpts = try encodeOptions(options: cursorOpts, session: session) ?? BSONDocument()
+        cmd["cursor"] = .document(cursorOpts)
+
+        var reply = try self.database.withMongocDatabase(from: connection) { dbPtr in
+            try readPref.withMongocReadPreference { rpPtr in
+                try runMongocCommandWithCReply(
+                    command: cmd,
+                    options: commandOpts
+                ) { cmdPtr, optsPtr, replyPtr, error in
+                    mongoc_database_read_command_with_opts(dbPtr, cmdPtr, rpPtr, optsPtr, replyPtr, &error)
                 }
-                return collections
+            }
+        }
+
+        let collections = connection.withMongocConnection { connPtr in
+            withUnsafeMutablePointer(to: &reply) { replyPtr -> OpaquePointer in
+                withOptionalBSONPointer(to: cursorOpts) { cursorOptsPtr in
+                    guard let result = mongoc_cursor_new_from_command_reply_with_opts(
+                        connPtr,
+                        replyPtr,
+                        cursorOptsPtr
+                    ) else {
+                        fatalError(failedToRetrieveCursorMessage)
+                    }
+                    return result
+                }
             }
         }
 

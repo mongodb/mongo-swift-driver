@@ -522,7 +522,7 @@ internal func toErrorString(_ error: bson_error_t) -> String {
     }
 }
 
-internal let failedToRetrieveCursorMessage = "Couldn't get cursor from the server"
+internal let failedToRetrieveCursorMessage = "Expected libmongoc to return a cursor, unexpectedly got nil"
 
 extension MongoErrorProtocol {
     /// Determines whether this error is an "ns not found" error.
