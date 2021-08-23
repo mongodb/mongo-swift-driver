@@ -204,7 +204,7 @@ public enum TestTopologyConfiguration: String, Decodable {
         {
             self = .single
             // TODO: SWIFT-1319: eventually, we should be able to just check for serviceId here.
-        } else if helloReply["serviceId"] != nil || MongoSwiftTestCase.topologyType == .loadBalanced {
+        } else if MongoSwiftTestCase.topologyType == .loadBalanced {
             self = .loadBalanced
         } else if helloReply["msg"] == "isdbgrid" {
             // Serverless proxy reports as a mongos but presents no shards
