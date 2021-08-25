@@ -1,0 +1,32 @@
+diff --git a/Sources/CLibMongoC/include/CLibMongoC_mongoc-server-description.h b/Sources/CLibMongoC/include/CLibMongoC_mongoc-server-description.h
+index 082521c1..4676c5c4 100644
+--- a/Sources/CLibMongoC/include/CLibMongoC_mongoc-server-description.h
++++ b/Sources/CLibMongoC/include/CLibMongoC_mongoc-server-description.h
+@@ -66,6 +66,12 @@ MONGOC_EXPORT (int32_t)
+ mongoc_server_description_compressor_id (
+    const mongoc_server_description_t *description);
+ 
++/* mongoc_global_mock_service_id is only used for testing. The test runner sets
++ * this to true when testing against a load balanced deployment to mock the
++ * presence of a serviceId field in the "hello" response. The purpose of this is
++ * further described in the Load Balancer test README. */
++extern bool mongoc_global_mock_service_id;
++
+ BSON_END_DECLS
+ 
+ #endif
+diff --git a/Sources/CLibMongoC/mongoc/mongoc-server-description-private.h b/Sources/CLibMongoC/mongoc/mongoc-server-description-private.h
+index ef75154a..210bc3c2 100644
+--- a/Sources/CLibMongoC/mongoc/mongoc-server-description-private.h
++++ b/Sources/CLibMongoC/mongoc/mongoc-server-description-private.h
+@@ -200,10 +200,4 @@ bool
+ mongoc_server_description_has_service_id (
+    const mongoc_server_description_t *description);
+ 
+-/* mongoc_global_mock_service_id is only used for testing. The test runner sets
+- * this to true when testing against a load balanced deployment to mock the
+- * presence of a serviceId field in the "hello" response. The purpose of this is
+- * further described in the Load Balancer test README. */
+-extern bool mongoc_global_mock_service_id;
+-
+ #endif

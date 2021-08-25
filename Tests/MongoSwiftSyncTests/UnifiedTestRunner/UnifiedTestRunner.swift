@@ -24,7 +24,7 @@ struct UnifiedTestRunner {
         // connected to a sharded cluster, all mongos servers.
         switch self.topologyType {
         case .single,
-             .loadBalancer,
+             .loadBalanced,
              _ where MongoSwiftTestCase.serverless:
             return
         case .replicaSet:

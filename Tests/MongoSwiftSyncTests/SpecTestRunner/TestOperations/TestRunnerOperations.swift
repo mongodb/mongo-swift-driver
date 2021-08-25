@@ -9,6 +9,7 @@ struct AssertCollectionExists: TestOperation {
     func execute<T: SpecTest>(
         on runner: inout T,
         setupClient: MongoClient,
+        mongosClients _: [ServerAddress: MongoClient],
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let collectionNames = try setupClient.db(self.database).listCollectionNames()
@@ -24,6 +25,7 @@ struct AssertCollectionNotExists: TestOperation {
     func execute<T: SpecTest>(
         on runner: inout T,
         setupClient: MongoClient,
+        mongosClients _: [ServerAddress: MongoClient],
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let collectionNames = try setupClient.db(self.database).listCollectionNames()
@@ -40,6 +42,7 @@ struct AssertIndexExists: TestOperation {
     func execute<T: SpecTest>(
         on runner: inout T,
         setupClient: MongoClient,
+        mongosClients _: [ServerAddress: MongoClient],
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let indexNames = try setupClient.db(self.database).collection(self.collection).listIndexNames()
@@ -56,6 +59,7 @@ struct AssertIndexNotExists: TestOperation {
     func execute<T: SpecTest>(
         on runner: inout T,
         setupClient: MongoClient,
+        mongosClients _: [ServerAddress: MongoClient],
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
         let indexNames = try setupClient.db(self.database).collection(self.collection).listIndexNames()
@@ -70,6 +74,7 @@ struct AssertSessionPinned: TestOperation {
     func execute<T: SpecTest>(
         on runner: inout T,
         setupClient _: MongoClient,
+        mongosClients _: [ServerAddress: MongoClient],
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         guard let session = sessions[self.session] else {
@@ -87,6 +92,7 @@ struct AssertSessionUnpinned: TestOperation {
     func execute<T: SpecTest>(
         on runner: inout T,
         setupClient _: MongoClient,
+        mongosClients _: [ServerAddress: MongoClient],
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         guard let session = sessions[self.session] else {
@@ -105,6 +111,7 @@ struct AssertSessionTransactionState: TestOperation {
     func execute<T: SpecTest>(
         on runner: inout T,
         setupClient _: MongoClient,
+        mongosClients _: [ServerAddress: MongoClient],
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         guard let transactionState = sessions[self.session]?.transactionState else {
@@ -121,13 +128,17 @@ struct TargetedFailPoint: TestOperation {
 
     func execute<T: SpecTest>(
         on runner: inout T,
-        setupClient: MongoClient,
+        setupClient _: MongoClient,
+        mongosClients: [ServerAddress: MongoClient],
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult? {
         guard let session = sessions[self.session], let server = session.pinnedServerAddress else {
             throw TestError(message: "could not get session or session not pinned to mongos")
         }
-        try runner.activateFailPoint(self.failPoint, using: setupClient, on: server)
+        guard let clientForMongos = mongosClients[server] else {
+            throw TestError(message: "missing mongos-specific client for server \(server)")
+        }
+        try runner.activateFailPoint(self.failPoint, using: clientForMongos)
         return nil
     }
 }

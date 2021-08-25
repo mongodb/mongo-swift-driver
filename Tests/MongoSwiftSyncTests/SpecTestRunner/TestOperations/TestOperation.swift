@@ -18,6 +18,7 @@ protocol TestOperation: Decodable {
     func execute<T: SpecTest>(
         on runner: inout T,
         setupClient: MongoClient,
+        mongosClients: [ServerAddress: MongoClient],
         sessions: [String: ClientSession]
     ) throws -> TestOperationResult?
 }
@@ -45,6 +46,7 @@ extension TestOperation {
     func execute<T: SpecTest>(
         on _: inout T,
         setupClient _: MongoClient,
+        mongosClients _: [ServerAddress: MongoClient],
         sessions _: [String: ClientSession]
     ) throws -> TestOperationResult? {
         throw TestError(message: "\(type(of: self)) cannot execute on a test runner")
@@ -126,6 +128,7 @@ struct TestOperationDescription: Decodable {
         test: inout T,
         setupClient: MongoClient,
         client: MongoClient,
+        mongosClients: [ServerAddress: MongoClient],
         dbName: String,
         collName: String?,
         sessions: [String: ClientSession]
@@ -155,7 +158,12 @@ struct TestOperationDescription: Decodable {
                 }
                 result = try self.operation.op.execute(on: session)
             case .testRunner:
-                result = try self.operation.op.execute(on: &test, setupClient: setupClient, sessions: sessions)
+                result = try self.operation.op.execute(
+                    on: &test,
+                    setupClient: setupClient,
+                    mongosClients: mongosClients,
+                    sessions: sessions
+                )
             case .gridfsbucket:
                 throw TestError(message: "gridfs tests should be skipped")
             }
