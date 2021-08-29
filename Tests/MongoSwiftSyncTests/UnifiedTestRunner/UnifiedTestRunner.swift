@@ -3,7 +3,36 @@ import Nimble
 import TestsCommon
 
 struct UnifiedTestRunner {
-    let internalClient: MongoClient
+    enum InternalClient {
+        /// For all topologies besides sharded, we use a single client.
+        case single(MongoClient)
+        /// For sharded topologies, we often need to target commands to particular mongoses, so we use a separate
+        /// client for each host we're connecting to.
+        case mongosClients([ServerAddress: MongoClient])
+
+        /// Returns an internal client; for usage in situations where any client connected to the topology will do -
+        /// that is, if the topology is sharded, we do not care about targeting a particular mongos.
+        var anyClient: MongoClient {
+            switch self {
+            case let .single(c):
+                return c
+            case let .mongosClients(clientMap):
+                return clientMap.first!.1
+            }
+        }
+
+        /// If the internal client is a map of per-mongos clients, returns that map; otherwise throws an erorr.
+        func asMongosClients() throws -> [ServerAddress: MongoClient] {
+            guard case let .mongosClients(clientMap) = self else {
+                throw TestError(
+                    message: "Runner unexpectedly did not create per-mongos clients"
+                )
+            }
+            return clientMap
+        }
+    }
+
+    let internalClient: InternalClient
     let serverVersion: ServerVersion
     let topologyType: TestTopologyConfiguration
     let serverParameters: BSONDocument
@@ -12,11 +41,22 @@ struct UnifiedTestRunner {
     static let maxSchemaVersion = SchemaVersion(rawValue: "1.5.0")!
 
     init() throws {
-        let connStr = MongoSwiftTestCase.getConnectionString(singleMongos: false).toString()
-        self.internalClient = try MongoClient.makeTestClient(connStr)
-        self.serverVersion = try self.internalClient.serverVersion()
-        self.topologyType = try self.internalClient.topologyType()
-        self.serverParameters = try self.internalClient.serverParameters()
+        switch MongoSwiftTestCase.topologyType {
+        case .sharded:
+            var mongosClients = [ServerAddress: MongoClient]()
+            for host in MongoSwiftTestCase.getHosts() {
+                let connString = MongoSwiftTestCase.getConnectionString(forHost: host)
+                let client = try MongoClient.makeTestClient(connString.toString())
+                mongosClients[host] = client
+            }
+            self.internalClient = .mongosClients(mongosClients)
+        default:
+            let client = try MongoClient.makeTestClient()
+            self.internalClient = .single(client)
+        }
+        self.serverVersion = try self.internalClient.anyClient.serverVersion()
+        self.topologyType = try self.internalClient.anyClient.topologyType()
+        self.serverParameters = try self.internalClient.anyClient.serverParameters()
     }
 
     func terminateOpenTransactions() throws {
@@ -32,12 +72,12 @@ struct UnifiedTestRunner {
             // SERVER-38335.
             do {
                 let opts = RunCommandOptions(readPreference: .primary)
-                _ = try self.internalClient.db("admin").runCommand(["killAllSessions": []], options: opts)
+                _ = try self.internalClient.anyClient.db("admin").runCommand(["killAllSessions": []], options: opts)
             } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
         case .sharded, .shardedReplicaSet:
-            for address in MongoSwiftTestCase.getHosts() {
+            for (_, client) in try self.internalClient.asMongosClients() {
                 do {
-                    _ = try self.internalClient.db("admin").runCommand(["killAllSessions": []], on: address)
+                    _ = try client.db("admin").runCommand(["killAllSessions": []])
                 } catch let commandError as MongoError.CommandError where commandError.code == 11601 {
                     continue
                 }
@@ -113,7 +153,7 @@ struct UnifiedTestRunner {
                 // The test runner MUST use the internal MongoClient for these operations.
                 if let initialData = file.initialData {
                     for collData in initialData {
-                        let db = self.internalClient.db(collData.databaseName)
+                        let db = self.internalClient.anyClient.db(collData.databaseName)
                         let collOpts = MongoCollectionOptions(writeConcern: .majority)
                         let coll = db.collection(collData.collectionName, options: collOpts)
                         try coll.drop()
@@ -141,11 +181,10 @@ struct UnifiedTestRunner {
                 // the implementation, test runners MAY execute distinct before every test.
                 if self.topologyType.isSharded && !MongoSwiftTestCase.serverless {
                     let collEntities = context.entities.values.compactMap { try? $0.asCollection() }
-                    for address in MongoSwiftTestCase.getHosts() {
+                    for (_, client) in try self.internalClient.asMongosClients() {
                         for entity in collEntities {
-                            _ = try self.internalClient.db(entity.namespace.db).runCommand(
-                                ["distinct": .string(entity.name), "key": "_id"],
-                                on: address
+                            _ = try client.db(entity.namespace.db).runCommand(
+                                ["distinct": .string(entity.name), "key": "_id"]
                             )
                         }
                     }
@@ -188,6 +227,7 @@ struct UnifiedTestRunner {
                     if let expectedOutcome = test.outcome {
                         for collectionData in expectedOutcome {
                             let collection = self.internalClient
+                                .anyClient
                                 .db(collectionData.databaseName)
                                 .collection(collectionData.collectionName)
                             let opts = FindOptions(

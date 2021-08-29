@@ -3,6 +3,7 @@
 import MongoSwiftSync
 @testable import class MongoSwiftSync.ClientSession
 import Nimble
+import TestsCommon
 
 struct UnifiedFailPoint: UnifiedOperationProtocol {
     /// The failpoint to set.
@@ -36,7 +37,7 @@ struct UnifiedAssertCollectionExists: UnifiedOperationProtocol {
     }
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
-        let db = context.internalClient.db(self.databaseName)
+        let db = context.internalClient.anyClient.db(self.databaseName)
         expect(try db.listCollectionNames()).to(
             contain(self.collectionName),
             description: "Expected db \(self.databaseName) to contain collection \(self.collectionName)." +
@@ -58,7 +59,7 @@ struct UnifiedAssertCollectionNotExists: UnifiedOperationProtocol {
     }
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
-        let db = context.internalClient.db(self.databaseName)
+        let db = context.internalClient.anyClient.db(self.databaseName)
         expect(try db.listCollectionNames()).toNot(
             contain(self.collectionName),
             description: "Expected db \(self.databaseName) to not contain collection \(self.collectionName)." +
@@ -83,7 +84,7 @@ struct UnifiedAssertIndexExists: UnifiedOperationProtocol {
     }
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
-        let collection = context.internalClient.db(self.databaseName).collection(self.collectionName)
+        let collection = context.internalClient.anyClient.db(self.databaseName).collection(self.collectionName)
         expect(try collection.listIndexNames()).to(
             contain(self.indexName),
             description: "Expected collection \(collection.namespace) to have index \(self.indexName)."
@@ -108,7 +109,7 @@ struct UnifiedAssertIndexNotExists: UnifiedOperationProtocol {
     }
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
-        let collection = context.internalClient.db(self.databaseName).collection(self.collectionName)
+        let collection = context.internalClient.anyClient.db(self.databaseName).collection(self.collectionName)
         expect(try collection.listIndexNames()).toNot(
             contain(self.indexName),
             description: "Expected collection \(collection.namespace) to not have index \(self.indexName)."
@@ -276,11 +277,11 @@ struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
                 beNil(),
                 description: "Session \(self.session) unexpectedly not pinned to a mongos. Path: \(context.path)"
             )
-        let pinnedMongos = session.pinnedServerAddress!
-        // The test runner SHOULD use the client entity associated with the session to execute the configureFailPoint
-        // command.
-        let client = session.client
-        let fpGuard = try self.failPoint.enableWithGuard(using: client, on: pinnedMongos)
+        let mongosClients = try context.internalClient.asMongosClients()
+        guard let clientForPinnedMongos = mongosClients[session.pinnedServerAddress!] else {
+            throw TestError(message: "Unexpectedly missing client for mongos \(session.pinnedServerAddress!)")
+        }
+        let fpGuard = try self.failPoint.enableWithGuard(using: clientForPinnedMongos)
         // add to context's list of enabled failpoints to ensure we disable it later.
         context.enabledFailPoints.append(fpGuard)
         return .none
