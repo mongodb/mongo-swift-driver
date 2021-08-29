@@ -154,18 +154,6 @@ internal func captureCommandEvents(
     return monitor.events(withEventTypes: eventTypes, withNames: commandNames)
 }
 
-extension MongoDatabase {
-    @discardableResult
-    public func runCommand(
-        _ command: BSONDocument,
-        on server: ServerAddress,
-        options: RunCommandOptions? = nil,
-        session: MongoSwiftSync.ClientSession? = nil
-    ) throws -> BSONDocument {
-        try self.asyncDB.runCommand(command, on: server, options: options, session: session?.asyncSession).wait()
-    }
-}
-
 extension MongoSwiftSync.MongoCollection {
     public var _client: MongoSwiftSync.MongoClient {
         self.client
