@@ -11,9 +11,9 @@ class Context {
     /// Fail points that have been set during test execution and should be disabled on completion.
     var enabledFailPoints: [FailPointGuard] = []
 
-    let internalClient: MongoClient
+    let internalClient: UnifiedTestRunner.InternalClient
 
-    init(path: [String], entities: EntityMap, internalClient: MongoClient) {
+    init(path: [String], entities: EntityMap, internalClient: UnifiedTestRunner.InternalClient) {
         self.path = path
         self.entities = entities
         self.internalClient = internalClient

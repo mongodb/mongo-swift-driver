@@ -35,51 +35,19 @@ internal struct RunCommandOperation: Operation {
     private let database: MongoDatabase
     private let command: BSONDocument
     private let options: RunCommandOptions?
-    private let serverAddress: ServerAddress?
 
     internal init(
         database: MongoDatabase,
         command: BSONDocument,
-        options: RunCommandOptions?,
-        serverAddress: ServerAddress? = nil
+        options: RunCommandOptions?
     ) {
         self.database = database
         self.command = command
         self.options = options
-        self.serverAddress = serverAddress
     }
 
     internal func execute(using connection: Connection, session: ClientSession?) throws -> BSONDocument {
-        let serverId: UInt32? = try self.serverAddress.map { address in
-            let id: UInt32? = connection.withMongocConnection { connection in
-                var numServers = 0
-                let sds = mongoc_client_get_server_descriptions(connection, &numServers)
-                defer { mongoc_server_descriptions_destroy_all(sds, numServers) }
-
-                guard numServers > 0 else {
-                    return nil
-                }
-
-                let buffer = UnsafeBufferPointer(start: sds, count: numServers)
-                // the buffer is documented as always containing non-nil pointers (if non-empty).
-                // swiftlint:disable:next force_unwrapping
-                let servers = Array(buffer).map { ServerDescription($0!) }
-                return servers.first { $0.address == address }?.serverId
-            }
-
-            guard let out = id else {
-                throw MongoError.ServerSelectionError(message: "No known host with address \(address)")
-            }
-
-            return out
-        }
-
-        var opts = try encodeOptions(options: self.options, session: session)
-        if let id = serverId {
-            opts = opts ?? [:]
-            opts?["serverId"] = .int64(Int64(id))
-        }
-
+        let opts = try encodeOptions(options: self.options, session: session)
         return try self.database.withMongocDatabase(from: connection) { dbPtr in
             try ReadPreference.withOptionalMongocReadPreference(from: self.options?.readPreference) { rpPtr in
                 try runMongocCommandWithReply(

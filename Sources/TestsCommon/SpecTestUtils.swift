@@ -20,19 +20,6 @@ extension MongoSwiftTestCase {
     }
 }
 
-extension MongoDatabase {
-    @discardableResult
-    public func runCommand(
-        _ command: BSONDocument,
-        on server: ServerAddress,
-        options: RunCommandOptions? = nil,
-        session: ClientSession? = nil
-    ) -> EventLoopFuture<BSONDocument> {
-        let operation = RunCommandOperation(database: self, command: command, options: options, serverAddress: server)
-        return self._client.operationExecutor.execute(operation, client: self._client, on: nil, session: session)
-    }
-}
-
 /// Given a spec folder name (e.g. "crud") and optionally a subdirectory name for a folder (e.g. "read") retrieves an
 /// array of [(filename, file decoded to type T)].
 public func retrieveSpecTestFiles<T: Decodable>(
