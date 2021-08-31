@@ -83,12 +83,7 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         let expectedEventLoop = elg.next()
 
         try self.withTestClient(eventLoopGroup: elg) { client in
-            let testRequirements = TestRequirement(
-                minServerVersion: ServerVersion(major: 4, minor: 0, patch: 0),
-                acceptableTopologies: [.replicaSet, .sharded]
-            )
-
-            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            let unmetRequirement = try client.getUnmetRequirement(.changeStreamOnDBOrClientSupport)
             guard unmetRequirement == nil else {
                 printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
                 return
@@ -112,11 +107,7 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         let expectedEventLoop = elg.next()
 
         try self.withTestClient(eventLoopGroup: elg) { client in
-            let testRequirements = TestRequirement(
-                acceptableTopologies: [.replicaSet, .sharded]
-            )
-
-            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            let unmetRequirement = try client.getUnmetRequirement(.changeStreamOnCollectionSupport)
             guard unmetRequirement == nil else {
                 printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
                 return
@@ -286,7 +277,7 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
         try self.withTestClient(eventLoopGroup: elg) { client in
             let testRequirements = TestRequirement(
                 minServerVersion: ServerVersion(major: 4, minor: 2, patch: 0),
-                acceptableTopologies: [.replicaSet, .sharded]
+                acceptableTopologies: [.replicaSet, .sharded, .shardedReplicaSet, .loadBalanced]
             )
 
             let unmetRequirement = try client.getUnmetRequirement(testRequirements)

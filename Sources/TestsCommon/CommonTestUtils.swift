@@ -132,7 +132,7 @@ open class MongoSwiftTestCase: XCTestCase {
     }
 
     public static var multipleMongosLoadBalancedURI: String? {
-        ProcessInfo.processInfo.environment["MULTIPLE_MONGOS_LB_URI"]
+        ProcessInfo.processInfo.environment["MULTI_MONGOS_LB_URI"]
     }
 
     /// Indicates that we are running the tests with SSL enabled, determined by the environment variable $SSL.
@@ -296,6 +296,15 @@ public struct TestRequirement: Decodable {
             minServerVersion: ServerVersion.mongodBlockTimeSupport
         )
     ]
+
+    public static let changeStreamOnCollectionSupport = TestRequirement(
+        acceptableTopologies: [.replicaSet, .sharded, .shardedReplicaSet, .loadBalanced]
+    )
+
+    public static let changeStreamOnDBOrClientSupport = TestRequirement(
+        minServerVersion: ServerVersion(major: 4, minor: 0, patch: 0),
+        acceptableTopologies: [.replicaSet, .sharded, .shardedReplicaSet, .loadBalanced]
+    )
 
     public init(
         minServerVersion: ServerVersion? = nil,
