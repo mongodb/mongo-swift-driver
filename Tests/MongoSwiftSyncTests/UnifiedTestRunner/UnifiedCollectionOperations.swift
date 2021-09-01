@@ -79,26 +79,33 @@ struct UnifiedListIndexes: UnifiedOperationProtocol {
     /// Optional identifier for a session entity to use.
     let session: String?
 
+    /// We consider this a known argument and decode ite ven though we don't support it, because a load balancer test
+    /// file uses this option and we could not decode/run the entire file otherwise.
+    let batchSize: Int?
+
     private enum CodingKeys: String, CodingKey, CaseIterable {
-        case session
+        case session, batchSize
     }
 
     static var knownArguments: Set<String> {
-        [
-            "session",
-            // we don't actually support this option, but can't decode the load balancer test file
-            // "cursors.json" due to this option being present in a listIndexes test, so we
-            // include this here to allow us to decode the file and then skip the corresponding test.
-            "batchSize"
-        ]
+        Set(
+            CodingKeys.allCases.map { $0.rawValue }
+        )
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
+        self.batchSize = try container.decodeIfPresent(Int.self, forKey: .batchSize)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        guard self.batchSize == nil else {
+            throw TestError(
+                message: "listIndexes operation specifies a batchSize, but we do not support the option -- you may " +
+                    "need to skip this test. Path: \(context.path)"
+            )
+        }
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
         let results = try collection.listIndexes(session: session)
