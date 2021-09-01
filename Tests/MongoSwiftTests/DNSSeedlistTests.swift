@@ -57,7 +57,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             subdirectory: "replica-set",
             asType: DNSSeedlistTestCase.self
         )
-        
+
         try runDNSSeedlistTests(tests)
     }
 
@@ -72,7 +72,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             subdirectory: "load-balanced",
             asType: DNSSeedlistTestCase.self
         )
-        
+
         try runDNSSeedlistTests(tests)
     }
 

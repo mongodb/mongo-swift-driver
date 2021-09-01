@@ -92,7 +92,8 @@ extension CrudTests {
 
 extension DNSSeedlistTests {
     static var allTests = [
-        ("testInitialDNSSeedlistDiscovery", testInitialDNSSeedlistDiscovery),
+        ("testInitialDNSSeedlistDiscoveryReplicaSet", testInitialDNSSeedlistDiscoveryReplicaSet),
+        ("testInitialDNSSeedlistDiscoveryLoadBalanced", testInitialDNSSeedlistDiscoveryLoadBalanced),
     ]
 }
 
