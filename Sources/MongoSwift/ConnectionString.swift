@@ -300,6 +300,17 @@ internal class ConnectionString {
             }
 
             try self.setInt32Option(MONGOC_URI_MAXPOOLSIZE, to: value)
+            // libmongoc treats a maxPoolSize of 0 as 1, which is not spec-compliant (it should be treated as "no max"),
+            // so we error if a user tries to set that via the connection string. See SWIFT-1339
+        } else if let uriMaxPoolSize = self.options?[MONGOC_URI_MAXPOOLSIZE]?.int32Value {
+            guard uriMaxPoolSize > 0 else {
+                throw self.int32OutOfRangeError(
+                    option: MONGOC_URI_MAXPOOLSIZE,
+                    value: uriMaxPoolSize,
+                    min: 1,
+                    max: Int32.max
+                )
+            }
         }
 
         if let connectTimeoutMS = options?.connectTimeoutMS {

@@ -115,7 +115,9 @@ let skipUnsupported: [String: [String]] = [
         "Non-numeric maxIdleTimeMS causes a warning",
         "Valid connection pool options are parsed correctly",
         // We don't support minPoolSize.
-        "minPoolSize=0 does not error"
+        "minPoolSize=0 does not error",
+        // We don't allow maxPoolSize=0, see SWIFT-1339.
+        "maxPoolSize=0 does not error"
     ],
     // requires maxIdleTimeMS
     "connection-options.json": [
