@@ -75,6 +75,37 @@ struct UnifiedCreateIndex: UnifiedOperationProtocol {
     }
 }
 
+struct UnifiedListIndexes: UnifiedOperationProtocol {
+    /// Optional identifier for a session entity to use.
+    let session: String?
+
+    private enum CodingKeys: String, CodingKey, CaseIterable {
+        case session
+    }
+
+    static var knownArguments: Set<String> {
+        [
+            "session",
+            // we don't actually support this option, but can't decode the load balancer test file
+            // "cursors.json" due to this option being present in a listIndexes test, so we
+            // include this here to allow us to decode the file and then skip the corresponding test.
+            "batchSize"
+        ]
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
+    }
+
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let collection = try context.entities.getEntity(from: object).asCollection()
+        let session = try context.entities.resolveSession(id: self.session)
+        let results = try collection.listIndexes(session: session)
+        return .rootDocumentArray(try results.map { try $0.get() }.map { try BSONEncoder().encode($0) })
+    }
+}
+
 struct UnifiedBulkWrite: UnifiedOperationProtocol {
     /// Writes to perform.
     let requests: [WriteModel<BSONDocument>]

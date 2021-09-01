@@ -72,7 +72,7 @@ public struct CollectionSpecification: Codable {
 }
 
 /// Options to use when executing a `listCollections` command on a `MongoDatabase`.
-public struct ListCollectionsOptions: Encodable {
+public struct ListCollectionsOptions: Codable {
     /// The batchSize for the returned cursor.
     public var batchSize: Int?
 
