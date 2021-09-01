@@ -79,7 +79,7 @@ struct UnifiedListIndexes: UnifiedOperationProtocol {
     /// Optional identifier for a session entity to use.
     let session: String?
 
-    /// We consider this a known argument and decode ite ven though we don't support it, because a load balancer test
+    /// We consider this a known argument and decode it even though we don't support it, because a load balancer test
     /// file uses this option and we could not decode/run the entire file otherwise.
     let batchSize: Int?
 
