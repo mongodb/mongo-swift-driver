@@ -111,6 +111,12 @@ extension EventLoopBoundMongoClientTests {
     ]
 }
 
+extension LoadBalancerTests {
+    static var allTests = [
+        ("testLoadBalancers", testLoadBalancers),
+    ]
+}
+
 extension MongoClientTests {
     static var allTests = [
         ("testUsingClosedClient", testUsingClosedClient),
@@ -397,6 +403,7 @@ XCTMain([
     testCase(CrudTests.allTests),
     testCase(DNSSeedlistTests.allTests),
     testCase(EventLoopBoundMongoClientTests.allTests),
+    testCase(LoadBalancerTests.allTests),
     testCase(MongoClientTests.allTests),
     testCase(MongoCollectionTests.allTests),
     testCase(MongoCollection_BulkWriteTests.allTests),
