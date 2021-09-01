@@ -31,7 +31,7 @@ public class TestCommandMonitor: CommandEventHandler {
 
     /// Retrieve all the events seen so far that match the optionally provided filters, clearing the event cache.
     public func events(
-        withEventTypes typeFilter: [CommandEvent.EventType]? = nil,
+        withEventTypes typeFilter: [EventType]? = nil,
         withNames nameFilter: [String]? = nil
     ) -> [CommandEvent] {
         defer { self.events.removeAll() }
@@ -58,22 +58,22 @@ public class TestCommandMonitor: CommandEventHandler {
     }
 }
 
-extension CommandEvent {
-    public enum EventType: String, Decodable {
-        case commandStarted = "commandStartedEvent"
-        case commandSucceeded = "commandSucceededEvent"
-        case commandFailed = "commandFailedEvent"
-    }
+public enum EventType: String, Decodable {
+    case commandStartedEvent, commandSucceededEvent, commandFailedEvent,
+         connectionCreatedEvent, connectionReadyEvent, connectionClosedEvent,
+         connectionCheckedInEvent, connectionCheckedOutEvent, connectionCheckOutFailedEvent,
+         poolCreatedEvent, poolReadyEvent, poolClearedEvent, poolClosedEvent
+}
 
-    /// The "type" of this event. Used for filtering events by their type.
+extension CommandEvent {
     public var type: EventType {
         switch self {
         case .started:
-            return .commandStarted
+            return .commandStartedEvent
         case .failed:
-            return .commandFailed
+            return .commandFailedEvent
         case .succeeded:
-            return .commandSucceeded
+            return .commandSucceededEvent
         }
     }
 
