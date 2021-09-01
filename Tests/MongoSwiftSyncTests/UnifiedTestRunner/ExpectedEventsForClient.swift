@@ -6,10 +6,35 @@ struct ExpectedEventsForClient: Decodable {
     /// Client entity on which the events are expected to be observed.
     let client: String
 
+    enum EventType: String, Decodable {
+        case command, cmap
+    }
+
+    /// The type of events to be observed.
+    let eventType: EventType
+
     /// List of events, which are expected to be observed (in this order) on the corresponding client while executing
     /// operations. If the array is empty, the test runner MUST assert that no events were observed on the client
     /// (excluding ignored events).
     let events: [ExpectedEvent]
+
+    enum CodingKeys: String, CodingKey {
+        case client, eventType, events
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.client = try container.decode(String.self, forKey: .client)
+        // Defaults to command if omitted.
+        self.eventType = try container.decodeIfPresent(EventType.self, forKey: .eventType) ?? .command
+        switch self.eventType {
+        case .command:
+            self.events = try container.decode([ExpectedEvent].self, forKey: .events)
+        case .cmap:
+            // TODO: SWIFT-1321 actually parse these out.
+            self.events = []
+        }
+    }
 }
 
 /// Describes expected events.

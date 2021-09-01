@@ -207,7 +207,8 @@ struct UnifiedTestRunner {
                     }
 
                     if let expectEvents = test.expectEvents {
-                        for expectedEventList in expectEvents {
+                        // TODO: SWIFT-1321 don't skip CMAP event assertions here.
+                        for expectedEventList in expectEvents where expectedEventList.eventType != .cmap {
                             let clientId = expectedEventList.client
 
                             guard let actualEvents = clientEvents[clientId] else {

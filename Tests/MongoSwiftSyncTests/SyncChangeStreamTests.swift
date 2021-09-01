@@ -443,7 +443,10 @@ final class SyncChangeStreamTests: MongoSwiftTestCase {
             return
         }
 
-        let events = try captureCommandEvents(eventTypes: [.commandStarted], commandNames: ["aggregate"]) { client in
+        let events = try captureCommandEvents(
+            eventTypes: [.commandStartedEvent],
+            commandNames: ["aggregate"]
+        ) { client in
             try withTestNamespace(client: client) { _, coll in
                 let options = ChangeStreamOptions(
                     batchSize: 123,

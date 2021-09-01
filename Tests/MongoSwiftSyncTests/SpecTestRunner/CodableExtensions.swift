@@ -142,7 +142,7 @@ extension MongoClientOptions: StrictDecodable {
     internal typealias CodingKeysType = CodingKeys
 
     internal enum CodingKeys: String, CodingKey, CaseIterable {
-        case retryReads, retryWrites, w, readConcernLevel, readPreference, heartbeatFrequencyMS
+        case retryReads, retryWrites, w, readConcernLevel, readPreference, heartbeatFrequencyMS, loadBalanced, appname
     }
 
     public init(from decoder: Decoder) throws {
@@ -155,8 +155,12 @@ extension MongoClientOptions: StrictDecodable {
         let retryWrites = try container.decodeIfPresent(Bool.self, forKey: .retryWrites)
         let writeConcern = try? WriteConcern(w: container.decode(WriteConcern.W.self, forKey: .w))
         let heartbeatFrequencyMS = try container.decodeIfPresent(Int.self, forKey: .heartbeatFrequencyMS)
+        let loadBalanced = try container.decodeIfPresent(Bool.self, forKey: .loadBalanced)
+        let appName = try container.decodeIfPresent(String.self, forKey: .appname)
         self.init(
+            appName: appName,
             heartbeatFrequencyMS: heartbeatFrequencyMS,
+            loadBalanced: loadBalanced,
             readConcern: readConcern,
             readPreference: readPreference,
             retryReads: retryReads,
