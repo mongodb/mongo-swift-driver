@@ -7,11 +7,7 @@ import TestsCommon
 final class ChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamNext() throws {
         try self.withTestClient { client in
-            let testRequirements = TestRequirement(
-                acceptableTopologies: [.replicaSet, .sharded]
-            )
-
-            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            let unmetRequirement = try client.getUnmetRequirement(.changeStreamOnCollectionSupport)
             guard unmetRequirement == nil else {
                 printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
                 return
@@ -48,10 +44,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamError() throws {
         try self.withTestClient { client in
-            let testRequirements = TestRequirement(
-                acceptableTopologies: [.sharded, .replicaSet, .shardedReplicaSet]
-            )
-            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            let unmetRequirement = try client.getUnmetRequirement(.changeStreamOnCollectionSupport)
             guard unmetRequirement == nil else {
                 printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
                 return
@@ -75,11 +68,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamEmpty() throws {
         try self.withTestClient { client in
-            let testRequirements = TestRequirement(
-                acceptableTopologies: [.replicaSet, .sharded]
-            )
-
-            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            let unmetRequirement = try client.getUnmetRequirement(.changeStreamOnCollectionSupport)
             guard unmetRequirement == nil else {
                 printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
                 return
@@ -107,10 +96,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testChangeStreamToArray() throws {
         try self.withTestClient { client in
-            let testRequirements = TestRequirement(
-                acceptableTopologies: [.replicaSet, .sharded])
-
-            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            let unmetRequirement = try client.getUnmetRequirement(.changeStreamOnCollectionSupport)
             guard unmetRequirement == nil else {
                 printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
                 return
@@ -149,11 +135,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         let increment: (ChangeStreamEvent<BSONDocument>) -> Void = { _ in count += 1 }
 
         try self.withTestClient { client in
-            let testRequirements = TestRequirement(
-                acceptableTopologies: [.replicaSet, .sharded]
-            )
-
-            let unmetRequirement = try client.getUnmetRequirement(testRequirements)
+            let unmetRequirement = try client.getUnmetRequirement(.changeStreamOnCollectionSupport)
             guard unmetRequirement == nil else {
                 printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
                 return
