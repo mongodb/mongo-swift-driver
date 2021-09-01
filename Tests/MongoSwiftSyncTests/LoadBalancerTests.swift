@@ -13,7 +13,7 @@ final class LoadBalancerTests: MongoSwiftTestCase {
             specName: "load-balancers",
             excludeFiles: skipFiles,
             asType: UnifiedTestFile.self
-        ).filter { $0.0 == "cursors.json" }.map { $0.1 }
+        ).map { $0.1 }
 
         let skipTests = [
             // The sessions spec requires that sessions can only be used with the MongoClient that created them.
