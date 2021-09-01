@@ -54,6 +54,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
         let tests = try retrieveSpecTestFiles(
             specName: "initial-dns-seedlist-discovery",
+            subdirectory: "replica-set",
             asType: DNSSeedlistTestCase.self
         )
         for (fileName, testCase) in tests {
