@@ -153,8 +153,10 @@ final class SDAMTests: MongoSwiftTestCase {
         expect(serverChanged.topologyID).to(equal(topologyOpening.topologyID))
         expect(topologyChanged2.topologyID).to(equal(topologyOpening.topologyID))
 
-        // initial change from unknown, no servers to loadBalanced, no servers.
-        print(topologyChanged1)
+        // initial change from unknown, no servers to loadBalanced, no servers. This is slightly different than what
+        // the test linked above expects (that test expects the new server to show up here, too, with unknown type).
+        // we don't see it here because `mongoc_topology_description_get_servers` excludes servers with type "unknown",
+        // so until the server type changes to "loadBalancer" it won't show up in events.
         expect(topologyChanged1.previousDescription.type).to(equal(.unknown))
         expect(topologyChanged1.previousDescription.servers).to(beEmpty())
         expect(topologyChanged1.newDescription.type).to(equal(.loadBalanced))
@@ -177,7 +179,7 @@ final class SDAMTests: MongoSwiftTestCase {
         expect(serverChanged.newDescription.passives).to(beEmpty())
         expect(serverChanged.newDescription.type).to(equal(.loadBalancer))
 
-        // finally, the topology should change to reflect the server update in the previous event.
+        // finally, the topology should change to include the newly opened and discovered server.
         expect(topologyChanged2.previousDescription.type).to(equal(.loadBalanced))
         expect(topologyChanged2.previousDescription.servers).to(beEmpty())
 
