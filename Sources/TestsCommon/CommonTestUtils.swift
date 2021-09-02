@@ -58,7 +58,7 @@ open class MongoSwiftTestCase: XCTestCase {
             return try! ConnectionString(uri)
         case (.loadBalanced, false):
             guard let uri = Self.multipleMongosLoadBalancedURI else {
-                fatalError("Missing MULTIPLE_MONGOS_LB_URI environment variable")
+                fatalError("Missing MULTI_MONGOS_LB_URI environment variable")
             }
             return try! ConnectionString(uri)
         default:

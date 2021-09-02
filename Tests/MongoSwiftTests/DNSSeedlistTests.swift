@@ -46,7 +46,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
     // Note: the file txt-record-with-overridden-uri-option.json causes a mongoc warning. This is expected.
     // swiftlint:disable:next cyclomatic_complexity
-    func testInitialDNSSeedlistDiscovery() throws {
+    func testInitialDNSSeedlistDiscoveryReplicaSet() throws {
         guard MongoSwiftTestCase.topologyType == .replicaSetWithPrimary else {
             print("Skipping test because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
             return
@@ -54,17 +54,37 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
         let tests = try retrieveSpecTestFiles(
             specName: "initial-dns-seedlist-discovery",
+            subdirectory: "replica-set",
             asType: DNSSeedlistTestCase.self
         )
-        for (fileName, testCase) in tests {
-            // TODO: SWIFT-910: unskip this test
-            guard fileName != "txt-record-with-overridden-uri-option.json" else {
-                print("Skipping test file \(fileName); see SWIFT-910")
-                continue
-            }
 
+        try runDNSSeedlistTests(tests)
+    }
+
+    func testInitialDNSSeedlistDiscoveryLoadBalanced() throws {
+        guard MongoSwiftTestCase.topologyType == .loadBalanced else {
+            print("Skipping test because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+
+        let tests = try retrieveSpecTestFiles(
+            specName: "initial-dns-seedlist-discovery",
+            subdirectory: "load-balanced",
+            asType: DNSSeedlistTestCase.self
+        )
+
+        try runDNSSeedlistTests(tests)
+    }
+
+    func runDNSSeedlistTests(_ tests: [(String, DNSSeedlistTestCase)]) throws {
+        for (fileName, testCase) in tests {
             // this particular test case requires SSL is disabled. see DRIVERS-1324.
             let requiresTLS = fileName != "txt-record-with-overridden-ssl-option.json"
+
+            // skipping due to a libmongoc bug. TODO: SWIFT-1343 unskip.
+            guard fileName != "loadBalanced-replicaSet-errors.json" else {
+                continue
+            }
 
             // TLS requirement for this test case is not met.
             guard (requiresTLS && MongoSwiftTestCase.ssl) || (!requiresTLS && !MongoSwiftTestCase.ssl) else {
