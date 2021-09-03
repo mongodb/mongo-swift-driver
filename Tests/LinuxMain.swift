@@ -230,6 +230,7 @@ extension MongoDatabaseTests {
         ("testDropDatabase", testDropDatabase),
         ("testCreateCollection", testCreateCollection),
         ("testListCollections", testListCollections),
+        ("testListCollectionsBatchSize", testListCollectionsBatchSize),
         ("testAggregate", testAggregate),
         ("testAggregateWithOutputType", testAggregateWithOutputType),
         ("testAggregateWithListLocalSessions", testAggregateWithListLocalSessions),
