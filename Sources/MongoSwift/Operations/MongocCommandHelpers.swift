@@ -51,6 +51,7 @@ internal func runMongocCommandWithCReply(
             try _runMongocCommand(command: command, options: options, replyPtr: replyPtr, body: body)
         }
     } catch {
+        // on error, we need to clean up the bson_t ourselves here. on success, it is the caller's responsibility.
         withUnsafeMutablePointer(to: &reply) { ptr in
             bson_destroy(ptr)
         }
