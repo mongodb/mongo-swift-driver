@@ -48,8 +48,13 @@ fi
 # switch swift version, and run tests
 swiftenv local $SWIFT_VERSION
 
+SANITIZE_STATEMENT=""
+if [ "$SANITIZE" != "false" ]; then
+    SANITIZE_STATEMENT="--sanitize ${SANITIZE}"
+fi
+
 # build the driver
-swift build
+swift build $SANITIZE_STATEMENT
 
 # test the driver
 set +o errexit # even if tests fail we want to parse the results, so disable errexit
@@ -59,11 +64,6 @@ set -o pipefail # propagate error codes in the following pipes
 FILTER_STATEMENT=""
 if [ "$TEST_FILTER" != "NO_FILTER" ]; then
     FILTER_STATEMENT="--filter ${TEST_FILTER}"
-fi
-
-SANITIZE_STATEMENT=""
-if [ "$SANITIZE" != "false" ]; then
-    SANITIZE_STATEMENT="--sanitize ${SANITIZE}"
 fi
 
 MONGODB_TOPOLOGY=${TOPOLOGY} MONGODB_URI=$MONGODB_URI SINGLE_MONGOS_LB_URI=$SINGLE_MONGOS_LB_URI \
