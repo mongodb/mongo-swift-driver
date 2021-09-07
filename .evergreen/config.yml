@@ -1161,10 +1161,12 @@ axes:
         display_name: TSan
         variables:
           SANITIZE: "thread"
-      - id: asan
-        display_name: ASan
-        variables:
-          SANITIZE: "address"
+      # ASan is unfortunately known to produce false positives in Swift, see
+      # https://forums.swift.org/t/test-for-memory-leaks-in-ci/36526/9 
+      # - id: asan
+      #   display_name: ASan
+      #   variables:
+      #     SANITIZE: "address"
 
 task_groups:
   - name: serverless_task_group
@@ -1362,6 +1364,6 @@ buildvariants:
     os-fully-featured: "ubuntu-18.04"
     swift-version: "5.4"
     ssl-auth: "*"
-    sanitize: "*"
+    sanitize: "tsan"
   tasks:
      - ".5.0"
