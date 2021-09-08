@@ -2,6 +2,7 @@ import Foundation
 import MongoSwiftSync
 import Nimble
 import TestsCommon
+import XCTest
 
 final class MongoDatabaseTests: MongoSwiftTestCase {
     override func setUp() {
@@ -178,6 +179,35 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(listNamesEvents[1].command["nameOnly"]).to(equal(true))
         expect(listNamesEvents[2].command["nameOnly"]).to(equal(false))
         expect(listNamesEvents[3].command["nameOnly"]).to(equal(false))
+    }
+
+    func testListCollectionsBatchSize() throws {
+        try self.withTestNamespace { client, db, _ in
+            // clear out collections
+            try db.drop()
+
+            _ = try db.createCollection("foo")
+            _ = try db.createCollection("bar")
+            _ = try db.createCollection("baz")
+
+            let monitor = client.addCommandMonitor()
+            try monitor.captureEvents {
+                let options = ListCollectionsOptions(batchSize: 2)
+                _ = Array(try db.listCollections(options: options))
+            }
+
+            let events = monitor.commandStartedEvents(withNames: ["listCollections", "getMore"])
+
+            guard events.count == 2 else {
+                XCTFail("Expected to find 2 events, but got \(events.count): \(events)")
+                return
+            }
+
+            expect(events[0].commandName).to(equal("listCollections"))
+            expect(events[0].command["cursor"]?.documentValue?["batchSize"]?.toInt()).to(equal(2))
+            expect(events[1].commandName).to(equal("getMore"))
+            expect(events[1].command["batchSize"]?.toInt()).to(equal(2))
+        }
     }
 
     func testAggregate() throws {

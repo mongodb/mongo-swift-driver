@@ -49,8 +49,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     public let id: Int64?
 
     /**
-     * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user. When `forceIO` is
-     * true, this initializer will force a connection to the server if one is not already established.
+     * Initializes a new `MongoCursor` instance. Not meant to be instantiated directly by a user.
      *
      * - Throws:
      *   - `MongoError.InvalidArgumentError` if the options passed to the command that generated this cursor formed an
