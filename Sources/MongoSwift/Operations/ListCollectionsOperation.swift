@@ -136,6 +136,8 @@ internal struct ListCollectionsOperation: Operation {
         cursorOpts = try encodeOptions(options: cursorOpts, session: session) ?? BSONDocument()
         cmd["cursor"] = .document(cursorOpts)
 
+        // We don't need to clean up this reply ourselves, as `mongoc_cursor_new_from_command_reply_with_opts` will
+        // consume it.
         var reply = try self.database.withMongocDatabase(from: connection) { dbPtr in
             try readPref.withMongocReadPreference { rpPtr in
                 try runMongocCommandWithCReply(
