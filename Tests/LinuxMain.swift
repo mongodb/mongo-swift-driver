@@ -299,7 +299,8 @@ extension RetryableWritesTests {
 
 extension SDAMTests {
     static var allTests = [
-        ("testMonitoring", testMonitoring),
+        ("testMonitoringStandalone", testMonitoringStandalone),
+        ("testMonitoringLoadBalanced", testMonitoringLoadBalanced),
         ("testInitialReplicaSetDiscovery", testInitialReplicaSetDiscovery),
     ]
 }

@@ -16,16 +16,7 @@ final class SDAMTests: MongoSwiftTestCase {
         expect(desc.passives).to(haveCount(0))
     }
 
-    // Basic test based on the "standalone" spec test for SDAM monitoring:
-    // swiftlint:disable line_length
-    // https://github.com/mongodb/specifications/blob/master/source/server-discovery-and-monitoring/tests/monitoring/standalone.json
-    // swiftlint:enable line_length
-    func testMonitoring() throws {
-        guard MongoSwiftTestCase.topologyType == .single else {
-            print(unsupportedTopologyMessage(testName: self.name))
-            return
-        }
-
+    func captureInitialSDAMEvents() throws -> [SDAMEvent] {
         let monitor = TestSDAMMonitor()
         let client = try MongoClient.makeTestClient()
         client.addSDAMEventHandler(monitor)
@@ -37,10 +28,22 @@ final class SDAMTests: MongoSwiftTestCase {
             try db.drop()
         }
 
-        let receivedEvents = monitor.events().filter { !$0.isHeartbeatEvent }
+        return monitor.events().filter { !$0.isHeartbeatEvent }
+    }
+
+    // Basic test based on the "standalone" spec test for SDAM monitoring:
+    // swiftlint:disable line_length
+    // https://github.com/mongodb/specifications/blob/master/source/server-discovery-and-monitoring/tests/monitoring/standalone.json
+    // swiftlint:enable line_length
+    func testMonitoringStandalone() throws {
+        guard MongoSwiftTestCase.topologyType == .single else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        let receivedEvents = try captureInitialSDAMEvents()
 
         let connString = MongoSwiftTestCase.getConnectionString()
-
         guard let hostAddress = connString.hosts?[0] else {
             XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
             return
@@ -93,6 +96,106 @@ final class SDAMTests: MongoSwiftTestCase {
         expect(newTopology.servers[0].type).to(equal(.standalone))
 
         self.checkEmptyLists(newTopology.servers[0])
+    }
+
+    // Prose test based on the load balncer spec test for SDAM monitoring:
+    // swiftlint:disable line_length
+    // https://github.com/mongodb/specifications/blob/master/source/server-discovery-and-monitoring/tests/monitoring/load_balancer.yml
+    // swiftlint:enable line_length
+    func testMonitoringLoadBalanced() throws {
+        guard MongoSwiftTestCase.topologyType == .loadBalanced else {
+            print(unsupportedTopologyMessage(testName: self.name))
+            return
+        }
+
+        let receivedEvents = try captureInitialSDAMEvents()
+
+        let connString = MongoSwiftTestCase.getConnectionString()
+        guard let hostAddress = connString.hosts?[0] else {
+            XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
+            return
+        }
+
+        guard receivedEvents.count == 5 else {
+            XCTFail("Expected to receive 5 events, but instead received \(receivedEvents.count)")
+            return
+        }
+        guard let topologyOpening = receivedEvents[0].topologyOpeningValue else {
+            XCTFail("Expected event to be a topologyOpening event, but instead got \(receivedEvents[0])")
+            return
+        }
+        guard let topologyChanged1 = receivedEvents[1].topologyDescriptionChangedValue else {
+            XCTFail(
+                "Expected event to be a topologyDescriptionChanged event, but instead got \(receivedEvents[1])"
+            )
+            return
+        }
+        guard let serverOpening = receivedEvents[2].serverOpeningValue else {
+            XCTFail("Expected event to be a serverOpening event, but instead got \(receivedEvents[2])")
+            return
+        }
+        guard let serverChanged = receivedEvents[3].serverDescriptionChangedValue else {
+            XCTFail(
+                "Expected event to be a serverDescriptionChanged event, but instead got \(receivedEvents[3])"
+            )
+            return
+        }
+        guard let topologyChanged2 = receivedEvents[4].topologyDescriptionChangedValue else {
+            XCTFail(
+                "Expected event to be a topologyDescriptionChanged event, but instead got \(receivedEvents[4])"
+            )
+            return
+        }
+
+        // all events should have the same topology ID.
+        expect(topologyChanged1.topologyID).to(equal(topologyOpening.topologyID))
+        expect(serverOpening.topologyID).to(equal(topologyOpening.topologyID))
+        expect(serverChanged.topologyID).to(equal(topologyOpening.topologyID))
+        expect(topologyChanged2.topologyID).to(equal(topologyOpening.topologyID))
+
+        // initial change from unknown, no servers to loadBalanced, no servers. This is slightly different than what
+        // the test linked above expects (that test expects the new server to show up here, too, with unknown type).
+        // we don't see it here because `mongoc_topology_description_get_servers` excludes servers with type "unknown",
+        // so until the server type changes to "loadBalancer" it won't show up in events.
+        expect(topologyChanged1.previousDescription.type).to(equal(.unknown))
+        expect(topologyChanged1.previousDescription.servers).to(beEmpty())
+        expect(topologyChanged1.newDescription.type).to(equal(.loadBalanced))
+        expect(topologyChanged1.newDescription.servers).to(beEmpty())
+
+        // the server discovered should be the single one in the connection string.
+        expect(serverOpening.serverAddress).to(equal(hostAddress))
+        // the change should be to the same server.
+        expect(serverChanged.serverAddress).to(equal(hostAddress))
+        // the server should change from type unknown to loadBalancer.
+        expect(serverChanged.previousDescription.address).to(equal(hostAddress))
+        expect(serverChanged.previousDescription.arbiters).to(beEmpty())
+        expect(serverChanged.previousDescription.hosts).to(beEmpty())
+        expect(serverChanged.previousDescription.passives).to(beEmpty())
+        expect(serverChanged.previousDescription.type).to(equal(.unknown))
+
+        expect(serverChanged.newDescription.address).to(equal(hostAddress))
+        expect(serverChanged.newDescription.arbiters).to(beEmpty())
+        expect(serverChanged.newDescription.hosts).to(beEmpty())
+        expect(serverChanged.newDescription.passives).to(beEmpty())
+        expect(serverChanged.newDescription.type).to(equal(.loadBalancer))
+
+        // finally, the topology should change to include the newly opened and discovered server.
+        expect(topologyChanged2.previousDescription.type).to(equal(.loadBalanced))
+        expect(topologyChanged2.previousDescription.servers).to(beEmpty())
+
+        expect(topologyChanged2.newDescription.type).to(equal(.loadBalanced))
+        guard topologyChanged2.newDescription.servers.count == 1 else {
+            XCTFail(
+                "Expected new topology description to contain 1 server, " +
+                    "but found \(topologyChanged2.newDescription.servers)"
+            )
+            return
+        }
+        expect(topologyChanged2.newDescription.servers[0].address).to(equal(hostAddress))
+        expect(topologyChanged2.newDescription.servers[0].arbiters).to(beEmpty())
+        expect(topologyChanged2.newDescription.servers[0].hosts).to(beEmpty())
+        expect(topologyChanged2.newDescription.servers[0].passives).to(beEmpty())
+        expect(topologyChanged2.newDescription.servers[0].type).to(equal(.loadBalancer))
     }
 
     func testInitialReplicaSetDiscovery() throws {
