@@ -94,8 +94,11 @@ public final class ClientSession {
             return nil
         }
         return connection.withMongocConnection { client in
-            let serverDescription =
-                ServerDescription(mongoc_client_get_server_description(client, serverID))
+            guard let sd = mongoc_client_get_server_description(client, serverID) else {
+                return nil
+            }
+            defer { mongoc_server_description_destroy(sd) }
+            let serverDescription = ServerDescription(sd)
             return serverDescription.address
         }
     }
