@@ -6,7 +6,7 @@ final class LeakCheckTests: MongoSwiftTestCase {
         guard let checkForLeaks = ProcessInfo.processInfo.environment["CHECK_LEAKS"], checkForLeaks == "leaks" else {
             return
         }
-        
+
         // taken from https://forums.swift.org/t/test-for-memory-leaks-in-ci/36526/19
         atexit {
             @discardableResult
@@ -17,7 +17,7 @@ final class LeakCheckTests: MongoSwiftTestCase {
                 }
                 let p = Process()
                 p.launchPath = "/usr/bin/leaks"
-                p.arguments = [ "\(getpid())" ]
+                p.arguments = ["\(getpid())"]
                 p.standardOutput = out
                 p.standardError = out
                 p.launch()
