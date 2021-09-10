@@ -112,6 +112,12 @@ extension EventLoopBoundMongoClientTests {
     ]
 }
 
+extension LeakCheckTests {
+    static var allTests = [
+        ("testLeaks", testLeaks),
+    ]
+}
+
 extension LoadBalancerTests {
     static var allTests = [
         ("testLoadBalancers", testLoadBalancers),
@@ -404,6 +410,7 @@ XCTMain([
     testCase(CrudTests.allTests),
     testCase(DNSSeedlistTests.allTests),
     testCase(EventLoopBoundMongoClientTests.allTests),
+    testCase(LeakCheckTests.allTests),
     testCase(LoadBalancerTests.allTests),
     testCase(MongoClientTests.allTests),
     testCase(MongoCollectionTests.allTests),

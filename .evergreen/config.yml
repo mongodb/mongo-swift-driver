@@ -161,6 +161,7 @@ functions:
           MONGODB_API_VERSION=${MONGODB_API_VERSION} \
           TEST_FILTER=${TEST_FILTER} \
           SANITIZE=${SANITIZE} \
+          CHECK_LEAKS=${CHECK_LEAKS} \
             ${PROJECT_DIRECTORY}/.evergreen/run-tests.sh
     
   "upload test results":
@@ -1168,6 +1169,14 @@ axes:
       #   variables:
       #     SANITIZE: "address"
 
+  - id: check-leaks
+    display_name: Check Leaks
+    values:
+      - id: leaks
+        display_name: Leaks
+        variables:
+          CHECK_LEAKS: leaks
+
 task_groups:
   - name: serverless_task_group
     setup_group_can_fail_task: true
@@ -1212,7 +1221,7 @@ buildvariants:
       - "macos-10.15"
       - "ubuntu-18.04"
     swift-version: "5.1"
-  display_name: "${swift-version} ${os-fully-featured}"
+  display_name: "Compile ${swift-version} ${os-fully-featured}"
   tasks:
     - "compile"
 
@@ -1365,5 +1374,15 @@ buildvariants:
     swift-version: "5.4"
     ssl-auth: "*"
     sanitize: "tsan"
+  tasks:
+     - ".5.0"
+
+- matrix_name: "sanitize"
+  display_name: "Leak Checker ${os-fully-featured} ${ssl-auth}"
+  matrix_spec:
+    os-fully-featured: "macos-10.15"
+    swift-version: "5.4"
+    ssl-auth: "*"
+    check-leaks: "leaks"
   tasks:
      - ".5.0"
