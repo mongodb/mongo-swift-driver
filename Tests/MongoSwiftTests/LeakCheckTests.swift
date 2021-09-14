@@ -7,32 +7,25 @@ final class LeakCheckTests: MongoSwiftTestCase {
             return
         }
 
-        // taken from https://forums.swift.org/t/test-for-memory-leaks-in-ci/36526/19
+        // inspired by https://forums.swift.org/t/test-for-memory-leaks-in-ci/36526/19
         atexit {
-            @discardableResult
-            func leaksTo(_ file: String) -> Process {
-                let out = FileHandle(forWritingAtPath: file)!
-                defer {
-                    try! out.close()
-                }
+            func leaks() -> Process {
                 let p = Process()
                 p.launchPath = "/usr/bin/leaks"
                 p.arguments = ["\(getpid())"]
-                p.standardOutput = out
-                p.standardError = out
                 p.launch()
                 p.waitUntilExit()
                 return p
             }
-            let p = leaksTo("/dev/null")
+            let p = leaks()
             print("================")
             guard p.terminationReason == .exit && [0, 1].contains(p.terminationStatus) else {
-                print("Leak checking process exited unexpectedly - reason: \(p.terminationReason), status: \(p.terminationStatus)")
+                print("Leak checking process exited unexpectedly - " +
+                    "reason: \(p.terminationReason), status: \(p.terminationStatus)")
                 exit(255)
             }
             if p.terminationStatus == 1 {
                 print("Unexpectedly leaked memory")
-                leaksTo("/dev/tty")
             } else {
                 print("No memory leaks!")
             }
