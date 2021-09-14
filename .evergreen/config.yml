@@ -1377,7 +1377,7 @@ buildvariants:
   tasks:
      - ".5.0"
 
-- matrix_name: "sanitize"
+- matrix_name: "leaks"
   display_name: "Leak Checker ${os-fully-featured} ${ssl-auth}"
   matrix_spec:
     os-fully-featured: "macos-10.15"
