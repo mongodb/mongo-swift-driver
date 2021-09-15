@@ -1,6 +1,7 @@
 import Foundation
 import MongoSwiftSync
 import Nimble
+import NIOConcurrencyHelpers
 import TestsCommon
 import XCTest
 
@@ -272,21 +273,22 @@ final class SyncMongoClientTests: MongoSwiftTestCase {
     func testAPMCallbacks() throws {
         let client = try MongoClient.makeTestClient()
 
-        var commandEvents: [CommandEvent] = []
-        client.addCommandEventHandler { event in
-            commandEvents.append(event)
+        let commandEventCount = NIOAtomic<Int>.makeAtomic(value: 0)
+        let sdamEventCount = NIOAtomic<Int>.makeAtomic(value: 0)
+
+        client.addCommandEventHandler { _ in
+            _ = commandEventCount.add(1)
         }
 
-        var sdamEvents: [SDAMEvent] = []
-        client.addSDAMEventHandler { event in
-            sdamEvents.append(event)
+        client.addSDAMEventHandler { _ in
+            _ = sdamEventCount.add(1)
         }
 
         // don't care if command fails, just testing that the events were emitted
         _ = try? client.listDatabases()
 
-        expect(commandEvents).toEventually(haveCount(2)) // wait for started and succeeded / failed
-        expect(sdamEvents.isEmpty).toEventually(beFalse())
+        expect(commandEventCount.load()).toEventually(equal(2)) // wait for started and succeeded / failed
+        expect(sdamEventCount.load()).toEventuallyNot(equal(0))
     }
 
     func testCertificateVerificationOptions() throws {

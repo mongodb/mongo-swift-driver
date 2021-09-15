@@ -2,6 +2,7 @@ import Foundation
 import MongoSwift
 import Nimble
 import NIO
+import NIOConcurrencyHelpers
 import TestsCommon
 
 final class ChangeStreamTests: MongoSwiftTestCase {
@@ -131,8 +132,8 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     }
 
     func testChangeStreamForEach() throws {
-        var count = 0
-        let increment: (ChangeStreamEvent<BSONDocument>) -> Void = { _ in count += 1 }
+        let count = NIOAtomic<Int>.makeAtomic(value: 0)
+        let increment: (ChangeStreamEvent<BSONDocument>) -> Void = { _ in count.add(1) }
 
         try self.withTestClient { client in
             let unmetRequirement = try client.getUnmetRequirement(.changeStreamOnCollectionSupport)
@@ -151,10 +152,10 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             let future = stream.forEach(increment)
 
             _ = try coll.insertOne(["x": 1]).wait()
-            expect(count).toEventually(equal(1), timeout: 10)
+            expect(count.load()).toEventually(equal(1), timeout: 10)
 
             _ = try coll.insertOne(["x": 2]).wait()
-            expect(count).toEventually(equal(2), timeout: 10)
+            expect(count.load()).toEventually(equal(2), timeout: 10)
 
             try stream.kill().wait()
             expect(try future.wait()).toNot(throwError())

@@ -1,6 +1,7 @@
 import Foundation
 @testable import MongoSwift
 import Nimble
+import NIOConcurrencyHelpers
 import TestsCommon
 import XCTest
 
@@ -33,14 +34,25 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
     }
 
     fileprivate class TopologyDescriptionWatcher: SDAMEventHandler {
-        fileprivate var lastTopologyDescription: TopologyDescription?
+        private var lastTopologyDescription: TopologyDescription?
+
+        /// Synchronize access to appease TSan.
+        private let lock = Lock()
 
         // listen for TopologyDescriptionChanged events and continually record the latest description we've seen.
         func handleSDAMEvent(_ event: SDAMEvent) {
-            guard case let .topologyDescriptionChanged(event) = event else {
-                return
+            self.lock.withLock {
+                guard case let .topologyDescriptionChanged(event) = event else {
+                    return
+                }
+                self.lastTopologyDescription = event.newDescription
             }
-            self.lastTopologyDescription = event.newDescription
+        }
+
+        func getLastDescription() -> TopologyDescription? {
+            self.lock.withLock {
+                self.lastTopologyDescription
+            }
         }
     }
 
@@ -121,7 +133,7 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                     // eventually matches the list of hosts."
                     // This needs to be done before the client leaves scope to ensure the SDAM machinery
                     // keeps running.
-                    expect(topologyWatcher.lastTopologyDescription?.servers.map { $0.address })
+                    expect(topologyWatcher.getLastDescription()?.servers.map { $0.address })
                         .toEventually(equal(testCase.hosts), timeout: 5)
 
                     // "You MUST verify that each of the values of the Connection String Options under options match the

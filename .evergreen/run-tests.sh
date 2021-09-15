@@ -15,6 +15,7 @@ RAW_TEST_RESULTS="${PROJECT_DIRECTORY}/rawTestResults"
 XML_TEST_RESULTS="${PROJECT_DIRECTORY}/testResults.xml"
 INSTALL_DEPS=${INSTALL_DEPS:-"false"}
 TEST_FILTER=${TEST_FILTER:-"NO_FILTER"}
+SANITIZE=${SANITIZE:-"false"}
 
 # ssl setup
 SSL=${SSL:-nossl}
@@ -47,8 +48,13 @@ fi
 # switch swift version, and run tests
 swiftenv local $SWIFT_VERSION
 
+SANITIZE_STATEMENT=""
+if [ "$SANITIZE" != "false" ]; then
+    SANITIZE_STATEMENT="--sanitize ${SANITIZE}"
+fi
+
 # build the driver
-swift build
+swift build $SANITIZE_STATEMENT
 
 # test the driver
 set +o errexit # even if tests fail we want to parse the results, so disable errexit
@@ -62,7 +68,7 @@ fi
 
 MONGODB_TOPOLOGY=${TOPOLOGY} MONGODB_URI=$MONGODB_URI SINGLE_MONGOS_LB_URI=$SINGLE_MONGOS_LB_URI \
 MULTI_MONGOS_LB_URI=$MULTI_MONGOS_LB_URI MONGODB_API_VERSION=$MONGODB_API_VERSION \
-swift test $FILTER_STATEMENT 2>&1 | tee ${RAW_TEST_RESULTS}
+swift test $FILTER_STATEMENT $SANITIZE_STATEMENT 2>&1 | tee ${RAW_TEST_RESULTS}
 
 # save tests exit code
 EXIT_CODE=$?

@@ -160,6 +160,8 @@ functions:
           SWIFT_VERSION=${SWIFT_VERSION} \
           MONGODB_API_VERSION=${MONGODB_API_VERSION} \
           TEST_FILTER=${TEST_FILTER} \
+          SANITIZE=${SANITIZE} \
+          CHECK_LEAKS=${CHECK_LEAKS} \
             ${PROJECT_DIRECTORY}/.evergreen/run-tests.sh
     
   "upload test results":
@@ -356,6 +358,17 @@ functions:
           LINUX_SOURCEKIT_LIB_PATH=${PROJECT_DIRECTORY}/opt/swiftenv/versions/${SWIFT_VERSION}/usr/lib \
             ${PROJECT_DIRECTORY}/opt/swiftlint/.build/release/swiftlint --strict --quiet
   
+  "compile":
+    - command: shell.exec
+      type: test
+      params:
+        working_dir: "src"
+        script: |
+          ${PREPARE_SHELL}
+
+          SWIFT_VERSION=${SWIFT_VERSION} \
+            ${PROJECT_DIRECTORY}/.evergreen/compile.sh
+  
   start-load-balancer:
     - command: shell.exec
       params:
@@ -416,6 +429,10 @@ post:
   - func: "cleanup"
 
 tasks:
+    - name: "compile"
+      commands:
+        - func: "compile"
+
     - name: "test-3.6-standalone"
       tags: ["3.6", "standalone"]
       commands:
@@ -1085,7 +1102,7 @@ axes:
       - id: "5.4"
         display_name: "Swift 5.4"
         variables:
-          SWIFT_VERSION: "5.4"
+          SWIFT_VERSION: "5.4.2"
       - id: "5.5-dev"
         display_name: "Swift 5.5-dev"
         variables:
@@ -1138,6 +1155,28 @@ axes:
           ORCHESTRATION_FILE: "versioned-api-testing.json"
           TEST_FILTER: "VersionedAPITests"
 
+  - id: sanitize
+    display_name: Sanitize
+    values:
+      - id: tsan
+        display_name: TSan
+        variables:
+          SANITIZE: "thread"
+      # ASan is unfortunately known to produce false positives in Swift, see
+      # https://forums.swift.org/t/test-for-memory-leaks-in-ci/36526/9 
+      # - id: asan
+      #   display_name: ASan
+      #   variables:
+      #     SANITIZE: "address"
+
+  - id: check-leaks
+    display_name: Check Leaks
+    values:
+      - id: leaks
+        display_name: Leaks
+        variables:
+          CHECK_LEAKS: leaks
+
 task_groups:
   - name: serverless_task_group
     setup_group_can_fail_task: true
@@ -1174,40 +1213,22 @@ task_groups:
       - ".serverless"
 
 buildvariants:
-# there are no 5.1 toolchains for Ubuntu 20.04. unfortunately as of now we cannot remove
-# entire buildvariants via rule from the main matrix so we need to split this up. see EVG-13092
-- matrix_name: "tests-5.1"
+
+- matrix_name: "min-version-compile"
   matrix_spec:
+  # Ubuntu 20.04 does not have Swift 5.1 toolchains.
     os-fully-featured:
-      - "ubuntu-18.04"
       - "macos-10.15"
+      - "ubuntu-18.04"
     swift-version: "5.1"
-    ssl-auth: "*"
-  display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
+  display_name: "Compile ${swift-version} ${os-fully-featured}"
   tasks:
-     - ".latest !.load-balancer"
-     - ".5.0"
-     - ".4.4"
-     - ".4.2"
-     - ".4.0"
-     - ".3.6"
-  rules:
-  # MongoDB 3.6 does not have Ubuntu 18.04-specific Linux releases, so we just use
-  # generic Linux there. This do not link to OpenSSL, so we have to skip SSL tests.
-  - if:
-      os-fully-featured:
-        - "ubuntu-18.04"
-      swift-version: "*"
-      ssl-auth: "ssl-auth"
-    then:
-      remove_tasks:
-      - ".3.6"
+    - "compile"
 
 - matrix_name: "tests-all"
   matrix_spec:
     os-fully-featured: "*"
     swift-version:
-      - "5.2"
       - "5.3"
       - "5.4"
       - "5.5-dev"
@@ -1245,23 +1266,10 @@ buildvariants:
         - ".4.0"
         - ".4.2"
 
-# there are no 5.1 toolchains for Ubuntu 20.04. unfortunately as of now we cannot remove
-# entire buildvariants via rule from the main matrix so we need to split this up. see EVG-13092
-- matrix_name: "atlas-connect-5.1"
-  matrix_spec:
-    os-fully-featured:
-      - "macos-10.15"
-      - "ubuntu-18.04"
-    swift-version: "5.1"
-  display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
-  tasks:
-    - ".atlas-connect"
-
 - matrix_name: "atlas-connect"
   matrix_spec:
     os-fully-featured: "*"
     swift-version:
-      - "5.2"
       - "5.3"
       - "5.4"
       - "5.5-dev"
@@ -1276,7 +1284,6 @@ buildvariants:
       - "ubuntu-20.04"
     ssl-auth: "*"
     swift-version:
-      - "5.2"
       - "5.3"
       - "5.4"
       - "5.5-dev"
@@ -1303,8 +1310,7 @@ buildvariants:
       - latest
       - 5.0
       - 4.4
-    swift-version:
-      - 5.2
+    swift-version: "5.4"
   display_name: "OCSP ${swift-version} ${os-fully-featured} ${versions}"
   batchtime: 20160 # 14 days
   tasks:
@@ -1321,10 +1327,8 @@ buildvariants:
 
 - matrix_name: "ocsp-macos"
   matrix_spec:
-    os-fully-featured:
-      - macos-10.15
-    swift-version:
-      - 5.2
+    os-fully-featured: "macos-10.15"
+    swift-version: "5.4"
     versions:
       - latest
       - 5.0
@@ -1338,7 +1342,7 @@ buildvariants:
 - matrix_name: "versioned-api-tests"
   matrix_spec:
     os-fully-featured: ubuntu-18.04
-    swift-version: "5.3"
+    swift-version: "5.4"
     versionedAPI: "*"
   display_name: "Versioned API ${versionedAPI} ${swift-version} ${os-fully-featured}"
   batchtime: 10080  # 7 days
@@ -1350,7 +1354,7 @@ buildvariants:
   display_name: "Format and Lint"
   matrix_spec:
     os-fully-featured: "ubuntu-18.04"
-    swift-version: "5.3"
+    swift-version: "5.4"
   tasks:
     - name: "check-format"
     - name: "check-lint"
@@ -1359,6 +1363,26 @@ buildvariants:
   display_name: "Check Sourcery"
   matrix_spec:
     os-fully-featured: "macos-10.15"
-    swift-version: "5.2"
+    swift-version: "5.4"
   tasks:
     - name: "check-sourcery"
+
+- matrix_name: "sanitize"
+  display_name: "${sanitize} ${os-fully-featured} ${ssl-auth}"
+  matrix_spec:
+    os-fully-featured: "ubuntu-18.04"
+    swift-version: "5.4"
+    ssl-auth: "*"
+    sanitize: "tsan"
+  tasks:
+     - ".5.0"
+
+- matrix_name: "leaks"
+  display_name: "Leak Checker ${os-fully-featured} ${ssl-auth}"
+  matrix_spec:
+    os-fully-featured: "macos-10.15"
+    swift-version: "5.4"
+    ssl-auth: "*"
+    check-leaks: "leaks"
+  tasks:
+     - ".5.0"
