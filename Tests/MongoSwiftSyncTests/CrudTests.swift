@@ -90,7 +90,7 @@ final class CrudTests: MongoSwiftTestCase {
             asType: UnifiedTestFile.self
         )
         let runner = try UnifiedTestRunner()
-        let skipList: [String: [String]] = [
+        var skipList: [String: [String]] = [
             // libmongoc chose not to implement CDRIVER-3630 in anticipation of DRIVERS-1340,
             // so we cannot pass these tests for now.
             // TODO: DRIVERS-1340 unskip
@@ -106,6 +106,13 @@ final class CrudTests: MongoSwiftTestCase {
             "unacknowledged-bulkWrite-update-hint-clientError": ["*"],
             "unacknowledged-bulkWrite-replace-hint-clientError": ["*"]
         ]
+        // Skipping due to a bug in server latest. TODO: SWIFT-1359 unskip
+        let client = try MongoClient.makeTestClient()
+        if try client.serverVersion() >= ServerVersion(major: 5, minor: 1, patch: 0)
+            && client.topologyType().isSharded
+        {
+            skipList["aggregate-out-readConcern"] = ["readConcern available with out stage"]
+        }
         try runner.runFiles(files.map { $0.1 }, skipTests: skipList)
     }
 }
