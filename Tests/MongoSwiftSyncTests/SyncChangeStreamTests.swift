@@ -296,15 +296,13 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase {
     // TODO: SWIFT-560: Run this test.
     func testChangeStreamSpecUnified() throws {
         printSkipMessage(testName: self.name, reason: "Skipping until SWIFT-560 is implemented")
-        return
-
-                // let tests = try retrieveSpecTestFiles(
-                //     specName: "change-streams",
-                //     subdirectory: "unified",
-                //     asType: UnifiedTestFile.self
-                // ).map { $0.1 }
-                // let testRunner = try UnifiedTestRunner()
-                // try testRunner.runFiles(tests)
+        // let tests = try retrieveSpecTestFiles(
+        //     specName: "change-streams",
+        //     subdirectory: "unified",
+        //     asType: UnifiedTestFile.self
+        // ).map { $0.1 }
+        // let testRunner = try UnifiedTestRunner()
+        // try testRunner.runFiles(tests)
     }
 
     // TODO: SWIFT-560: Remove this test. It is a prose version of a unified test which we skip above.

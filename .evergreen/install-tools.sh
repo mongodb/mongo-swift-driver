@@ -39,13 +39,13 @@ swiftenv local $SWIFT_VERSION
 
 if [ $1 == "swiftlint" ]
 then
-    build_from_gh swiftlint https://github.com/realm/SwiftLint "0.43.1"
+    build_from_gh swiftlint https://github.com/realm/SwiftLint "0.44.0"
 elif [ $1 == "swiftformat" ]
 then
-    build_from_gh swiftformat https://github.com/nicklockwood/SwiftFormat "0.47.13"
+    build_from_gh swiftformat https://github.com/nicklockwood/SwiftFormat "0.48.11"
 elif [ $1 == "sourcery" ]
 then
-    install_from_gh sourcery https://github.com/krzysztofzablocki/Sourcery/releases/download/1.3.4/Sourcery-1.3.4.zip
+    install_from_gh sourcery https://github.com/krzysztofzablocki/Sourcery/releases/download/1.6.0/Sourcery-1.6.0.zip
 else
     echo Missing/unknown install option: "$1"
 fi
