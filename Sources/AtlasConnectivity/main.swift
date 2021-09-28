@@ -14,7 +14,6 @@ for config in configs + srvConfigs {
 
     do {
         let client = try MongoClient(uri)
-        // run legacy hello command
         let db = client.db("test")
         _ = try db.runCommand(["hello": 1])
 
