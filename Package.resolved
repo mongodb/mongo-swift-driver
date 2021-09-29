@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/mongodb/swift-bson",
         "state": {
           "branch": null,
-          "revision": "8a9d60c4e684579a390621674850e8a6fa04c3ed",
-          "version": "3.0.0"
+          "revision": "558c7ff441da4599a18dc5eee5b4c6c6d74a1b8b",
+          "version": "3.0.1"
         }
       },
       {
@@ -42,8 +42,8 @@
         "repositoryURL": "https://github.com/apple/swift-nio",
         "state": {
           "branch": null,
-          "revision": "43931b7a7daf8120a487601530c8bc03ce711992",
-          "version": "2.25.1"
+          "revision": "6aa9347d9bc5bbfe6a84983aec955c17ffea96ef",
+          "version": "2.33.0"
         }
       }
     ]

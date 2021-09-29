@@ -10,7 +10,7 @@ final class MongoClientTests: MongoSwiftTestCase {
         defer { elg.syncShutdownOrFail() }
         let client = try MongoClient(using: elg)
         try client.syncClose()
-        expect(try client.listDatabases().wait()).to(throwError(errorType: ChannelError.self))
+        expect(try client.listDatabases().wait()).to(throwError(errorType: NIOThreadPoolError.ThreadPoolInactive.self))
     }
 
     func verifyPoolSize(_ client: MongoClient, size: Int) throws {
