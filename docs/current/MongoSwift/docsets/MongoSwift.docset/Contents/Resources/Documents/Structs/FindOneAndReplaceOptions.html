@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.1.1 Docs
+          MongoSwift 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -67,6 +67,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -432,6 +441,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -611,6 +623,12 @@
                 <a class="nav-group-task-link" href="../Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -632,7 +650,7 @@
             <p>Options to use when executing a <code>findOneAndReplace</code> command on a <code><a href="../Structs/MongoCollection.html">MongoCollection</a></code>.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L194-L252">Show on GitHub</a>
+                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L200-L264">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -666,7 +684,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L196">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L202">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -696,7 +714,37 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L199">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L205">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift24FindOneAndReplaceOptionsV4hintAA9IndexHintOSgvp"></a>
+                    <a name="//apple_ref/swift/Property/hint" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift24FindOneAndReplaceOptionsV4hintAA9IndexHintOSgvp">hint</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A document or string that specifies the index to use to support the query. Only supported in server 4.4+.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/IndexHint.html">IndexHint</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L208">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -726,7 +774,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L202">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L211">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -756,7 +804,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L205">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L214">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -786,7 +834,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L208">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L217">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -816,7 +864,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L211">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L220">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -846,7 +894,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L214">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L223">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -876,7 +924,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L217">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L226">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -884,9 +932,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift24FindOneAndReplaceOptionsV24bypassDocumentValidation9collation9maxTimeMS10projection06returnI04sort6upsert12writeConcernACSbSg_0B4BSON12BSONDocumentVSgSiSgApA06ReturnI0OSgAplA05WriteT0VSgtcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(bypassDocumentValidation:collation:maxTimeMS:projection:returnDocument:sort:upsert:writeConcern:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift24FindOneAndReplaceOptionsV24bypassDocumentValidation9collation9maxTimeMS10projection06returnI04sort6upsert12writeConcernACSbSg_0B4BSON12BSONDocumentVSgSiSgApA06ReturnI0OSgAplA05WriteT0VSgtcfc">init(bypassDocumentValidation:<wbr>collation:<wbr>maxTimeMS:<wbr>projection:<wbr>returnDocument:<wbr>sort:<wbr>upsert:<wbr>writeConcern:<wbr>)</a>
+                    <a name="/s:10MongoSwift24FindOneAndReplaceOptionsV24bypassDocumentValidation9collation4hint9maxTimeMS10projection06returnI04sort6upsert12writeConcernACSbSg_0B4BSON12BSONDocumentVSgAA9IndexHintOSgSiSgAqA06ReturnI0OSgAqmA05WriteU0VSgtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(bypassDocumentValidation:collation:hint:maxTimeMS:projection:returnDocument:sort:upsert:writeConcern:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift24FindOneAndReplaceOptionsV24bypassDocumentValidation9collation4hint9maxTimeMS10projection06returnI04sort6upsert12writeConcernACSbSg_0B4BSON12BSONDocumentVSgAA9IndexHintOSgSiSgAqA06ReturnI0OSgAqmA05WriteU0VSgtcfc">init(bypassDocumentValidation:<wbr>collation:<wbr>hint:<wbr>maxTimeMS:<wbr>projection:<wbr>returnDocument:<wbr>sort:<wbr>upsert:<wbr>writeConcern:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -904,6 +952,7 @@
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
     <span class="nv">bypassDocumentValidation</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/IndexHint.html">IndexHint</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">maxTimeMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">projection</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">returnDocument</span><span class="p">:</span> <span class="kt"><a href="../Enums/ReturnDocument.html">ReturnDocument</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
@@ -915,7 +964,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L233-L251">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+FindAndModify.swift#L243-L263">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -928,7 +977,7 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

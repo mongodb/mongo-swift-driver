@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwift 1.1.1 Docs
+          MongoSwift 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -67,6 +67,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -432,6 +441,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -611,6 +623,12 @@
                 <a class="nav-group-task-link" href="Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -656,7 +674,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/APM.swift#L269-L303">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/APM.swift#L301-L335">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -687,7 +705,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/APM.swift#L11-L14">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/APM.swift#L11-L14">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -718,7 +736,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/APM.swift#L352-L388">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/APM.swift#L384-L420">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -749,7 +767,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/APM.swift#L391-L427">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/APM.swift#L423-L459">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -775,13 +793,13 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ServerAddress</span> <span class="p">:</span> <span class="kt">Equatable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ServerAddress</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Hashable</span></code></pre>
 <pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">ServerAddress</span><span class="p">:</span> <span class="kt">CustomStringConvertible</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L5-L39">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L5-L39">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -813,7 +831,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L68-L183">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L68-L226">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -844,7 +862,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/APM.swift#L306-L349">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/APM.swift#L338-L381">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -862,8 +880,8 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Published when the server monitor’s ismaster command is started - immediately before
-the ismaster command is serialized into raw BSON and written to the socket.</p>
+                        <p>Published when the server monitor’s &ldquo;hello&rdquo; command is started - immediately before
+the &ldquo;hello&rdquo; command is serialized into raw BSON and written to the socket.</p>
 
                         <a href="Structs/ServerHeartbeatStartedEvent.html" class="slightly-smaller">See more</a>
                       </div>
@@ -876,7 +894,7 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/APM.swift#L539-L565">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/APM.swift#L571-L597">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -894,7 +912,7 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Published when the server monitor’s ismaster fails, either with an “ok: 0” or a socket exception.</p>
+                        <p>Published when the server monitor’s &ldquo;hello&rdquo; command fails, either with an “ok: 0” or a socket exception.</p>
 
                         <a href="Structs/ServerHeartbeatFailedEvent.html" class="slightly-smaller">See more</a>
                       </div>
@@ -907,7 +925,7 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/APM.swift#L606-L642">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/APM.swift#L638-L674">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -925,7 +943,7 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Published when the server monitor’s ismaster succeeds.</p>
+                        <p>Published when the server monitor’s &ldquo;hello&rdquo; command succeeds.</p>
 
                         <a href="Structs/ServerHeartbeatSucceededEvent.html" class="slightly-smaller">See more</a>
                       </div>
@@ -938,7 +956,7 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/APM.swift#L568-L603">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/APM.swift#L600-L635">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -969,7 +987,7 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/APM.swift#L472-L502">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/APM.swift#L504-L534">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1000,7 +1018,7 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/APM.swift#L505-L535">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/APM.swift#L537-L567">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1031,7 +1049,7 @@ the ismaster command is serialized into raw BSON and written to the socket.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/APM.swift#L430-L469">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/APM.swift#L462-L501">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1063,7 +1081,7 @@ which servers are up, what type of servers they are, which is primary, and so on
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L207-L274">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L250-L352">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1076,7 +1094,7 @@ which servers are up, what type of servers they are, which is primary, and so on
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

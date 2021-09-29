@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.1.1 Docs
+          MongoSwift 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -67,6 +67,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -432,6 +441,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -611,6 +623,12 @@
                 <a class="nav-group-task-link" href="../Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -637,7 +655,7 @@
 </div>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/ChangeStream.swift#L63-L284">Show on GitHub</a>
+                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStream.swift#L63-L284">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -649,9 +667,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12ChangeStreamC7isAlive3NIO15EventLoopFutureCySbGyF"></a>
+                    <a name="/s:10MongoSwift12ChangeStreamC7isAlive7NIOCore15EventLoopFutureCySbGyF"></a>
                     <a name="//apple_ref/swift/Method/isAlive()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC7isAlive3NIO15EventLoopFutureCySbGyF">isAlive()</a>
+                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC7isAlive7NIOCore15EventLoopFutureCySbGyF">isAlive()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -669,7 +687,7 @@
 <div class="aside aside-warning">
     <p class="aside-title">Warning</p>
     If this change stream is alive when it goes out of scope, it will leak resources. To ensure it is dead
-before it leaves scope, invoke <code><a href="../Classes/ChangeStream.html#/s:10MongoSwift12ChangeStreamC4kill3NIO15EventLoopFutureCyytGyF">ChangeStream.kill(...)</a></code> on it.
+before it leaves scope, invoke <code><a href="../Classes/ChangeStream.html#/s:10MongoSwift12ChangeStreamC4kill7NIOCore15EventLoopFutureCyytGyF">ChangeStream.kill(...)</a></code> on it.
 
 </div>
 
@@ -683,7 +701,7 @@ before it leaves scope, invoke <code><a href="../Classes/ChangeStream.html#/s:10
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/ChangeStream.swift#L139-L143">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStream.swift#L139-L143">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -713,7 +731,7 @@ before it leaves scope, invoke <code><a href="../Classes/ChangeStream.html#/s:10
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/ChangeStream.swift#L146">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStream.swift#L146">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -721,9 +739,9 @@ before it leaves scope, invoke <code><a href="../Classes/ChangeStream.html#/s:10
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12ChangeStreamC4next3NIO15EventLoopFutureCyxSgGyF"></a>
+                    <a name="/s:10MongoSwift12ChangeStreamC4next7NIOCore15EventLoopFutureCyxSgGyF"></a>
                     <a name="//apple_ref/swift/Method/next()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC4next3NIO15EventLoopFutureCyxSgGyF">next()</a>
+                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC4next7NIOCore15EventLoopFutureCyxSgGyF">next()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -769,7 +787,7 @@ exhausted, or an error if one occurred. The returned future will not resolve unt
 met, potentially after multiple requests to the server.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/ChangeStream.swift#L176-L180">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStream.swift#L176-L180">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -777,9 +795,9 @@ met, potentially after multiple requests to the server.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12ChangeStreamC7tryNext3NIO15EventLoopFutureCyxSgGyF"></a>
+                    <a name="/s:10MongoSwift12ChangeStreamC7tryNext7NIOCore15EventLoopFutureCyxSgGyF"></a>
                     <a name="//apple_ref/swift/Method/tryNext()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC7tryNext3NIO15EventLoopFutureCyxSgGyF">tryNext()</a>
+                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC7tryNext7NIOCore15EventLoopFutureCyxSgGyF">tryNext()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -822,7 +840,7 @@ inactive.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/ChangeStream.swift#L204-L208">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStream.swift#L204-L208">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -830,9 +848,9 @@ inactive.</li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12ChangeStreamC7toArray3NIO15EventLoopFutureCySayxGGyF"></a>
+                    <a name="/s:10MongoSwift12ChangeStreamC7toArray7NIOCore15EventLoopFutureCySayxGGyF"></a>
                     <a name="//apple_ref/swift/Method/toArray()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC7toArray3NIO15EventLoopFutureCySayxGGyF">toArray()</a>
+                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC7toArray7NIOCore15EventLoopFutureCySayxGGyF">toArray()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -872,7 +890,7 @@ inactive.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/ChangeStream.swift#L229-L233">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStream.swift#L229-L233">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -880,9 +898,9 @@ inactive.</li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12ChangeStreamC7forEachy3NIO15EventLoopFutureCyytGyxKcF"></a>
+                    <a name="/s:10MongoSwift12ChangeStreamC7forEachy7NIOCore15EventLoopFutureCyytGyxKcF"></a>
                     <a name="//apple_ref/swift/Method/forEach(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC7forEachy3NIO15EventLoopFutureCyytGyxKcF">forEach(_:<wbr>)</a>
+                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC7forEachy7NIOCore15EventLoopFutureCyytGyxKcF">forEach(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -928,7 +946,7 @@ inactive.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/ChangeStream.swift#L257-L263">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStream.swift#L257-L263">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -936,9 +954,9 @@ inactive.</li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift12ChangeStreamC4kill3NIO15EventLoopFutureCyytGyF"></a>
+                    <a name="/s:10MongoSwift12ChangeStreamC4kill7NIOCore15EventLoopFutureCyytGyF"></a>
                     <a name="//apple_ref/swift/Method/kill()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC4kill3NIO15EventLoopFutureCyytGyF">kill()</a>
+                    <a class="token" href="#/s:10MongoSwift12ChangeStreamC4kill7NIOCore15EventLoopFutureCyytGyF">kill()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -972,7 +990,7 @@ is dead before it leaves scope, invoke this method.</p>
                         <p>An <code>EventLoopFuture</code> that evaluates when the change stream has completed closing. This future should not fail.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/ChangeStream.swift#L279-L283">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStream.swift#L279-L283">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -985,7 +1003,7 @@ is dead before it leaves scope, invoke this method.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

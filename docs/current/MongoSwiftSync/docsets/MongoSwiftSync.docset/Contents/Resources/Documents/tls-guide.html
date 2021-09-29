@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwiftSync 1.1.1 Docs
+          MongoSwiftSync 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -66,6 +66,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -428,6 +437,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -604,6 +616,12 @@
                 <a class="nav-group-task-link" href="Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -686,6 +704,48 @@
 </code></pre>
 
 <p><strong>Note</strong>: In both cases, if both a client certificate and a client private key are needed, the files should be concatenated into a single file which is specified by <code>tlsCertificateKeyFile</code>.</p>
+<h2 id='server-certificate-validation' class='heading'>Server Certificate Validation</h2>
+
+<p>The driver will automatically verify the validity of the server certificate by ensuring that it was issued by the
+configured Certificate Authority, its SAN or CN match the hostname provided in the connection string, and it has not
+expired.</p>
+
+<p>To override this behavior, it is possible to disable parts or all of it via the following options in the
+<code><a href="Structs/MongoClientOptions.html">MongoClientOptions</a></code> or connection string used to create the <code><a href="Classes/MongoClient.html">MongoClient</a></code>:</p>
+
+<ul>
+<li><code>tlsAllowInvalidHostnames</code>: disables hostname validation</li>
+<li><code>tlsDisableOCSPEndpointCheck</code>: disables OCSP endpoint revocation checking. This does not disable verifying OCSP
+responses stapled to a server&rsquo;s certificate</li>
+<li><code>tlsDisableCertificateRevocationCheck</code>: disables revocation checking entirely, including via OCSP stapled responses or
+CRLs.</li>
+<li><code>tlsAllowInvalidCertificates</code>: completely disables server certificate verification and allows any certificate to be
+used.</li>
+</ul>
+
+<p>By default, all of these options are set to false.</p>
+
+<p>It is not recommended to change these defaults as it exposes the client to on-path-attackers (when
+<code>tlsAllowInvalidHostnames</code> is set), invalid certificates (when <code>tlsAllowInvalidCertificates</code> is set), or potentially
+revoked certificates (when <code>tlsDisableOCSPEndpointCheck</code> or <code>tlsDisableCertificateRevocationCheck</code> are set).</p>
+
+<p>Note that <code>tlsDisableCertificateRevocationCheck</code> and <code>tlsDisableOCSPEndpointCheck</code> have no effect on macOS.</p>
+<h3 id='ocsp-on-linux-openssl' class='heading'>OCSP on Linux/OpenSSL</h3>
+
+<p>The Online Certificate Status Protocol (OCSP) (see <a href="https://tools.ietf.org/html/rfc6960">RFC 6960</a>) is fully supported
+when using OpenSSL 1.0.1+.</p>
+<h3 id='ocsp-on-macos' class='heading'>OCSP on macOS</h3>
+
+<p>The Online Certificate Status Protocol (OCSP) (see <a href="https://tools.ietf.org/html/rfc6960">RFC 6960</a>) is partially
+supported with the following notes:</p>
+
+<ul>
+<li><p>The Must-Staple extension (see <a href="https://tools.ietf.org/html/rfc7633">RFC 7633</a>) is ignored. Connection may continue if
+a Must-Staple certificate is presented with no stapled response (unless the client receives a revoked response from an
+OCSP responder).</p></li>
+<li><p>Connection will continue if a Must-Staple certificate is presented without a stapled response and the OCSP responder
+is down.</p></li>
+</ul>
 
           </div>
         </section>
@@ -694,7 +754,7 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

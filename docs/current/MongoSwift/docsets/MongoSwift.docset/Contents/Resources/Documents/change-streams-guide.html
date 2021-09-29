@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwift 1.1.1 Docs
+          MongoSwift 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -66,6 +66,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -431,6 +440,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -610,6 +622,12 @@
                 <a class="nav-group-task-link" href="Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -672,7 +690,7 @@
 
 <span class="c1">// perform some operations using `inventory`...</span>
 </code></pre>
-<h3 id='use-a-custom-code-codable-code-type-for-the-return-type-of-code-changestream-next-code' class='heading'>Use a Custom <code>Codable</code> Type for the Return type of <code><a href="Classes/ChangeStream.html#/s:10MongoSwift12ChangeStreamC4next3NIO15EventLoopFutureCyxSgGyF">ChangeStream.next()</a></code></h3>
+<h3 id='use-a-custom-code-codable-code-type-for-the-return-type-of-code-changestream-next-code' class='heading'>Use a Custom <code>Codable</code> Type for the Return type of <code><a href="Classes/ChangeStream.html#/s:10MongoSwift12ChangeStreamC4next7NIOCore15EventLoopFutureCyxSgGyF">ChangeStream.next()</a></code></h3>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">)</span>
@@ -703,7 +721,7 @@
 <span class="c1">// perform some operations using `db`...</span>
 </code></pre>
 
-<p>Note: the types of the <code>fullDocument</code> property, as well as the return type of <code><a href="Classes/ChangeStream.html#/s:10MongoSwift12ChangeStreamC4next3NIO15EventLoopFutureCyxSgGyF">ChangeStream.next()</a></code>, may be customized in the same fashion as the examples using <code><a href="Structs/MongoCollection.html">MongoCollection</a></code> above.</p>
+<p>Note: the types of the <code>fullDocument</code> property, as well as the return type of <code><a href="Classes/ChangeStream.html#/s:10MongoSwift12ChangeStreamC4next7NIOCore15EventLoopFutureCyxSgGyF">ChangeStream.next()</a></code>, may be customized in the same fashion as the examples using <code><a href="Structs/MongoCollection.html">MongoCollection</a></code> above.</p>
 <h3 id='open-a-change-stream-on-a-code-mongoclient-code-mongodb-4-0' class='heading'>Open a Change Stream on a <code><a href="Classes/MongoClient.html">MongoClient</a></code> (MongoDB 4.0+)</h3>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
@@ -719,7 +737,7 @@
 <span class="c1">// perform some operations using `client`...</span>
 </code></pre>
 
-<p>Note: the types of the <code>fullDocument</code> property, as well as the return type of <code><a href="Classes/ChangeStream.html#/s:10MongoSwift12ChangeStreamC4next3NIO15EventLoopFutureCyxSgGyF">ChangeStream.next()</a></code>, may be customized in the same fashion as the examples using <code><a href="Structs/MongoCollection.html">MongoCollection</a></code> above.</p>
+<p>Note: the types of the <code>fullDocument</code> property, as well as the return type of <code><a href="Classes/ChangeStream.html#/s:10MongoSwift12ChangeStreamC4next7NIOCore15EventLoopFutureCyxSgGyF">ChangeStream.next()</a></code>, may be customized in the same fashion as the examples using <code><a href="Structs/MongoCollection.html">MongoCollection</a></code> above.</p>
 <h3 id='resume-a-change-stream' class='heading'>Resume a Change Stream</h3>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">elg</span> <span class="o">=</span> <span class="kt">MultiThreadedEventLoopGroup</span><span class="p">(</span><span class="nv">numberOfThreads</span><span class="p">:</span> <span class="mi">4</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
@@ -778,7 +796,7 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

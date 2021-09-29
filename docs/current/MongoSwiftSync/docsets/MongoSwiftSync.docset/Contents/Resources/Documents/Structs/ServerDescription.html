@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwiftSync 1.1.1 Docs
+          MongoSwiftSync 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -67,6 +67,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -429,6 +438,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -605,6 +617,12 @@
                 <a class="nav-group-task-link" href="../Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -627,7 +645,7 @@
             <p>A struct describing a mongod or mongos process.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L68-L183">Show on GitHub</a>
+                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L68-L226">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -639,9 +657,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift17ServerDescriptionV0C4TypeO"></a>
-                    <a name="//apple_ref/swift/Enum/ServerType" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift17ServerDescriptionV0C4TypeO">ServerType</a>
+                    <a name="/s:10MongoSwift17ServerDescriptionV0C4TypeV"></a>
+                    <a name="//apple_ref/swift/Struct/ServerType" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift17ServerDescriptionV0C4TypeV">ServerType</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -657,12 +675,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ServerType</span> <span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ServerType</span> <span class="p">:</span> <span class="kt">RawRepresentable</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L70-L89">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L70-L132">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -680,8 +698,8 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The hostname or IP and the port number that the client connects to. Note that this is not the
-server&rsquo;s ismaster.me field, in the case that the server reports an address different from the
+                        <p>The hostname or IP and the port number that the client connects to. Note that this is not the &ldquo;me&rdquo; field in the
+server&rsquo;s hello or legacy hello response, in the case that the server reports an address different from the
 address the client uses.</p>
 
                       </div>
@@ -694,7 +712,7 @@ address the client uses.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L94">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L137">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -712,7 +730,7 @@ address the client uses.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The duration in milliseconds of the server&rsquo;s last ismaster call.</p>
+                        <p>The duration in milliseconds of the server&rsquo;s last &ldquo;hello&rdquo; call.</p>
 
                       </div>
                       <div class="declaration">
@@ -724,7 +742,7 @@ address the client uses.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L100">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L143">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -754,7 +772,7 @@ address the client uses.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L103">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L146">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -762,9 +780,9 @@ address the client uses.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift17ServerDescriptionV4typeAC0C4TypeOvp"></a>
+                    <a name="/s:10MongoSwift17ServerDescriptionV4typeAC0C4TypeVvp"></a>
                     <a name="//apple_ref/swift/Property/type" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift17ServerDescriptionV4typeAC0C4TypeOvp">type</a>
+                    <a class="token" href="#/s:10MongoSwift17ServerDescriptionV4typeAC0C4TypeVvp">type</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -784,7 +802,7 @@ address the client uses.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L106">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L149">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -814,7 +832,7 @@ address the client uses.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L109">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L152">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -844,7 +862,7 @@ address the client uses.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L112">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L155">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -874,7 +892,7 @@ address the client uses.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L115">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L158">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -904,7 +922,7 @@ address the client uses.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L118">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L161">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -934,7 +952,7 @@ address the client uses.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L121">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L164">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -965,7 +983,7 @@ The client treats them precisely the same as other members.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L125">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L168">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -995,7 +1013,7 @@ The client treats them precisely the same as other members.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L128">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L171">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1025,7 +1043,7 @@ The client treats them precisely the same as other members.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L131">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L174">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1055,7 +1073,7 @@ The client treats them precisely the same as other members.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L134">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L177">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1085,7 +1103,7 @@ The client treats them precisely the same as other members.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L137">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L180">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1115,7 +1133,7 @@ The client treats them precisely the same as other members.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L140">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L183">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1145,7 +1163,7 @@ The client treats them precisely the same as other members.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L143">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L186">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1175,7 +1193,7 @@ The client treats them precisely the same as other members.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L146">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L189">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1204,7 +1222,7 @@ The client treats them precisely the same as other members.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L186-L202">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L229-L245">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1217,7 +1235,7 @@ The client treats them precisely the same as other members.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

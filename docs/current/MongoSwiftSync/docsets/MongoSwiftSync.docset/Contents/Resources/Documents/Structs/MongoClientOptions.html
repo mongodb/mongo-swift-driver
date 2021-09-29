@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwiftSync 1.1.1 Docs
+          MongoSwiftSync 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -67,6 +67,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -429,6 +438,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -605,6 +617,12 @@
                 <a class="nav-group-task-link" href="../Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -626,7 +644,7 @@
             <p>Options to use when creating a <code><a href="../Classes/MongoClient.html">MongoClient</a></code>.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L7-L172">Show on GitHub</a>
+                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L7-L202">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -665,7 +683,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L10">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L10">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -701,7 +719,38 @@ mongod/mongos instances. Currently, the driver only supports compression via zli
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L15">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L15">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A13ClientOptionsV16connectTimeoutMSSiSgvp"></a>
+                    <a name="//apple_ref/swift/Property/connectTimeoutMS" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A13ClientOptionsV16connectTimeoutMSSiSgvp">connectTimeoutMS</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies the maximum time, in milliseconds, for an individual connection to establish a TCP
+connection to a MongoDB server before timing out.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">connectTimeoutMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L19">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -731,7 +780,7 @@ mongod/mongos instances. Currently, the driver only supports compression via zli
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L18">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L22">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -762,7 +811,7 @@ databases or collections that derive from it.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L22">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L26">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -793,7 +842,7 @@ databases or collections that derive from it.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L26">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L30">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -826,7 +875,7 @@ hosts are specified in the connection string.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L32">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L36">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -858,7 +907,37 @@ Defaults to 10 seconds (10,000 ms). Must be at least 500ms.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L37">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L41">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A13ClientOptionsV12loadBalancedSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/loadBalanced" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A13ClientOptionsV12loadBalancedSbSgvp">loadBalanced</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Indicates whether the driver is connecting to a load balancer.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">loadBalanced</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L44">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -889,7 +968,7 @@ servers. By default, only servers within 15ms of the fastest round-trip time rec
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L41">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L48">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -920,7 +999,7 @@ given time. This includes in-use and available connections. Defaults to 100.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L45">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L52">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -950,7 +1029,7 @@ given time. This includes in-use and available connections. Defaults to 100.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L51">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L58">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -980,7 +1059,7 @@ given time. This includes in-use and available connections. Defaults to 100.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L54">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L61">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1010,7 +1089,7 @@ given time. This includes in-use and available connections. Defaults to 100.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L57">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L64">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1040,7 +1119,7 @@ given time. This includes in-use and available connections. Defaults to 100.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L60">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L67">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1070,7 +1149,37 @@ given time. This includes in-use and available connections. Defaults to 100.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L63">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L70">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A13ClientOptionsV9serverAPIAA0a6ServerF0VSgvp"></a>
+                    <a name="//apple_ref/swift/Property/serverAPI" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A13ClientOptionsV9serverAPIAA0a6ServerF0VSgvp">serverAPI</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies a MongoDB server API version and related options.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">serverAPI</span><span class="p">:</span> <span class="kt"><a href="../Structs/MongoServerAPI.html">MongoServerAPI</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L74">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1101,7 +1210,7 @@ seconds (30000 ms).</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L67">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L78">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1135,7 +1244,7 @@ number of concurrent operations that may be performed using a single client. Def
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L76">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L87">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1170,7 +1279,7 @@ number of concurrent operations that may be performed using a single client. Def
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L81">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L92">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1201,7 +1310,7 @@ this is set to false.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L85">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L96">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1232,7 +1341,7 @@ By default this is set to false.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L89">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L100">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1263,7 +1372,7 @@ Authority. This file is used to validate the certificate presented by the mongod
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L93">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L104">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1294,7 +1403,7 @@ TLS certificate and key. The client presents this file to the mongod/mongos inst
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L97">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L108">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1324,7 +1433,73 @@ TLS certificate and key. The client presents this file to the mongod/mongos inst
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L100">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L111">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A13ClientOptionsV36tlsDisableCertificateRevocationCheckSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/tlsDisableCertificateRevocationCheck" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A13ClientOptionsV36tlsDisableCertificateRevocationCheckSbSgvp">tlsDisableCertificateRevocationCheck</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Indicates if revocation checking (CRL / OCSP) should be disabled.
+On macOS, this setting has no effect.
+By default this is set to false.
+It is an error to specify both this option and <code><a href="../Structs/MongoClientOptions.html#/s:10MongoSwift0A13ClientOptionsV27tlsDisableOCSPEndpointCheckSbSgvp">tlsDisableOCSPEndpointCheck</a></code>, either via this options struct,
+connection string, or a combination of both.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tlsDisableCertificateRevocationCheck</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L118">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A13ClientOptionsV27tlsDisableOCSPEndpointCheckSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/tlsDisableOCSPEndpointCheck" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A13ClientOptionsV27tlsDisableOCSPEndpointCheckSbSgvp">tlsDisableOCSPEndpointCheck</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Indicates if OCSP responder endpoints should not be requested when an OCSP response is not stapled.
+On macOS, this setting has no effect.
+By default this is set to false.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tlsDisableOCSPEndpointCheck</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L123">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1343,9 +1518,10 @@ TLS certificate and key. The client presents this file to the mongod/mongos inst
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>When specified, TLS constraints will be relaxed as much as possible. Currently, setting this option to <code>true</code>
-is equivalent to setting both <code><a href="../Structs/MongoClientOptions.html#/s:10MongoSwift0A13ClientOptionsV27tlsAllowInvalidCertificatesSbSgvp">tlsAllowInvalidCertificates</a></code> and <code><a href="../Structs/MongoClientOptions.html#/s:10MongoSwift0A13ClientOptionsV24tlsAllowInvalidHostnamesSbSgvp">tlsAllowInvalidHostnames</a></code> to <code>true</code>.
-It is an error to specify both this option and either of <code><a href="../Structs/MongoClientOptions.html#/s:10MongoSwift0A13ClientOptionsV27tlsAllowInvalidCertificatesSbSgvp">tlsAllowInvalidCertificates</a></code> or
-<code><a href="../Structs/MongoClientOptions.html#/s:10MongoSwift0A13ClientOptionsV24tlsAllowInvalidHostnamesSbSgvp">tlsAllowInvalidHostnames</a></code>, either via this options struct, connection string, or a combination of both.</p>
+is equivalent to setting <code><a href="../Structs/MongoClientOptions.html#/s:10MongoSwift0A13ClientOptionsV27tlsAllowInvalidCertificatesSbSgvp">tlsAllowInvalidCertificates</a></code>, <code><a href="../Structs/MongoClientOptions.html#/s:10MongoSwift0A13ClientOptionsV24tlsAllowInvalidHostnamesSbSgvp">tlsAllowInvalidHostnames</a></code>, and
+<code><a href="../Structs/MongoClientOptions.html#/s:10MongoSwift0A13ClientOptionsV36tlsDisableCertificateRevocationCheckSbSgvp">tlsDisableCertificateRevocationCheck</a></code> to <code>true</code>.
+It is an error to specify both this option and any of the options enabled by it, either via this options struct,
+connection string, or a combination of both.</p>
 
                       </div>
                       <div class="declaration">
@@ -1357,7 +1533,7 @@ It is an error to specify both this option and either of <code><a href="../Struc
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L106">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L130">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1388,7 +1564,7 @@ databases or collections that derive from it.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L110">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L134">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1418,7 +1594,7 @@ databases or collections that derive from it.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L115">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L139">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1426,9 +1602,9 @@ databases or collections that derive from it.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A13ClientOptionsV7appName11compressors10credential18dataCodingStrategy04datejK016directConnection20heartbeatFrequencyMS014localThresholdQ011maxPoolSize11readConcern0W10Preference10replicaSet10retryReads11retryWrites022serverSelectionTimeoutQ006threaduV03tls27tlsAllowInvalidCertificates24tlsAllowInvalidHostnames9tlsCAFile21tlsCertificateKeyFile29tlsCertificateKeyFilePassword11tlsInsecure04uuidjK005writeX0ACSSSg_SayAA10CompressorVGSgAA0A10CredentialVSg0B4BSON04DatajK0OSgA9_04DatejK0OSgSbSgSiSgA17_A17_AA04ReadX0VSgAA04ReadY0VSgA1_A16_A16_A17_A17_A16_A16_A16_10Foundation3URLVSgA27_A1_A16_A9_010UUIDCodingK0OSgAA05WriteX0VSgtcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(appName:compressors:credential:dataCodingStrategy:dateCodingStrategy:directConnection:heartbeatFrequencyMS:localThresholdMS:maxPoolSize:readConcern:readPreference:replicaSet:retryReads:retryWrites:serverSelectionTimeoutMS:threadPoolSize:tls:tlsAllowInvalidCertificates:tlsAllowInvalidHostnames:tlsCAFile:tlsCertificateKeyFile:tlsCertificateKeyFilePassword:tlsInsecure:uuidCodingStrategy:writeConcern:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A13ClientOptionsV7appName11compressors10credential18dataCodingStrategy04datejK016directConnection20heartbeatFrequencyMS014localThresholdQ011maxPoolSize11readConcern0W10Preference10replicaSet10retryReads11retryWrites022serverSelectionTimeoutQ006threaduV03tls27tlsAllowInvalidCertificates24tlsAllowInvalidHostnames9tlsCAFile21tlsCertificateKeyFile29tlsCertificateKeyFilePassword11tlsInsecure04uuidjK005writeX0ACSSSg_SayAA10CompressorVGSgAA0A10CredentialVSg0B4BSON04DatajK0OSgA9_04DatejK0OSgSbSgSiSgA17_A17_AA04ReadX0VSgAA04ReadY0VSgA1_A16_A16_A17_A17_A16_A16_A16_10Foundation3URLVSgA27_A1_A16_A9_010UUIDCodingK0OSgAA05WriteX0VSgtcfc">init(appName:<wbr>compressors:<wbr>credential:<wbr>dataCodingStrategy:<wbr>dateCodingStrategy:<wbr>directConnection:<wbr>heartbeatFrequencyMS:<wbr>localThresholdMS:<wbr>maxPoolSize:<wbr>readConcern:<wbr>readPreference:<wbr>replicaSet:<wbr>retryReads:<wbr>retryWrites:<wbr>serverSelectionTimeoutMS:<wbr>threadPoolSize:<wbr>tls:<wbr>tlsAllowInvalidCertificates:<wbr>tlsAllowInvalidHostnames:<wbr>tlsCAFile:<wbr>tlsCertificateKeyFile:<wbr>tlsCertificateKeyFilePassword:<wbr>tlsInsecure:<wbr>uuidCodingStrategy:<wbr>writeConcern:<wbr>)</a>
+                    <a name="/s:10MongoSwift0A13ClientOptionsV7appName11compressors16connectTimeoutMS10credential18dataCodingStrategy04datemN016directConnection018heartbeatFrequencyJ012loadBalanced014localThresholdJ011maxPoolSize11readConcern14readPreference10replicaSet10retryReads11retryWrites9serverAPI015serverSelectioniJ006threadyZ03tls27tlsAllowInvalidCertificates24tlsAllowInvalidHostnames9tlsCAFile21tlsCertificateKeyFile29tlsCertificateKeyFilePassword11tlsInsecure04uuidmN012writeConcernACSSSg_SayAA10CompressorVGSgSiSgAA0A10CredentialVSg0B4BSON04DatamN0OSgA13_04DatemN0OSgSbSgA9_A20_A9_A9_AA11ReadConcernVSgAA14ReadPreferenceVSgA4_A20_A20_AA0A9ServerAPIVSgA9_A9_A20_A20_A20_10Foundation3URLVSgA33_A4_A20_A13_010UUIDCodingN0OSgAA12WriteConcernVSgtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(appName:compressors:connectTimeoutMS:credential:dataCodingStrategy:dateCodingStrategy:directConnection:heartbeatFrequencyMS:loadBalanced:localThresholdMS:maxPoolSize:readConcern:readPreference:replicaSet:retryReads:retryWrites:serverAPI:serverSelectionTimeoutMS:threadPoolSize:tls:tlsAllowInvalidCertificates:tlsAllowInvalidHostnames:tlsCAFile:tlsCertificateKeyFile:tlsCertificateKeyFilePassword:tlsInsecure:uuidCodingStrategy:writeConcern:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A13ClientOptionsV7appName11compressors16connectTimeoutMS10credential18dataCodingStrategy04datemN016directConnection018heartbeatFrequencyJ012loadBalanced014localThresholdJ011maxPoolSize11readConcern14readPreference10replicaSet10retryReads11retryWrites9serverAPI015serverSelectioniJ006threadyZ03tls27tlsAllowInvalidCertificates24tlsAllowInvalidHostnames9tlsCAFile21tlsCertificateKeyFile29tlsCertificateKeyFilePassword11tlsInsecure04uuidmN012writeConcernACSSSg_SayAA10CompressorVGSgSiSgAA0A10CredentialVSg0B4BSON04DatamN0OSgA13_04DatemN0OSgSbSgA9_A20_A9_A9_AA11ReadConcernVSgAA14ReadPreferenceVSgA4_A20_A20_AA0A9ServerAPIVSgA9_A9_A20_A20_A20_10Foundation3URLVSgA33_A4_A20_A13_010UUIDCodingN0OSgAA12WriteConcernVSgtcfc">init(appName:<wbr>compressors:<wbr>connectTimeoutMS:<wbr>credential:<wbr>dataCodingStrategy:<wbr>dateCodingStrategy:<wbr>directConnection:<wbr>heartbeatFrequencyMS:<wbr>loadBalanced:<wbr>localThresholdMS:<wbr>maxPoolSize:<wbr>readConcern:<wbr>readPreference:<wbr>replicaSet:<wbr>retryReads:<wbr>retryWrites:<wbr>serverAPI:<wbr>serverSelectionTimeoutMS:<wbr>threadPoolSize:<wbr>tls:<wbr>tlsAllowInvalidCertificates:<wbr>tlsAllowInvalidHostnames:<wbr>tlsCAFile:<wbr>tlsCertificateKeyFile:<wbr>tlsCertificateKeyFilePassword:<wbr>tlsInsecure:<wbr>uuidCodingStrategy:<wbr>writeConcern:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1446,11 +1622,13 @@ databases or collections that derive from it.</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
     <span class="nv">appName</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">compressors</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/Compressor.html">Compressor</a></span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">connectTimeoutMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">credential</span><span class="p">:</span> <span class="kt"><a href="../Structs/MongoCredential.html">MongoCredential</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">dataCodingStrategy</span><span class="p">:</span> <span class="kt"><a href="../Enums/DataCodingStrategy.html">DataCodingStrategy</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">dateCodingStrategy</span><span class="p">:</span> <span class="kt"><a href="../Enums/DateCodingStrategy.html">DateCodingStrategy</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">directConnection</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">heartbeatFrequencyMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">loadBalanced</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">localThresholdMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">maxPoolSize</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadConcern.html">ReadConcern</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
@@ -1458,6 +1636,7 @@ databases or collections that derive from it.</p>
     <span class="nv">replicaSet</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">retryReads</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">retryWrites</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">serverAPI</span><span class="p">:</span> <span class="kt"><a href="../Structs/MongoServerAPI.html">MongoServerAPI</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">serverSelectionTimeoutMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">threadPoolSize</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
     <span class="nv">tls</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
@@ -1474,7 +1653,7 @@ databases or collections that derive from it.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoClient.swift#L118-L171">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoClient.swift#L142-L201">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1487,7 +1666,7 @@ databases or collections that derive from it.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

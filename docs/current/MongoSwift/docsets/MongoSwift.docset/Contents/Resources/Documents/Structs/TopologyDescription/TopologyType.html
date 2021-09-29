@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>TopologyType Enumeration Reference</title>
+    <title>TopologyType Structure Reference</title>
     <link rel="stylesheet" type="text/css" href="../../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../../css/highlight.css" />
     <meta charset="utf-8">
@@ -14,14 +14,14 @@
   </head>
   <body>
 
-    <a name="//apple_ref/swift/Enum/TopologyType" class="dashAnchor"></a>
+    <a name="//apple_ref/swift/Struct/TopologyType" class="dashAnchor"></a>
 
-    <a title="TopologyType Enumeration Reference"></a>
+    <a title="TopologyType Structure Reference"></a>
 
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../../index.html">
-          MongoSwift 1.1.1 Docs
+          MongoSwift 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -50,7 +50,7 @@
     <p class="breadcrumbs">
       <a class="breadcrumb" href="../../index.html">MongoSwift Reference</a>
       <img class="carat" src="../../img/carat.png" />
-      TopologyType Enumeration Reference
+      TopologyType Structure Reference
     </p>
 
     <div class="content-wrapper">
@@ -67,6 +67,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -432,6 +441,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -611,6 +623,12 @@
                 <a class="nav-group-task-link" href="../../Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../../Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../../Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -625,14 +643,14 @@
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TopologyType</span> <span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">TopologyType</span> <span class="p">:</span> <span class="kt">RawRepresentable</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
 
                 </div>
               </div>
             <p>The possible types for a topology.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L209-L220">Show on GitHub</a>
+                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L252-L298">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -644,9 +662,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeO6singleyA2EmF"></a>
-                    <a name="//apple_ref/swift/Element/single" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeO6singleyA2EmF">single</a>
+                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeV6singleAEvpZ"></a>
+                    <a name="//apple_ref/swift/Variable/single" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeV6singleAEvpZ">single</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -661,12 +679,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">single</span> <span class="o">=</span> <span class="s">"Single"</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">single</span><span class="p">:</span> <span class="kt"><a href="../../Structs/TopologyDescription.html">TopologyDescription</a></span><span class="o">.</span><span class="kt">TopologyType</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L211">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L254">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -674,9 +692,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeO19replicaSetNoPrimaryyA2EmF"></a>
-                    <a name="//apple_ref/swift/Element/replicaSetNoPrimary" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeO19replicaSetNoPrimaryyA2EmF">replicaSetNoPrimary</a>
+                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeV19replicaSetNoPrimaryAEvpZ"></a>
+                    <a name="//apple_ref/swift/Variable/replicaSetNoPrimary" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeV19replicaSetNoPrimaryAEvpZ">replicaSetNoPrimary</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -691,12 +709,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">replicaSetNoPrimary</span> <span class="o">=</span> <span class="s">"ReplicaSetNoPrimary"</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">replicaSetNoPrimary</span><span class="p">:</span> <span class="kt"><a href="../../Structs/TopologyDescription.html">TopologyDescription</a></span><span class="o">.</span><span class="kt">TopologyType</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L213">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L257">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -704,9 +722,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeO21replicaSetWithPrimaryyA2EmF"></a>
-                    <a name="//apple_ref/swift/Element/replicaSetWithPrimary" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeO21replicaSetWithPrimaryyA2EmF">replicaSetWithPrimary</a>
+                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeV21replicaSetWithPrimaryAEvpZ"></a>
+                    <a name="//apple_ref/swift/Variable/replicaSetWithPrimary" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeV21replicaSetWithPrimaryAEvpZ">replicaSetWithPrimary</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -721,12 +739,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">replicaSetWithPrimary</span> <span class="o">=</span> <span class="s">"ReplicaSetWithPrimary"</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">replicaSetWithPrimary</span><span class="p">:</span> <span class="kt"><a href="../../Structs/TopologyDescription.html">TopologyDescription</a></span><span class="o">.</span><span class="kt">TopologyType</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L215">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L260">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -734,9 +752,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeO7shardedyA2EmF"></a>
-                    <a name="//apple_ref/swift/Element/sharded" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeO7shardedyA2EmF">sharded</a>
+                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeV7shardedAEvpZ"></a>
+                    <a name="//apple_ref/swift/Variable/sharded" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeV7shardedAEvpZ">sharded</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -751,12 +769,12 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">sharded</span> <span class="o">=</span> <span class="s">"Sharded"</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">sharded</span><span class="p">:</span> <span class="kt"><a href="../../Structs/TopologyDescription.html">TopologyDescription</a></span><span class="o">.</span><span class="kt">TopologyType</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L217">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L263">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -764,9 +782,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeO7unknownyA2EmF"></a>
-                    <a name="//apple_ref/swift/Element/unknown" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeO7unknownyA2EmF">unknown</a>
+                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeV7unknownAEvpZ"></a>
+                    <a name="//apple_ref/swift/Variable/unknown" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeV7unknownAEvpZ">unknown</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -781,12 +799,100 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">unknown</span> <span class="o">=</span> <span class="s">"Unknown"</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">unknown</span><span class="p">:</span> <span class="kt"><a href="../../Structs/TopologyDescription.html">TopologyDescription</a></span><span class="o">.</span><span class="kt">TopologyType</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L219">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L266">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeV12loadBalancedAEvpZ"></a>
+                    <a name="//apple_ref/swift/Variable/loadBalanced" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeV12loadBalancedAEvpZ">loadBalanced</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A topology with a load balancer in front.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="k">let</span> <span class="nv">loadBalanced</span><span class="p">:</span> <span class="kt"><a href="../../Structs/TopologyDescription.html">TopologyDescription</a></span><span class="o">.</span><span class="kt">TopologyType</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L269">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:SY8rawValue03RawB0Qzvp"></a>
+                    <a name="//apple_ref/swift/Property/rawValue" class="dashAnchor"></a>
+                    <a class="token" href="#/s:SY8rawValue03RawB0Qzvp">rawValue</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">rawValue</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L288-L290">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:SY8rawValuexSg03RawB0Qz_tcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(rawValue:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:SY8rawValuexSg03RawB0Qz_tcfc">init(rawValue:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">?(</span><span class="nv">rawValue</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L292-L297">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -799,7 +905,7 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

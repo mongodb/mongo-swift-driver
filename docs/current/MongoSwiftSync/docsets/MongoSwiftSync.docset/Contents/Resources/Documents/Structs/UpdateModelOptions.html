@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwiftSync 1.1.1 Docs
+          MongoSwiftSync 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -67,6 +67,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -429,6 +438,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -605,6 +617,12 @@
                 <a class="nav-group-task-link" href="../Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -626,7 +644,7 @@
             <p>Options to use with a <code>WriteModel.updateOne</code> or <code>WriteModel.updateMany</code>.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L185-L199">Show on GitHub</a>
+                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L192-L214">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -660,7 +678,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L187">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L194">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -690,7 +708,37 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L189">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L196">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift18UpdateModelOptionsV4hintAA9IndexHintOSgvp"></a>
+                    <a name="//apple_ref/swift/Property/hint" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift18UpdateModelOptionsV4hintAA9IndexHintOSgvp">hint</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A document or string that specifies the index to use to support the query. Only supported in server 4.2+.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/IndexHint.html">IndexHint</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L198">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -720,7 +768,7 @@
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L191">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L200">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -728,9 +776,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift18UpdateModelOptionsV12arrayFilters9collation6upsertACSay0B4BSON12BSONDocumentVGSg_AISgSbSgtcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(arrayFilters:collation:upsert:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift18UpdateModelOptionsV12arrayFilters9collation6upsertACSay0B4BSON12BSONDocumentVGSg_AISgSbSgtcfc">init(arrayFilters:<wbr>collation:<wbr>upsert:<wbr>)</a>
+                    <a name="/s:10MongoSwift18UpdateModelOptionsV12arrayFilters9collation4hint6upsertACSay0B4BSON12BSONDocumentVGSg_AJSgAA9IndexHintOSgSbSgtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(arrayFilters:collation:hint:upsert:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift18UpdateModelOptionsV12arrayFilters9collation4hint6upsertACSay0B4BSON12BSONDocumentVGSg_AJSgAA9IndexHintOSgSbSgtcfc">init(arrayFilters:<wbr>collation:<wbr>hint:<wbr>upsert:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -745,12 +793,17 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">arrayFilters</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">upsert</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span>
+    <span class="nv">arrayFilters</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">]?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">collation</span><span class="p">:</span> <span class="kt"><a href="../Structs/BSONDocument.html">BSONDocument</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">hint</span><span class="p">:</span> <span class="kt"><a href="../Enums/IndexHint.html">IndexHint</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span>
+    <span class="nv">upsert</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L194-L198">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCollection+BulkWrite.swift#L203-L213">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -763,7 +816,7 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

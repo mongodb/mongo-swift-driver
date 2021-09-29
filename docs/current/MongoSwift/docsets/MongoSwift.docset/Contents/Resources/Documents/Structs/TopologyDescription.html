@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.1.1 Docs
+          MongoSwift 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -67,6 +67,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -432,6 +441,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -611,6 +623,12 @@
                 <a class="nav-group-task-link" href="../Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -633,7 +651,7 @@
 which servers are up, what type of servers they are, which is primary, and so on.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L207-L274">Show on GitHub</a>
+                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L250-L352">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -645,9 +663,9 @@ which servers are up, what type of servers they are, which is primary, and so on
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeO"></a>
-                    <a name="//apple_ref/swift/Enum/TopologyType" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeO">TopologyType</a>
+                    <a name="/s:10MongoSwift19TopologyDescriptionV0C4TypeV"></a>
+                    <a name="//apple_ref/swift/Struct/TopologyType" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV0C4TypeV">TopologyType</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -663,12 +681,12 @@ which servers are up, what type of servers they are, which is primary, and so on
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TopologyType</span> <span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">TopologyType</span> <span class="p">:</span> <span class="kt">RawRepresentable</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L209-L220">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L252-L298">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -676,9 +694,9 @@ which servers are up, what type of servers they are, which is primary, and so on
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift19TopologyDescriptionV4typeAC0C4TypeOvp"></a>
+                    <a name="/s:10MongoSwift19TopologyDescriptionV4typeAC0C4TypeVvp"></a>
                     <a name="//apple_ref/swift/Property/type" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV4typeAC0C4TypeOvp">type</a>
+                    <a class="token" href="#/s:10MongoSwift19TopologyDescriptionV4typeAC0C4TypeVvp">type</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -698,7 +716,7 @@ which servers are up, what type of servers they are, which is primary, and so on
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L223">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L301">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -728,7 +746,7 @@ which servers are up, what type of servers they are, which is primary, and so on
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L226-L231">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L304-L309">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -758,7 +776,7 @@ which servers are up, what type of servers they are, which is primary, and so on
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L234">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L312">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -790,7 +808,7 @@ or <code>nil</code> if any of them are <code>nil</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L239-L245">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L317-L323">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -820,7 +838,7 @@ or <code>nil</code> if any of them are <code>nil</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L248-L251">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L326-L329">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -850,7 +868,7 @@ or <code>nil</code> if any of them are <code>nil</code>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/SDAM.swift#L254-L256">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/SDAM.swift#L332-L334">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -863,7 +881,7 @@ or <code>nil</code> if any of them are <code>nil</code>.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

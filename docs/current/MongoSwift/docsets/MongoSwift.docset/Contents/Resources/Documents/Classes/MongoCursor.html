@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwift 1.1.1 Docs
+          MongoSwift 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -67,6 +67,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -432,6 +441,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -611,6 +623,12 @@
                 <a class="nav-group-task-link" href="../Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -632,7 +650,7 @@
             <p>A MongoDB cursor.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCursor.swift#L35-L266">Show on GitHub</a>
+                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCursor.swift#L35-L265">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -667,7 +685,7 @@ single batch, or if the cursor contained no results, this value will be nil.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCursor.swift#L49">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCursor.swift#L49">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -675,9 +693,9 @@ single batch, or if the cursor contained no results, this value will be nil.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6CursorC7isAlive3NIO15EventLoopFutureCySbGyF"></a>
+                    <a name="/s:10MongoSwift0A6CursorC7isAlive7NIOCore15EventLoopFutureCySbGyF"></a>
                     <a name="//apple_ref/swift/Method/isAlive()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6CursorC7isAlive3NIO15EventLoopFutureCySbGyF">isAlive()</a>
+                    <a class="token" href="#/s:10MongoSwift0A6CursorC7isAlive7NIOCore15EventLoopFutureCySbGyF">isAlive()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -700,7 +718,7 @@ single batch, or if the cursor contained no results, this value will be nil.</p>
 <div class="aside aside-warning">
     <p class="aside-title">Warning</p>
     If this cursor is alive when it goes out of scope, it will leak resources. To ensure it is dead before it
-leaves scope, invoke <code><a href="../Classes/MongoCursor.html#/s:10MongoSwift0A6CursorC4kill3NIO15EventLoopFutureCyytGyF">MongoCursor.kill(...)</a></code> on it.
+leaves scope, invoke <code><a href="../Classes/MongoCursor.html#/s:10MongoSwift0A6CursorC4kill7NIOCore15EventLoopFutureCyytGyF">MongoCursor.kill(...)</a></code> on it.
 
 </div>
 
@@ -714,7 +732,7 @@ leaves scope, invoke <code><a href="../Classes/MongoCursor.html#/s:10MongoSwift0
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCursor.swift#L119-L123">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCursor.swift#L118-L122">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -722,9 +740,9 @@ leaves scope, invoke <code><a href="../Classes/MongoCursor.html#/s:10MongoSwift0
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6CursorC7tryNext3NIO15EventLoopFutureCyxSgGyF"></a>
+                    <a name="/s:10MongoSwift0A6CursorC7tryNext7NIOCore15EventLoopFutureCyxSgGyF"></a>
                     <a name="//apple_ref/swift/Method/tryNext()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6CursorC7tryNext3NIO15EventLoopFutureCyxSgGyF">tryNext()</a>
+                    <a class="token" href="#/s:10MongoSwift0A6CursorC7tryNext7NIOCore15EventLoopFutureCyxSgGyF">tryNext()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -769,7 +787,7 @@ inactive.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCursor.swift#L149-L153">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCursor.swift#L148-L152">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -777,9 +795,9 @@ inactive.</li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6CursorC4next3NIO15EventLoopFutureCyxSgGyF"></a>
+                    <a name="/s:10MongoSwift0A6CursorC4next7NIOCore15EventLoopFutureCyxSgGyF"></a>
                     <a name="//apple_ref/swift/Method/next()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6CursorC4next3NIO15EventLoopFutureCyxSgGyF">next()</a>
+                    <a class="token" href="#/s:10MongoSwift0A6CursorC4next7NIOCore15EventLoopFutureCyxSgGyF">next()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -823,7 +841,7 @@ the underlying cursor is tailable, the future will not resolve until data is ret
 multiple requests to the server), the cursor is closed, or an error occurs.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCursor.swift#L181-L185">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCursor.swift#L180-L184">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -831,9 +849,9 @@ multiple requests to the server), the cursor is closed, or an error occurs.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6CursorC7toArray3NIO15EventLoopFutureCySayxGGyF"></a>
+                    <a name="/s:10MongoSwift0A6CursorC7toArray7NIOCore15EventLoopFutureCySayxGGyF"></a>
                     <a name="//apple_ref/swift/Method/toArray()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6CursorC7toArray3NIO15EventLoopFutureCySayxGGyF">toArray()</a>
+                    <a class="token" href="#/s:10MongoSwift0A6CursorC7toArray7NIOCore15EventLoopFutureCySayxGGyF">toArray()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -875,7 +893,7 @@ inactive.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCursor.swift#L208-L212">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCursor.swift#L207-L211">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -883,9 +901,9 @@ inactive.</li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6CursorC7forEachy3NIO15EventLoopFutureCyytGyxKcF"></a>
+                    <a name="/s:10MongoSwift0A6CursorC7forEachy7NIOCore15EventLoopFutureCyytGyxKcF"></a>
                     <a name="//apple_ref/swift/Method/forEach(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6CursorC7forEachy3NIO15EventLoopFutureCyytGyxKcF">forEach(_:<wbr>)</a>
+                    <a class="token" href="#/s:10MongoSwift0A6CursorC7forEachy7NIOCore15EventLoopFutureCyytGyxKcF">forEach(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -931,7 +949,7 @@ inactive.</li>
 </ul>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCursor.swift#L239-L245">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCursor.swift#L238-L244">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -939,9 +957,9 @@ inactive.</li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10MongoSwift0A6CursorC4kill3NIO15EventLoopFutureCyytGyF"></a>
+                    <a name="/s:10MongoSwift0A6CursorC4kill7NIOCore15EventLoopFutureCyytGyF"></a>
                     <a name="//apple_ref/swift/Method/kill()" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10MongoSwift0A6CursorC4kill3NIO15EventLoopFutureCyytGyF">kill()</a>
+                    <a class="token" href="#/s:10MongoSwift0A6CursorC4kill7NIOCore15EventLoopFutureCyytGyF">kill()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -975,7 +993,7 @@ is dead before it leaves scope, invoke this method.</p>
                         <p>An <code>EventLoopFuture</code> that evaluates when the cursor has completed closing. This future should not fail.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/MongoCursor.swift#L261-L265">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/MongoCursor.swift#L260-L264">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -988,7 +1006,7 @@ is dead before it leaves scope, invoke this method.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

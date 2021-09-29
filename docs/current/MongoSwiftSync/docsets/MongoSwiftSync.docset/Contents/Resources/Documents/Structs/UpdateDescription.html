@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          MongoSwiftSync 1.1.1 Docs
+          MongoSwiftSync 1.2.0-beta.1 Docs
         </a>
          (99% documented)
       </p>
@@ -67,6 +67,15 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../bson-migration-guide.html">BSON-Migration-Guide</a>
               </li>
             </ul>
           </li>
@@ -429,6 +438,9 @@
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
               </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -605,6 +617,12 @@
                 <a class="nav-group-task-link" href="../Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
               </li>
             </ul>
@@ -627,7 +645,7 @@
 operations of type <code>update</code>.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/ChangeStreamEvent.swift#L3-L10">Show on GitHub</a>
+                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStreamEvent.swift#L3-L60">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -649,8 +667,39 @@ operations of type <code>update</code>.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>A document containing key:value pairs of names of the fields that were changed, and the new
-value for those fields.</p>
+                        <p>A document containing key:value pairs of names of the fields that were changed (excluding the fields reported
+ via <code><a href="../Structs/UpdateDescription.html#/s:10MongoSwift17UpdateDescriptionV15truncatedArraysSayAC014TruncatedArrayD0VGSgvp">truncatedArrays</a></code>), and the new value for those fields.</p>
+
+<p>Despite array fields reported via <code><a href="../Structs/UpdateDescription.html#/s:10MongoSwift17UpdateDescriptionV15truncatedArraysSayAC014TruncatedArrayD0VGSgvp">truncatedArrays</a></code> being excluded from this field, changes to fields of the
+ elements of the array values may be reported via this field.</p>
+
+<p>Example:
+   original field:
+     &ldquo;arrayField&rdquo;: [&ldquo;foo&rdquo;, {&ldquo;a&rdquo;: &ldquo;bar&rdquo;}, 1, 2, 3]
+   updated field:
+     &ldquo;arrayField&rdquo;: [&ldquo;foo&rdquo;, {&ldquo;a&rdquo;: &ldquo;bar&rdquo;, &ldquo;b&rdquo;: 3}]
+   a potential corresponding UpdateDescription:
+     UpdateDescription(
+       updatedFields: {
+         &ldquo;arrayField.1.b&rdquo;: 3
+       },
+       removedFields: [],
+       truncatedArrays: [
+         TruncatedArrayDescription(
+           field: &ldquo;arrayField&rdquo;,
+           newSize: 2
+         )
+       ]
+     )</p>
+
+<p>Modifications to array elements are expressed via dot notation.
+ Example: an <code>update</code> which sets the element with index 0 in the array field named arrayField to 7 is reported as
+   &ldquo;updatedFields&rdquo;: {&ldquo;arrayField.0&rdquo;: 7}</p>
+<div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <a href="https://docs.mongodb.com/manual/core/document/#document-dot-notation">https://docs.mongodb.com/manual/core/document/#document-dot-notation</a>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -662,7 +711,7 @@ value for those fields.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/ChangeStreamEvent.swift#L6">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStreamEvent.swift#L36">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -692,7 +741,75 @@ value for those fields.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.1.1/Sources/MongoSwift/ChangeStreamEvent.swift#L9">Show on GitHub</a>
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStreamEvent.swift#L39">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift17UpdateDescriptionV014TruncatedArrayD0V"></a>
+                    <a name="//apple_ref/swift/Struct/TruncatedArrayDescription" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift17UpdateDescriptionV014TruncatedArrayD0V">TruncatedArrayDescription</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Describes an array that was truncated via an update operation.</p>
+
+                        <a href="../Structs/UpdateDescription/TruncatedArrayDescription.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">TruncatedArrayDescription</span> <span class="p">:</span> <span class="kt">Codable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStreamEvent.swift#L42-L47">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift17UpdateDescriptionV15truncatedArraysSayAC014TruncatedArrayD0VGSgvp"></a>
+                    <a name="//apple_ref/swift/Property/truncatedArrays" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift17UpdateDescriptionV15truncatedArraysSayAC014TruncatedArrayD0VGSgvp">truncatedArrays</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Truncations of arrays may be reported either via this field or via the ‘updatedFields’ field. In the latter
+ case, the entire array is considered to be replaced. The method used to report a truncation is a server
+ implementation detail.</p>
+
+<p>Example: an <code>update</code> which shrinks the array <code>arrayField.0.nestedArrayField</code> from size 8 to 5 may be reported
+ via this field as [TruncatedArrayDescription(field: &ldquo;arrayField.0.nestedArrayField&rdquo;, newSize: 5)].</p>
+
+<p>This property will only ever be present on MongoDB server versions &gt;= 5.0.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">truncatedArrays</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/UpdateDescription/TruncatedArrayDescription.html">TruncatedArrayDescription</a></span><span class="p">]?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.2.0-beta.1/Sources/MongoSwift/ChangeStreamEvent.swift#L59">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -705,7 +822,7 @@ value for those fields.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-07-12)</p>
+      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-09-29)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
