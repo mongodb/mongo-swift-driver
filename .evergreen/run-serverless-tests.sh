@@ -32,7 +32,7 @@ swiftenv local $SWIFT_VERSION
 # build the driver
 swift build
 
-MONGODB_TOPOLOGY="sharded_cluster" \
+MONGODB_TOPOLOGY="load_balanced" \
   MONGODB_URI=${MONGODB_URI} \
   SINGLE_MONGOS_LB_URI=${SINGLE_MONGOS_LB_URI} \
   MULTI_MONGOS_LB_URI=${MULTI_MONGOS_LB_URI} \
