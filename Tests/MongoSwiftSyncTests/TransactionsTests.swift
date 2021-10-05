@@ -66,14 +66,6 @@ final class TransactionsTests: MongoSwiftTestCase {
             asType: TransactionsTestFile.self
         )
         for (_, testFile) in tests {
-            // TODO: SWIFT-1238 remove this skip once CLOUDP-91854 is deployed.
-            guard !(MongoSwiftTestCase.serverless
-                && ["create-index.json", "create-collection.json"].contains(testFile.name))
-            else {
-                fileLevelLog("Skipping tests from file \(testFile.name), not currently supported on Serverless")
-                continue
-            }
-
             try testFile.runTests()
         }
     }
@@ -85,10 +77,6 @@ final class TransactionsTests: MongoSwiftTestCase {
             asType: UnifiedTestFile.self
         )
         let runner = try UnifiedTestRunner()
-        let skipList = [
-            // TODO: SWIFT-1175 unskip this test
-            "mongos-unpin": ["unpin on successful abort"]
-        ]
-        try runner.runFiles(files.map { $0.1 }, skipTests: skipList)
+        try runner.runFiles(files.map { $0.1 })
     }
 }
