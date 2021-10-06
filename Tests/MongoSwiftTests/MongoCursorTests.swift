@@ -56,7 +56,7 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
     func testTailableAwaitAsyncCursor() throws {
         let collOptions = CreateCollectionOptions(capped: true, max: 3, size: 1000)
         try self.withTestNamespace(collectionOptions: collOptions) { _, _, coll in
-            let cursorOpts = FindOptions(batchSize: 1, cursorType: .tailableAwait, maxAwaitTimeMS: 10)
+            let cursorOpts = FindOptions(batchSize: 1, cursorType: .tailableAwait, maxAwaitTimeMS: 20)
             _ = try coll.insertMany([BSONDocument()]).wait()
 
             let cursor = try coll.find(options: cursorOpts).wait()
