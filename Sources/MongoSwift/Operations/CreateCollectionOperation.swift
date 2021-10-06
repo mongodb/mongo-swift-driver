@@ -21,6 +21,9 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
     /// decoded using this strategy.
     public var dateCodingStrategy: DateCodingStrategy? = nil
 
+    /// Number of seconds after which old time series data should be deleted.
+    public var expireAfterSeconds: Int?
+
     /// Specify a default configuration for indexes created on this collection.
     public var indexOptionDefaults: BSONDocument?
 
@@ -36,6 +39,9 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
 
     /// Specifies storage engine configuration for this collection.
     public var storageEngine: BSONDocument?
+
+    /// The options used for creating a time series collection. This feature is only available on MongoDB 5.0+.
+    public var timeseries: TimeseriesOptions?
 
     /// Specifies the `UUIDCodingStrategy` to use for BSON encoding/decoding operations performed by this collection.
     /// It is the responsibility of the user to ensure that any `UUID`s already stored in this collection can be
@@ -63,7 +69,7 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
 
     private enum CodingKeys: String, CodingKey {
         case capped, size, max, storageEngine, validator, validationLevel, validationAction,
-             indexOptionDefaults, viewOn, pipeline, collation, writeConcern
+             indexOptionDefaults, viewOn, pipeline, collation, writeConcern, timeseries, expireAfterSeconds
     }
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
@@ -72,11 +78,13 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
         collation: BSONDocument? = nil,
         dataCodingStrategy: DataCodingStrategy? = nil,
         dateCodingStrategy: DateCodingStrategy? = nil,
+        expireAfterSeconds: Int? = nil,
         indexOptionDefaults: BSONDocument? = nil,
         max: Int? = nil,
         pipeline: [BSONDocument]? = nil,
         size: Int? = nil,
         storageEngine: BSONDocument? = nil,
+        timeseries: TimeseriesOptions? = nil,
         uuidCodingStrategy: UUIDCodingStrategy? = nil,
         validationAction: String? = nil,
         validationLevel: String? = nil,
@@ -99,7 +107,33 @@ public struct CreateCollectionOptions: Codable, CodingStrategyProvider {
         self.validator = validator
         self.viewOn = viewOn
         self.writeConcern = writeConcern
+        self.timeseries = timeseries
+        self.expireAfterSeconds = expireAfterSeconds
     }
+}
+
+/// The options to use when creating a time series collection.
+public struct TimeseriesOptions: Codable {
+    /// Name of the top-level field to be used for time. Inserted documents must have this field, and the field must
+    /// be of the BSON UTC datetime type.
+    public var timeField: String
+
+    /// Name of the top-level field describing the series. This field is used to group related data and may be of any
+    /// BSON type except array. This name must not be the same as the `timeField` or `_id`.
+    public var metaField: String?
+
+    /// The units used to describe the expected interval between subsequent measurements for a time series
+    /// collection. Defaults to `TimeSeriesGranularity.seconds` if unset.
+    public var granularity: TimeseriesGranularity?
+
+    private enum CodingKeys: String, CodingKey {
+        case timeField, metaField, granularity
+    }
+}
+
+/// The units used to describe the expected interval between subsequent measurements for a time series collection.
+public enum TimeseriesGranularity: String, Codable {
+    case seconds, minutes, hours
 }
 
 // An operation corresponding to a `createCollection` command on a database.
