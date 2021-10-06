@@ -234,6 +234,7 @@ extension MongoDatabaseTests {
         ("testMongoDatabase", testMongoDatabase),
         ("testDropDatabase", testDropDatabase),
         ("testCreateCollection", testCreateCollection),
+        ("testCreateCollectionUnified", testCreateCollectionUnified),
         ("testListCollections", testListCollections),
         ("testListCollectionsBatchSize", testListCollectionsBatchSize),
         ("testAggregate", testAggregate),
