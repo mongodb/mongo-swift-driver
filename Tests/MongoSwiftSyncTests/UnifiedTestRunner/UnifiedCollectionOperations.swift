@@ -277,7 +277,7 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
     let filter: BSONDocument
 
     /// Update to use for this operation.
-    let update: BSONDocument
+    let updateModel: UpdateModel
 
     /// Options to use for the operation.
     let options: FindOneAndUpdateOptions
@@ -301,22 +301,34 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.filter = try container.decode(BSONDocument.self, forKey: .filter)
-        // TODO: SWIFT-560 handle decoding pipelines properly
-        self.update = try container.decode(BSONDocument.self, forKey: .update)
+        self.updateModel = try container.decode(UpdateModel.self, forKey: .update)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        guard let result = try collection.findOneAndUpdate(
-            filter: filter,
-            update: update,
-            options: options,
-            session: session
-        ) else {
+        let result: BSONDocument?
+        switch updateModel {
+        case let .updateDoc(update):
+            result = try collection.findOneAndUpdate(
+                filter: filter,
+                update: update,
+                options: options,
+                session: session
+            )
+        case let .pipeline(pipeline):
+            result = try collection.findOneAndUpdate(
+                filter: filter,
+                update: pipeline,
+                options: options,
+                session: session
+            )
+        }
+        if let doc = result {
+            return .rootDocument(doc)
+        } else {
             return .unacknowledgedWrite
         }
-        return .rootDocument(result)
     }
 }
 
@@ -609,7 +621,7 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
     let filter: BSONDocument
 
     /// Update to perform.
-    let update: BSONDocument
+    let updateModel: UpdateModel
 
     let options: UpdateOptions?
 
@@ -629,25 +641,27 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.updateModel = try container.decode(UpdateModel.self, forKey: .update)
         self.options = try decoder.singleValueContainer().decode(UpdateOptions.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        // TODO: SWIFT-560 handle decoding pipelines properly
-        self.update = try container.decode(BSONDocument.self, forKey: .update)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        guard let result = try collection.updateOne(
-            filter: filter,
-            update: update,
-            options: self.options,
-            session: session
-        ) else {
+        let result: UpdateResult?
+        switch updateModel {
+        case let .updateDoc(update):
+            result = try collection.updateOne(filter: filter, update: update, options: self.options, session: session)
+        case let .pipeline(pipeline):
+            result = try collection.updateOne(filter: filter, update: pipeline, options: self.options, session: session)
+        }
+        if let updateResult = result {
+            let encoded = try BSONEncoder().encode(updateResult)
+            return .rootDocument(encoded)
+        } else {
             return .unacknowledgedWrite
         }
-        let encoded = try BSONEncoder().encode(result)
-        return .rootDocument(encoded)
     }
 }
 
@@ -656,7 +670,7 @@ struct UnifiedUpdateMany: UnifiedOperationProtocol {
     let filter: BSONDocument
 
     /// Update to perform.
-    let update: BSONDocument
+    let updateModel: UpdateModel
 
     let options: UpdateOptions?
 
@@ -674,17 +688,46 @@ struct UnifiedUpdateMany: UnifiedOperationProtocol {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.filter = try container.decode(BSONDocument.self, forKey: .filter)
-        // TODO: SWIFT-560 handle decoding pipelines properly
-        self.update = try container.decode(BSONDocument.self, forKey: .update)
+        self.updateModel = try container.decode(UpdateModel.self, forKey: .update)
         self.options = try decoder.singleValueContainer().decode(UpdateOptions.self)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        guard let result = try collection.updateMany(filter: filter, update: update, options: self.options) else {
+        let result: UpdateResult?
+        switch updateModel {
+        case let .updateDoc(update):
+            result = try collection.updateMany(filter: filter, update: update, options: self.options)
+        case let .pipeline(pipeline):
+            result = try collection.updateMany(filter: filter, update: pipeline, options: self.options)
+        }
+        if let updateResult = result {
+            let encoded = try BSONEncoder().encode(updateResult)
+            return .rootDocument(encoded)
+        } else {
             return .unacknowledgedWrite
         }
-        let encoded = try BSONEncoder().encode(result)
-        return .rootDocument(encoded)
+    }
+}
+
+enum UpdateModel: Decodable {
+    case updateDoc(BSONDocument)
+    case pipeline([BSONDocument])
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let updateDoc = try? container.decode(BSONDocument.self) {
+            self = .updateDoc(updateDoc)
+        } else if let pipeline = try? container.decode([BSONDocument].self) {
+            self = .pipeline(pipeline)
+        } else {
+            throw DecodingError.typeMismatch(
+                UpdateModel.self,
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "update must be document or aggregation pipeline"
+                )
+            )
+        }
     }
 }

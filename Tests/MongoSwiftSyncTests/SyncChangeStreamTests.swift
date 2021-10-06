@@ -293,57 +293,14 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase {
         }
     }
 
-    // TODO: SWIFT-560: Run this test.
     func testChangeStreamSpecUnified() throws {
-        printSkipMessage(testName: self.name, reason: "Skipping until SWIFT-560 is implemented")
-        // let tests = try retrieveSpecTestFiles(
-        //     specName: "change-streams",
-        //     subdirectory: "unified",
-        //     asType: UnifiedTestFile.self
-        // ).map { $0.1 }
-        // let testRunner = try UnifiedTestRunner()
-        // try testRunner.runFiles(tests)
-    }
-
-    // TODO: SWIFT-560: Remove this test. It is a prose version of a unified test which we skip above.
-    func testChangeStreamTruncatedArrays() throws {
-        try withTestNamespace { client, db, collection in
-            let requirements = TestRequirement(
-                minServerVersion: ServerVersion(major: 4, minor: 7),
-                acceptableTopologies: [.replicaSet]
-            )
-            let unmetRequirement = try client.getUnmetRequirement(requirements)
-            guard unmetRequirement == nil else {
-                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
-                return
-            }
-
-            let doc: BSONDocument = ["_id": 1, "a": 1, "array": ["foo", ["a": "bar"], 1, 2, 3]]
-            try collection.insertOne(doc)
-
-            let changeStream = try collection.watch()
-
-            let updateCommand: BSONDocument = [
-                "update": .string(collection.name),
-                "updates": [
-                    [
-                        "q": ["_id": 1],
-                        "u": [
-                            ["$set": ["array": ["foo", ["a": "bar"]]]]
-                        ]
-                    ]
-                ]
-            ]
-
-            try db.runCommand(updateCommand)
-            let event = try changeStream.nextWithTimeout()
-            expect(event?.operationType).to(equal(.update))
-            expect(event?.ns).to(equal(collection.namespace))
-            expect(event?.updateDescription?.updatedFields).to(beEmpty())
-            expect(event?.updateDescription?.removedFields).to(beEmpty())
-            expect(event?.updateDescription?.truncatedArrays?.first?.field).to(equal("array"))
-            expect(event?.updateDescription?.truncatedArrays?.first?.newSize).to(equal(2))
-        }
+        let tests = try retrieveSpecTestFiles(
+            specName: "change-streams",
+            subdirectory: "unified",
+            asType: UnifiedTestFile.self
+        ).map { $0.1 }
+        let testRunner = try UnifiedTestRunner()
+        try testRunner.runFiles(tests)
     }
 }
 

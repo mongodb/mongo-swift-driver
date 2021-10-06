@@ -101,6 +101,37 @@ extension MongoCollection {
     }
 
     /**
+     * Finds a single document and updates it, returning either the original or the updated document.
+     *
+     * - Parameters:
+     *   - filter: `BSONDocument` representing the match criteria
+     *   - update: an array of `BSONDocument` containing the aggregation pipeline to apply
+     *   - options: Optional `FindOneAndUpdateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns:
+     *    An `EventLoopFuture<CollectionType>`. On success, contains either the original or updated document, depending
+     *    on selected options, or contains `nil` if there was no match.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `MongoError.InvalidArgumentError` if any of the provided options are invalid.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.WriteError` if an error occurs while executing the command.
+     *    - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
+     */
+    public func findOneAndUpdate(
+        filter: BSONDocument,
+        update: [BSONDocument],
+        options: FindOneAndUpdateOptions? = nil,
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<CollectionType?> {
+        let update = BSONDocument(update.map { document in BSON.document(document) })
+        return self.findOneAndUpdate(filter: filter, update: update, options: options, session: session)
+    }
+
+    /**
      * A private helper method for findAndModify operations to use.
      *
      * - Returns:

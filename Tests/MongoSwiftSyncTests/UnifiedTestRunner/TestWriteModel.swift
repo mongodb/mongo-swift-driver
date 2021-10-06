@@ -57,15 +57,13 @@ enum TestWriteModel: Decodable {
             matchedKey = .replaceOne
         } else if let nested = try? container.nestedContainer(keyedBy: UpdateKeys.self, forKey: .updateOne) {
             let filter = try nested.decode(BSONDocument.self, forKey: .filter)
-            // TODO: SWIFT-560 handle decoding pipelines properly
-            let update = try nested.decode(BSONDocument.self, forKey: .update)
+            let update = try nested.decode(UpdateModel.self, forKey: .update).asDocument()
             let options = try container.decode(UpdateModelOptions.self, forKey: .updateOne)
             self = .updateOne(filter: filter, update: update, options: options)
             matchedKey = .updateOne
         } else if let nested = try? container.nestedContainer(keyedBy: UpdateKeys.self, forKey: .updateMany) {
             let filter = try nested.decode(BSONDocument.self, forKey: .filter)
-            // TODO: SWIFT-560 handle decoding pipelines properly
-            let update = try nested.decode(BSONDocument.self, forKey: .update)
+            let update = try nested.decode(UpdateModel.self, forKey: .update).asDocument()
             let options = try container.decode(UpdateModelOptions.self, forKey: .updateMany)
             self = .updateMany(filter: filter, update: update, options: options)
             matchedKey = .updateMany
@@ -114,6 +112,21 @@ enum TestWriteModel: Decodable {
             return .updateMany(filter: filter, update: update, options: options)
         case let .replaceOne(filter, replacement, options):
             return .replaceOne(filter: filter, replacement: replacement, options: options)
+        }
+    }
+}
+
+extension UpdateModel {
+    func asDocument() -> BSONDocument {
+        switch self {
+        case let .updateDoc(doc):
+            return doc
+        case let .pipeline(pipeline):
+            var doc = BSONDocument()
+            for (i, value) in pipeline.enumerated() {
+                doc["\(i)"] = BSON.document(value)
+            }
+            return doc
         }
     }
 }

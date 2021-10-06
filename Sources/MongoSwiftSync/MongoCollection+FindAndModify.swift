@@ -98,4 +98,39 @@ extension MongoCollection {
         )
         .wait()
     }
+
+    /**
+     * Finds a single document and updates it, returning either the original or the updated document.
+     *
+     * - Parameters:
+     *   - filter: `Document` representing the match criteria
+     *   - update: an array of `Document` containing the aggregation pipeline to apply
+     *   - options: Optional `FindOneAndUpdateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns: A `CollectionType` representing either the original or updated document,
+     *      depending on selected options, or `nil` if there was no match.
+     *
+     * - Throws:
+     *   - `MongoError.InvalidArgumentError` if any of the provided options are invalid.
+     *   - `MongoError.LogicError` if the provided session is inactive.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.WriteError` if an error occurs while executing the command.
+     *   - `DecodingError` if the updated document cannot be decoded to a `CollectionType` value.
+     */
+    @discardableResult
+    public func findOneAndUpdate(
+        filter: BSONDocument,
+        update: [BSONDocument],
+        options: FindOneAndUpdateOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> CollectionType? {
+        try self.asyncColl.findOneAndUpdate(
+            filter: filter,
+            update: update,
+            options: options,
+            session: session?.asyncSession
+        )
+        .wait()
+    }
 }
