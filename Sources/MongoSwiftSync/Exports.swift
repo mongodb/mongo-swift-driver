@@ -1,4 +1,4 @@
-// Generated using Sourcery 1.3.4 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 1.6.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 // Re-export the BSON library
@@ -76,6 +76,8 @@
 @_exported import struct MongoSwift.ServerHeartbeatStartedEvent
 @_exported import struct MongoSwift.ServerHeartbeatSucceededEvent
 @_exported import struct MongoSwift.ServerOpeningEvent
+@_exported import enum MongoSwift.TimeseriesGranularity
+@_exported import struct MongoSwift.TimeseriesOptions
 @_exported import struct MongoSwift.TopologyClosedEvent
 @_exported import struct MongoSwift.TopologyDescription
 @_exported import struct MongoSwift.TopologyDescriptionChangedEvent
