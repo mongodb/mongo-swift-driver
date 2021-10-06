@@ -36,7 +36,6 @@ extension ChangeStreamSpecTests {
     static var allTests = [
         ("testChangeStreamSpec", testChangeStreamSpec),
         ("testChangeStreamSpecUnified", testChangeStreamSpecUnified),
-        ("testChangeStreamTruncatedArrays", testChangeStreamTruncatedArrays),
     ]
 }
 
