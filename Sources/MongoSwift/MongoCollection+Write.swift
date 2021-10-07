@@ -166,11 +166,11 @@ extension MongoCollection {
 
     public func updateOne(
         filter: BSONDocument,
-        update: [BSONDocument],
+        pipeline: [BSONDocument],
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<UpdateResult?> {
-        let update = BSONDocument(update.map { document in BSON.document(document) })
+        let update = BSONDocument(pipeline.map { document in BSON.document(document) })
         return self.updateOne(filter: filter, update: update, options: options, session: session)
     }
 
@@ -237,12 +237,12 @@ extension MongoCollection {
      */
     public func updateMany(
         filter: BSONDocument,
-        update: [BSONDocument],
+        pipeline: [BSONDocument],
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<UpdateResult?> {
-        let updateDoc = BSONDocument(update.map { document in BSON.document(document) })
-        return self.updateMany(filter: filter, update: updateDoc, options: options, session: session)
+        let update = BSONDocument(pipeline.map { document in BSON.document(document) })
+        return self.updateMany(filter: filter, update: update, options: options, session: session)
     }
 
     /**

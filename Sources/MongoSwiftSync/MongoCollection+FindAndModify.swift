@@ -121,13 +121,13 @@ extension MongoCollection {
     @discardableResult
     public func findOneAndUpdate(
         filter: BSONDocument,
-        update: [BSONDocument],
+        pipeline: [BSONDocument],
         options: FindOneAndUpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> CollectionType? {
         try self.asyncColl.findOneAndUpdate(
             filter: filter,
-            update: update,
+            pipeline: pipeline,
             options: options,
             session: session?.asyncSession
         )

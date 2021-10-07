@@ -319,7 +319,7 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
         case let .pipeline(pipeline):
             result = try collection.findOneAndUpdate(
                 filter: filter,
-                update: pipeline,
+                pipeline: pipeline,
                 options: options,
                 session: session
             )
@@ -654,7 +654,12 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
         case let .updateDoc(update):
             result = try collection.updateOne(filter: filter, update: update, options: self.options, session: session)
         case let .pipeline(pipeline):
-            result = try collection.updateOne(filter: filter, update: pipeline, options: self.options, session: session)
+            result = try collection.updateOne(
+                filter: filter,
+                pipeline: pipeline,
+                options: self.options,
+                session: session
+            )
         }
         if let updateResult = result {
             let encoded = try BSONEncoder().encode(updateResult)
@@ -699,7 +704,7 @@ struct UnifiedUpdateMany: UnifiedOperationProtocol {
         case let .updateDoc(update):
             result = try collection.updateMany(filter: filter, update: update, options: self.options)
         case let .pipeline(pipeline):
-            result = try collection.updateMany(filter: filter, update: pipeline, options: self.options)
+            result = try collection.updateMany(filter: filter, pipeline: pipeline, options: self.options)
         }
         if let updateResult = result {
             let encoded = try BSONEncoder().encode(updateResult)

@@ -149,13 +149,13 @@ extension MongoCollection {
     @discardableResult
     public func updateOne(
         filter: BSONDocument,
-        update: [BSONDocument],
+        pipeline: [BSONDocument],
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
         try self.asyncColl.updateOne(
             filter: filter,
-            update: update,
+            pipeline: pipeline,
             options: options,
             session: session?.asyncSession
         )
@@ -219,13 +219,13 @@ extension MongoCollection {
     @discardableResult
     public func updateMany(
         filter: BSONDocument,
-        update: [BSONDocument],
+        pipeline: [BSONDocument],
         options: UpdateOptions? = nil,
         session: ClientSession? = nil
     ) throws -> UpdateResult? {
         try self.asyncColl.updateMany(
             filter: filter,
-            update: update,
+            pipeline: pipeline,
             options: options,
             session: session?.asyncSession
         )

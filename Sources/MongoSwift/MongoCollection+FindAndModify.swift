@@ -123,12 +123,17 @@ extension MongoCollection {
      */
     public func findOneAndUpdate(
         filter: BSONDocument,
-        update: [BSONDocument],
+        pipeline: [BSONDocument],
         options: FindOneAndUpdateOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<CollectionType?> {
-        let update = BSONDocument(update.map { document in BSON.document(document) })
-        return self.findOneAndUpdate(filter: filter, update: update, options: options, session: session)
+        let update = BSONDocument(pipeline.map { document in BSON.document(document) })
+        return self.findOneAndUpdate(
+            filter: filter,
+            update: update,
+            options: options,
+            session: session
+        )
     }
 
     /**
