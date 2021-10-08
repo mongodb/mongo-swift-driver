@@ -1,5 +1,6 @@
 import CLibMongoC
 import NIO
+import SwiftBSON
 
 /// An extension of `MongoCollection` encapsulating write operations.
 extension MongoCollection {
@@ -142,6 +143,39 @@ extension MongoCollection {
     }
 
     /**
+     * Updates a single document matching the provided filter in this collection.
+     *
+     * - Parameters:
+     *   - filter: A `BSONDocument` representing the match criteria
+     *   - pipeline: An array of `BSONDocument` representing the aggregation pipeline to be applied to a matching
+     *   document
+     *   - options: Optional `UpdateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns:
+     *    An `EventLoopFuture<UpdateResult?>`. On success, contains the result of performing the update, or contains
+     *    `nil` if the write concern is unacknowledged.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
+     */
+
+    public func updateOne(
+        filter: BSONDocument,
+        pipeline: [BSONDocument],
+        options: UpdateOptions? = nil,
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<UpdateResult?> {
+        let update = BSONDocument(pipeline.map { document in BSON.document(document) })
+        return self.updateOne(filter: filter, update: update, options: options, session: session)
+    }
+
+    /**
      * Updates multiple documents matching the provided filter in this collection.
      *
      * - Parameters:
@@ -178,6 +212,38 @@ extension MongoCollection {
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try UpdateResult(from: $0) }
             .flatMapErrorThrowing { throw convertBulkWriteError($0) }
+    }
+
+    /**
+     * Updates multiple documents matching the provided filter in this collection.
+     *
+     * - Parameters:
+     *   - filter: A `BSONDocument` representing the match criteria
+     *   - pipeline: An array of `BSONDocument` representing the aggregation pipeline to be applied to matching
+     *   documents
+     *   - options: Optional `UpdateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns:
+     *    An `EventLoopFuture<UpdateResult?>`. On success, contains the result of performing the update, or contains
+     *    `nil` if the write concern is unacknowledged.
+     *
+     *    If the future fails, the error is likely one of the following:
+     *    - `MongoError.WriteError` if an error occurs while performing the command.
+     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *    - `MongoError.LogicError` if the provided session is inactive.
+     *    - `MongoError.LogicError` if this collection's parent client has already been closed.
+     *    - `EncodingError` if an error occurs while encoding the options to BSON.
+     */
+    public func updateMany(
+        filter: BSONDocument,
+        pipeline: [BSONDocument],
+        options: UpdateOptions? = nil,
+        session: ClientSession? = nil
+    ) -> EventLoopFuture<UpdateResult?> {
+        let update = BSONDocument(pipeline.map { document in BSON.document(document) })
+        return self.updateMany(filter: filter, update: update, options: options, session: session)
     }
 
     /**

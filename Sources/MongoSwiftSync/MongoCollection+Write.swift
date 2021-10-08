@@ -128,6 +128,41 @@ extension MongoCollection {
     }
 
     /**
+     * Updates a single document matching the provided filter in this collection.
+     *
+     * - Parameters:
+     *   - filter: A `Document` representing the match criteria
+     *   - pipeline: An array of `Document` representing the aggregation pipeline to be applied to a matching document
+     *   - options: Optional `UpdateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns: The optional result of attempting to update a document. If the `WriteConcern` is
+     *            unacknowledged, `nil` is returned.
+     *
+     * - Throws:
+     *   - `MongoError.WriteError` if an error occurs while performing the command.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `MongoError.LogicError` if the provided session is inactive.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     */
+    @discardableResult
+    public func updateOne(
+        filter: BSONDocument,
+        pipeline: [BSONDocument],
+        options: UpdateOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> UpdateResult? {
+        try self.asyncColl.updateOne(
+            filter: filter,
+            pipeline: pipeline,
+            options: options,
+            session: session?.asyncSession
+        )
+        .wait()
+    }
+
+    /**
      * Updates multiple documents matching the provided filter in this collection.
      *
      * - Parameters:
@@ -156,6 +191,41 @@ extension MongoCollection {
         try self.asyncColl.updateMany(
             filter: filter,
             update: update,
+            options: options,
+            session: session?.asyncSession
+        )
+        .wait()
+    }
+
+    /**
+     * Updates multiple documents matching the provided filter in this collection.
+     *
+     * - Parameters:
+     *   - filter: A `Document` representing the match criteria
+     *   - pipeline: An array of `Document` representing the aggregation pipeline to be applied to matching documents
+     *   - options: Optional `UpdateOptions` to use when executing the command
+     *   - session: Optional `ClientSession` to use when executing this command
+     *
+     * - Returns: The optional result of attempting to update multiple documents. If the write
+     *            concern is unacknowledged, nil is returned
+     *
+     * - Throws:
+     *   - `MongoError.WriteError` if an error occurs while performing the command.
+     *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *   - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
+     *   - `MongoError.LogicError` if the provided session is inactive.
+     *   - `EncodingError` if an error occurs while encoding the options to BSON.
+     */
+    @discardableResult
+    public func updateMany(
+        filter: BSONDocument,
+        pipeline: [BSONDocument],
+        options: UpdateOptions? = nil,
+        session: ClientSession? = nil
+    ) throws -> UpdateResult? {
+        try self.asyncColl.updateMany(
+            filter: filter,
+            pipeline: pipeline,
             options: options,
             session: session?.asyncSession
         )

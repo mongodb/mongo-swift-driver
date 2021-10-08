@@ -78,15 +78,6 @@ final class CrudTests: MongoSwiftTestCase {
         let files = try retrieveSpecTestFiles(
             specName: "crud",
             subdirectory: "unified",
-            excludeFiles: [
-                // TODO: SWIFT-560 unskip these files
-                "bulkWrite-updateMany-dots_and_dollars.json",
-                "bulkWrite-updateOne-dots_and_dollars.json",
-                "updateMany-dots_and_dollars.json",
-                "updateOne-dots_and_dollars.json",
-                "findOneAndUpdate-dots_and_dollars.json",
-                "updateWithPipelines.json"
-            ],
             asType: UnifiedTestFile.self
         )
         let runner = try UnifiedTestRunner()
