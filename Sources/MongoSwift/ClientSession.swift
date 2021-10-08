@@ -272,6 +272,15 @@ public final class ClientSession {
         }
     }
 
+    internal func isDirty() -> Bool {
+        switch self.state {
+        case .notStarted, .ended:
+            return false
+        case let .started(session, _):
+            return mongoc_client_session_get_dirty(session)
+        }
+    }
+
     /// Ends this `ClientSession`. Call this method when you are finished using the session. You must ensure that all
     /// operations using this session have completed before calling this. The returned future must be fulfilled before
     /// this session's parent `MongoClient` is closed.

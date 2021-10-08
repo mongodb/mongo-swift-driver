@@ -127,10 +127,11 @@ struct AssertSessionNotDirty: UnifiedOperationProtocol {
         ["session"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context _: Context) throws -> UnifiedOperationResult {
-        // TODO: SWIFT-1021: Actually implement this operation when we implement explicit sessions in Swift and can tell
-        // whether a session is dirty. For now it is a no-op.
-        .none
+    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let session = try context.entities.getEntity(id: self.session).asSession()
+        expect(session.asyncSession.isDirty())
+            .to(beFalse(), description: "Session \(self.session) should not be dirty. Path: \(context.path)")
+        return .none
     }
 }
 
@@ -142,10 +143,11 @@ struct AssertSessionDirty: UnifiedOperationProtocol {
         ["session"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context _: Context) throws -> UnifiedOperationResult {
-        // TODO: SWIFT-1021: Actually implement this operation when we implement explicit sessions in Swift and can tell
-        // whether a session is dirty. For now it is a no-op.
-        .none
+    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let session = try context.entities.getEntity(id: self.session).asSession()
+        expect(session.asyncSession.isDirty())
+            .to(beTrue(), description: "Session \(self.session) should be dirty. Path: \(context.path)")
+        return .none
     }
 }
 
