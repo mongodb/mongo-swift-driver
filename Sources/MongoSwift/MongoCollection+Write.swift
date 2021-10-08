@@ -147,7 +147,8 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - filter: A `BSONDocument` representing the match criteria
-     *   - pipeline: An array of `BSONDocument` representing the aggregation pipeline to be applied to a matching document
+     *   - pipeline: An array of `BSONDocument` representing the aggregation pipeline to be applied to a matching
+     *   document
      *   - options: Optional `UpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
