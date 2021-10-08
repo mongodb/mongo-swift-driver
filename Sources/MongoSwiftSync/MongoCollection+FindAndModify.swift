@@ -104,7 +104,7 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - filter: `Document` representing the match criteria
-     *   - update: an array of `Document` containing the aggregation pipeline to apply
+     *   - pipeline: an array of `Document` containing the aggregation pipeline to apply
      *   - options: Optional `FindOneAndUpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *

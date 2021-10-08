@@ -132,7 +132,7 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - filter: A `Document` representing the match criteria
-     *   - update: An array of `Document` representing the aggregation pipeline to be applied to a matching document
+     *   - pipeline: An array of `Document` representing the aggregation pipeline to be applied to a matching document
      *   - options: Optional `UpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
@@ -202,7 +202,7 @@ extension MongoCollection {
      *
      * - Parameters:
      *   - filter: A `Document` representing the match criteria
-     *   - update: An array of `Document` representing the aggregation pipeline to be applied to matching documents
+     *   - pipeline: An array of `Document` representing the aggregation pipeline to be applied to matching documents
      *   - options: Optional `UpdateOptions` to use when executing the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
