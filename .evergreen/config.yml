@@ -191,10 +191,12 @@ functions:
           ${PREPARE_SHELL}
           set +o xtrace
 
-          MONGODB_URI="${MONGODB_URI}" \
+          MONGODB_URI="${SINGLE_ATLASPROXY_SERVERLESS_URI}" \
           MONGODB_API_VERSION=${MONGODB_API_VERSION} \
           SERVERLESS_ATLAS_USER="${SERVERLESS_ATLAS_USER}" \
           SERVERLESS_ATLAS_PASSWORD="${SERVERLESS_ATLAS_PASSWORD}" \
+          SINGLE_MONGOS_LB_URI="${SINGLE_ATLASPROXY_SERVERLESS_URI}" \
+          MULTI_MONGOS_LB_URI="${MULTI_ATLASPROXY_SERVERLESS_URI}" \
           SWIFT_VERSION="${SWIFT_VERSION}" \
             sh ${PROJECT_DIRECTORY}/.evergreen/run-serverless-tests.sh
 
@@ -1195,6 +1197,7 @@ task_groups:
             SERVERLESS_DRIVERS_GROUP=${SERVERLESS_DRIVERS_GROUP} \
             SERVERLESS_API_PUBLIC_KEY=${SERVERLESS_API_PUBLIC_KEY} \
             SERVERLESS_API_PRIVATE_KEY=${SERVERLESS_API_PRIVATE_KEY} \
+            LOADBALANCED=ON \
               bash ${DRIVERS_TOOLS}/.evergreen/serverless/create-instance.sh
       - command: expansions.update
         params:

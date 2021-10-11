@@ -4,6 +4,7 @@ import MongoSwiftSync
 @testable import class MongoSwiftSync.ClientSession
 import Nimble
 import TestsCommon
+import XCTest
 
 struct UnifiedFailPoint: UnifiedOperationProtocol {
     /// The failpoint to set.
@@ -274,11 +275,10 @@ struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
         // The mongos on which to set the fail point is determined by the session argument (after resolution to a
         // session entity). Test runners MUST error if the session is not pinned to a mongos server at the time this
         // operation is executed.
-        expect(session.pinnedServerAddress)
-            .toNot(
-                beNil(),
-                description: "Session \(self.session) unexpectedly not pinned to a mongos. Path: \(context.path)"
-            )
+        guard session.pinnedServerAddress != nil else {
+            XCTFail("Session \(self.session) unexpectedly not pinned to a mongos. Path: \(context.path)")
+            return .none
+        }
         let mongosClients = try context.internalClient.asMongosClients()
         guard let clientForPinnedMongos = mongosClients[session.pinnedServerAddress!] else {
             throw TestError(message: "Unexpectedly missing client for mongos \(session.pinnedServerAddress!)")

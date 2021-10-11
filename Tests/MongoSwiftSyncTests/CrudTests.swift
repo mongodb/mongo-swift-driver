@@ -30,7 +30,7 @@ final class CrudTests: MongoSwiftTestCase {
 
             if let serverlessRequirement = file.serverless {
                 if let unmet = serverlessRequirement.validate() {
-                    print("Skipping tests from file\(filename), unmet serverless requirement: \(unmet)")
+                    print("Skipping tests from file \(filename), unmet serverless requirement: \(unmet)")
                     continue
                 }
             }
