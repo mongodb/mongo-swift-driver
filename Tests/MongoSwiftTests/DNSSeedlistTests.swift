@@ -93,11 +93,6 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
             // this particular test case requires SSL is disabled. see DRIVERS-1324.
             let requiresTLS = fileName != "txt-record-with-overridden-ssl-option.json"
 
-            // skipping due to a libmongoc bug. TODO: SWIFT-1343 unskip.
-            guard fileName != "loadBalanced-replicaSet-errors.json" else {
-                continue
-            }
-
             // TLS requirement for this test case is not met.
             guard (requiresTLS && MongoSwiftTestCase.ssl) || (!requiresTLS && !MongoSwiftTestCase.ssl) else {
                 print("Skipping test file \(fileName); TLS requirement not met")
