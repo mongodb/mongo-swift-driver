@@ -15,8 +15,8 @@ export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
 export PATH="${SWIFTENV_ROOT}/bin:$PATH"
 
 # install swiftenv
-git clone --depth 1 -b "osx-install-path" https://github.com/mbroadst/swiftenv.git "${SWIFTENV_ROOT}"
+git clone --depth 1 https://github.com/kylef/swiftenv.git "${SWIFTENV_ROOT}"
 
 # install swift
 eval "$(swiftenv init -)"
-swiftenv install --install-local $SWIFT_VERSION
+swiftenv install --user $SWIFT_VERSION
