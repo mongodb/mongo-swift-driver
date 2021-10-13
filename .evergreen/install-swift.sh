@@ -19,4 +19,10 @@ git clone --depth 1 https://github.com/kylef/swiftenv.git "${SWIFTENV_ROOT}"
 
 # install swift
 eval "$(swiftenv init -)"
+
+if [[ $SWIFT_VERSION == "main-snapshot" ]]
+then
+    SWIFT_VERSION=$(swiftenv install --list-snapshots | tail -1)
+fi
+
 swiftenv install --user $SWIFT_VERSION

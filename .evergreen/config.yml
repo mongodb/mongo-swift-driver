@@ -1113,7 +1113,7 @@ axes:
       - id: "6.0-dev"
         display_name: "Swift 6.0-dev"
         variables:
-          SWIFT_VERSION: "DEVELOPMENT-SNAPSHOT-2021-09-18-a"
+          SWIFT_VERSION: "main-snapshot"
 
   - id: ssl-auth
     display_name: SSL and Auth
