@@ -418,6 +418,28 @@ _bson_append (bson_t *bson,              /* IN */
    return ok;
 }
 
+static BSON_INLINE bool
+_string_contains_null (const char *str, size_t len)
+{
+   for (; len; ++str, --len) {
+      if (*str == 0) {
+         return true;
+      }
+   }
+   return false;
+}
+
+#define HANDLE_KEY_LENGTH(key, key_length)                                \
+   do {                                                                   \
+      if (key_length < 0) {                                               \
+         key_length = (int) strlen (key);                                 \
+      } else {                                                            \
+         /* Necessary to validate embedded NULL is not present in key. */ \
+         if (_string_contains_null (key, key_length)) {                   \
+            return false;                                                 \
+         }                                                                \
+      }                                                                   \
+   } while (0)
 
 /*
  *--------------------------------------------------------------------------
@@ -460,9 +482,7 @@ _bson_append_bson_begin (bson_t *bson,           /* IN */
                 (child_type == BSON_TYPE_ARRAY));
    BSON_ASSERT (child);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    /*
     * If the parent is an inline bson_t, then we need to convert
@@ -746,9 +766,7 @@ bson_append_array (bson_t *bson,        /* IN */
    BSON_ASSERT (key);
    BSON_ASSERT (array);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    /*
     * Let's be a bit pedantic and ensure the array has properly formatted key
@@ -821,9 +839,7 @@ bson_append_binary (bson_t *bson,           /* IN */
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    subtype8 = subtype;
 
@@ -899,9 +915,7 @@ bson_append_bool (bson_t *bson,    /* IN */
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    return _bson_append (bson,
                         4,
@@ -953,9 +967,7 @@ bson_append_code (bson_t *bson,           /* IN */
    BSON_ASSERT (key);
    BSON_ASSERT (javascript);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    length = (int) strlen (javascript) + 1;
    length_le = BSON_UINT32_TO_LE (length);
@@ -1014,9 +1026,7 @@ bson_append_code_with_scope (bson_t *bson,           /* IN */
       return bson_append_code (bson, key, key_length, javascript);
    }
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    js_length = (int) strlen (javascript) + 1;
    js_length_le = BSON_UINT32_TO_LE (js_length);
@@ -1078,9 +1088,7 @@ bson_append_dbpointer (bson_t *bson,           /* IN */
    BSON_ASSERT (collection);
    BSON_ASSERT (oid);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    length = (int) strlen (collection) + 1;
    length_le = BSON_UINT32_TO_LE (length);
@@ -1137,9 +1145,7 @@ bson_append_document (bson_t *bson,        /* IN */
    BSON_ASSERT (key);
    BSON_ASSERT (value);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    return _bson_append (bson,
                         4,
@@ -1163,9 +1169,7 @@ bson_append_double (bson_t *bson, const char *key, int key_length, double value)
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
 #if BSON_BYTE_ORDER == BSON_BIG_ENDIAN
    value = BSON_DOUBLE_TO_LE (value);
@@ -1194,9 +1198,7 @@ bson_append_int32 (bson_t *bson, const char *key, int key_length, int32_t value)
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    value_le = BSON_UINT32_TO_LE (value);
 
@@ -1223,9 +1225,7 @@ bson_append_int64 (bson_t *bson, const char *key, int key_length, int64_t value)
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    value_le = BSON_UINT64_TO_LE (value);
 
@@ -1256,9 +1256,7 @@ bson_append_decimal128 (bson_t *bson,
    BSON_ASSERT (key);
    BSON_ASSERT (value);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    value_le[0] = BSON_UINT64_TO_LE (value->low);
    value_le[1] = BSON_UINT64_TO_LE (value->high);
@@ -1442,9 +1440,7 @@ bson_append_maxkey (bson_t *bson, const char *key, int key_length)
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    return _bson_append (
       bson, 3, (1 + key_length + 1), 1, &type, key_length, key, 1, &gZero);
@@ -1459,9 +1455,7 @@ bson_append_minkey (bson_t *bson, const char *key, int key_length)
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    return _bson_append (
       bson, 3, (1 + key_length + 1), 1, &type, key_length, key, 1, &gZero);
@@ -1476,9 +1470,7 @@ bson_append_null (bson_t *bson, const char *key, int key_length)
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    return _bson_append (
       bson, 3, (1 + key_length + 1), 1, &type, key_length, key, 1, &gZero);
@@ -1497,9 +1489,7 @@ bson_append_oid (bson_t *bson,
    BSON_ASSERT (key);
    BSON_ASSERT (value);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    return _bson_append (bson,
                         4,
@@ -1576,12 +1566,15 @@ bson_append_regex_w_len (bson_t *bson,
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    if (regex_length < 0) {
       regex_length = (int) strlen (regex);
+   } else {
+      /* Necessary to validate embedded NULL is not present in key. */
+      if (_string_contains_null (regex, regex_length)) {
+         return false;
+      }
    }
 
    if (!regex) {
@@ -1633,9 +1626,7 @@ bson_append_utf8 (
       return bson_append_null (bson, key, key_length);
    }
 
-   if (BSON_UNLIKELY (key_length < 0)) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    if (BSON_UNLIKELY (length < 0)) {
       length = (int) strlen (value);
@@ -1675,9 +1666,7 @@ bson_append_symbol (
       return bson_append_null (bson, key, key_length);
    }
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    if (length < 0) {
       length = (int) strlen (value);
@@ -1732,9 +1721,7 @@ bson_append_timestamp (bson_t *bson,
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    value = ((((uint64_t) timestamp) << 32) | ((uint64_t) increment));
    value = BSON_UINT64_TO_LE (value);
@@ -1776,9 +1763,7 @@ bson_append_date_time (bson_t *bson,
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    value_le = BSON_UINT64_TO_LE (value);
 
@@ -1822,9 +1807,7 @@ bson_append_undefined (bson_t *bson, const char *key, int key_length)
    BSON_ASSERT (bson);
    BSON_ASSERT (key);
 
-   if (key_length < 0) {
-      key_length = (int) strlen (key);
-   }
+   HANDLE_KEY_LENGTH (key, key_length);
 
    return _bson_append (
       bson, 3, (1 + key_length + 1), 1, &type, key_length, key, 1, &gZero);
