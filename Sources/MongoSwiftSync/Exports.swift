@@ -76,7 +76,6 @@
 @_exported import struct MongoSwift.ServerHeartbeatStartedEvent
 @_exported import struct MongoSwift.ServerHeartbeatSucceededEvent
 @_exported import struct MongoSwift.ServerOpeningEvent
-@_exported import enum MongoSwift.TimeseriesGranularity
 @_exported import struct MongoSwift.TimeseriesOptions
 @_exported import struct MongoSwift.TopologyClosedEvent
 @_exported import struct MongoSwift.TopologyDescription

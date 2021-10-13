@@ -123,17 +123,28 @@ public struct TimeseriesOptions: Codable {
     public var metaField: String?
 
     /// The units used to describe the expected interval between subsequent measurements for a time series
-    /// collection. Defaults to `TimeSeriesGranularity.seconds` if unset.
-    public var granularity: TimeseriesGranularity?
+    /// collection. Defaults to `Granularity.seconds` if unset.
+    public var granularity: Granularity?
+
+    /// The units used to describe the expected interval between subsequent measurements for a time series collection.
+    public struct Granularity: RawRepresentable, Codable {
+        public static let seconds = Granularity("seconds")
+        public static let minutes = Granularity("minutes")
+        public static let hours = Granularity("hours")
+
+        public static func other(_ value: String) -> Granularity {
+            Granularity(value)
+        }
+
+        public var rawValue: String
+
+        public init?(rawValue: String) { self.rawValue = rawValue }
+        internal init(_ value: String) { self.rawValue = value }
+    }
 
     private enum CodingKeys: String, CodingKey {
         case timeField, metaField, granularity
     }
-}
-
-/// The units used to describe the expected interval between subsequent measurements for a time series collection.
-public enum TimeseriesGranularity: String, Codable {
-    case seconds, minutes, hours
 }
 
 // An operation corresponding to a `createCollection` command on a database.
