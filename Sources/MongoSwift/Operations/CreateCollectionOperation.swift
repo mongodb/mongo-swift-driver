@@ -132,6 +132,8 @@ public struct TimeseriesOptions: Codable {
         public static let minutes = Granularity("minutes")
         public static let hours = Granularity("hours")
 
+        /// For an unknown value. For forwards compatibility, no error will be thrown when an unknown value is
+        /// provided.
         public static func other(_ value: String) -> Granularity {
             Granularity(value)
         }
