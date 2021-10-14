@@ -162,11 +162,16 @@ public enum MongoError {
         /// A description of the error.
         public let message: String
 
+        /// A document providing more information about the write error (e.g. details pertaining to document
+        /// validation).
+        public let details: BSONDocument?
+
         // swiftlint:disable:next nesting
         private enum CodingKeys: String, CodingKey {
             case code
             case codeName
             case message = "errmsg"
+            case details = "errInfo"
         }
 
         // TODO: can remove this once SERVER-36755 is resolved
@@ -175,13 +180,15 @@ public enum MongoError {
             self.code = try container.decode(ServerErrorCode.self, forKey: .code)
             self.message = try container.decode(String.self, forKey: .message)
             self.codeName = try container.decodeIfPresent(String.self, forKey: .codeName) ?? ""
+            self.details = try container.decodeIfPresent(BSONDocument.self, forKey: .details)
         }
 
         // TODO: can remove this once SERVER-36755 is resolved
-        internal init(code: ServerErrorCode, codeName: String, message: String) {
+        internal init(code: ServerErrorCode, codeName: String, message: String, details: BSONDocument?) {
             self.code = code
             self.codeName = codeName
             self.message = message
+            self.details = details
         }
     }
 
@@ -251,12 +258,17 @@ public enum MongoError {
         /// The index of the request that errored.
         public let index: Int
 
+        /// A document providing more information about the write error (e.g. details pertaining to document
+        /// validation).
+        public let details: BSONDocument?
+
         // swiftlint:disable:next nesting
         private enum CodingKeys: String, CodingKey {
             case code
             case codeName
             case message = "errmsg"
             case index
+            case details = "errInfo"
         }
 
         // TODO: can remove this once SERVER-36755 is resolved
@@ -266,14 +278,16 @@ public enum MongoError {
             self.message = try container.decode(String.self, forKey: .message)
             self.index = try container.decode(Int.self, forKey: .index)
             self.codeName = try container.decodeIfPresent(String.self, forKey: .codeName) ?? ""
+            self.details = try container.decodeIfPresent(BSONDocument.self, forKey: .details)
         }
 
         // TODO: can remove this once SERVER-36755 is resolved
-        internal init(code: ServerErrorCode, codeName: String, message: String, index: Int) {
+        internal init(code: ServerErrorCode, codeName: String, message: String, index: Int, details: BSONDocument?) {
             self.code = code
             self.codeName = codeName
             self.message = message
             self.index = index
+            self.details = details
         }
     }
 }
@@ -496,7 +510,8 @@ internal func convertBulkWriteError(_ error: Error) -> Error {
         return MongoError.WriteFailure(
             code: firstFailure.code,
             codeName: firstFailure.codeName,
-            message: firstFailure.message
+            message: firstFailure.message,
+            details: firstFailure.details
         )
     }
 

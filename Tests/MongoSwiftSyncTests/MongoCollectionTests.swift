@@ -84,7 +84,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         // error code 11000: DuplicateKey
         let expectedError = MongoError.WriteError.new(
-            writeFailure: MongoError.WriteFailure.new(code: 11000, codeName: "DuplicateKey", message: ""),
+            writeFailure: MongoError.WriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", details: nil),
             writeConcernFailure: nil,
             errorLabels: nil
         )
@@ -185,7 +185,7 @@ final class MongoCollectionTests: MongoSwiftTestCase {
 
         let expectedResultOrdered = BulkWriteResult.new(insertedCount: 1, insertedIDs: [0: newDoc1["_id"]!])
         let expectedErrorsOrdered = [
-            MongoError.BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 1)
+            MongoError.BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 1, details: nil)
         ]
 
         let expectedErrorOrdered = MongoError.BulkWriteError.new(
@@ -199,8 +199,8 @@ final class MongoCollectionTests: MongoSwiftTestCase {
         expect(try self.coll.insertMany([newDoc1, docId1, newDoc2, docId2])).to(throwError(expectedErrorOrdered))
 
         let expectedErrors = [
-            MongoError.BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 1),
-            MongoError.BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 3)
+            MongoError.BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 1, details: nil),
+            MongoError.BulkWriteFailure.new(code: 11000, codeName: "DuplicateKey", message: "", index: 3, details: nil)
         ]
         let expectedResult = BulkWriteResult.new(
             insertedCount: 2,
