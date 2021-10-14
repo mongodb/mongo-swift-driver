@@ -1,4 +1,4 @@
-// Generated using Sourcery 1.3.4 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 1.6.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 @testable import BSONTests
@@ -234,6 +234,7 @@ extension MongoDatabaseTests {
         ("testMongoDatabase", testMongoDatabase),
         ("testDropDatabase", testDropDatabase),
         ("testCreateCollection", testCreateCollection),
+        ("testCreateCollectionUnified", testCreateCollectionUnified),
         ("testListCollections", testListCollections),
         ("testListCollectionsBatchSize", testListCollectionsBatchSize),
         ("testAggregate", testAggregate),

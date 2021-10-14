@@ -7,14 +7,30 @@ struct UnifiedCreateCollection: UnifiedOperationProtocol {
     /// Optional identifier for a session entity to use.
     let session: String?
 
+    let options: CreateCollectionOptions
+
+    enum CodingKeys: String, CodingKey, CaseIterable {
+        case collection, session
+    }
+
+    init(from decoder: Decoder) throws {
+        self.options = try decoder.singleValueContainer().decode(CreateCollectionOptions.self)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.collection = try container.decode(String.self, forKey: .collection)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
+    }
+
     static var knownArguments: Set<String> {
-        ["collection", "session"]
+        Set(
+            CodingKeys.allCases.map { $0.rawValue } +
+                CreateCollectionOptions().propertyNames
+        )
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let db = try context.entities.getEntity(from: object).asDatabase()
         let session = try context.entities.resolveSession(id: self.session)
-        _ = try db.createCollection(self.collection, session: session)
+        _ = try db.createCollection(self.collection, options: self.options, session: session)
         return .none
     }
 }

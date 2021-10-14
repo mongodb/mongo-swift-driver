@@ -24,3 +24,4 @@ extension UpdateOptions: HasListableProperties {}
 extension ReplaceOneModelOptions: HasListableProperties {}
 extension ChangeStreamOptions: HasListableProperties {}
 extension ListCollectionsOptions: HasListableProperties {}
+extension CreateCollectionOptions: HasListableProperties {}
