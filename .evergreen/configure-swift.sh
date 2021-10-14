@@ -3,7 +3,8 @@
 # This script sets up the required version of Swift correctly using swiftenv.
 # This script should be run as:
 # . path-to-script/configure-swift.sh
-# So that its commands are run within the calling context 
+# So that its commands are run within the calling context and the script can
+# properly set environment variables used there.
 
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 SWIFT_VERSION=${SWIFT_VERSION:-"MISSING_SWIFT_VERSION"}
