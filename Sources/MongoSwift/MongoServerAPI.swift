@@ -1,7 +1,7 @@
 import CLibMongoC
 
-// TODO: SWIFT-1159: add versioned API docs link.
 /// A type containing options for specifying a MongoDB server API version and related behavior.
+/// - SeeAlso: https://docs.mongodb.com/manual/reference/versioned-api/
 public struct MongoServerAPI: Codable {
     /// Represents a server API version.
     public struct Version: Codable, Equatable, LosslessStringConvertible {
