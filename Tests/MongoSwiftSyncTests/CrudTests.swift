@@ -554,8 +554,8 @@ private class UpdateTest: CrudTest {
 final class ProseTests: MongoSwiftTestCase {
     func testWriteConcernErrorDetailsExposed() throws {
         let client = try MongoClient.makeTestClient()
-        guard try client.serverVersionIsInRange("4.0", nil) else {
-            print("Skipping WriteConcernError details test due to unsupported server version")
+        guard try client.supportsFailCommand() else {
+            print("Skipping WriteConcernError details test due to client not supporting fail command")
             return
         }
 
