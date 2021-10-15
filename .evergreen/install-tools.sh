@@ -5,12 +5,12 @@ set -o errexit  # Exit the script with error if any of the commands fail
 # Script for installing various tool dependencies.
 
 # variables
-PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-$PWD}
-SWIFT_VERSION=${SWIFT_VERSION:-5.2.4}
+SWIFT_VERSION=${SWIFT_VERSION:-"MISSING_SWIFT_VERSION"}
+PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-"MISSING_PROJECT_DIRECTORY"}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 
-export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
-export PATH="${SWIFTENV_ROOT}/bin:$PATH"
+# configure Swift
+. ${PROJECT_DIRECTORY}/.evergreen/configure-swift.sh
 
 # usage: build_from_gh [name] [url] [tag]
 build_from_gh () {
@@ -32,10 +32,6 @@ install_from_gh () {
     curl -L ${URL} -o ${INSTALL_DIR}/${NAME}/${NAME}.zip
     unzip ${INSTALL_DIR}/${NAME}/${NAME}.zip -d ${INSTALL_DIR}/${NAME}
 }
-
-# enable swiftenv
-eval "$(swiftenv init -)"
-swiftenv local $SWIFT_VERSION
 
 if [ $1 == "swiftlint" ]
 then

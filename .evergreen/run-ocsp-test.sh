@@ -22,27 +22,12 @@ export SSL_CA_FILE="$DRIVERS_TOOLS/.evergreen/ocsp/${OCSP_ALGORITHM}/ca.pem"
 export MONGODB_OCSP_TESTING=1
 export OCSP_ALGORITHM=${OCSP_ALGORITHM}
 export OCSP_TLS_SHOULD_SUCCEED=${OCSP_TLS_SHOULD_SUCCEED}
-PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-$PWD}
-SWIFT_VERSION=${SWIFT_VERSION:-5.2.5}
+SWIFT_VERSION=${SWIFT_VERSION:-"MISSING_SWIFT_VERSION"}
+PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-"MISSING_PROJECT_DIRECTORY"}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
-OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 
-# enable swiftenv
-export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
-export PATH="${SWIFTENV_ROOT}/bin:$PATH"
-eval "$(swiftenv init -)"
-
-if [ "$OS" == "darwin" ]; then
-    # 5.1, 5.2 require an older version of Xcode/Command Line Tools
-    if [[ "$SWIFT_VERSION" == 5.1.* || "$SWIFT_VERSION" == 5.2.* ]]; then
-        sudo xcode-select -s /Applications/Xcode11.3.app
-    else
-        sudo xcode-select -s /Applications/Xcode12.app
-    fi
-fi
-
-# switch swift version, and run tests
-swiftenv local $SWIFT_VERSION
+# configure Swift
+. ${PROJECT_DIRECTORY}/.evergreen/configure-swift.sh
 
 # build the driver
 swift build

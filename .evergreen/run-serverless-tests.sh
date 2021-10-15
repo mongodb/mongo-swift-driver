@@ -3,10 +3,9 @@
 set -o errexit  # Exit the script with error if any of the commands fail
 
 # variables
-PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-$PWD}
-SWIFT_VERSION=${SWIFT_VERSION:-5.2.5}
+SWIFT_VERSION=${SWIFT_VERSION:-"MISSING_SWIFT_VERSION"}
+PROJECT_DIRECTORY=${PROJECT_DIRECTORY:-"MISSING_PROJECT_DIRECTORY"}
 INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
-OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 INSTALL_DEPS=${INSTALL_DEPS:-"false"}
 
 # if dependencies were not installed separately, do so now.
@@ -16,18 +15,8 @@ if [ "$INSTALL_DEPS" == "true" ]; then
       sh ${PROJECT_DIRECTORY}/.evergreen/install-dependencies.sh
 fi
 
-# enable swiftenv
-export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
-export PATH="${SWIFTENV_ROOT}/bin:$PATH"
-eval "$(swiftenv init -)"
-
-# select the latest Xcode for Swift 5.1 support on MacOS
-if [ "$OS" == "darwin" ]; then
-    sudo xcode-select -s /Applications/Xcode11.3.app
-fi
-
-# switch swift version, and run tests
-swiftenv local $SWIFT_VERSION
+# configure Swift
+. ${PROJECT_DIRECTORY}/.evergreen/configure-swift.sh
 
 # build the driver
 swift build
