@@ -248,6 +248,13 @@ extension OptionsTests {
     ]
 }
 
+extension ProseTests {
+    static var allTests = [
+        ("testWriteConcernErrorDetailsExposed", testWriteConcernErrorDetailsExposed),
+        ("testWriteErrorDetailsExposed", testWriteErrorDetailsExposed),
+    ]
+}
+
 extension ReadConcernTests {
     static var allTests = [
         ("testReadConcernType", testReadConcernType),
@@ -420,6 +427,7 @@ XCTMain([
     testCase(MongoCursorTests.allTests),
     testCase(MongoDatabaseTests.allTests),
     testCase(OptionsTests.allTests),
+    testCase(ProseTests.allTests),
     testCase(ReadConcernTests.allTests),
     testCase(ReadPreferenceOperationTests.allTests),
     testCase(ReadPreferenceTests.allTests),
