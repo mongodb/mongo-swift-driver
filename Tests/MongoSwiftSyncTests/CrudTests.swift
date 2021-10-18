@@ -553,76 +553,85 @@ private class UpdateTest: CrudTest {
 
 final class ProseTests: MongoSwiftTestCase {
     func testWriteConcernErrorDetailsExposed() throws {
-        let client = try MongoClient.makeTestClient()
-        guard try client.supportsFailCommand() else {
-            print("Skipping WriteConcernError details test due to client not supporting fail command")
-            return
-        }
+        try withTestNamespace { client, _, coll in
+            guard try client.supportsFailCommand() else {
+                print("Skipping WriteConcernError details test due to client not supporting fail command")
+                return
+            }
 
-        let errInfo: BSONDocument = [
-            "writeConcern": [
-                "w": 2,
-                "wtimeout": 0,
-                "provenance": "clientSupplied"
+            let errInfo: BSONDocument = [
+                "writeConcern": [
+                    "w": 2,
+                    "wtimeout": 0,
+                    "provenance": "clientSupplied"
+                ]
             ]
-        ]
-        let wce: BSONDocument = [
-            "code": 100,
-            "codeName": "unsatisfiableWriteConcern",
-            "errmsg": "Not enough data-bearing nodes",
-            "errInfo": BSON.document(errInfo)
-        ]
+            let wce: BSONDocument = [
+                "code": 100,
+                "codeName": "unsatisfiableWriteConcern",
+                "errmsg": "Not enough data-bearing nodes",
+                "errInfo": .document(errInfo)
+            ]
 
-        let failPoint = FailPoint.failCommand(
-            failCommands: ["insert"],
-            mode: FailPoint.Mode.times(1),
-            writeConcernError: wce
-        )
-        try failPoint.enable(using: client)
+            let failPoint = FailPoint.failCommand(
+                failCommands: ["insert"],
+                mode: .times(1),
+                writeConcernError: wce
+            )
+            defer { failPoint.disable(using: client) }
+            try failPoint.enable(using: client)
 
-        let doc: BSONDocument = ["x": 1]
-        expect(try client.db("wce-details").collection("wce-details").insertOne(doc))
-            .to(throwError { (error: MongoError.WriteError) in
-                expect(error.writeConcernFailure?.details).to(equal(errInfo))
-            })
+            let doc: BSONDocument = ["x": 1]
+            expect(try coll.insertOne(doc))
+                .to(throwError { (error: MongoError.WriteError) in
+                    expect(error.writeConcernFailure?.details).to(equal(errInfo))
+                })
+        }
     }
 
     func testWriteErrorDetailsExposed() throws {
-        let client = try MongoClient.makeTestClient()
-        guard try client.serverVersionIsInRange("5.0", nil) else {
-            print("Skipping WriteError details test due to unsupported server version")
-            return
-        }
+        try withTestNamespace { client, db, collection in
+            guard try client.serverVersionIsInRange("5.0", nil) else {
+                print("Skipping WriteError details test due to unsupported server version")
+                return
+            }
 
-        let coll = client.db("writeerror-details").collection("writeerror-details")
-        try coll.drop()
+            try collection.drop()
 
-        let validator: BSONDocument = [
-            "create": "test",
-            "validator": [
-                "x": ["$type": "string"]
+            let validator: BSONDocument = [
+                "create": "test",
+                "validator": [
+                    "x": ["$type": "string"]
+                ]
             ]
-        ]
-        let options = CreateCollectionOptions(validator: validator)
-        _ = try client.db("writeerror-details").createCollection("writeerror-details", options: options)
+            let options = CreateCollectionOptions(validator: validator)
+            _ = try db.createCollection(collection.name, options: options)
 
-        let monitor = client.addCommandMonitor()
-        try monitor.captureEvents {
-            expect(try coll.insertOne(["x": 1]))
-                .to(throwError { (error: MongoError.WriteError) in
-                    expect(error.writeFailure?.code).to(equal(121))
-                    expect(error.writeFailure?.details).toNot(beNil())
+            let monitor = client.addCommandMonitor()
+            try monitor.captureEvents {
+                expect(try collection.insertOne(["x": 1]))
+                    .to(throwError { (error: MongoError.WriteError) in
+                        expect(error.writeFailure?.code).to(equal(121))
+                        expect(error.writeFailure?.details).toNot(beNil())
 
-                    let errorDetails = error.writeFailure!.details!
-                    let succeededEvent = monitor.commandSucceededEvents(withNames: ["insert"]).first!
-                    let eventDetails = succeededEvent
-                        .reply["writeErrors"]!
-                        .arrayValue!
-                        .first!
-                        .documentValue!["errInfo"]!
-                        .documentValue!
-                    expect(errorDetails).to(equal(eventDetails))
-                })
+                        guard let errorDetails = error.writeFailure?.details else {
+                            XCTFail("writeFailure did not include details field")
+                            return
+                        }
+                        guard let eventDetails = monitor.commandSucceededEvents(withNames: ["insert"])
+                            .first?
+                            .reply["writeErrors"]?
+                            .arrayValue?
+                            .first?
+                            .documentValue?["errInfo"]?
+                            .documentValue
+                        else {
+                            XCTFail("commandSucceededEvent did not include errInfo document")
+                            return
+                        }
+                        expect(errorDetails).to(equal(eventDetails))
+                    })
+            }
         }
     }
 }
