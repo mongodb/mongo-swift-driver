@@ -637,9 +637,10 @@ extension MongoError.WriteFailure {
     public static func new(
         code: MongoError.ServerErrorCode,
         codeName: String,
-        message: String
+        message: String,
+        details: BSONDocument?
     ) -> MongoError.WriteFailure {
-        MongoError.WriteFailure(code: code, codeName: codeName, message: message)
+        MongoError.WriteFailure(code: code, codeName: codeName, message: message, details: details)
     }
 }
 
@@ -684,9 +685,10 @@ extension MongoError.BulkWriteFailure {
         code: MongoError.ServerErrorCode,
         codeName: String,
         message: String,
-        index: Int
+        index: Int,
+        details: BSONDocument?
     ) -> MongoError.BulkWriteFailure {
-        MongoError.BulkWriteFailure(code: code, codeName: codeName, message: message, index: index)
+        MongoError.BulkWriteFailure(code: code, codeName: codeName, message: message, index: index, details: details)
     }
 }
 
