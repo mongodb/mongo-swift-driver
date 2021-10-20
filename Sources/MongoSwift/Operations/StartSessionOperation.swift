@@ -6,7 +6,7 @@ public struct ClientSessionOptions {
     /**
      * Whether to enable causal consistency for this session. By default, if `snapshot` is not set to true, then
      * causal consistency is enabled. Note that setting this option to true is incompatible with setting `snapshot` to
-     * rue.
+     * true.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/
      */
