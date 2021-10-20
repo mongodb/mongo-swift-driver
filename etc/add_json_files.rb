@@ -26,6 +26,7 @@ uri_options = make_reference(project, "./Tests/Specs/uri-options")
 conn_string = make_reference(project, "./Tests/Specs/connection-string")
 unified = make_reference(project, "./Tests/Specs/unified-test-format")
 versioned_api = make_reference(project, "./Tests/Specs/versioned-api")
+sessions = make_reference(project, "./Tests/Specs/sessions")
 mongoswift_tests_target.add_resources([
     auth,
     crud,
@@ -41,7 +42,8 @@ mongoswift_tests_target.add_resources([
     uri_options,
     conn_string,
     unified,
-    versioned_api
+    versioned_api,
+    sessions
 ])
 
 project.save
