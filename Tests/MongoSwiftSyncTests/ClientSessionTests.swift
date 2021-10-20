@@ -524,4 +524,14 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             expect(session.operationTime).to(beNil())
         }
     }
+
+    func testSessionsUnified() throws {
+        let tests = try retrieveSpecTestFiles(
+            specName: "sessions",
+            subdirectory: "unified",
+            asType: UnifiedTestFile.self
+        )
+        let runner = try UnifiedTestRunner()
+        try runner.runFiles(tests.map { $0.1 })
+    }
 }
