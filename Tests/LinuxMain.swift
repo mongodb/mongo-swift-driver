@@ -361,6 +361,7 @@ extension SyncClientSessionTests {
         ("testCausalConsistencyStandalone", testCausalConsistencyStandalone),
         ("testCausalConsistencyAnyTopology", testCausalConsistencyAnyTopology),
         ("testSessionsUnified", testSessionsUnified),
+        ("testSnapshotSessionsProse", testSnapshotSessionsProse),
     ]
 }
 

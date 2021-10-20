@@ -46,10 +46,16 @@ public struct ClientSessionOptions {
 private func withSessionOpts<T>(
     wrapping options: ClientSessionOptions?,
     _ body: (OpaquePointer) throws -> T
-) rethrows -> T {
+) throws -> T {
     // swiftlint:disable:next force_unwrapping
     let opts = mongoc_session_opts_new()! // always returns a value
     defer { mongoc_session_opts_destroy(opts) }
+
+    if options?.causalConsistency == true && options?.snapshot == true {
+        throw MongoError.InvalidArgumentError(
+            message: "Only one of causalConsistency and snapshot can be set to true."
+        )
+    }
 
     if let causalConsistency = options?.causalConsistency {
         mongoc_session_opts_set_causal_consistency(opts, causalConsistency)
