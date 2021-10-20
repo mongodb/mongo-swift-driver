@@ -34,6 +34,10 @@ public struct AggregateOptions: Codable {
     /// The index hint to use for the aggregation. The hint does not apply to $lookup and $graphLookup stages.
     public var hint: IndexHint?
 
+    /// The variables to use for the aggregation. Variables can be accessed in the aggregation command using the double
+    /// dollar sign prefix in the form `$$<variable_name>`. This option is only available on MongoDB 5.0+.
+    public var `let`: BSONDocument?
+
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
 
@@ -56,6 +60,7 @@ public struct AggregateOptions: Codable {
         collation: BSONDocument? = nil,
         comment: String? = nil,
         hint: IndexHint? = nil,
+        `let`: BSONDocument? = nil,
         maxTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil,
@@ -67,6 +72,7 @@ public struct AggregateOptions: Codable {
         self.collation = collation
         self.comment = comment
         self.hint = hint
+        self.let = `let`
         self.maxTimeMS = maxTimeMS
         self.readConcern = readConcern
         self.readPreference = readPreference
@@ -75,7 +81,7 @@ public struct AggregateOptions: Codable {
 
     internal enum CodingKeys: String, CodingKey, CaseIterable {
         case allowDiskUse, batchSize, bypassDocumentValidation, collation, maxTimeMS, comment, hint, readConcern,
-             writeConcern
+             writeConcern, `let`
     }
 }
 
