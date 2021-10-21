@@ -69,15 +69,20 @@ extension ClientSessionOptions: StrictDecodable {
 
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let causalConsistency = try container.decodeIfPresent(Bool.self, forKey: .causalConsistency)
+        let snapshot = try container.decodeIfPresent(Bool.self, forKey: .snapshot)
         let defaultTransactionOptions = try container.decodeIfPresent(
             TransactionOptions.self,
             forKey: .defaultTransactionOptions
         )
-        self.init(causalConsistency: causalConsistency, defaultTransactionOptions: defaultTransactionOptions)
+        self.init(
+            causalConsistency: causalConsistency,
+            defaultTransactionOptions: defaultTransactionOptions,
+            snapshot: snapshot
+        )
     }
 
     internal enum CodingKeys: String, CodingKey, CaseIterable {
-        case causalConsistency, defaultTransactionOptions
+        case causalConsistency, defaultTransactionOptions, snapshot
     }
 }
 

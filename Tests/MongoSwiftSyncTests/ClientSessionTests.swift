@@ -524,4 +524,26 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             expect(session.operationTime).to(beNil())
         }
     }
+
+    func testSessionsUnified() throws {
+        let tests = try retrieveSpecTestFiles(
+            specName: "sessions",
+            subdirectory: "unified",
+            asType: UnifiedTestFile.self
+        )
+        let runner = try UnifiedTestRunner()
+        try runner.runFiles(tests.map { $0.1 })
+    }
+
+    func testSnapshotSessionsProse() throws {
+        /// 1. Setting both snapshot and causalConsistency to true is not allowed
+        try self.withTestNamespace { client, _, _ in
+            let invalidOpts = ClientSessionOptions(causalConsistency: true, snapshot: true)
+            let session = client.startSession(options: invalidOpts)
+            // We don't actually start the underlying libmongoc session until the ClientSession is used, so we need to
+            // try to do an operation to generate an error.
+            expect(try client.listDatabaseNames(session: session))
+                .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        }
+    }
 }

@@ -565,13 +565,17 @@ struct UnifiedCountDocuments: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
 
+    /// Optional identifier for a session entity to use.
+    let session: String?
+
     static var knownArguments: Set<String> {
-        ["filter"]
+        ["filter", "session"]
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        let result = try collection.countDocuments(filter)
+        let session = try context.entities.resolveSession(id: self.session)
+        let result = try collection.countDocuments(filter, session: session)
         return .bson(BSON(result))
     }
 }
@@ -605,13 +609,17 @@ struct UnifiedDistinct: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
 
+    /// Optional identifier for a session entity to use.
+    let session: String?
+
     static var knownArguments: Set<String> {
-        ["fieldName", "filter"]
+        ["fieldName", "filter", "session"]
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        let result = try collection.distinct(fieldName: self.fieldName, filter: filter)
+        let session = try context.entities.resolveSession(id: self.session)
+        let result = try collection.distinct(fieldName: self.fieldName, filter: filter, session: session)
         return .bson(.array(result))
     }
 }

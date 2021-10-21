@@ -25,11 +25,19 @@ struct AssertNumberConnectionsCheckedOut: UnifiedOperationProtocol {
 }
 
 struct UnifiedListDatabases: UnifiedOperationProtocol {
-    static var knownArguments: Set<String> { [] }
+    /// Optional identifier for a session entity to use.
+    let session: String?
+
+    static var knownArguments: Set<String> { ["session"] }
+
+    init() {
+        self.session = nil
+    }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let testClient = try context.entities.getEntity(from: object).asTestClient()
-        let dbSpecs = try testClient.client.listDatabases()
+        let session = try context.entities.resolveSession(id: self.session)
+        let dbSpecs = try testClient.client.listDatabases(session: session)
         let encoded = try BSONEncoder().encode(dbSpecs)
         return .bson(.array(encoded.map { .document($0) }))
     }

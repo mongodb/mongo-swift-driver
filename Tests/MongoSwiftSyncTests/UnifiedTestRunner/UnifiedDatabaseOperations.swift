@@ -61,8 +61,11 @@ struct UnifiedRunCommand: UnifiedOperationProtocol {
     /// The command to run.
     let command: BSONDocument
 
+    /// Optional identifier for a session entity to use.
+    let session: String?
+
     static var knownArguments: Set<String> {
-        ["commandName", "command"]
+        ["commandName", "command", "session"]
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
@@ -76,14 +79,15 @@ struct UnifiedRunCommand: UnifiedOperationProtocol {
             }
         }
         let db = try context.entities.getEntity(from: object).asDatabase()
-        try db.runCommand(orderedCommand)
+        let session = try context.entities.resolveSession(id: self.session)
+        try db.runCommand(orderedCommand, session: session)
         return .none
     }
 }
 
 struct UnifiedListCollections: UnifiedOperationProtocol {
     /// Filter to use for the command.
-    let filter: BSONDocument
+    let filter: BSONDocument?
 
     /// Optional identifier for a session entity to use.
     let session: String?
@@ -98,7 +102,7 @@ struct UnifiedListCollections: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(ListCollectionsOptions.self)
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
-        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.filter = try container.decodeIfPresent(BSONDocument.self, forKey: .filter)
     }
 
     static var knownArguments: Set<String> {

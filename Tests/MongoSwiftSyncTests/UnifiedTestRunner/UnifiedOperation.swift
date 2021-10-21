@@ -219,7 +219,11 @@ struct UnifiedOperation: Decodable {
         case "listCollections":
             self.operation = try container.decode(UnifiedListCollections.self, forKey: .arguments)
         case "listDatabases":
-            self.operation = UnifiedListDatabases()
+            if container.allKeys.contains(.arguments) {
+                self.operation = try container.decode(UnifiedListDatabases.self, forKey: .arguments)
+            } else {
+                self.operation = UnifiedListDatabases()
+            }
         case "listIndexes":
             self.operation = try container.decode(UnifiedListIndexes.self, forKey: .arguments)
         case "replaceOne":
