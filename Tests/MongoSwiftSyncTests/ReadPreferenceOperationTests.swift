@@ -3,7 +3,7 @@ import Nimble
 import TestsCommon
 import XCTest
 
-final class ReadPreferenceTests: MongoSwiftTestCase {
+final class ReadPreferenceOperationTests: MongoSwiftTestCase {
     override func setUp() {
         self.continueAfterFailure = false
     }
