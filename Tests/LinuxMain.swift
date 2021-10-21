@@ -265,14 +265,10 @@ extension ReadConcernTests {
     ]
 }
 
-extension ReadPreferenceOperationTests {
-    static var allTests = [
-        ("testOperationReadPreference", testOperationReadPreference),
-    ]
-}
-
 extension ReadPreferenceTests {
     static var allTests = [
+        ("testOperationReadPreference", testOperationReadPreference),
+        ("testReadPreferenceIsntSentToStandalones", testReadPreferenceIsntSentToStandalones),
         ("testMode", testMode),
         ("testTagSets", testTagSets),
         ("testMaxStalenessSeconds", testMaxStalenessSeconds),
@@ -432,7 +428,6 @@ XCTMain([
     testCase(OptionsTests.allTests),
     testCase(ProseTests.allTests),
     testCase(ReadConcernTests.allTests),
-    testCase(ReadPreferenceOperationTests.allTests),
     testCase(ReadPreferenceTests.allTests),
     testCase(ReadWriteConcernOperationTests.allTests),
     testCase(ReadWriteConcernSpecTests.allTests),

@@ -249,7 +249,7 @@ extension ServerDescription: Equatable {
 /// which servers are up, what type of servers they are, which is primary, and so on.
 public struct TopologyDescription: Equatable {
     /// The possible types for a topology.
-    public struct TopologyType: RawRepresentable, Equatable {
+    public struct TopologyType: RawRepresentable, Equatable, CustomStringConvertible {
         /// A single mongod server.
         public static let single = TopologyType(.single)
 
@@ -294,6 +294,10 @@ public struct TopologyDescription: Equatable {
                 return nil
             }
             self._topologyType = _type
+        }
+
+        public var description: String {
+            self.rawValue
         }
     }
 

@@ -3,7 +3,7 @@ import Nimble
 import TestsCommon
 import XCTest
 
-final class ReadPreferenceOperationTests: MongoSwiftTestCase {
+final class ReadPreferenceTests: MongoSwiftTestCase {
     override func setUp() {
         self.continueAfterFailure = false
     }
@@ -40,5 +40,28 @@ final class ReadPreferenceOperationTests: MongoSwiftTestCase {
             fieldName: "a",
             options: DistinctOptions(readPreference: .secondaryPreferred)
         )).toNot(throwError())
+    }
+
+    func testReadPreferenceIsntSentToStandalones() throws {
+        try withTestNamespace { client, _, coll in
+            guard try client.topologyType() == .single else {
+                print(unsupportedTopologyMessage(testName: self.name))
+                return
+            }
+
+            let opts = FindOneOptions(readPreference: .secondary)
+            let monitor = client.addCommandMonitor()
+            try monitor.captureEvents {
+                _ = try coll.findOne(options: opts)
+            }
+
+            guard let event = monitor.commandStartedEvents(withNames: ["find"]).first else {
+                XCTFail("Unexpectedly missing find event")
+                return
+            }
+
+            expect(event.command.keys)
+                .toNot(contain("$readPreference"), description: "Command unexpectedly contained $readPreference key")
+        }
     }
 }
