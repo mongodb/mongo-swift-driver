@@ -28,9 +28,6 @@ project:
 	@$(call check_for_gem,xcodeproj)
 	ruby etc/add_json_files.rb
 
-linuxmain:
-	$(SOURCERY) --sources Tests/ --exclude-sources Tests/DisabledTests/ --templates Tests/LinuxMain.stencil --output Tests/LinuxMain.swift
-
 exports:
 	$(SOURCERY) --sources Sources/MongoSwift/ --templates Sources/MongoSwiftSync/Exports.stencil --output Sources/MongoSwiftSync/Exports.swift
 
