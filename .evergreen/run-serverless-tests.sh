@@ -31,4 +31,4 @@ MONGODB_TOPOLOGY="load_balanced" \
   MONGODB_SCRAM_PASSWORD=${SERVERLESS_ATLAS_PASSWORD} \
   AUTH="auth" \
   SSL="ssl" \
-    swift test --filter="(Crud|Retryable|Transactions|Versioned|Session|LoadBalancer|MongoCursor)"
+    swift test --enable-test-discovery --filter="(Crud|Retryable|Transactions|Versioned|Session|LoadBalancer|MongoCursor)"
