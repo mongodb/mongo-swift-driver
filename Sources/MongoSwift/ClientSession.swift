@@ -51,6 +51,34 @@ public final class ClientSession {
         case started(session: OpaquePointer, connection: Connection)
         /// Indicates that the session has been ended.
         case ended
+
+        /**
+         * If this `State` is `.started`, does the necessary work to asynchronously clean up the underlying libmongoc
+         * session. If the `State` is not started, this method will return a succeeded future.
+         * This method accepts the corresponding `ClientSession`'s parent `MongoClient` and `EventLoop` in order to
+         * allow the `State` and its stored references to outlive the session itself. This is necessary so that we
+         * don't return the stored `Connection` to the pool until session cleanup (which uses it) is complete.
+         * Note this method does _not_ mutate `State`; it is the responsibility of the caller to update
+         * `ClientSession.state` if needed for bookkeeping once the returned future is fulfilled.
+         * We can't mutate `self` here directly because we would have to do so in an escaping closure (the call to
+         * `execute`) which the compiler won't allow.
+         */
+        fileprivate func cleanup(using client: MongoClient, on eventLoop: EventLoop?) -> EventLoopFuture<Void> {
+            switch self {
+            case .notStarted, .ended:
+                return client.operationExecutor.makeSucceededFuture((), on: eventLoop)
+            case let .started(session, _):
+                return client.operationExecutor.execute(on: eventLoop) {
+                    mongoc_client_session_destroy(session)
+                }
+            }
+        }
+
+#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+        fileprivate func cleanup(using client: MongoClient, on eventLoop: EventLoop?) async throws {
+            try await self.cleanup(using: client, on: eventLoop).get()
+        }
+#endif
     }
 
     /// Indicates the state of this session.
@@ -281,28 +309,48 @@ public final class ClientSession {
         }
     }
 
-    /// Ends this `ClientSession`. Call this method when you are finished using the session. You must ensure that all
-    /// operations using this session have completed before calling this. The returned future must be fulfilled before
-    /// this session's parent `MongoClient` is closed.
+    /**
+     * Ends this `ClientSession`. Call this method when you are finished using the session. You must ensure that all
+     * operations using this session have completed before calling this. You must ensure to hold a reference to this
+     * session until the returned future is fulfilled, and the future must be fulfilled before the session's parent
+     * `MongoClient` is closed.
+     *
+     * Note: on Swift versions and platforms where structured concurrency is available, this method will be called
+     * automatically upon deinitialization and does not need to be called by the user.
+     */
     public func end() -> EventLoopFuture<Void> {
-        switch self.state {
-        case .notStarted, .ended:
+        self.state.cleanup(using: self.client, on: self.eventLoop).map { res in
             self.state = .ended
-            return self.client.operationExecutor.makeSucceededFuture((), on: self.eventLoop)
-        case let .started(session, _):
-            return self.client.operationExecutor.execute(on: self.eventLoop) {
-                mongoc_client_session_destroy(session)
-                self.state = .ended
-            }
+            return res
         }
     }
 
     /// Cleans up internal state.
     deinit {
+#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+        // Pull out all necessary values into new references to avoid referencing `self` within the `Task`, since the
+        // `Task` is going to outlive `self`.
+        switch self.state {
+        case .notStarted, .ended:
+            return
+        case .started:
+            let state = self.state
+            let client = self.client
+            let el = self.eventLoop
+            _ = Task {
+                try await state.cleanup(using: client, on: el)
+                // it might seem like we should make `state` mutable and mark it as `ended` here, however `state` is
+                // our own copy of the state no one else has access to or could inspect so there is no need to update
+                // it for bookkeeping purposes. also, we would then need to make a mutable copy of the state within the
+                // task here as the compiler won't allow us to mutate a variable declared outside the task.
+            }
+        }
+#else
         guard case .ended = self.state else {
             assertionFailure("ClientSession was not ended before going out of scope; please call ClientSession.end()")
             return
         }
+#endif
     }
 
     /**
