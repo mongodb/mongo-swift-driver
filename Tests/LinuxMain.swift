@@ -268,6 +268,7 @@ extension ReadConcernTests {
 extension ReadPreferenceOperationTests {
     static var allTests = [
         ("testOperationReadPreference", testOperationReadPreference),
+        ("testReadPreferenceIsntSentToStandalones", testReadPreferenceIsntSentToStandalones),
     ]
 }
 
