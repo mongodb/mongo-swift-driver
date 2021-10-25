@@ -415,9 +415,6 @@ functions:
           ${PREPARE_SHELL}
           SWIFT_VERSION=${SWIFT_VERSION} \
             bash ${PROJECT_DIRECTORY}/.evergreen/install-tools.sh sourcery
-          make linuxmain SOURCERY=${PROJECT_DIRECTORY}/opt/sourcery/bin/sourcery
-          # use regex to ignore lines starting with a /
-          git diff -G "^[^\/].*\n" --exit-code Tests/LinuxMain.swift
           make exports SOURCERY=${PROJECT_DIRECTORY}/opt/sourcery/bin/sourcery
           git diff -G "^[^\/].*\n" --exit-code Sources/MongoSwiftSync/Exports.swift
 

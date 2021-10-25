@@ -36,4 +36,4 @@ swift build
 set +o errexit # even if tests fail we want to parse the results, so disable errexit
 set -o pipefail # propagate error codes in the following pipes
 
-swift test --filter=OCSP
+swift test --enable-test-discovery --filter=OCSP
