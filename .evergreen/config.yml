@@ -176,11 +176,12 @@ functions:
         silent: true
         working_dir: "src"
         script: |
-          # DO NOT ECHO WITH XTRACE (which PREPARE_SHELL does)
+          ${PREPARE_SHELL}
+          set +o xtrace
           SWIFT_VERSION=${SWIFT_VERSION} ATLAS_REPL='${ATLAS_REPL}' ATLAS_SHRD='${ATLAS_SHRD}' ATLAS_FREE='${ATLAS_FREE}' ATLAS_TLS11='${ATLAS_TLS11}' ATLAS_TLS12='${ATLAS_TLS12}' \
           ATLAS_REPL_SRV='${ATLAS_REPL_SRV}' ATLAS_SHRD_SRV='${ATLAS_SHRD_SRV}' ATLAS_FREE_SRV='${ATLAS_FREE_SRV}' ATLAS_TLS11_SRV='${ATLAS_TLS11_SRV}' ATLAS_TLS12_SRV='${ATLAS_TLS12_SRV}' \
           ATLAS_SERVERLESS='${ATLAS_SERVERLESS}' ATLAS_SERVERLESS_SRV='${ATLAS_SERVERLESS_SRV}' \
-          sh ${PROJECT_DIRECTORY}/.evergreen/run-atlas-tests.sh
+            ${PROJECT_DIRECTORY}/.evergreen/run-atlas-tests.sh
 
   "run serverless tests":
     - command: shell.exec
@@ -198,7 +199,7 @@ functions:
           SINGLE_MONGOS_LB_URI="${SINGLE_ATLASPROXY_SERVERLESS_URI}" \
           MULTI_MONGOS_LB_URI="${MULTI_ATLASPROXY_SERVERLESS_URI}" \
           SWIFT_VERSION="${SWIFT_VERSION}" \
-            sh ${PROJECT_DIRECTORY}/.evergreen/run-serverless-tests.sh
+            ${PROJECT_DIRECTORY}/.evergreen/run-serverless-tests.sh
 
   "run ocsp test":
     - command: shell.exec
