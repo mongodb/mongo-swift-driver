@@ -58,6 +58,32 @@ extension MongoSwiftTestCase {
         defer { client.syncCloseOrFail() }
         return try await f(client)
     }
+
+    // swiftlint:disable large_tuple
+    // see: https://github.com/realm/SwiftLint/issues/3753
+    internal func withTestNamespace<T>(
+        ns: MongoNamespace? = nil,
+        collectionOptions: CreateCollectionOptions? = nil,
+        _ f: (MongoClient, MongoDatabase, MongoCollection<BSONDocument>) async throws -> T
+    ) async throws -> T {
+        let ns = ns ?? self.getNamespace()
+        guard let collName = ns.collection else {
+            throw TestError(message: "missing collection")
+        }
+        return try await self.withTestClient { client in
+            let database = client.db(ns.db)
+            let collection: MongoCollection<BSONDocument>
+            do {
+                collection = try await database.createCollection(collName, options: collectionOptions)
+            } catch let error as MongoError.CommandError where error.code == 48 {
+                try await database.collection(collName).drop().get()
+                collection = try await database.createCollection(collName, options: collectionOptions)
+            }
+            defer { collection.syncDropOrFail() }
+            return try await f(client, database, collection)
+        }
+    }
+    // swiftlint:enable large_tuple
 }
 
 final class AsyncAwaitTests: MongoSwiftTestCase {
@@ -99,6 +125,16 @@ final class AsyncAwaitTests: MongoSwiftTestCase {
                 }
 
                 // TODO: SWIFT-1391 once we have more API methods available, test transaction usage here.
+            }
+        }
+    }
+
+    func testMongoDatabase() throws {
+        testAsync {
+            try await self.withTestNamespace { _, db, _ in
+                _ = try await db.createCollection("foo")
+                let collections = try await db.listCollectionNames()
+                expect(collections).to(contain("foo"))
             }
         }
     }
