@@ -71,7 +71,7 @@ extension MongoDatabase {
      * Lists all the collections in this database.
      *
      * - Parameters:
-     *   - filter: a `Document`, optional criteria to filter results by.
+     *   - filter: a `BSONDocument`, optional criteria to filter results by.
      *   - options: Optional `ListCollectionsOptions` to use when executing this command.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
@@ -93,7 +93,7 @@ extension MongoDatabase {
      * Gets a list of `MongoCollection`s in this database.
      *
      * - Parameters:
-     *   - filter: a `Document`, optional criteria to filter results by.
+     *   - filter: a `BSONDocument`, optional criteria to filter results by.
      *   - options: Optional `ListCollectionsOptions` to use when executing this command.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
@@ -117,7 +117,7 @@ extension MongoDatabase {
      * Gets a list of names of collections in this database.
      *
      * - Parameters:
-     *   - filter: a `Document`, optional criteria to filter results by.
+     *   - filter: a `BSONDocument`, optional criteria to filter results by.
      *   - options: Optional `ListCollectionsOptions` to use when executing this command.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
@@ -139,11 +139,11 @@ extension MongoDatabase {
      * Issues a MongoDB command against this database.
      *
      * - Parameters:
-     *   - command: a `Document` containing the command to issue against the database.
+     *   - command: a `BSONDocument` containing the command to issue against the database.
      *   - options: Optional `RunCommandOptions` to use when executing this command.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
-     * - Returns: a `Document` containing the server response for the command.
+     * - Returns: a `BSONDocument` containing the server response for the command.
      *
      * - Throws:
      *   - `MongoError.InvalidArgumentError` if `requests` is empty.

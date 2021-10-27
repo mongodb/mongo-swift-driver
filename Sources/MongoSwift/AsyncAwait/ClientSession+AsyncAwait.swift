@@ -16,7 +16,7 @@ extension ClientSession {
      * automatically aborted if the session goes out of scope before `commitTransaction` is called.
      *
      * - Parameters:
-     *   - options: The options to use when starting this transaction
+     *   - options: The options to use when starting this transaction.
      *
      * - Throws:
      *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.

@@ -306,6 +306,17 @@ public struct TestRequirement: Decodable {
         acceptableTopologies: [.replicaSet, .sharded, .shardedReplicaSet, .loadBalanced]
     )
 
+    public static let transactionsSupport = [
+        TestRequirement(
+            minServerVersion: ServerVersion(major: 4, minor: 0, patch: 0),
+            acceptableTopologies: [.replicaSet]
+        ),
+        TestRequirement(
+            minServerVersion: ServerVersion(major: 4, minor: 2, patch: 0),
+            acceptableTopologies: [.sharded, .shardedReplicaSet, .loadBalanced]
+        )
+    ]
+
     public init(
         minServerVersion: ServerVersion? = nil,
         maxServerVersion: ServerVersion? = nil,

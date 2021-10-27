@@ -48,8 +48,8 @@ extension MongoClient {
      * Run the `listDatabases` command.
      *
      * - Parameters:
-     *   - filter: Optional `Document` specifying a filter that the listed databases must pass. This filter can be based
-     *     on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
+     *   - filter: Optional `BSONDocument` specifying a filter that the listed databases must pass. This filter can be
+     *     based on the "name", "sizeOnDisk", "empty", or "shards" fields of the output.
      *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
@@ -75,7 +75,7 @@ extension MongoClient {
      * Get a list of `MongoDatabase`s.
      *
      * - Parameters:
-     *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *   - filter: Optional `BSONDocument` specifying a filter on the names of the returned databases.
      *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
@@ -98,7 +98,7 @@ extension MongoClient {
      * Get a list of names of databases.
      *
      * - Parameters:
-     *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
+     *   - filter: Optional `BSONDocument` specifying a filter on the names of the returned databases.
      *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
