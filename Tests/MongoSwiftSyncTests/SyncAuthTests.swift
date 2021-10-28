@@ -16,7 +16,7 @@ struct TestUser {
             "createUser": .string(self.username),
             "pwd": .string(self.password),
             "roles": ["root"],
-            "mechanisms": .array(self.mechanisms.map { .string($0.name) })
+            "mechanisms": .array(self.mechanisms.map { .string($0.description) })
         ]
     }
 
@@ -60,14 +60,14 @@ struct TestUser {
 
         // assume there are already URL parameters if there's a ?, e.g. mongodb://...../?replset=replset0
         if connStr.contains("?") {
-            return "\(joined)&authMechanism=\(mech.name)"
+            return "\(joined)&authMechanism=\(mech.description)"
         }
         // assume it is a URI that ends with a / and has no params, e.g. mongodb://localhost:27017/
         else if connStr.hasSuffix("/") {
-            return "\(joined)?authMechanism=\(mech.name)"
+            return "\(joined)?authMechanism=\(mech.description)"
         }
         // assume the URI does not end with a / and also has no params, e.g. mongodb://localhost:27017
-        return "\(joined)/?authMechanism=\(mech.name)"
+        return "\(joined)/?authMechanism=\(mech.description)"
     }
 }
 

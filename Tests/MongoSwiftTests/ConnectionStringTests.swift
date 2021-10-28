@@ -5,12 +5,12 @@ import TestsCommon
 import XCTest
 
 /// Represents a single file containing connection string tests.
-struct ConnectionStringTestFile: Decodable {
+private struct ConnectionStringTestFile: Decodable {
     let tests: [ConnectionStringTestCase]
 }
 
 /// Represents a single test case within a file.
-struct ConnectionStringTestCase: Decodable {
+private struct ConnectionStringTestCase: Decodable {
     /// A string describing the test.
     let description: String
     /// A string containing the URI to be parsed.
@@ -29,7 +29,7 @@ struct ConnectionStringTestCase: Decodable {
 
 /// Represents a host in a connection string. We can't just use ServerAddress because the port
 /// may not be present.
-struct TestServerAddress: Decodable {
+private struct TestServerAddress: Decodable {
     /// The host.
     let host: String
     /// The port number.
@@ -43,7 +43,7 @@ struct TestServerAddress: Decodable {
 }
 
 /// Represents credential data. We can't use MongoCredential directly as the coding keys don't match.
-struct TestCredential: Decodable {
+private struct TestCredential: Decodable {
     /// Username.
     let username: String?
     /// Password.
@@ -60,88 +60,55 @@ struct TestCredential: Decodable {
     }
 }
 
-// The spec's expected behavior when an invalid option is encountered is to log a warning and ignore the option.
-// however, when encountering an invalid option, mongoc_uri_new_with_error logs a warning but also returns null
-// and fills out an error which we throw. so all of these warning cases are upconverted to errors. See CDRIVER-3167.
-let shouldWarnButLibmongocErrors: [String: [String]] = [
-    "connection-pool-options.json": ["Non-numeric maxIdleTimeMS causes a warning"],
-    "single-threaded-options.json": ["Invalid serverSelectionTryOnce causes a warning"],
-    "read-preference-options.json": [
-        "Invalid readPreferenceTags causes a warning",
-        "Non-numeric maxStalenessSeconds causes a warning",
-        // libmongoc doesn't actually error when this is too lo but for consistency with other validation code
-        // we check for this value being too low and error if so.
-        "Too low maxStalenessSeconds causes a warning"
-    ],
-    "tls-options.json": [
-        "Invalid tlsAllowInvalidCertificates causes a warning",
-        "Invalid tlsAllowInvalidHostnames causes a warning",
-        "Invalid tlsInsecure causes a warning"
-    ],
-    "compression-options.json": [
-        "Non-numeric zlibCompressionLevel causes a warning",
-        "Too low zlibCompressionLevel causes a warning",
-        "Too high zlibCompressionLevel causes a warning"
-    ],
-    "connection-options.json": [
-        "Non-numeric connectTimeoutMS causes a warning",
-        "Non-numeric heartbeatFrequencyMS causes a warning",
-        "Too low heartbeatFrequencyMS causes a warning",
-        "Non-numeric localThresholdMS causes a warning",
-        "Invalid retryWrites causes a warning",
-        "Non-numeric serverSelectionTimeoutMS causes a warning",
-        "Non-numeric socketTimeoutMS causes a warning",
-        "Invalid directConnection value",
-
-        // libmongoc actually does nothing when these values are too low. for consistency with the behavior when invalid
-        // values are provided for other known options, we upconvert these to an error.
-        "Too low serverSelectionTimeoutMS causes a warning",
-        "Too low localThresholdMS causes a warning",
-        "Too low connectTimeoutMS causes a warning",
-        "Too low socketTimeoutMS causes a warning"
-    ],
-    "concern-options.json": [
-        "Non-numeric wTimeoutMS causes a warning",
-        "Too low wTimeoutMS causes a warning",
-        "Invalid journal causes a warning"
-    ]
-]
-
-// tests we skip because we don't support the specified behavior.
+// Tests we skip because we don't support the specified behavior.
 let skipUnsupported: [String: [String]] = [
+    "valid-auth.json": ["mongodb-cr"], // we don't support MONGODB-CR authentication
     "connection-pool-options.json": [
         // we don't support maxIdleTimeMS.
-        "Too low maxIdleTimeMS causes a warning",
-        "Non-numeric maxIdleTimeMS causes a warning",
-        "Valid connection pool options are parsed correctly",
+        "too low maxidletimems causes a warning",
+        "non-numeric maxidletimems causes a warning",
+        "valid connection pool options are parsed correctly",
         // We don't support minPoolSize.
-        "minPoolSize=0 does not error",
+        "minpoolsize=0 does not error",
         // We don't allow maxPoolSize=0, see SWIFT-1339.
-        "maxPoolSize=0 does not error"
+        "maxpoolsize=0 does not error"
     ],
-    // requires maxIdleTimeMS
-    "connection-options.json": ["*"],
+    "connection-options.json": ["*"], // requires maxIdleTimeMS
     "compression-options.json": ["*"], // requires Snappy, see SWIFT-894
-    "valid-db-with-dotted-name.json": ["*"], // libmongoc doesn't allow db names in dotted form in the URI
+    "valid-db-with-dotted-name.json": ["*"] // libmongoc doesn't allow db names in dotted form in the URI
+]
 
-    // Disabled for MongoConnectionString
-    "invalid-uris.json": ["option", "username", "password"],
-    "valid-auth.json": ["*"],
+// Tests for options that are not yet supported on MongoConnectionString.
+// TODO: SWIFT-1163: remove this.
+let skipMongoConnectionStringUnsupported: [String: [String]] = [
+    // connection string tests
+    "invalid-uris.json": ["option"],
     "valid-options.json": ["*"],
     "valid-unix_socket-absolute.json": ["*"],
     "valid-unix_socket-relative.json": ["*"],
-    "valid-warning.json": ["*"],
+    "valid-warnings.json": ["*"],
 
-    "auth-options.json": ["*"],
+    // URI options tests
     "concern-options.json": ["*"],
     "read-preference-options.json": ["*"],
     "single-threaded-options.json": ["*"],
+    "srv-options.json": ["*"],
     "tls-options.json": ["*"]
 ]
 
 func shouldSkip(file: String, test: String) -> Bool {
-    if let skipList = skipUnsupported[file], skipList.contains(where: test.lowercased().contains) ||
-        skipList.contains("*")
+    if let skipList = skipUnsupported[file],
+       skipList.contains(where: test.lowercased().contains) || skipList.contains("*")
+    {
+        return true
+    }
+
+    return false
+}
+
+func shouldSkipMongoConnectionString(file: String, test: String) -> Bool {
+    if let skipList = skipMongoConnectionStringUnsupported[file],
+       skipList.contains(where: test.lowercased().contains) || skipList.contains("*")
     {
         return true
     }
@@ -150,20 +117,20 @@ func shouldSkip(file: String, test: String) -> Bool {
 }
 
 final class ConnectionStringTests: MongoSwiftTestCase {
-    // swiftlint:disable:next cyclomatic_complexity
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
     func runTests(_ specName: String) throws {
         let testFiles = try retrieveSpecTestFiles(specName: specName, asType: ConnectionStringTestFile.self)
         for (filename, file) in testFiles {
             for testCase in file.tests {
-                guard !shouldSkip(file: filename, test: testCase.description) else {
+                guard !shouldSkip(file: filename, test: testCase.description)
+                    && !shouldSkipMongoConnectionString(file: filename, test: testCase.description)
+                else {
                     continue
                 }
 
-                // if it's invalid, or a case where libmongoc errors instead of warning, expect an error.
-                guard testCase.valid &&
-                    !(shouldWarnButLibmongocErrors[filename]?.contains(testCase.description) ?? false)
-                else {
+                // If the URI is invalid or is expected to emit a warning, expect an error to occur. Note that because
+                // the driver does not implement logging, we throw errors where the spec indicates to log a warning.
+                // TODO: SWIFT-511: revisit when we implement logging spec.
+                guard testCase.valid && testCase.warning != true else {
                     expect(try MongoConnectionString(throwsIfInvalid: testCase.uri)).to(
                         throwError(
                             errorType: MongoError.InvalidArgumentError.self
@@ -173,26 +140,10 @@ final class ConnectionStringTests: MongoSwiftTestCase {
                     continue
                 }
 
-                if testCase.warning == true {
-                    // TODO: SWIFT-511: revisit when we implement logging spec.
-                }
-
                 let connString = try MongoConnectionString(throwsIfInvalid: testCase.uri)
-//                var parsedOptions = connString.options ?? BSONDocument()
-
-                // normalize wtimeoutMS type
-//                if let wTimeout = parsedOptions.wtimeoutms?.int64Value {
-//                    parsedOptions.wtimeoutms = .int32(Int32(wTimeout))
-//                }
-
-                // Assert that options match, if present
-//                for (key, value) in testCase.options ?? BSONDocument() {
-//                    expect(parsedOptions[key.lowercased()]).to(sortedEqual(value))
-//                }
 
                 // Assert that hosts match, if present
                 if let expectedHosts = testCase.hosts {
-                    // always present since these are not srv URIs.
                     let actualHosts = connString.hosts
                     for expectedHost in expectedHosts {
                         guard actualHosts.contains(where: { expectedHost.matches($0) }) else {
@@ -203,13 +154,37 @@ final class ConnectionStringTests: MongoSwiftTestCase {
                 }
 
                 // Assert that auth matches, if present
-//                if let expectedAuth = testCase.auth {
-//                    let actual = connString.credential
-//                    guard expectedAuth.matches(actual) else {
-//                        XCTFail("Expected credentials: \(expectedAuth) do not match parsed credentials: \(actual)")
-//                        continue
-//                    }
-//                }
+                if let expectedAuth = testCase.auth {
+                    let actual = connString.credential ?? MongoCredential()
+                    guard expectedAuth.matches(actual) else {
+                        XCTFail("Expected credentials: \(expectedAuth) do not match parsed credentials: \(actual)")
+                        continue
+                    }
+                }
+
+                if let expectedOptions = testCase.options {
+                    for (key, value) in expectedOptions {
+                        if key.lowercased() == "authmechanism" {
+                            // authMechanism is always specified as a string in the test JSON
+                            let expectedMechanism = value.stringValue!
+                            guard let actualMechanism = connString.credential?.mechanism else {
+                                XCTFail("Expected credential to contain authMechanism: \(testCase.description)")
+                                return
+                            }
+                            expect(actualMechanism.description.lowercased()).to(equal(expectedMechanism.lowercased()))
+                        } else if key.lowercased() == "authmechanismproperties" {
+                            // authMechanismProperties is always specified as a document in the test JSON
+                            let expectedProperties = value.documentValue!
+                            guard let actualProperties = connString.credential?.mechanismProperties else {
+                                XCTFail(
+                                    "Expected credential to contain authMechanismProperties: \(testCase.description)"
+                                )
+                                return
+                            }
+                            expect(actualProperties).to(sortedEqual(expectedProperties))
+                        }
+                    }
+                }
             }
         }
     }

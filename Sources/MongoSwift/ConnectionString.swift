@@ -262,7 +262,7 @@ internal class ConnectionString {
             }
 
             if let mechanism = credential.mechanism {
-                guard mongoc_uri_set_auth_mechanism(self._uri, mechanism.name) else {
+                guard mongoc_uri_set_auth_mechanism(self._uri, mechanism.description) else {
                     throw self.failedToSet(MONGOC_URI_AUTHMECHANISM, to: mechanism)
                 }
             }
@@ -595,7 +595,7 @@ internal class ConnectionString {
             return nil
         }
         let str = String(cString: mechanism)
-        return MongoCredential.Mechanism(str)
+        return try? MongoCredential.Mechanism(str)
     }
 
     /// Returns a document containing the auth mechanism properties if any were provided, otherwise nil.
@@ -653,7 +653,7 @@ internal class ConnectionString {
             copy.authsource = .string(authSource)
         }
         if let authMechanism = self.authMechanism {
-            copy.authmechanism = .string(authMechanism.name)
+            copy.authmechanism = .string(authMechanism.description)
         }
         if let authMechanismProperties = self.authMechanismProperties {
             copy.authmechanismproperties = .document(authMechanismProperties)
