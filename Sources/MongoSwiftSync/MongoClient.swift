@@ -65,17 +65,34 @@ public class MongoClient {
         }
     }
 
-    /// Starts a new `ClientSession` with the provided options.
+    /**
+     * Starts a new `ClientSession` with the provided options.
+     *
+     * This session must be explicitly as an argument to each command that should be executed as part of the session.
+     *
+     * `ClientSession`s are _not_ thread safe so you must ensure the returned session is not used concurrently for
+     * multiple operations.
+     */
     public func startSession(options: ClientSessionOptions? = nil) -> ClientSession {
         ClientSession(client: self, options: options)
     }
 
     /**
-     * Starts a new `ClientSession` with the provided options and passes it to the provided closure.
+     * Starts a new `ClientSession` with the provided options and passes it to the provided closure. The session must
+     * be explicitly passed as an argument to each command within the closure that should be executed as part of the
+     * session.
+     *
      * The session is only valid within the body of the closure and will be ended after the body completes.
      *
+     * `ClientSession`s are _not_ thread safe so you must ensure the session is not used concurrently for multiple
+     * operations.
+     *
+     * - Parameters:
+     *   - options: Options to use when creating the session.
+     *   - sessionBody: A closure which takes in a `ClientSession` and returns a `T`.
+     *
      * - Throws:
-     *   - `RuntimeError.compatibilityError` if the deployment does not support sessions.
+     *   - `RuntimeError.CompatibilityError` if the deployment does not support sessions.
      */
     public func withSession<T>(
         options: ClientSessionOptions? = nil,

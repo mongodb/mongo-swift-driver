@@ -67,9 +67,14 @@ public final class ClientSession {
             switch self {
             case .notStarted, .ended:
                 return client.operationExecutor.makeSucceededFuture((), on: eventLoop)
-            case let .started(session, _):
+            case let .started(session, connection):
                 return client.operationExecutor.execute(on: eventLoop) {
+                    // capture explicit reference to connection to ensure it stays alive until we're done
+                    // destroying the session. (required by libmongoc)
+                    var conn: Connection? = connection
+                    _ = conn // "read" the value so compiler doesn't warn us about it.
                     mongoc_client_session_destroy(session)
+                    conn = nil
                 }
             }
         }

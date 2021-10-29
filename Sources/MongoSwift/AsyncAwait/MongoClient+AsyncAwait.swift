@@ -18,7 +18,20 @@ extension MongoClient {
 
     /**
      * Starts a new `ClientSession` with the provided options and passes it to the provided closure. The session must
-     * not escape the provided closure.
+     * be explicitly passed as an argument to each command within the closure that should be executed as part of the
+     * session.
+     *
+     * The session is only valid within the body of the closure and will be ended after the body completes.
+     *
+     * `ClientSession`s are _not_ thread safe so you must ensure the session is not used concurrently for multiple
+     * operations.
+     *
+     * - Parameters:
+     *   - options: Options to use when creating the session.
+     *   - sessionBody: An `async` closure which takes in a `ClientSession` and returns a `T`.
+     *
+     * - Returns:
+     *    A `T`, the return value of the user-provided closure.
      *
      * - Throws:
      *   - `RuntimeError.CompatibilityError` if the deployment does not support sessions.
@@ -64,7 +77,7 @@ extension MongoClient {
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
-     *   - session: Optional `ClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command.
      *
      * - Returns: An Array of `MongoDatabase`s that match the provided filter.
      *
@@ -87,7 +100,7 @@ extension MongoClient {
      * - Parameters:
      *   - filter: Optional `Document` specifying a filter on the names of the returned databases.
      *   - options: Optional `ListDatabasesOptions` specifying options for listing databases.
-     *   - session: Optional `ClientSession` to use when executing this command
+     *   - session: Optional `ClientSession` to use when executing this command.
      *
      * - Returns: A `[String]` containing names of databases that match the provided filter.
      *

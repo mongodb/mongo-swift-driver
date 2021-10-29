@@ -18,14 +18,29 @@ func testAsync(_ block: @escaping () async throws -> Void) {
     group.wait()
 }
 
+extension Task where Success == Never, Failure == Never {
+    ///  Helper taken from https://www.hackingwithswift.com/quick-start/concurrency/how-to-make-a-task-sleep to support
+    /// configuring with seconds rather than nanoseconds.
+    static func sleep(seconds: TimeInterval) async throws {
+        let duration = UInt64(seconds * 1_000_000_000)
+        try await Task.sleep(nanoseconds: duration)
+    }
+}
+
 /// Asserts that the provided block returns true within the specified timeout. Nimble's `toEventually` can only be used
 /// rom the main testing thread which is too restrictive for our purposes testing the async/await APIs.
-func assertIsEventuallyTrue(_ block: () -> Bool, description: String, timeout: TimeInterval = 5) {
+func assertIsEventuallyTrue(
+    description: String,
+    timeout: TimeInterval = 5,
+    sleepInterval: TimeInterval = 0.1,
+    _ block: () -> Bool
+) async throws {
     let start = DispatchTime.now()
     while DispatchTime.now() < start + timeout {
         if block() {
             return
         }
+        try await Task.sleep(seconds: sleepInterval)
     }
     XCTFail("Expected condition \"\(description)\" to be true within \(timeout) seconds, but was not")
 }
@@ -66,20 +81,22 @@ final class AsyncAwaitTests: MongoSwiftTestCase {
                 expect(dbs).toNot(beEmpty())
 
                 // the session's connection should be back in the pool.
-                assertIsEventuallyTrue(
-                    { client.connectionPool.checkedOutConnections == 0 },
+                try await assertIsEventuallyTrue(
                     description: "Session's underlying connection should be returned to the pool"
-                )
+                ) {
+                    client.connectionPool.checkedOutConnections == 0
+                }
 
                 // test session is cleaned up even if closure throws an error.
                 try? await client.withSession { session in
                     _ = try await client.listDatabases(session: session)
                     throw TestError(message: "intentional error thrown from withSession closure")
                 }
-                assertIsEventuallyTrue(
-                    { client.connectionPool.checkedOutConnections == 0 },
+                try await assertIsEventuallyTrue(
                     description: "Session's underlying connection should be returned to the pool"
-                )
+                ) {
+                    client.connectionPool.checkedOutConnections == 0
+                }
 
                 // TODO: SWIFT-1391 once we have more API methods available, test transaction usage here.
             }
