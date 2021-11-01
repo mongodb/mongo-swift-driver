@@ -69,11 +69,12 @@ public final class ClientSession {
                 return client.operationExecutor.makeSucceededFuture((), on: eventLoop)
             case let .started(session, connection):
                 return client.operationExecutor.execute(on: eventLoop) {
-                    mongoc_client_session_destroy(session)
                     // reference the connection so it stays alive at least until the session is done being cleaned up.
                     // this is required by libmongoc; we can't put the `mongoc_client_t` back in its pool until all
                     // sessions created from it have been destroyed.
-                    _ = connection
+                    withExtendedLifetime(connection) {
+                        mongoc_client_session_destroy(session)
+                    }
                 }
             }
         }
