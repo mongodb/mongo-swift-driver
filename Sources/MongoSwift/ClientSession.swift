@@ -69,12 +69,11 @@ public final class ClientSession {
                 return client.operationExecutor.makeSucceededFuture((), on: eventLoop)
             case let .started(session, connection):
                 return client.operationExecutor.execute(on: eventLoop) {
-                    // capture explicit reference to connection to ensure it stays alive until we're done
-                    // destroying the session. (required by libmongoc)
-                    var conn: Connection? = connection
-                    _ = conn // "read" the value so compiler doesn't warn us about it.
                     mongoc_client_session_destroy(session)
-                    conn = nil
+                    // reference the connection so it stays alive at least until the session is done being cleaned up.
+                    // this is required by libmongoc; we can't put the `mongoc_client_t` back in its pool until all
+                    // sessions created from it have been destroyed.
+                    _ = connection
                 }
             }
         }
