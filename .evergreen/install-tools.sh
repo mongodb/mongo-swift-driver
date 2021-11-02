@@ -35,7 +35,7 @@ install_from_gh () {
 
 if [ $1 == "swiftlint" ]
 then
-    build_from_gh swiftlint https://github.com/realm/SwiftLint "0.44.0"
+    build_from_gh swiftlint https://github.com/realm/SwiftLint "0.45.0"
 elif [ $1 == "swiftformat" ]
 then
     build_from_gh swiftformat https://github.com/nicklockwood/SwiftFormat "0.48.11"

@@ -1358,7 +1358,7 @@ buildvariants:
   display_name: "Format and Lint"
   matrix_spec:
     os-fully-featured: "ubuntu-18.04"
-    swift-version: "5.4" # upgrading is blocked on a SwiftLint release > 0.44
+    swift-version: "5.5"
   tasks:
     - name: "check-format"
     - name: "check-lint"
