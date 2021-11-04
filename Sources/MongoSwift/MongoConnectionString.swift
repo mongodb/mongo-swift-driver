@@ -1,4 +1,5 @@
 import Foundation
+import SwiftBSON
 
 /// Represents a MongoDB connection string.
 /// - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
@@ -126,9 +127,22 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     }
 
     private struct Options {
+        // Authentication options
         fileprivate var authSource: String?
         fileprivate var authMechanism: MongoCredential.Mechanism?
         fileprivate var authMechanismProperties: BSONDocument?
+
+        // TLS options
+        fileprivate var ssl: Bool?
+        fileprivate var tls: Bool?
+        fileprivate var tlsAllowInvalidCertificates: Bool?
+        fileprivate var tlsAllowInvalidHostnames: Bool?
+        fileprivate var tlsCAFile: URL?
+        fileprivate var tlsCertificateKeyFile: URL?
+        fileprivate var tlsCertificateKeyFilePassword: String?
+        fileprivate var tlsDisableCertificateRevocationCheck: Bool?
+        fileprivate var tlsDisableOCSPEndpointCheck: Bool?
+        fileprivate var tlsInsecure: Bool?
 
         fileprivate init(_ uriOptions: String) throws {
             let options = uriOptions.components(separatedBy: "&")
@@ -154,6 +168,27 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                     self.authMechanism = try MongoCredential.Mechanism(value)
                 case "authmechanismproperties":
                     self.authMechanismProperties = try self.parseAuthMechanismProperties(properties: value)
+                case "ssl":
+                    self.ssl = try value.getBool(forKey: "ssl")
+                case "tls":
+                    self.tls = try value.getBool(forKey: "tls")
+                case "tlsallowinvalidcertificates":
+                    self.tlsAllowInvalidCertificates = try value.getBool(forKey: "tlsAllowInvalidCertificates")
+                case "tlsallowinvalidhostnames":
+                    self.tlsAllowInvalidHostnames = try value.getBool(forKey: "tlsAllowInvalidHostnames")
+                case "tlscafile":
+                    self.tlsCAFile = URL(string: value)
+                case "tlscertificatekeyfile":
+                    self.tlsCertificateKeyFile = URL(string: value)
+                case "tlscertificatekeyfilepassword":
+                    self.tlsCertificateKeyFilePassword = value
+                case "tlsdisablecertificaterevocationcheck":
+                    self.tlsDisableCertificateRevocationCheck =
+                        try value.getBool(forKey: "tlsDisableCertificateRevocationCheck")
+                case "tlsdisableocspendpointcheck":
+                    self.tlsDisableOCSPEndpointCheck = try value.getBool(forKey: "tlsDisableOCSPEndpointCheck")
+                case "tlsinsecure":
+                    self.tlsInsecure = try value.getBool(forKey: "tlsInsecure")
                 default:
                     // TODO: SWIFT-1163: error on unknown options
                     break
@@ -175,16 +210,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 case "service_name", "service_realm":
                     propertiesDoc[kv[0]] = .string(kv[1])
                 case "canonicalize_host_name":
-                    switch kv[1] {
-                    case "true":
-                        propertiesDoc[kv[0]] = .bool(true)
-                    case "false":
-                        propertiesDoc[kv[0]] = .bool(false)
-                    default:
-                        throw MongoError.InvalidArgumentError(
-                            message: "Value for CANONICALIZE_HOST_NAME in authMechanismProperties must be true or false"
-                        )
-                    }
+                    propertiesDoc[kv[0]] = .bool(try kv[1].getBool(forKey: "CANONICALIZE_HOST_NAME"))
                 case let other:
                     throw MongoError.InvalidArgumentError(message: "Unknown key for authMechanismProperties: \(other)")
                 }
@@ -281,7 +307,14 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
         let options = try Options(authDatabaseAndOptions[1])
 
-        // Parse authentication options into a MongoCredential
+        // Parse authentication options in to a MongoCredential
+        try self.validateAndUpdateCredential(options: options)
+
+        // Validate and set TLS options
+        try self.validateAndSetTLSOptions(options: options)
+    }
+
+    private mutating func validateAndUpdateCredential(options: Options) throws {
         if let mechanism = options.authMechanism {
             var credential = self.credential ?? MongoCredential()
             credential.source = options.authSource ?? mechanism.getDefaultSource(defaultAuthDB: self.defaultAuthDB)
@@ -309,6 +342,57 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 )
             }
         }
+    }
+
+    private mutating func validateAndSetTLSOptions(options: Options) throws {
+        guard options.tlsInsecure == nil
+            || (options.tlsAllowInvalidCertificates == nil
+                && options.tlsAllowInvalidHostnames == nil
+                && options.tlsDisableCertificateRevocationCheck == nil
+                && options.tlsDisableOCSPEndpointCheck == nil)
+        else {
+            throw MongoError.InvalidArgumentError(
+                message: "tlsAllowInvalidCertificates, tlsAllowInvalidHostnames, tlsDisableCertificateRevocationCheck,"
+                    + " and tlsDisableOCSPEndpointCheck cannot be specified if tlsInsecure is specified in the"
+                    + " connection string"
+            )
+        }
+        guard !(options.tlsAllowInvalidCertificates != nil && options.tlsDisableOCSPEndpointCheck != nil) else {
+            throw MongoError.InvalidArgumentError(
+                message: "tlsAllowInvalidCertificates and tlsDisableOCSPEndpointCheck cannot both be specified in the"
+                    + " connection string"
+            )
+        }
+        guard !(options.tlsAllowInvalidCertificates != nil && options.tlsDisableCertificateRevocationCheck != nil)
+        else {
+            throw MongoError.InvalidArgumentError(
+                message: "tlsAllowInvalidCertificates and tlsDisableCertificateRevocationCheck cannot both be"
+                    + " specified in the connection string"
+            )
+        }
+        guard !(options.tlsDisableOCSPEndpointCheck != nil
+            && options.tlsDisableCertificateRevocationCheck != nil)
+        else {
+            throw MongoError.InvalidArgumentError(
+                message: "tlsDisableOCSPEndpointCheck and tlsDisableCertificateRevocationCheck cannot both be"
+                    + " specified in the connection string"
+            )
+        }
+        if let tls = options.tls, let ssl = options.ssl, tls != ssl {
+            throw MongoError.InvalidArgumentError(
+                message: "tls and ssl must have the same value if both are specified in the connection string"
+            )
+        }
+        self.ssl = options.ssl
+        self.tls = options.tls
+        self.tlsAllowInvalidCertificates = options.tlsAllowInvalidCertificates
+        self.tlsAllowInvalidHostnames = options.tlsAllowInvalidHostnames
+        self.tlsCAFile = options.tlsCAFile
+        self.tlsCertificateKeyFile = options.tlsCertificateKeyFile
+        self.tlsCertificateKeyFilePassword = options.tlsCertificateKeyFilePassword
+        self.tlsDisableCertificateRevocationCheck = options.tlsDisableCertificateRevocationCheck
+        self.tlsDisableOCSPEndpointCheck = options.tlsDisableOCSPEndpointCheck
+        self.tlsInsecure = options.tlsInsecure
     }
 
     /// `Codable` conformance
@@ -343,6 +427,53 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         return des
     }
 
+    /// Returns a document containing all of the options provided after the ? of the URI.
+    internal var options: BSONDocument {
+        var options = BSONDocument()
+
+        if let source = self.credential?.source {
+            options["authsource"] = .string(source)
+        }
+        if let mechanism = self.credential?.mechanism {
+            options["authmechanism"] = .string(mechanism.description)
+        }
+        if let properties = self.credential?.mechanismProperties {
+            options["authmechanismproperties"] = .document(properties)
+        }
+        if let ssl = self.ssl {
+            options["ssl"] = .bool(ssl)
+        }
+        if let tls = self.tls {
+            options["tls"] = .bool(tls)
+        }
+        if let tlsAllowInvalidCertificates = self.tlsAllowInvalidCertificates {
+            options["tlsallowinvalidcertificates"] = .bool(tlsAllowInvalidCertificates)
+        }
+        if let tlsAllowInvalidHostnames = self.tlsAllowInvalidHostnames {
+            options["tlsallowinvalidhostnames"] = .bool(tlsAllowInvalidHostnames)
+        }
+        if let tlsCAFile = self.tlsCAFile {
+            options["tlscafile"] = .string(tlsCAFile.description)
+        }
+        if let tlsCertificateKeyFile = self.tlsCertificateKeyFile {
+            options["tlscertificatekeyfile"] = .string(tlsCertificateKeyFile.description)
+        }
+        if let tlsCertificateKeyFilePassword = self.tlsCertificateKeyFilePassword {
+            options["tlscertificatekeyfilepassword"] = .string(tlsCertificateKeyFilePassword)
+        }
+        if let tlsDisableCertificateRevocationCheck = self.tlsDisableCertificateRevocationCheck {
+            options["tlsdisablecertificaterevocationcheck"] = .bool(tlsDisableCertificateRevocationCheck)
+        }
+        if let tlsDisableOCSPEndpointCheck = self.tlsDisableOCSPEndpointCheck {
+            options["tlsdisableocspendpointcheck"] = .bool(tlsDisableOCSPEndpointCheck)
+        }
+        if let tlsInsecure = self.tlsInsecure {
+            options["tlsinsecure"] = .bool(tlsInsecure)
+        }
+
+        return options
+    }
+
     /// Specifies the format this connection string is in.
     public var scheme: Scheme
 
@@ -355,6 +486,52 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
     /// Specifies the authentication credentials.
     public var credential: MongoCredential?
+
+    /// Alias of the `tls` option.
+    ///
+    /// If this option is set in combination with `tls`, it must have the same value.
+    public var ssl: Bool?
+
+    /// Specifies whether or not to require TLS for connections to the server. By default this is set to false.
+    ///
+    /// - Note: Specifying any other "tls"-prefixed option will require TLS for connections to the server.
+    public var tls: Bool?
+
+    /// Specifies whether to bypass validation of the certificate presented by the mongod/mongos instance. By default
+    /// this is set to false.
+    public var tlsAllowInvalidCertificates: Bool?
+
+    /// Specifies whether to disable hostname validation for the certificate presented by the mongod/mongos instance.
+    /// By default this is set to false.
+    public var tlsAllowInvalidHostnames: Bool?
+
+    /// Specifies the location of a local .pem file that contains the root certificate chain from the Certificate
+    /// Authority. This file is used to validate the certificate presented by the mongod/mongos instance.
+    public var tlsCAFile: URL?
+
+    /// Specifies the location of a local .pem file that contains either the client's TLS certificate or the client's
+    /// TLS certificate and key. The client presents this file to the mongod/mongos instance.
+    public var tlsCertificateKeyFile: URL?
+
+    /// Specifies the password to de-crypt the `tlsCertificateKeyFile`.
+    public var tlsCertificateKeyFilePassword: String?
+
+    /// Specifies whether revocation checking (CRL / OCSP) should be disabled.
+    /// On macOS, this setting has no effect.
+    /// By default this is set to false.
+    /// It is an error to specify both this option and `tlsDisableOCSPEndpointCheck`.
+    public var tlsDisableCertificateRevocationCheck: Bool?
+
+    /// Indicates if OCSP responder endpoints should not be requested when an OCSP response is not stapled.
+    /// On macOS, this setting has no effect.
+    /// By default this is set to false.
+    public var tlsDisableOCSPEndpointCheck: Bool?
+
+    /// When specified, TLS constraints will be relaxed as much as possible. Currently, setting this option to `true`
+    /// is equivalent to setting `tlsAllowInvalidCertificates`, `tlsAllowInvalidHostnames`, and
+    /// `tlsDisableCertificateRevocationCheck` to `true`.
+    /// It is an error to specify both this option and any of the options enabled by it.
+    public var tlsInsecure: Bool?
 }
 
 extension StringProtocol {
@@ -376,5 +553,18 @@ extension StringProtocol {
             }
         }
         return try self.getPercentDecoded(forKey: key)
+    }
+
+    fileprivate func getBool(forKey key: String) throws -> Bool {
+        switch self {
+        case "true":
+            return true
+        case "false":
+            return false
+        default:
+            throw MongoError.InvalidArgumentError(
+                message: "Value for \(key) in connection string must be true or false"
+            )
+        }
     }
 }

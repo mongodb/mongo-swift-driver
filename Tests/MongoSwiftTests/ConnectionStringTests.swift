@@ -92,8 +92,7 @@ let skipMongoConnectionStringUnsupported: [String: [String]] = [
     "concern-options.json": ["*"],
     "read-preference-options.json": ["*"],
     "single-threaded-options.json": ["*"],
-    "srv-options.json": ["*"],
-    "tls-options.json": ["*"]
+    "srv-options.json": ["*"]
 ]
 
 func shouldSkip(file: String, test: String) -> Bool {
@@ -162,27 +161,11 @@ final class ConnectionStringTests: MongoSwiftTestCase {
                     }
                 }
 
+                // Assert that options match, if present
                 if let expectedOptions = testCase.options {
+                    let actualOptions = connString.options
                     for (key, value) in expectedOptions {
-                        if key.lowercased() == "authmechanism" {
-                            // authMechanism is always specified as a string in the test JSON
-                            let expectedMechanism = value.stringValue!
-                            guard let actualMechanism = connString.credential?.mechanism else {
-                                XCTFail("Expected credential to contain authMechanism: \(testCase.description)")
-                                return
-                            }
-                            expect(actualMechanism.description.lowercased()).to(equal(expectedMechanism.lowercased()))
-                        } else if key.lowercased() == "authmechanismproperties" {
-                            // authMechanismProperties is always specified as a document in the test JSON
-                            let expectedProperties = value.documentValue!
-                            guard let actualProperties = connString.credential?.mechanismProperties else {
-                                XCTFail(
-                                    "Expected credential to contain authMechanismProperties: \(testCase.description)"
-                                )
-                                return
-                            }
-                            expect(actualProperties).to(sortedEqual(expectedProperties))
-                        }
+                        expect(actualOptions[key.lowercased()]).to(sortedEqual(value))
                     }
                 }
             }
