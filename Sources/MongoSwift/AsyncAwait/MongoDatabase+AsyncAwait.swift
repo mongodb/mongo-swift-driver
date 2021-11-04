@@ -46,6 +46,7 @@ extension MongoDatabase {
      *
      * - Parameters:
      *   - name: a `String`, the name of the collection to create.
+     *   - type: a `Codable` type to associate with the returned `MongoCollection`.
      *   - options: Optional `CreateCollectionOptions` to use for the collection.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
