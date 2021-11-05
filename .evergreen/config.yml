@@ -557,6 +557,7 @@ tasks:
 
     - name: "test-4.4-sharded_cluster"
       tags: ["4.4", "sharded_cluster"]
+      exec_timeout_secs: 3600 # TODO SWIFT-1410: remove
       commands:
         - func: "prepare resources"
         - func: "fix absolute paths"
@@ -590,6 +591,7 @@ tasks:
 
     - name: "test-5.0-sharded_cluster"
       tags: ["5.0", "sharded_cluster"]
+      exec_timeout_secs: 3600 # TODO SWIFT-1410: remove
       commands:
         - func: "prepare resources"
         - func: "fix absolute paths"
@@ -623,6 +625,7 @@ tasks:
 
     - name: "test-latest-sharded_cluster"
       tags: ["latest", "sharded_cluster"]
+      exec_timeout_secs: 3600 # TODO SWIFT-1410: remove
       commands:
         - func: "prepare resources"
         - func: "fix absolute paths"
