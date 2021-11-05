@@ -83,6 +83,7 @@ let skipUnsupported: [String: [String]] = [
 let skipMongoConnectionStringUnsupported: [String: [String]] = [
     // connection string tests
     "invalid-uris.json": ["option"],
+    "valid-auth.json": ["at-signs in options aren't part of the userinfo"],
     "valid-options.json": ["*"],
     "valid-unix_socket-absolute.json": ["*"],
     "valid-unix_socket-relative.json": ["*"],
