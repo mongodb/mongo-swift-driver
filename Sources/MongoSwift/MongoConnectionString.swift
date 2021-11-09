@@ -323,7 +323,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
         let options = try Options(authDatabaseAndOptions[1])
 
-        // Parse authentication options in to a MongoCredential
+        // Parse authentication options into a MongoCredential
         try self.validateAndUpdateCredential(options: options)
 
         // Validate and set TLS options
