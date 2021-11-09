@@ -105,12 +105,16 @@ extension MongoClient {
         try await self.db("admin").runCommand(["getParameter": "*"])
     }
 
-    internal func getUnmetRequirement(_ testRequirement: TestRequirement) async throws -> UnmetRequirement? {
+    internal func topologyType() async throws -> TestTopologyConfiguration {
         async let helloReply = try self.db("admin").runCommand(["hello": 1])
         async let shards = try self.db("config").collection("shards").find().get().toArray().get()
+        return try await TestTopologyConfiguration(helloReply: helloReply, shards: shards)
+    }
+
+    internal func getUnmetRequirement(_ testRequirement: TestRequirement) async throws -> UnmetRequirement? {
+        async let topologyType = try self.topologyType()
         async let serverVersion = try self.serverVersion()
         async let params = try self.serverParameters()
-        let topologyType = try await TestTopologyConfiguration(helloReply: helloReply, shards: shards)
         return try await testRequirement.getUnmetRequirement(givenCurrent: serverVersion, topologyType, params)
     }
 
