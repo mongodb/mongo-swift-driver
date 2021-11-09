@@ -9,20 +9,20 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// - SeeAlso: https://datatracker.ietf.org/doc/html/rfc3986#section-2.2
     fileprivate static let forbiddenUserInfoCharacters = [":", "/", "?", "#", "[", "]", "@"]
 
-    private enum Names {
-        fileprivate static let authSource = "authsource"
-        fileprivate static let authMechanism = "authmechanism"
-        fileprivate static let authMechanismProperties = "authmechanismproperties"
-        fileprivate static let ssl = "ssl"
-        fileprivate static let tls = "tls"
-        fileprivate static let tlsAllowInvalidCertificates = "tlsallowinvalidcertificates"
-        fileprivate static let tlsAllowInvalidHostnames = "tlsallowinvalidhostnames"
-        fileprivate static let tlsCAFile = "tlscafile"
-        fileprivate static let tlsCertificateKeyFile = "tlscertificatekeyfile"
-        fileprivate static let tlsCertificateKeyFilePassword = "tlscertificatekeyfilepassword"
-        fileprivate static let tlsDisableCertificateRevocationCheck = "tlsdisablecertificaterevocationcheck"
-        fileprivate static let tlsDisableOCSPEndpointCheck = "tlsdisableocspendpointcheck"
-        fileprivate static let tlsInsecure = "tlsinsecure"
+    fileprivate enum Name: String {
+        case authSource = "authsource"
+        case authMechanism = "authmechanism"
+        case authMechanismProperties = "authmechanismproperties"
+        case ssl
+        case tls
+        case tlsAllowInvalidCertificates = "tlsallowinvalidcertificates"
+        case tlsAllowInvalidHostnames = "tlsallowinvalidhostnames"
+        case tlsCAFile = "tlscafile"
+        case tlsCertificateKeyFile = "tlscertificatekeyfile"
+        case tlsCertificateKeyFilePassword = "tlscertificatekeyfilepassword"
+        case tlsDisableCertificateRevocationCheck = "tlsdisablecertificaterevocationcheck"
+        case tlsDisableOCSPEndpointCheck = "tlsdisableocspendpointcheck"
+        case tlsInsecure = "tlsinsecure"
     }
 
     /// Represents a connection string scheme.
@@ -170,44 +170,45 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                             + " equals signs"
                     )
                 }
-                let name = nameAndValue[0].lowercased()
-                let value = try nameAndValue[1].getPercentDecoded(forKey: name)
+                guard let name = Name(rawValue: nameAndValue[0].lowercased()) else {
+                    throw MongoError.InvalidArgumentError(
+                        message: "Connection string contains unsupported option: \(nameAndValue[0])"
+                    )
+                }
+                let value = try nameAndValue[1].getPercentDecoded(forKey: name.rawValue)
                 switch name {
-                case Names.authSource:
+                case .authSource:
                     if value.isEmpty {
                         throw MongoError.InvalidArgumentError(
-                            message: "Connection string \(Names.authSource) option must not be empty"
+                            message: "Connection string \(name.rawValue) option must not be empty"
                         )
                     }
                     self.authSource = value
-                case Names.authMechanism:
+                case .authMechanism:
                     self.authMechanism = try MongoCredential.Mechanism(value)
-                case Names.authMechanismProperties:
+                case .authMechanismProperties:
                     self.authMechanismProperties = try self.parseAuthMechanismProperties(properties: value)
-                case Names.ssl:
-                    self.ssl = try value.getBool(forKey: Names.ssl)
-                case Names.tls:
-                    self.tls = try value.getBool(forKey: Names.tls)
-                case Names.tlsAllowInvalidCertificates:
-                    self.tlsAllowInvalidCertificates = try value.getBool(forKey: Names.tlsAllowInvalidCertificates)
-                case Names.tlsAllowInvalidHostnames:
-                    self.tlsAllowInvalidHostnames = try value.getBool(forKey: Names.tlsAllowInvalidHostnames)
-                case Names.tlsCAFile:
+                case .ssl:
+                    self.ssl = try value.getBool(forKey: name.rawValue)
+                case .tls:
+                    self.tls = try value.getBool(forKey: name.rawValue)
+                case .tlsAllowInvalidCertificates:
+                    self.tlsAllowInvalidCertificates = try value.getBool(forKey: name.rawValue)
+                case .tlsAllowInvalidHostnames:
+                    self.tlsAllowInvalidHostnames = try value.getBool(forKey: name.rawValue)
+                case .tlsCAFile:
                     self.tlsCAFile = URL(string: value)
-                case Names.tlsCertificateKeyFile:
+                case .tlsCertificateKeyFile:
                     self.tlsCertificateKeyFile = URL(string: value)
-                case Names.tlsCertificateKeyFilePassword:
+                case .tlsCertificateKeyFilePassword:
                     self.tlsCertificateKeyFilePassword = value
-                case Names.tlsDisableCertificateRevocationCheck:
+                case .tlsDisableCertificateRevocationCheck:
                     self.tlsDisableCertificateRevocationCheck =
-                        try value.getBool(forKey: Names.tlsDisableCertificateRevocationCheck)
-                case Names.tlsDisableOCSPEndpointCheck:
-                    self.tlsDisableOCSPEndpointCheck = try value.getBool(forKey: Names.tlsDisableOCSPEndpointCheck)
-                case Names.tlsInsecure:
-                    self.tlsInsecure = try value.getBool(forKey: Names.tlsInsecure)
-                default:
-                    // TODO: SWIFT-1163: error on unknown options
-                    break
+                        try value.getBool(forKey: name.rawValue)
+                case .tlsDisableOCSPEndpointCheck:
+                    self.tlsDisableOCSPEndpointCheck = try value.getBool(forKey: name.rawValue)
+                case .tlsInsecure:
+                    self.tlsInsecure = try value.getBool(forKey: name.rawValue)
                 }
             }
         }
@@ -448,40 +449,40 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         var options = BSONDocument()
 
         if let source = self.credential?.source {
-            options[Names.authSource] = .string(source)
+            options[Name.authSource] = .string(source)
         }
         if let mechanism = self.credential?.mechanism {
-            options[Names.authMechanism] = .string(mechanism.description)
+            options[Name.authMechanism] = .string(mechanism.description)
         }
         if let properties = self.credential?.mechanismProperties {
-            options[Names.authMechanismProperties.lowercased()] = .document(properties)
+            options[Name.authMechanismProperties] = .document(properties)
         }
         if let tls = self.tls {
-            options[Names.tls] = .bool(tls)
+            options[Name.tls] = .bool(tls)
         }
         if let tlsAllowInvalidCertificates = self.tlsAllowInvalidCertificates {
-            options[Names.tlsAllowInvalidCertificates] = .bool(tlsAllowInvalidCertificates)
+            options[Name.tlsAllowInvalidCertificates] = .bool(tlsAllowInvalidCertificates)
         }
         if let tlsAllowInvalidHostnames = self.tlsAllowInvalidHostnames {
-            options[Names.tlsAllowInvalidHostnames] = .bool(tlsAllowInvalidHostnames)
+            options[Name.tlsAllowInvalidHostnames] = .bool(tlsAllowInvalidHostnames)
         }
         if let tlsCAFile = self.tlsCAFile {
-            options[Names.tlsCAFile] = .string(tlsCAFile.description)
+            options[Name.tlsCAFile] = .string(tlsCAFile.description)
         }
         if let tlsCertificateKeyFile = self.tlsCertificateKeyFile {
-            options[Names.tlsCertificateKeyFile] = .string(tlsCertificateKeyFile.description)
+            options[Name.tlsCertificateKeyFile] = .string(tlsCertificateKeyFile.description)
         }
         if let tlsCertificateKeyFilePassword = self.tlsCertificateKeyFilePassword {
-            options[Names.tlsCertificateKeyFilePassword] = .string(tlsCertificateKeyFilePassword)
+            options[Name.tlsCertificateKeyFilePassword] = .string(tlsCertificateKeyFilePassword)
         }
         if let tlsDisableCertificateRevocationCheck = self.tlsDisableCertificateRevocationCheck {
-            options[Names.tlsDisableCertificateRevocationCheck] = .bool(tlsDisableCertificateRevocationCheck)
+            options[Name.tlsDisableCertificateRevocationCheck] = .bool(tlsDisableCertificateRevocationCheck)
         }
         if let tlsDisableOCSPEndpointCheck = self.tlsDisableOCSPEndpointCheck {
-            options[Names.tlsDisableOCSPEndpointCheck] = .bool(tlsDisableOCSPEndpointCheck)
+            options[Name.tlsDisableOCSPEndpointCheck] = .bool(tlsDisableOCSPEndpointCheck)
         }
         if let tlsInsecure = self.tlsInsecure {
-            options[Names.tlsInsecure] = .bool(tlsInsecure)
+            options[Name.tlsInsecure] = .bool(tlsInsecure)
         }
 
         return options
@@ -573,6 +574,18 @@ extension StringProtocol {
             throw MongoError.InvalidArgumentError(
                 message: "Value for \(key) in connection string must be true or false"
             )
+        }
+    }
+}
+
+/// Helper extension to set a document field with a `MongoConnectionString.Name`.
+extension BSONDocument {
+    fileprivate subscript(name: MongoConnectionString.Name) -> BSON? {
+        get {
+            self[name.rawValue]
+        }
+        set {
+            self[name.rawValue] = newValue
         }
     }
 }
