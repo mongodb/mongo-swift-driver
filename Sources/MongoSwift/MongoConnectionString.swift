@@ -9,7 +9,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// - SeeAlso: https://datatracker.ietf.org/doc/html/rfc3986#section-2.2
     fileprivate static let forbiddenUserInfoCharacters = [":", "/", "?", "#", "[", "]", "@"]
 
-    private struct Names {
+    private enum Names {
         fileprivate static let authSource = "authsource"
         fileprivate static let authMechanism = "authmechanism"
         fileprivate static let authMechanismProperties = "authmechanismproperties"
