@@ -9,7 +9,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// - SeeAlso: https://datatracker.ietf.org/doc/html/rfc3986#section-2.2
     fileprivate static let forbiddenUserInfoCharacters = [":", "/", "?", "#", "[", "]", "@"]
 
-    fileprivate enum Name: String {
+    fileprivate enum OptionName: String {
         case authSource = "authsource"
         case authMechanism = "authmechanism"
         case authMechanismProperties = "authmechanismproperties"
@@ -170,7 +170,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                             + " equals signs"
                     )
                 }
-                guard let name = Name(rawValue: nameAndValue[0].lowercased()) else {
+                guard let name = OptionName(rawValue: nameAndValue[0].lowercased()) else {
                     throw MongoError.InvalidArgumentError(
                         message: "Connection string contains unsupported option: \(nameAndValue[0])"
                     )
@@ -449,40 +449,40 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         var options = BSONDocument()
 
         if let source = self.credential?.source {
-            options[Name.authSource] = .string(source)
+            options[OptionName.authSource] = .string(source)
         }
         if let mechanism = self.credential?.mechanism {
-            options[Name.authMechanism] = .string(mechanism.description)
+            options[OptionName.authMechanism] = .string(mechanism.description)
         }
         if let properties = self.credential?.mechanismProperties {
-            options[Name.authMechanismProperties] = .document(properties)
+            options[OptionName.authMechanismProperties] = .document(properties)
         }
         if let tls = self.tls {
-            options[Name.tls] = .bool(tls)
+            options[OptionName.tls] = .bool(tls)
         }
         if let tlsAllowInvalidCertificates = self.tlsAllowInvalidCertificates {
-            options[Name.tlsAllowInvalidCertificates] = .bool(tlsAllowInvalidCertificates)
+            options[OptionName.tlsAllowInvalidCertificates] = .bool(tlsAllowInvalidCertificates)
         }
         if let tlsAllowInvalidHostnames = self.tlsAllowInvalidHostnames {
-            options[Name.tlsAllowInvalidHostnames] = .bool(tlsAllowInvalidHostnames)
+            options[OptionName.tlsAllowInvalidHostnames] = .bool(tlsAllowInvalidHostnames)
         }
         if let tlsCAFile = self.tlsCAFile {
-            options[Name.tlsCAFile] = .string(tlsCAFile.description)
+            options[OptionName.tlsCAFile] = .string(tlsCAFile.description)
         }
         if let tlsCertificateKeyFile = self.tlsCertificateKeyFile {
-            options[Name.tlsCertificateKeyFile] = .string(tlsCertificateKeyFile.description)
+            options[OptionName.tlsCertificateKeyFile] = .string(tlsCertificateKeyFile.description)
         }
         if let tlsCertificateKeyFilePassword = self.tlsCertificateKeyFilePassword {
-            options[Name.tlsCertificateKeyFilePassword] = .string(tlsCertificateKeyFilePassword)
+            options[OptionName.tlsCertificateKeyFilePassword] = .string(tlsCertificateKeyFilePassword)
         }
         if let tlsDisableCertificateRevocationCheck = self.tlsDisableCertificateRevocationCheck {
-            options[Name.tlsDisableCertificateRevocationCheck] = .bool(tlsDisableCertificateRevocationCheck)
+            options[OptionName.tlsDisableCertificateRevocationCheck] = .bool(tlsDisableCertificateRevocationCheck)
         }
         if let tlsDisableOCSPEndpointCheck = self.tlsDisableOCSPEndpointCheck {
-            options[Name.tlsDisableOCSPEndpointCheck] = .bool(tlsDisableOCSPEndpointCheck)
+            options[OptionName.tlsDisableOCSPEndpointCheck] = .bool(tlsDisableOCSPEndpointCheck)
         }
         if let tlsInsecure = self.tlsInsecure {
-            options[Name.tlsInsecure] = .bool(tlsInsecure)
+            options[OptionName.tlsInsecure] = .bool(tlsInsecure)
         }
 
         return options
@@ -580,7 +580,7 @@ extension StringProtocol {
 
 /// Helper extension to set a document field with a `MongoConnectionString.Name`.
 extension BSONDocument {
-    fileprivate subscript(name: MongoConnectionString.Name) -> BSON? {
+    fileprivate subscript(name: MongoConnectionString.OptionName) -> BSON? {
         get {
             self[name.rawValue]
         }
