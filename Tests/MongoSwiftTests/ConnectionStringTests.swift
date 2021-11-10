@@ -63,37 +63,31 @@ private struct TestCredential: Decodable {
 // Tests we skip because we don't support the specified behavior.
 let skipUnsupported: [String: [String]] = [
     "valid-auth.json": ["mongodb-cr"], // we don't support MONGODB-CR authentication
+    "compression-options.json": ["multiple compressors are parsed correctly"], // requires Snappy, see SWIFT-894
     "connection-pool-options.json": [
-        // we don't support maxIdleTimeMS.
+        // we don't support maxIdleTimeMS
         "too low maxidletimems causes a warning",
         "non-numeric maxidletimems causes a warning",
         "valid connection pool options are parsed correctly",
-        // We don't support minPoolSize.
+        // we don't support minPoolSize
         "minpoolsize=0 does not error",
-        // We don't allow maxPoolSize=0, see SWIFT-1339.
+        // we don't allow maxPoolSize=0, see SWIFT-1339
         "maxpoolsize=0 does not error"
     ],
-    "connection-options.json": ["*"], // requires maxIdleTimeMS
-    "compression-options.json": ["*"], // requires Snappy, see SWIFT-894
-    "valid-db-with-dotted-name.json": ["*"] // libmongoc doesn't allow db names in dotted form in the URI
+    "connection-options.json": [
+        "valid connection and timeout options are parsed correctly" // we don't support maxIdleTimeMS
+    ],
+    "single-threaded-options.json": ["*"], // we don't support single threaded options
+    "valid-options.json": ["option names are normalized to lowercase"] // we don't support MONGODB-CR authentication
 ]
 
 // Tests for options that are not yet supported on MongoConnectionString.
-// TODO: SWIFT-1163: remove this.
+// TODO: delete this when MongoConnectionString is fully implemented
 let skipMongoConnectionStringUnsupported: [String: [String]] = [
-    // connection string tests
-    "invalid-uris.json": ["option"],
-    "valid-auth.json": ["at-signs in options aren't part of the userinfo"],
-    "valid-options.json": ["*"],
+    // TODO: SWIFT-1174: unskip these tests
+    "valid-db-with-dotted-name.json": ["*"],
     "valid-unix_socket-absolute.json": ["*"],
-    "valid-unix_socket-relative.json": ["*"],
-    "valid-warnings.json": ["*"],
-
-    // URI options tests
-    "concern-options.json": ["*"],
-    "read-preference-options.json": ["*"],
-    "single-threaded-options.json": ["*"],
-    "srv-options.json": ["*"]
+    "valid-unix_socket-relative.json": ["*"]
 ]
 
 func shouldSkip(file: String, test: String) -> Bool {
@@ -189,7 +183,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(connStr.description).to(equal("mongodb://localhost:27017"))
     }
 
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
+    // TODO: SWIFT-1416 Test string conversion behavior after changing to MongoConnectionString
     func testAppNameOption() throws {
         // option is set correctly from options struct
         let opts1 = MongoClientOptions(appName: "MyApp")
@@ -205,7 +199,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(connStr3.appName).to(equal("MyApp"))
     }
 
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
+    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testReplSetOption() throws {
         // option is set correctly from options struct
         var opts = MongoClientOptions(replicaSet: "rs0")
@@ -255,7 +249,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
     }
 
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
+    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testHeartbeatFrequencyMSOption() throws {
         // option is set correctly from options struct
         let opts = MongoClientOptions(heartbeatFrequencyMS: 50000)
@@ -313,7 +307,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         fileprivate init() {}
     }
 
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
+    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testHeartbeatFrequencyMSWithMonitoring() throws {
         guard MongoSwiftTestCase.topologyType == .single else {
             print(unsupportedTopologyMessage(testName: self.name))
@@ -341,7 +335,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(difference).to(beCloseTo(2.0, within: 0.2))
     }
 
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
+    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testServerSelectionTimeoutMS() throws {
         // option is set correctly from options struct
         let opts = MongoClientOptions(serverSelectionTimeoutMS: 10000)
@@ -381,7 +375,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
+    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testServerSelectionTimeoutMSWithCommand() throws {
         let opts = MongoClientOptions(serverSelectionTimeoutMS: 1000)
         try self.withTestClient("mongodb://localhost:27099", options: opts) { client in
@@ -394,7 +388,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
     }
 
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
+    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testLocalThresholdMSOption() throws {
         // option is set correctly from options struct
         let opts = MongoClientOptions(localThresholdMS: 100)
@@ -433,7 +427,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
+    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testConnectTimeoutMSOption() throws {
         // option is set correctly from options struct
         let opts = MongoClientOptions(connectTimeoutMS: 100)
@@ -482,23 +476,24 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
+    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testUnsupportedOptions() throws {
         // options we know of but don't support yet should throw errors
-        expect(try ConnectionString("mongodb://localhost:27017/?minPoolSize=10"))
+        expect(try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/?minPoolSize=10"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-        expect(try ConnectionString("mongodb://localhost:27017/?maxIdleTimeMS=10"))
+        expect(try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/?maxIdleTimeMS=10"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-        expect(try ConnectionString("mongodb://localhost:27017/?waitQueueMultiple=10"))
+        expect(try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/?waitQueueMultiple=10"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-        expect(try ConnectionString("mongodb://localhost:27017/?waitQueueTimeoutMS=10"))
+        expect(try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/?waitQueueTimeoutMS=10"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-        // options we don't know of should be ignored
-        expect(try ConnectionString("mongodb://localhost:27017/?blah=10")).toNot(throwError())
+        // options we don't know of should throw errors
+        expect(try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/?blah=10"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
+    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testCompressionOptions() throws {
         // zlib level validation
         expect(try Compressor.zlib(level: -2)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
@@ -544,7 +539,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         // warning but does not provide us access to the see the full specified list.
     }
 
-    // TODO: Test string conversion behavior after changing to MongoConnectionString
+    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionStringtes
     func testInvalidOptionsCombinations() throws {
         // tlsInsecure and conflicting options
         var opts = MongoClientOptions(tlsAllowInvalidCertificates: true, tlsInsecure: true)

@@ -10,9 +10,29 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     fileprivate static let forbiddenUserInfoCharacters = [":", "/", "?", "#", "[", "]", "@"]
 
     fileprivate enum OptionName: String {
+        case appName = "appname"
         case authSource = "authsource"
         case authMechanism = "authmechanism"
         case authMechanismProperties = "authmechanismproperties"
+        case compressors
+        case connectTimeoutMS = "connecttimeooutms"
+        case directConnection = "directconnection"
+        case heartbeatFrequencyMS = "heartbeatfrequencyms"
+        case journal
+        case loadBalanced = "loadbalanced"
+        case localThresholdMS = "localthresholdms"
+        case maxPoolSize = "maxpoolsize"
+        case maxStalenessSeconds = "maxstalenessseconds"
+        case readConcernLevel = "readconcernlevel"
+        case readPreference = "readpreference"
+        case readPreferenceTags = "readpreferencetags"
+        case replicaSet = "replicaset"
+        case retryReads = "retryreads"
+        case retryWrites = "retrywrites"
+        case serverSelectionTimeoutMS = "serverselectiontimeoutms"
+        case socketTimeoutMS = "sockettimeoutms"
+        case srvMaxHosts = "srvmaxhosts"
+        case srvServiceName = "srvservicename"
         case ssl
         case tls
         case tlsAllowInvalidCertificates = "tlsallowinvalidcertificates"
@@ -23,6 +43,9 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         case tlsDisableCertificateRevocationCheck = "tlsdisablecertificaterevocationcheck"
         case tlsDisableOCSPEndpointCheck = "tlsdisableocspendpointcheck"
         case tlsInsecure = "tlsinsecure"
+        case w
+        case wTimeoutMS = "wtimeoutms"
+        case zlibCompressionLevel = "zlibcompressionlevel"
     }
 
     /// Represents a connection string scheme.
@@ -143,12 +166,29 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     }
 
     private struct Options {
-        // Authentication options
+        fileprivate var appName: String?
         fileprivate var authSource: String?
         fileprivate var authMechanism: MongoCredential.Mechanism?
         fileprivate var authMechanismProperties: BSONDocument?
-
-        // TLS options
+        fileprivate var compressors: [String]?
+        fileprivate var connectTimeoutMS: Int?
+        fileprivate var directConnection: Bool?
+        fileprivate var heartbeatFrequencyMS: Int?
+        fileprivate var journal: Bool?
+        fileprivate var loadBalanced: Bool?
+        fileprivate var localThresholdMS: Int?
+        fileprivate var maxPoolSize: Int?
+        fileprivate var maxStalenessSeconds: Int?
+        fileprivate var readConcern: ReadConcern?
+        fileprivate var readPreference: String?
+        fileprivate var readPreferenceTags: [BSONDocument]?
+        fileprivate var replicaSet: String?
+        fileprivate var retryReads: Bool?
+        fileprivate var retryWrites: Bool?
+        fileprivate var serverSelectionTimeoutMS: Int?
+        fileprivate var socketTimeoutMS: Int?
+        fileprivate var srvMaxHosts: Int?
+        fileprivate var srvServiceName: String?
         fileprivate var ssl: Bool?
         fileprivate var tls: Bool?
         fileprivate var tlsAllowInvalidCertificates: Bool?
@@ -159,9 +199,14 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         fileprivate var tlsDisableCertificateRevocationCheck: Bool?
         fileprivate var tlsDisableOCSPEndpointCheck: Bool?
         fileprivate var tlsInsecure: Bool?
+        fileprivate var w: WriteConcern.W?
+        fileprivate var wTimeoutMS: Int?
+        fileprivate var zlibCompressionLevel: Int32?
 
         fileprivate init(_ uriOptions: String) throws {
             let options = uriOptions.components(separatedBy: "&")
+            // tracks options that have already been set to error on duplicates
+            var setOptions: [String] = []
             for option in options {
                 let nameAndValue = option.components(separatedBy: "=")
                 guard nameAndValue.count == 2 else {
@@ -175,19 +220,105 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                         message: "Connection string contains unsupported option: \(nameAndValue[0])"
                     )
                 }
+                // read preference tags can be specified multiple times
+                guard !setOptions.contains(name.rawValue) || name == .readPreferenceTags else {
+                    throw MongoError.InvalidArgumentError(
+                        message: "Connection string contains duplicate option: \(name)"
+                    )
+                }
+                setOptions.append(name.rawValue)
                 let value = try nameAndValue[1].getPercentDecoded(forKey: name.rawValue)
+                let prefix: () -> String = { "Value for \(name) in the connection string must " }
                 switch name {
+                case .appName:
+                    self.appName = value
                 case .authSource:
                     if value.isEmpty {
-                        throw MongoError.InvalidArgumentError(
-                            message: "Connection string \(name.rawValue) option must not be empty"
-                        )
+                        throw MongoError.InvalidArgumentError(message: prefix() + "not be empty")
                     }
                     self.authSource = value
                 case .authMechanism:
                     self.authMechanism = try MongoCredential.Mechanism(value)
                 case .authMechanismProperties:
-                    self.authMechanismProperties = try self.parseAuthMechanismProperties(properties: value)
+                    self.authMechanismProperties = try Self.parseAuthMechanismProperties(properties: value)
+                case .compressors:
+                    if value.isEmpty {
+                        throw MongoError.InvalidArgumentError(message: prefix() + "not be empty")
+                    }
+                    self.compressors = value.components(separatedBy: ",")
+                case .connectTimeoutMS:
+                    let n = try value.getInt(forKey: name.rawValue)
+                    guard n >= 0 else {
+                        throw MongoError.InvalidArgumentError(message: prefix() + "be nonnegative")
+                    }
+                    self.connectTimeoutMS = n
+                case .directConnection:
+                    self.directConnection = try value.getBool(forKey: name.rawValue)
+                case .heartbeatFrequencyMS:
+                    let n = try value.getInt(forKey: name.rawValue)
+                    guard n >= 500 else {
+                        throw MongoError.InvalidArgumentError(message: prefix() + "be >= 500")
+                    }
+                    self.heartbeatFrequencyMS = n
+                case .journal:
+                    self.journal = try value.getBool(forKey: name.rawValue)
+                case .loadBalanced:
+                    self.loadBalanced = try value.getBool(forKey: name.rawValue)
+                case .localThresholdMS:
+                    let n = try value.getInt(forKey: name.rawValue)
+                    guard n >= 0 else {
+                        throw MongoError.InvalidArgumentError(message: prefix() + "be nonnegative")
+                    }
+                    self.localThresholdMS = n
+                case .maxPoolSize:
+                    let n = try value.getInt(forKey: name.rawValue)
+                    guard n > 0 else {
+                        throw MongoError.InvalidArgumentError(message: prefix() + "be positive")
+                    }
+                case .maxStalenessSeconds:
+                    let n = try value.getInt(forKey: name.rawValue)
+                    guard n == -1 || n >= 90 else {
+                        throw MongoError.InvalidArgumentError(
+                            message: prefix() + "be -1 (for no max staleness check) or >= 90"
+                        )
+                    }
+                    self.maxStalenessSeconds = n
+                case .readConcernLevel:
+                    self.readConcern = ReadConcern(value)
+                case .readPreference:
+                    self.readPreference = value
+                case .readPreferenceTags:
+                    let tags = try Self.parseReadPreferenceTags(tags: value)
+                    if self.readPreferenceTags == nil {
+                        self.readPreferenceTags = []
+                    }
+                    self.readPreferenceTags?.append(tags)
+                case .replicaSet:
+                    self.replicaSet = value
+                case .retryReads:
+                    self.retryReads = try value.getBool(forKey: name.rawValue)
+                case .retryWrites:
+                    self.retryWrites = try value.getBool(forKey: name.rawValue)
+                case .serverSelectionTimeoutMS:
+                    let n = try value.getInt(forKey: name.rawValue)
+                    guard n > 0 else {
+                        throw MongoError.InvalidArgumentError(message: prefix() + "be positive")
+                    }
+                case .socketTimeoutMS:
+                    let n = try value.getInt(forKey: name.rawValue)
+                    guard n >= 0 else {
+                        throw MongoError.InvalidArgumentError(message: prefix() + "be nonnegative")
+                    }
+                    self.socketTimeoutMS = n
+                case .srvMaxHosts:
+                    let n = try value.getInt(forKey: name.rawValue)
+                    guard n >= 0 else {
+                        throw MongoError.InvalidArgumentError(message: prefix() + "be nonnegative")
+                    }
+                    self.srvMaxHosts = n
+                case .srvServiceName:
+                    try value.validateSRVServiceName()
+                    self.srvServiceName = value
                 case .ssl:
                     self.ssl = try value.getBool(forKey: name.rawValue)
                 case .tls:
@@ -209,30 +340,69 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                     self.tlsDisableOCSPEndpointCheck = try value.getBool(forKey: name.rawValue)
                 case .tlsInsecure:
                     self.tlsInsecure = try value.getBool(forKey: name.rawValue)
+                case .w:
+                    self.w = try WriteConcern.W(value)
+                case .wTimeoutMS:
+                    let n = try value.getInt(forKey: name.rawValue)
+                    guard n >= 0 else {
+                        throw MongoError.InvalidArgumentError(message: prefix() + "be nonnegative")
+                    }
+                    self.wTimeoutMS = n
+                case .zlibCompressionLevel:
+                    let n = try value.getInt(forKey: name.rawValue)
+                    guard (-1...9).contains(n) else {
+                        throw MongoError.InvalidArgumentError(message: prefix() + "be between -1 and 9 (inclusive)")
+                    }
+                    // This cast will always work because we've validated that n is between -1 and 9.
+                    self.zlibCompressionLevel = Int32(n)
                 }
             }
         }
 
-        private func parseAuthMechanismProperties(properties: String) throws -> BSONDocument {
+        private static func parseAuthMechanismProperties(properties: String) throws -> BSONDocument {
+            enum PropertyName: String {
+                case serviceName = "service_name"
+                case serviceRealm = "service_realm"
+                case canonicalizeHostName = "canonicalize_host_name"
+            }
+
             var propertiesDoc = BSONDocument()
             for property in properties.components(separatedBy: ",") {
                 let kv = property.components(separatedBy: ":")
                 guard kv.count == 2 else {
                     throw MongoError.InvalidArgumentError(
-                        message: "authMechanismProperties must be a comma-separated list of colon-separated"
-                            + " key-value pairs"
+                        message: "\(OptionName.authMechanismProperties) must be a comma-separated list of"
+                            + " colon-separated key-value pairs"
                     )
                 }
-                switch kv[0].lowercased() {
-                case "service_name", "service_realm":
+                guard let name = PropertyName(rawValue: kv[0].lowercased()) else {
+                    throw MongoError.InvalidArgumentError(
+                        message: "Unknown key for \(OptionName.authMechanismProperties): \(kv[0])"
+                    )
+                }
+                switch name {
+                case .serviceName, .serviceRealm:
                     propertiesDoc[kv[0]] = .string(kv[1])
-                case "canonicalize_host_name":
-                    propertiesDoc[kv[0]] = .bool(try kv[1].getBool(forKey: "CANONICALIZE_HOST_NAME"))
-                case let other:
-                    throw MongoError.InvalidArgumentError(message: "Unknown key for authMechanismProperties: \(other)")
+                case .canonicalizeHostName:
+                    propertiesDoc[kv[0]] = .bool(try kv[1].getBool(forKey: name.rawValue))
                 }
             }
             return propertiesDoc
+        }
+
+        private static func parseReadPreferenceTags(tags: String) throws -> BSONDocument {
+            var tagsDoc = BSONDocument()
+            for tag in tags.components(separatedBy: ",") {
+                let kv = tag.components(separatedBy: ":")
+                guard kv.count == 2 else {
+                    throw MongoError.InvalidArgumentError(
+                        message: "\(OptionName.readPreferenceTags) must be a comma-separated list of colon-separated"
+                            + " key-value pairs"
+                    )
+                }
+                tagsDoc[kv[0]] = .string(kv[1])
+            }
+            return tagsDoc
         }
     }
 
@@ -324,14 +494,53 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
         let options = try Options(authDatabaseAndOptions[1])
 
+        // Validate and set compressors
+        try self.validateAndSetCompressors(options)
+
         // Parse authentication options into a MongoCredential
-        try self.validateAndUpdateCredential(options: options)
+        try self.validateAndUpdateCredential(options)
+
+        // Validate and set directConnection
+        try self.validateAndSetDirectConnection(options)
+
+        // Validate and set loadBalanced
+        try self.validateAndSetLoadBalanced(options)
+
+        // Validate and set read preference
+        try self.validateAndSetReadPreference(options)
+
+        // Validate and set SRV options
+        try self.validateAndSetSRVOptions(options)
 
         // Validate and set TLS options
-        try self.validateAndSetTLSOptions(options: options)
+        try self.validateAndSetTLSOptions(options)
+
+        // Validate and set write concern
+        try self.validateAndSetWriteConcern(options)
+
+        // Set rest of options
+        self.appName = options.appName
+        self.connectTimeoutMS = options.connectTimeoutMS
+        self.heartbeatFrequencyMS = options.heartbeatFrequencyMS
+        self.localThresholdMS = options.localThresholdMS
+        self.maxPoolSize = options.maxPoolSize
+        self.readConcern = options.readConcern
+        self.replicaSet = options.replicaSet
+        self.retryReads = options.retryReads
+        self.retryWrites = options.retryWrites
+        self.serverSelectionTimeoutMS = options.serverSelectionTimeoutMS
+        self.socketTimeoutMS = options.socketTimeoutMS
     }
 
-    private mutating func validateAndUpdateCredential(options: Options) throws {
+    private mutating func validateAndSetCompressors(_ options: Options) throws {
+        if let compressorStrings = options.compressors {
+            self.compressors = try compressorStrings.map {
+                try Compressor(name: $0, level: options.zlibCompressionLevel)
+            }
+        }
+    }
+
+    private mutating func validateAndUpdateCredential(_ options: Options) throws {
         if let mechanism = options.authMechanism {
             var credential = self.credential ?? MongoCredential()
             credential.source = options.authSource ?? mechanism.getDefaultSource(defaultAuthDB: self.defaultAuthDB)
@@ -341,7 +550,8 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             self.credential = credential
         } else if options.authMechanismProperties != nil {
             throw MongoError.InvalidArgumentError(
-                message: "Connection string specified authMechanismProperties but no authMechanism was specified"
+                message: "Connection string specified \(OptionName.authMechanismProperties) but no"
+                    + " \(OptionName.authMechanism) was specified"
             )
         } else if let authSource = options.authSource {
             // If no mechanism was provided but authentication was requested and an authSource was provided, populate
@@ -353,15 +563,89 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 // The authentication mechanism defaults to SCRAM if an authMechanism is not provided, and SCRAM
                 // requires a username
                 throw MongoError.InvalidArgumentError(
-                    message: "No username provided for authentication in the connection string but an authSource was"
-                        + " provided. To use an authentication mechanism that does not require a username, specify an"
-                        + " authMechanism in the connection string."
+                    message: "No username provided for authentication in the connection string but an authentication"
+                        + " source was provided. To use an authentication mechanism that does not require a username,"
+                        + " specify an \(OptionName.authMechanism) in the connection string."
                 )
             }
         }
     }
 
-    private mutating func validateAndSetTLSOptions(options: Options) throws {
+    private mutating func validateAndSetDirectConnection(_ options: Options) throws {
+        guard !(options.directConnection == true && self.hosts.count > 1) else {
+            throw MongoError.InvalidArgumentError(
+                message: "Multiple hosts cannot be specified in the connection string if"
+                    + " \(OptionName.directConnection) is set to true"
+            )
+        }
+        self.directConnection = options.directConnection
+    }
+
+    private mutating func validateAndSetLoadBalanced(_ options: Options) throws {
+        if options.loadBalanced == true {
+            if self.hosts.count > 1 {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(OptionName.loadBalanced) cannot be set to true if multiple hosts are specified in the"
+                        + " connection string"
+                )
+            }
+            if options.replicaSet != nil {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(OptionName.loadBalanced) cannot be set to true if \(OptionName.replicaSet) is"
+                        + " specified in the connection string"
+                )
+            }
+            if options.directConnection == true {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(OptionName.loadBalanced) and \(OptionName.directConnection) cannot both be set to true"
+                        + " in the connection string"
+                )
+            }
+        }
+        self.loadBalanced = options.loadBalanced
+    }
+
+    private mutating func validateAndSetReadPreference(_ options: Options) throws {
+        if let modeString = options.readPreference {
+            guard let mode = ReadPreference.Mode(rawValue: modeString) else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Unknown \(OptionName.readPreference) specified in the connection string: \(modeString)"
+                )
+            }
+            self.readPreference = try ReadPreference(
+                mode,
+                tagSets: options.readPreferenceTags,
+                maxStalenessSeconds: options.maxStalenessSeconds
+            )
+        }
+    }
+
+    private mutating func validateAndSetSRVOptions(_ options: Options) throws {
+        guard self.scheme == .srv || (options.srvMaxHosts == nil && options.srvServiceName == nil) else {
+            throw MongoError.InvalidArgumentError(
+                message: "\(OptionName.srvMaxHosts) and \(OptionName.srvServiceName) must not be specified if the"
+                    + " connection string scheme is not SRV"
+            )
+        }
+        if let srvMaxHosts = options.srvMaxHosts {
+            guard !(srvMaxHosts > 0 && options.replicaSet != nil) else {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(OptionName.replicaSet) must not be specified in the connection string if the value for"
+                        + " \(OptionName.srvMaxHosts) is greater than zero"
+                )
+            }
+            guard !(srvMaxHosts > 0 && options.loadBalanced == true) else {
+                throw MongoError.InvalidArgumentError(
+                    message: "The value for \(OptionName.loadBalanced) in the connection string must not be true if"
+                        + " the value for \(OptionName.srvMaxHosts) is greater than zero"
+                )
+            }
+        }
+        self.srvMaxHosts = options.srvMaxHosts
+        self.srvServiceName = options.srvServiceName
+    }
+
+    private mutating func validateAndSetTLSOptions(_ options: Options) throws {
         guard options.tlsInsecure == nil
             || (options.tlsAllowInvalidCertificates == nil
                 && options.tlsAllowInvalidHostnames == nil
@@ -369,35 +653,39 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 && options.tlsDisableOCSPEndpointCheck == nil)
         else {
             throw MongoError.InvalidArgumentError(
-                message: "tlsAllowInvalidCertificates, tlsAllowInvalidHostnames, tlsDisableCertificateRevocationCheck,"
-                    + " and tlsDisableOCSPEndpointCheck cannot be specified if tlsInsecure is specified in the"
-                    + " connection string"
+                message: "\(OptionName.tlsAllowInvalidCertificates), \(OptionName.tlsAllowInvalidHostnames),"
+                    + " \(OptionName.tlsDisableCertificateRevocationCheck), and"
+                    + " \(OptionName.tlsDisableOCSPEndpointCheck) cannot be specified if \(OptionName.tlsInsecure)"
+                    + " is specified in the connection string"
             )
         }
         guard !(options.tlsAllowInvalidCertificates != nil && options.tlsDisableOCSPEndpointCheck != nil) else {
             throw MongoError.InvalidArgumentError(
-                message: "tlsAllowInvalidCertificates and tlsDisableOCSPEndpointCheck cannot both be specified in the"
-                    + " connection string"
+                message: "\(OptionName.tlsAllowInvalidCertificates) and \(OptionName.tlsDisableOCSPEndpointCheck)"
+                    + " cannot both be specified in the connection string"
             )
         }
         guard !(options.tlsAllowInvalidCertificates != nil && options.tlsDisableCertificateRevocationCheck != nil)
         else {
             throw MongoError.InvalidArgumentError(
-                message: "tlsAllowInvalidCertificates and tlsDisableCertificateRevocationCheck cannot both be"
-                    + " specified in the connection string"
+                message: "\(OptionName.tlsAllowInvalidCertificates) and"
+                    + " \(OptionName.tlsDisableCertificateRevocationCheck) cannot both be specified in the connection"
+                    + " string"
             )
         }
         guard !(options.tlsDisableOCSPEndpointCheck != nil
             && options.tlsDisableCertificateRevocationCheck != nil)
         else {
             throw MongoError.InvalidArgumentError(
-                message: "tlsDisableOCSPEndpointCheck and tlsDisableCertificateRevocationCheck cannot both be"
-                    + " specified in the connection string"
+                message: "\(OptionName.tlsDisableOCSPEndpointCheck) and"
+                    + " \(OptionName.tlsDisableCertificateRevocationCheck) cannot both be specified in the connection"
+                    + " string"
             )
         }
         if let tls = options.tls, let ssl = options.ssl, tls != ssl {
             throw MongoError.InvalidArgumentError(
-                message: "tls and ssl must have the same value if both are specified in the connection string"
+                message: "\(OptionName.tls) and \(OptionName.ssl) must have the same value if both are specified in"
+                    + " the connection string"
             )
         }
         // if either tls or ssl is specified, the value should be stored in the tls field
@@ -410,6 +698,16 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         self.tlsDisableCertificateRevocationCheck = options.tlsDisableCertificateRevocationCheck
         self.tlsDisableOCSPEndpointCheck = options.tlsDisableOCSPEndpointCheck
         self.tlsInsecure = options.tlsInsecure
+    }
+
+    private mutating func validateAndSetWriteConcern(_ options: Options) throws {
+        if options.journal != nil || options.w != nil || options.wTimeoutMS != nil {
+            self.writeConcern = try WriteConcern(
+                journal: options.journal,
+                w: options.w,
+                wtimeoutMS: options.wTimeoutMS
+            )
+        }
     }
 
     /// `Codable` conformance
@@ -448,14 +746,85 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     internal var options: BSONDocument {
         var options = BSONDocument()
 
-        if let source = self.credential?.source {
-            options[OptionName.authSource] = .string(source)
+        if let appName = self.appName {
+            options[.appName] = .string(appName)
         }
-        if let mechanism = self.credential?.mechanism {
-            options[OptionName.authMechanism] = .string(mechanism.description)
+        if let authSource = self.credential?.source {
+            options[.authSource] = .string(authSource)
         }
-        if let properties = self.credential?.mechanismProperties {
-            options[OptionName.authMechanismProperties] = .document(properties)
+        if let authMechanism = self.credential?.mechanism {
+            options[.authMechanism] = .string(authMechanism.description)
+        }
+        if let authMechanismProperties = self.credential?.mechanismProperties {
+            options[.authMechanismProperties] = .document(authMechanismProperties)
+        }
+        if let compressors = self.compressors {
+            var compressorNames: [BSON] = []
+            options[.compressors] = .array([])
+            for compressor in compressors {
+                switch compressor._compressor {
+                case let .zlib(level):
+                    compressorNames.append(.string("zlib"))
+                    if let level = level {
+                        options[.zlibCompressionLevel] = .int32(level)
+                    }
+                }
+            }
+            options[.compressors] = .array(compressorNames)
+        }
+        if let connectTimeoutMS = self.connectTimeoutMS {
+            options[.connectTimeoutMS] = .int32(Int32(connectTimeoutMS))
+        }
+        if let directConnection = self.directConnection {
+            options[.directConnection] = .bool(directConnection)
+        }
+        if let heartbeatFrequencyMS = self.heartbeatFrequencyMS {
+            options[.heartbeatFrequencyMS] = .int32(Int32(heartbeatFrequencyMS))
+        }
+        if let journal = self.writeConcern?.journal {
+            options[.journal] = .bool(journal)
+        }
+        if let loadBalanced = self.loadBalanced {
+            options[.loadBalanced] = .bool(loadBalanced)
+        }
+        if let localThresholdMS = self.localThresholdMS {
+            options[.localThresholdMS] = .int32(Int32(localThresholdMS))
+        }
+        if let maxPoolSize = self.maxPoolSize {
+            options[.maxPoolSize] = .int32(Int32(maxPoolSize))
+        }
+        if let maxStalenessSeconds = self.readPreference?.maxStalenessSeconds {
+            options[.maxStalenessSeconds] = .int32(Int32(maxStalenessSeconds))
+        }
+        if let readConcern = self.readConcern {
+            options[.readConcernLevel] = .string(readConcern.level ?? "")
+        }
+        if let readPreference = self.readPreference?.mode {
+            options[.readPreference] = .string(readPreference.rawValue)
+        }
+        if let readPreferenceTags = self.readPreference?.tagSets {
+            options[.readPreferenceTags] = .array(readPreferenceTags.map { .document($0) })
+        }
+        if let replicaSet = self.replicaSet {
+            options[.replicaSet] = .string(replicaSet)
+        }
+        if let retryReads = self.retryReads {
+            options[.retryReads] = .bool(retryReads)
+        }
+        if let retryWrites = self.retryWrites {
+            options[.retryWrites] = .bool(retryWrites)
+        }
+        if let serverSelectionTimeoutMS = self.serverSelectionTimeoutMS {
+            options[.serverSelectionTimeoutMS] = .int32(Int32(serverSelectionTimeoutMS))
+        }
+        if let socketTimeoutMS = self.socketTimeoutMS {
+            options[.socketTimeoutMS] = .int32(Int32(socketTimeoutMS))
+        }
+        if let srvMaxHosts = self.srvMaxHosts {
+            options[.srvMaxHosts] = .int32(Int32(srvMaxHosts))
+        }
+        if let srvServiceName = self.srvServiceName {
+            options[.srvServiceName] = .string(srvServiceName)
         }
         if let tls = self.tls {
             options[OptionName.tls] = .bool(tls)
@@ -484,7 +853,19 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         if let tlsInsecure = self.tlsInsecure {
             options[OptionName.tlsInsecure] = .bool(tlsInsecure)
         }
-
+        if let w = self.writeConcern?.w {
+            switch w {
+            case let .number(n):
+                options[OptionName.w] = .int32(Int32(n))
+            case .majority:
+                options[OptionName.w] = .string("majority")
+            case let .custom(other):
+                options[OptionName.w] = .string(other)
+            }
+        }
+        if let wTimeoutMS = self.writeConcern?.wtimeoutMS {
+            options[OptionName.wTimeoutMS] = .int32(Int32(wTimeoutMS))
+        }
         return options
     }
 
@@ -498,8 +879,74 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// Defaults to "admin" if unspecified.
     public var defaultAuthDB: String?
 
+    /// Specifies a custom app name. This value is used in MongoDB logs and profiling data.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/#urioption.appName
+    public var appName: String?
+
+    /// Specifies one or more compressors to use for network compression for communication between this client and
+    /// mongod/mongos instances. Currently, the driver only supports compression via zlib.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/#urioption.compressors
+    public var compressors: [Compressor]?
+
+    /// Specifies the maximum time, in milliseconds, for an individual connection to establish a TCP
+    /// connection to a MongoDB server before timing out.
+    public var connectTimeoutMS: Int?
+
     /// Specifies the authentication credentials.
     public var credential: MongoCredential?
+
+    /// Specifies whether the client should connect directly to a single host. When false, the client will attempt to
+    /// automatically discover all replica set members if a replica set name is provided. Defaults to false.
+    /// It is an error to set this option to `true` when used with a mongodb+srv connection string or when multiple
+    /// hosts are specified in the connection string.
+    public var directConnection: Bool?
+
+    /// Specifies how often the driver checks the state of the MongoDB deployment. Specifies the interval (in
+    /// milliseconds) between checks, counted from the end of the previous check until the beginning of the next one.
+    /// Defaults to 10 seconds (10,000 ms). Must be at least 500ms.
+    public var heartbeatFrequencyMS: Int?
+
+    /// Specifies whether the driver is connecting to a load balancer.
+    public var loadBalanced: Bool?
+
+    /// The size (in milliseconds) of the permitted latency window beyond the fastest round-trip time amongst all
+    /// servers. By default, only servers within 15ms of the fastest round-trip time receive queries.
+    public var localThresholdMS: Int?
+
+    /// The maximum number of connections that may be associated with a connection pool created by this client at a
+    /// given time. This includes in-use and available connections. Defaults to 100.
+    public var maxPoolSize: Int?
+
+    /// Specifies a ReadConcern to use for the client.
+    public var readConcern: ReadConcern?
+
+    /// Specifies a ReadPreference to use for the client.
+    public var readPreference: ReadPreference?
+
+    /// Specifies the name of the replica set the driver should connect to.
+    public var replicaSet: String?
+
+    /// Specifies whether the client should retry supported read operations (on by default).
+    public var retryReads: Bool?
+
+    /// Specifies whether the client should retry supported write operations (on by default).
+    public var retryWrites: Bool?
+
+    /// Specifies how long the driver should attempt to select a server for before throwing an error. Defaults to 30
+    /// seconds (30000 ms).
+    public var serverSelectionTimeoutMS: Int?
+
+    /// Specifies how long the driver to attempt to send or receive on a socket before timing out.
+    ///
+    /// - Note: This option only applies to application operations, not SDAM.
+    public var socketTimeoutMS: Int?
+
+    /// Specifies the maximum number of SRV results to select randomly when initially populating the seedlist, or,
+    /// during SRV polling, adding new hosts to the topology.
+    public var srvMaxHosts: Int?
+
+    /// Specifies the service name to use for SRV lookup during initial DNS seedlist discovery and SRV polling.
+    public var srvServiceName: String?
 
     /// Specifies whether or not to require TLS for connections to the server. By default this is set to false.
     ///
@@ -531,16 +978,42 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// It is an error to specify both this option and `tlsDisableOCSPEndpointCheck`.
     public var tlsDisableCertificateRevocationCheck: Bool?
 
-    /// Indicates if OCSP responder endpoints should not be requested when an OCSP response is not stapled.
+    /// Specifies whether OCSP responder endpoints should not be requested when an OCSP response is not stapled.
     /// On macOS, this setting has no effect.
     /// By default this is set to false.
     public var tlsDisableOCSPEndpointCheck: Bool?
 
-    /// When specified, TLS constraints will be relaxed as much as possible. Currently, setting this option to `true`
+    /// Specifies whether TLS constraints will be relaxed as much as possible. Currently, setting this option to `true`
     /// is equivalent to setting `tlsAllowInvalidCertificates`, `tlsAllowInvalidHostnames`, and
     /// `tlsDisableCertificateRevocationCheck` to `true`.
     /// It is an error to specify both this option and any of the options enabled by it.
     public var tlsInsecure: Bool?
+
+    /// Specifies a WriteConcern to use for the client.
+    public var writeConcern: WriteConcern?
+}
+
+/// Helper extension to set a document field with a `MongoConnectionString.OptionName`.
+extension BSONDocument {
+    fileprivate subscript(name: MongoConnectionString.OptionName) -> BSON? {
+        get {
+            self[name.rawValue]
+        }
+        set {
+            self[name.rawValue] = newValue
+        }
+    }
+}
+
+extension Compressor {
+    fileprivate init(name: String, level: Int32?) throws {
+        switch name {
+        case "zlib":
+            self._compressor = .zlib(level: level)
+        case let other:
+            throw MongoError.InvalidArgumentError(message: "\(other) compression is not supported")
+        }
+    }
 }
 
 extension StringProtocol {
@@ -557,7 +1030,8 @@ extension StringProtocol {
         for character in MongoConnectionString.forbiddenUserInfoCharacters {
             if self.contains(character) {
                 throw MongoError.InvalidArgumentError(
-                    message: "\(key) contains invalid character that must be percent-encoded: \(character)"
+                    message: "\(key) in the connection string contains invalid character that must be percent-encoded:"
+                        + character
                 )
             }
         }
@@ -576,16 +1050,48 @@ extension StringProtocol {
             )
         }
     }
-}
 
-/// Helper extension to set a document field with a `MongoConnectionString.Name`.
-extension BSONDocument {
-    fileprivate subscript(name: MongoConnectionString.OptionName) -> BSON? {
-        get {
-            self[name.rawValue]
+    fileprivate func getInt(forKey key: String) throws -> Int {
+        guard let n = Int(self) else {
+            throw MongoError.InvalidArgumentError(
+                message: "Value for \(key) in connection string must be an integer"
+            )
         }
-        set {
-            self[name.rawValue] = newValue
+        return n
+    }
+
+    /// Validates that an SRV service name is well-formed.
+    /// - SeeAlso: https://datatracker.ietf.org/doc/html/rfc6335#section-5.1
+    fileprivate func validateSRVServiceName() throws {
+        let preface = "Value for \(MongoConnectionString.OptionName.srvServiceName) in the connection string must "
+        guard self.count >= 1 && self.count <= 15 else {
+            throw MongoError.InvalidArgumentError(
+                message: preface + "be at least 1 character and no more than 15 characters long"
+            )
+        }
+        guard !self.hasPrefix("-") && !self.hasSuffix("-") else {
+            throw MongoError.InvalidArgumentError(message: preface + "not start or end with a hyphen")
+        }
+        var containsLetter = false
+        var lastWasHyphen = false
+        for character in self {
+            guard character.isNumber || character.isLetter || character == "-" else {
+                throw MongoError.InvalidArgumentError(
+                    message: preface + "only contain numbers, letters, and hyphens"
+                )
+            }
+            if character.isLetter {
+                containsLetter = true
+            }
+            if character == "-" {
+                if lastWasHyphen {
+                    throw MongoError.InvalidArgumentError(message: preface + "not contain consecutive hyphens")
+                }
+            }
+            lastWasHyphen = character == "-"
+        }
+        if !containsLetter {
+            throw MongoError.InvalidArgumentError(message: preface + "contain at least one letter")
         }
     }
 }

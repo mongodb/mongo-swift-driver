@@ -193,7 +193,7 @@ public struct ReadPreference: Equatable {
         self.maxStalenessSeconds = nil
     }
 
-    private init(_ mode: Mode, tagSets: [BSONDocument]?, maxStalenessSeconds: Int?) throws {
+    internal init(_ mode: Mode, tagSets: [BSONDocument]?, maxStalenessSeconds: Int?) throws {
         if let maxStaleness = maxStalenessSeconds {
             guard maxStaleness >= MONGOC_SMALLEST_MAX_STALENESS_SECONDS else {
                 throw MongoError.InvalidArgumentError(

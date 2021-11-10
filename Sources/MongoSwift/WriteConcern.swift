@@ -42,6 +42,19 @@ public struct WriteConcern: Codable {
         case custom(String)
         // swiftlint:enable line_length
 
+        internal init(_ string: String) throws {
+            switch string {
+            case "majority":
+                self = .majority
+            case let other:
+                if let n = Int(string) {
+                    self = .number(n)
+                } else {
+                    self = .custom(other)
+                }
+            }
+        }
+
         public init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
             if let string = try? container.decode(String.self) {
