@@ -2,7 +2,7 @@
 /// Extension to `MongoCollection` to support async/await APIs.
 extension MongoCollection {
     /**
-     *   Drops this collection from its parent database.
+     * Drops this collection from its parent database.
      * - Parameters:
      *   - options: An optional `DropCollectionOptions` to use when executing this command.
      *   - session: An optional `ClientSession` to use when executing this command.
