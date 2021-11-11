@@ -7,85 +7,6 @@ import NIO
 import TestsCommon
 import XCTest
 
-/// Temporary utility function until XCTest supports `async` tests.
-func testAsync(_ block: @escaping () async throws -> Void) {
-    let group = DispatchGroup()
-    group.enter()
-    Task.detached {
-        try await block()
-        group.leave()
-    }
-    group.wait()
-}
-
-extension Task where Success == Never, Failure == Never {
-    ///  Helper taken from https://www.hackingwithswift.com/quick-start/concurrency/how-to-make-a-task-sleep to support
-    /// configuring with seconds rather than nanoseconds.
-    static func sleep(seconds: TimeInterval) async throws {
-        let duration = UInt64(seconds * 1_000_000_000)
-        try await Task.sleep(nanoseconds: duration)
-    }
-}
-
-/// Asserts that the provided block returns true within the specified timeout. Nimble's `toEventually` can only be used
-/// rom the main testing thread which is too restrictive for our purposes testing the async/await APIs.
-func assertIsEventuallyTrue(
-    description: String,
-    timeout: TimeInterval = 5,
-    sleepInterval: TimeInterval = 0.1,
-    _ block: () -> Bool
-) async throws {
-    let start = DispatchTime.now()
-    while DispatchTime.now() < start + timeout {
-        if block() {
-            return
-        }
-        try await Task.sleep(seconds: sleepInterval)
-    }
-    XCTFail("Expected condition \"\(description)\" to be true within \(timeout) seconds, but was not")
-}
-
-extension MongoSwiftTestCase {
-    internal func withTestClient<T>(
-        _ uri: String = MongoSwiftTestCase.getConnectionString().toString(),
-        options: MongoClientOptions? = nil,
-        eventLoopGroup: EventLoopGroup? = nil,
-        f: (MongoClient) async throws -> T
-    ) async throws -> T {
-        let elg = eventLoopGroup ?? MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        defer { elg.syncShutdownOrFail() }
-        let client = try MongoClient.makeTestClient(uri, eventLoopGroup: elg, options: options)
-        defer { client.syncCloseOrFail() }
-        return try await f(client)
-    }
-
-    // swiftlint:disable large_tuple
-    // see: https://github.com/realm/SwiftLint/issues/3753
-    internal func withTestNamespace<T>(
-        ns: MongoNamespace? = nil,
-        collectionOptions: CreateCollectionOptions? = nil,
-        _ f: (MongoClient, MongoDatabase, MongoCollection<BSONDocument>) async throws -> T
-    ) async throws -> T {
-        let ns = ns ?? self.getNamespace()
-        guard let collName = ns.collection else {
-            throw TestError(message: "missing collection")
-        }
-        return try await self.withTestClient { client in
-            let database = client.db(ns.db)
-            let collection: MongoCollection<BSONDocument>
-            do {
-                collection = try await database.createCollection(collName, options: collectionOptions)
-            } catch let error as MongoError.CommandError where error.code == 48 {
-                try await database.collection(collName).drop().get()
-                collection = try await database.createCollection(collName, options: collectionOptions)
-            }
-            defer { collection.syncDropOrFail() }
-            return try await f(client, database, collection)
-        }
-    }
-    // swiftlint:enable large_tuple
-}
-
 final class AsyncAwaitTests: MongoSwiftTestCase {
     func testMongoClient() throws {
         testAsync {
@@ -123,8 +44,43 @@ final class AsyncAwaitTests: MongoSwiftTestCase {
                 ) {
                     client.connectionPool.checkedOutConnections == 0
                 }
+            }
+        }
+    }
 
-                // TODO: SWIFT-1391 once we have more API methods available, test transaction usage here.
+    func testTransactions() throws {
+        testAsync {
+            try await self.withTestNamespace { client, _, coll in
+                guard try await client.supportsTransactions() else {
+                    printSkipMessage(testName: self.name, reason: "Requires transactions support")
+                    return
+                }
+
+                // aborted txn
+                try await client.withSession { session in
+                    try await session.startTransaction()
+                    try await coll.insertOne(["_id": 1], session: session)
+                    try await session.abortTransaction()
+
+                    let count = try await coll.countDocuments(session: session)
+                    expect(count).to(equal(0))
+
+                    let doc = try await coll.findOne(session: session)
+                    expect(doc).to(beNil())
+                }
+
+                // committed txn
+                try await client.withSession { session in
+                    try await session.startTransaction()
+                    try await coll.insertOne(["_id": 1], session: session)
+                    try await session.commitTransaction()
+
+                    let count = try await coll.countDocuments(session: session)
+                    expect(count).to(equal(1))
+
+                    let doc = try await coll.findOne(session: session)
+                    expect(doc).to(equal(["_id": 1]))
+                }
             }
         }
     }
@@ -132,9 +88,27 @@ final class AsyncAwaitTests: MongoSwiftTestCase {
     func testMongoDatabase() throws {
         testAsync {
             try await self.withTestNamespace { _, db, _ in
+                try await db.drop()
                 _ = try await db.createCollection("foo")
                 let collections = try await db.listCollectionNames()
                 expect(collections).to(contain("foo"))
+            }
+        }
+    }
+
+    func testMongoCollection() throws {
+        testAsync {
+            try await self.withTestNamespace { _, _, coll in
+                let doc: BSONDocument = ["_id": 1]
+                try await coll.insertOne(doc)
+                let result = try await coll.findOne()
+                expect(result).to(equal(doc))
+                let count = try await coll.countDocuments()
+                expect(count).to(equal(1))
+
+                try await coll.findOneAndUpdate(filter: doc, update: ["$set": ["x": 2]])
+                let result2 = try await coll.findOne()
+                expect(result2).to(sortedEqual(["_id": 1, "x": 2]))
             }
         }
     }
