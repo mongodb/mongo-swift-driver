@@ -9,8 +9,9 @@ version=${1}
 # Ensure version is non-empty
 [ ! -z "${version}" ] || { echo "ERROR: Missing version string"; exit 1; }
 
-# verify that the examples build
-./etc/build-examples.sh
+# verify that the examples build with the current branch we're releasing on
+current_branch=$(git branch --show-current)
+./etc/build-examples.sh ${current_branch}
 
 # regenerate documentation with new version string
 ./etc/generate-docs.sh ${version}
@@ -30,7 +31,7 @@ git commit -m "${version} docs"
 git push
 
 # go back to our original branch
-git checkout -
+git checkout ${current_branch}
 
 # update version string for libmongoc handshake
 sourcery --sources Sources/MongoSwift \
