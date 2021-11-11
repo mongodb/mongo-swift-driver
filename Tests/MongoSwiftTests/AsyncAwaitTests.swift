@@ -283,7 +283,7 @@ final class ChangeStreamAsyncAwaitTests: MongoSwiftTestCase {
                 defer { client.syncCloseOrFail() }
                 let coll = client.db("test").collection("abcdef")
                 // crash in this line
-                let _ = try await coll.watch()
+                _ = try await coll.watch()
             } catch {
                 XCTFail("\(error)")
             }

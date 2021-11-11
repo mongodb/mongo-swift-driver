@@ -29,12 +29,21 @@ extension MongoCollection {
         options: ChangeStreamOptions? = nil,
         session: ClientSession? = nil
     ) async throws -> ChangeStream<ChangeStreamEvent<CollectionType>> {
+        // segv occurs when the method is written this way.
         try await self.watch(
             pipeline,
             options: options,
             session: session,
             withEventType: ChangeStreamEvent<CollectionType>.self
         )
+
+        // if you switch the implementation to this, no crash, even though it all ends up delegating to the
+        // same method in the end.
+        // try await self.watch(
+        //     pipeline,
+        //     options: options,
+        //     session: session
+        // ).get()
     }
 
     /**
