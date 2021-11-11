@@ -271,5 +271,26 @@ final class ChangeStreamAsyncAwaitTests: MongoSwiftTestCase {
             }
         }
     }
+
+    func testTsanSegV() throws {
+        let group = DispatchGroup()
+        group.enter()
+
+        Task {
+            do {
+                let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+                let client = try MongoClient.makeTestClient(eventLoopGroup: elg)
+                defer { client.syncCloseOrFail() }
+                let coll = client.db("test").collection("abcdef")
+                // crash in this line
+                let _ = try await coll.watch()
+            } catch {
+                XCTFail("\(error)")
+            }
+            group.leave()
+        }
+
+        group.wait()
+    }
 }
 #endif
