@@ -100,6 +100,12 @@ internal class OperationExecutor {
         self.threadPool.runIfActive(eventLoop: eventLoop ?? self.eventLoopGroup.next(), body)
     }
 
+#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+    internal func execute<T>(on eventLoop: EventLoop?, _ body: @escaping () throws -> T) async throws -> T {
+        try await self.execute(on: eventLoop, body).get()
+    }
+#endif
+
     internal func makeFailedFuture<T>(_ error: Error, on eventLoop: EventLoop?) -> EventLoopFuture<T> {
         let ev = eventLoop ?? self.eventLoopGroup.next()
         return ev.makeFailedFuture(error)
