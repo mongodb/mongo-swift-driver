@@ -148,26 +148,28 @@ final class MongoCursorAsyncAwaitTests: MongoSwiftTestCase {
 
     // Test that a tailable cursor that is continually polling the server can be killed by cancelling the parent Task.
     func testTailableCursorHandlesTaskCancellation() throws {
-        let opts = CreateCollectionOptions(capped: true, size: 5)
-        try self.withTestNamespace(collectionOptions: opts) { _, _, coll in
-            let group = DispatchGroup()
-            group.enter()
-            Task.detached {
-                let docCount = NIOAtomic<Int>.makeAtomic(value: 0)
+        testAsync {
+            let opts = CreateCollectionOptions(capped: true, size: 5)
+            try await self.withTestNamespace(collectionOptions: opts) { _, _, coll in
                 try await coll.insertMany([["x": 1], ["x": 2], ["x": 3]])
-                let childTask = Task.detached {
+
+                let group = DispatchGroup()
+                group.enter()
+
+                let docCount = NIOAtomic<Int>.makeAtomic(value: 0)
+
+                let cursorTask = Task.detached {
                     do {
                         let cursor = try await coll.find(options: FindOptions(cursorType: .tailable))
-                        // This loop should block once it gets past the first three documents.
                         for try await _ in cursor {
                             _ = docCount.add(1)
                         }
                     } catch {
                         XCTFail("\(error)")
                     }
-                    // We either successfully broke out of the loop, or encountered an error and failed.
                     group.leave()
                 }
+
                 // Wait until we iterate all of the existing documents in the cursor.
                 try await assertIsEventuallyTrue(description: "all documents should be received") {
                     docCount.load() == 3
@@ -181,10 +183,92 @@ final class MongoCursorAsyncAwaitTests: MongoSwiftTestCase {
                 }
 
                 // Cancel the child task, which should break us out of the loop.
-                childTask.cancel()
+                cursorTask.cancel()
+
+                // If the test got to the end, it means we successfully broke out of the loop and left the group.
+                group.wait()
             }
-            group.wait()
-            // If the test got to the end, it means we successfully broke out of the loop and left the group.
+        }
+    }
+}
+
+final class ChangeStreamAsyncAwaitTests: MongoSwiftTestCase {
+    func testIteration() throws {
+        testAsync {
+            try await self.withTestNamespace { client, _, coll in
+                guard try await client.supportsChangeStreamOnCollection() else {
+                    printSkipMessage(testName: self.name, reason: "Requires change streams support")
+                    return
+                }
+
+                let changeStream = try await coll.watch()
+
+                let docsToInsert: [BSONDocument] = [["_id": 1], ["_id": 2], ["_id": 3]]
+                for doc in docsToInsert {
+                    try await coll.insertOne(doc)
+                }
+
+                // manual iteration with next()
+                let first = try await changeStream.next()
+                expect(first?.fullDocument).to(equal(docsToInsert[0]))
+                let second = try await changeStream.next()
+                expect(second?.fullDocument).to(equal(docsToInsert[1]))
+                let third = try await changeStream.next()
+                expect(third?.fullDocument).to(equal(docsToInsert[2]))
+                let isAlive = try await changeStream.isAlive()
+                expect(isAlive).to(beTrue())
+            }
+        }
+    }
+
+    // Test that a change stream that is continually polling the server can be killed by cancelling the parent Task.
+    func testHandlesTaskCancellation() throws {
+        testAsync {
+            try await self.withTestNamespace { client, _, coll in
+                guard try await client.supportsChangeStreamOnCollection() else {
+                    printSkipMessage(testName: self.name, reason: "Requires change streams support")
+                    return
+                }
+
+                let group = DispatchGroup()
+                group.enter()
+
+                let eventCount = NIOAtomic<Int>.makeAtomic(value: 0)
+
+                let csTask = Task.detached {
+                    do {
+                        let changeStream = try await coll.watch()
+                        for try await _ in changeStream {
+                            _ = eventCount.add(1)
+                        }
+                    } catch {
+                        XCTFail("\(error)")
+                    }
+                    group.leave()
+                }
+
+                for doc: BSONDocument in [["_id": 1], ["_id": 2], ["_id": 3]] {
+                    try await coll.insertOne(doc)
+                }
+
+                // Wait until we iterate all of the existing events in the change stream.
+                try await assertIsEventuallyTrue(description: "all events should be received") {
+                    eventCount.load() == 3
+                }
+
+                // Insert another doc and confirm the event count goes up. This means the loop keeps
+                // going, as expected.
+                try await coll.insertOne(["_id": 4])
+                try await assertIsEventuallyTrue(description: "Fourth event should be received") {
+                    eventCount.load() == 4
+                }
+
+                // Cancel the child task, which should break us out of the loop.
+                csTask.cancel()
+
+                // If the test got to the end, it means we successfully broke out of the loop and left the group.
+                group.wait()
+            }
         }
     }
 }

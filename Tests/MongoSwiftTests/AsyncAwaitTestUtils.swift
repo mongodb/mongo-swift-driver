@@ -136,6 +136,10 @@ extension MongoClient {
     internal func supportsTransactions() async throws -> Bool {
         try await self.meetsAnyRequirement(in: TestRequirement.transactionsSupport)
     }
+
+    internal func supportsChangeStreamOnCollection() async throws -> Bool {
+        try await self.getUnmetRequirement(.changeStreamOnCollectionSupport) == nil
+    }
 }
 
 #endif
