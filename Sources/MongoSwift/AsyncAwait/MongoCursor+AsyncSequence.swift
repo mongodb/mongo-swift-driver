@@ -35,11 +35,6 @@ extension MongoCursor: AsyncSequence, AsyncIteratorProtocol {
      * server, or until the `Task` it is running in is cancelled.  For this reason, we recommend to run tailable
      * cursors in their own `Task`s, and to terminate the cursor if/when needed by canceling the `Task`.
      *
-     * - Note: a thread from the driver's internal thread pool will be occupied until the returned future is completed,
-     *   so performance degradation is possible if the number of polling cursors is too close to the total number of
-     *   threads in the thread pool. To configure the total number of threads in the pool, set the
-     *   `MongoClientOptions.threadPoolSize` option during client creation.
-     *
      * - Warning: You *must not* call any cursor methods besides `isAlive()` while awaiting the result of this method.
      *   Doing so will result in undefined behavior.
      *
@@ -61,6 +56,7 @@ extension MongoCursor: AsyncSequence, AsyncIteratorProtocol {
             if let doc = try await self.tryNext() {
                 return doc
             }
+            await Task.yield()
         }
 
         return nil

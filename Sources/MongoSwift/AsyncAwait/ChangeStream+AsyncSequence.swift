@@ -31,11 +31,6 @@ extension ChangeStream: AsyncSequence, AsyncIteratorProtocol {
      *
      * We recommend to run change streams in their own `Task`s, and to terminate them by cancelling their `Task`s.
      *
-     * - Note: a thread from the driver's internal thread pool will be occupied until the returned future is completed,
-     *   so performance degradation is possible if the number of polling change streams is too close to the total
-     *   number of threads in the thread pool. To configure the total number of threads in the pool, set the
-     *   `MongoClientOptions.threadPoolSize` option during client creation.
-     *
      * - Warning: You *must not* call any change stream methods besides `isAlive()` while awaiting the result of this
      *    method. Doing so will result in undefined behavior.
      *
@@ -59,6 +54,7 @@ extension ChangeStream: AsyncSequence, AsyncIteratorProtocol {
             if let doc = try await self.tryNext() {
                 return doc
             }
+            await Task.yield()
         }
 
         return nil
