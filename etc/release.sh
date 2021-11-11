@@ -10,7 +10,7 @@ version=${1}
 [ ! -z "${version}" ] || { echo "ERROR: Missing version string"; exit 1; }
 
 # verify that the examples build with the current branch we're releasing on
-current_branch=$(git rev-parse --abbrev-ref HEAD)
+current_branch=$(git branch --show-current)
 ./etc/build-examples.sh ${current_branch}
 
 # regenerate documentation with new version string
