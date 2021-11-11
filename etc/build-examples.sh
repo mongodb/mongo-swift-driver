@@ -4,12 +4,16 @@ exit_code=0
 
 examples=("BugReport" "Docs" "KituraExample" "PerfectExample" "VaporExample" "Atlas")
 
+branch=${1}
+# Ensure branch is non-empty
+[ ! -z "${branch}" ] || { echo "ERROR: Missing branch name"; exit 1; }
+
 for example_project in ${examples[@]}; do
     echo "Building $example_project"
     example_dir="Examples/${example_project}"
 
-    # replace version string with main
-    etc/sed.sh -i 's/swift-driver", .upToNextMajor[^)]*)/swift-driver", .branch("main")/' "${example_dir}/Package.swift"
+    # replace version string with release branch name
+    etc/sed.sh -i "s/swift-driver\", .upToNextMajor[^)]*)/swift-driver\", .branch(\"${branch}\")/" "${example_dir}/Package.swift"
 
     pushd "${example_dir}"
 
@@ -32,6 +36,7 @@ for example_project in ${examples[@]}; do
     else
         echo "================= Building $example_project failed ================="
         exit_code=1
+        exit "${exit_code}"
     fi
 done
 
