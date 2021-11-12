@@ -234,10 +234,12 @@ final class ChangeStreamAsyncAwaitTests: MongoSwiftTestCase {
                 group.enter()
 
                 let eventCount = NIOAtomic<Int>.makeAtomic(value: 0)
+                let calledWatch = NIOAtomic<Bool>.makeAtomic(value: false)
 
                 let csTask = Task.detached {
                     do {
                         let changeStream = try await coll.watch()
+                        calledWatch.store(true)
                         for try await _ in changeStream {
                             _ = eventCount.add(1)
                         }
@@ -247,19 +249,24 @@ final class ChangeStreamAsyncAwaitTests: MongoSwiftTestCase {
                     group.leave()
                 }
 
+                // Wait until the change stream has been opened before we start inserting data.
+                try await assertIsEventuallyTrue(description: "change stream should be started") {
+                    calledWatch.load()
+                }
+
                 for doc: BSONDocument in [["_id": 1], ["_id": 2], ["_id": 3]] {
                     try await coll.insertOne(doc)
                 }
 
                 // Wait until we iterate all of the existing events in the change stream.
-                try await assertIsEventuallyTrue(description: "all events should be received", timeout: 15) {
+                try await assertIsEventuallyTrue(description: "all events should be received") {
                     eventCount.load() == 3
                 }
 
                 // Insert another doc and confirm the event count goes up. This means the loop keeps
                 // going, as expected.
                 try await coll.insertOne(["_id": 4])
-                try await assertIsEventuallyTrue(description: "Fourth event should be received", timeout: 15) {
+                try await assertIsEventuallyTrue(description: "Fourth event should be received") {
                     eventCount.load() == 4
                 }
 
