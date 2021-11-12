@@ -252,14 +252,14 @@ final class ChangeStreamAsyncAwaitTests: MongoSwiftTestCase {
                 }
 
                 // Wait until we iterate all of the existing events in the change stream.
-                try await assertIsEventuallyTrue(description: "all events should be received") {
+                try await assertIsEventuallyTrue(description: "all events should be received", timeout: 15) {
                     eventCount.load() == 3
                 }
 
                 // Insert another doc and confirm the event count goes up. This means the loop keeps
                 // going, as expected.
                 try await coll.insertOne(["_id": 4])
-                try await assertIsEventuallyTrue(description: "Fourth event should be received") {
+                try await assertIsEventuallyTrue(description: "Fourth event should be received", timeout: 15) {
                     eventCount.load() == 4
                 }
 
