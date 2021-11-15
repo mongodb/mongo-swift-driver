@@ -275,6 +275,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                     guard n > 0 else {
                         throw MongoError.InvalidArgumentError(message: prefix() + "be positive")
                     }
+                    self.maxPoolSize = n
                 case .maxStalenessSeconds:
                     let n = try value.getInt(forKey: name.rawValue)
                     guard n == -1 || n >= 90 else {
@@ -1063,21 +1064,23 @@ extension StringProtocol {
     /// Validates that an SRV service name is well-formed.
     /// - SeeAlso: https://datatracker.ietf.org/doc/html/rfc6335#section-5.1
     fileprivate func validateSRVServiceName() throws {
-        let preface = "Value for \(MongoConnectionString.OptionName.srvServiceName) in the connection string must "
+        let prefix: () -> String = {
+            "Value for \(MongoConnectionString.OptionName.srvServiceName) in the connection string must "
+        }
         guard self.count >= 1 && self.count <= 15 else {
             throw MongoError.InvalidArgumentError(
-                message: preface + "be at least 1 character and no more than 15 characters long"
+                message: prefix() + "be at least 1 character and no more than 15 characters long"
             )
         }
         guard !self.hasPrefix("-") && !self.hasSuffix("-") else {
-            throw MongoError.InvalidArgumentError(message: preface + "not start or end with a hyphen")
+            throw MongoError.InvalidArgumentError(message: prefix() + "not start or end with a hyphen")
         }
         var containsLetter = false
         var lastWasHyphen = false
         for character in self {
             guard character.isNumber || character.isLetter || character == "-" else {
                 throw MongoError.InvalidArgumentError(
-                    message: preface + "only contain numbers, letters, and hyphens"
+                    message: prefix() + "only contain numbers, letters, and hyphens"
                 )
             }
             if character.isLetter {
@@ -1085,13 +1088,13 @@ extension StringProtocol {
             }
             if character == "-" {
                 if lastWasHyphen {
-                    throw MongoError.InvalidArgumentError(message: preface + "not contain consecutive hyphens")
+                    throw MongoError.InvalidArgumentError(message: prefix() + "not contain consecutive hyphens")
                 }
             }
             lastWasHyphen = character == "-"
         }
         if !containsLetter {
-            throw MongoError.InvalidArgumentError(message: preface + "contain at least one letter")
+            throw MongoError.InvalidArgumentError(message: prefix() + "contain at least one letter")
         }
     }
 }
