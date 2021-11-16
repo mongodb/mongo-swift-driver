@@ -3,7 +3,7 @@
 extension ChangeStream: AsyncSequence, AsyncIteratorProtocol {
     public typealias AsyncIterator = ChangeStream
 
-    public __consuming func makeAsyncIterator() -> ChangeStream<T> {
+    public func makeAsyncIterator() -> ChangeStream<T> {
         self
     }
 

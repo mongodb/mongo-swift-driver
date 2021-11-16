@@ -190,6 +190,31 @@ final class MongoCursorAsyncAwaitTests: MongoSwiftTestCase {
             }
         }
     }
+
+    func testCleanupUponDeinitialization() throws {
+        testAsync {
+            try await self.withTestNamespace { client, _, coll in
+                try await coll.insertMany([["_id": 1], ["_id": 2], ["_id": 3]])
+
+                let monitor = client.addCommandMonitor()
+                monitor.enable()
+
+                do {
+                    let cursor = try await coll.find(options: FindOptions(batchSize: 1))
+                    _ = try await cursor.next()
+                    expect(client.connectionPool.checkedOutConnections).to(equal(1))
+                }
+
+                try await assertIsEventuallyTrue(description: "killCursors command is observed") {
+                    !monitor.commandStartedEvents(withNames: ["killCursors"]).isEmpty
+                }
+
+                try await assertIsEventuallyTrue(description: "Connection should be returned to pool") {
+                    client.connectionPool.checkedOutConnections == 0
+                }
+            }
+        }
+    }
 }
 
 final class ChangeStreamAsyncAwaitTests: MongoSwiftTestCase {
@@ -275,6 +300,35 @@ final class ChangeStreamAsyncAwaitTests: MongoSwiftTestCase {
 
                 // If the test got to the end, it means we successfully broke out of the loop and left the group.
                 group.wait()
+            }
+        }
+    }
+
+    func testCleanupUponDeinitialization() throws {
+        testAsync {
+            try await self.withTestNamespace { client, _, coll in
+                guard try await client.supportsChangeStreamOnCollection() else {
+                    printSkipMessage(testName: self.name, reason: "Requires change streams support")
+                    return
+                }
+
+                let monitor = client.addCommandMonitor()
+                monitor.enable()
+
+                do {
+                    let cs = try await coll.watch()
+                    try await coll.insertOne(["x": 1])
+                    _ = try await cs.next()
+                    expect(client.connectionPool.checkedOutConnections).to(equal(1))
+                }
+
+                try await assertIsEventuallyTrue(description: "killCursors command is observed") {
+                    !monitor.commandStartedEvents(withNames: ["killCursors"]).isEmpty
+                }
+
+                try await assertIsEventuallyTrue(description: "Connection should be returned to pool") {
+                    client.connectionPool.checkedOutConnections == 0
+                }
             }
         }
     }

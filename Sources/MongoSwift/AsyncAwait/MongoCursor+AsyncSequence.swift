@@ -5,7 +5,7 @@ extension MongoCursor: AsyncSequence, AsyncIteratorProtocol {
 
     public typealias Element = T
 
-    public __consuming func makeAsyncIterator() -> MongoCursor<T> {
+    public func makeAsyncIterator() -> MongoCursor<T> {
         self
     }
 
