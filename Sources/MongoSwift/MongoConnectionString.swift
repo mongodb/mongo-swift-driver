@@ -206,7 +206,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         fileprivate init(_ uriOptions: String) throws {
             let options = uriOptions.components(separatedBy: "&")
             // tracks options that have already been set to error on duplicates
-            var setOptions: [String] = []
+            var setOptions: Set<String> = []
             for option in options {
                 let nameAndValue = option.components(separatedBy: "=")
                 guard nameAndValue.count == 2 else {
@@ -221,12 +221,11 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                     )
                 }
                 // read preference tags can be specified multiple times
-                guard !setOptions.contains(name.rawValue) || name == .readPreferenceTags else {
+                guard setOptions.insert(name.rawValue).inserted || name == .readPreferenceTags else {
                     throw MongoError.InvalidArgumentError(
                         message: "Connection string contains duplicate option: \(name)"
                     )
                 }
-                setOptions.append(name.rawValue)
                 let value = try nameAndValue[1].getPercentDecoded(forKey: name.rawValue)
                 let prefix: () -> String = { "Value for \(name) in the connection string must " }
                 switch name {
