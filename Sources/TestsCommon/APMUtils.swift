@@ -76,7 +76,9 @@ public class TestCommandMonitor: CommandEventHandler {
 
     /// Disable monitoring, if it is not disabled already.
     public func disable() {
-        self.monitoring = false
+        self.lock.withLock {
+            self.monitoring = false
+        }
     }
 }
 
