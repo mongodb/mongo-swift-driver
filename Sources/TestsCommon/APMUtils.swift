@@ -60,11 +60,9 @@ public class TestCommandMonitor: CommandEventHandler {
 
     /// Capture events that occur while the the provided closure executes.
     public func captureEvents<T>(_ f: () throws -> T) rethrows -> T {
-        try self.lock.withLock {
-            self.monitoring = true
-            defer { self.monitoring = false }
-            return try f()
-        }
+        self.enable()
+        defer { self.disable() }
+        return try f()
     }
 
     /// Enable monitoring, if it is not enabled already.
