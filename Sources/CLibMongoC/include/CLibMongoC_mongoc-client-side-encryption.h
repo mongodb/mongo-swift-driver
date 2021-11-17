@@ -25,15 +25,17 @@
 struct _mongoc_client_t;
 struct _mongoc_client_pool_t;
 
-#define MONGOC_AEAD_AES_256_CBC_HMAC_SHA_512_RANDOM "AEAD_AES_256_CBC_HMAC_SHA_512-Random"
-#define MONGOC_AEAD_AES_256_CBC_HMAC_SHA_512_DETERMINISTIC "AEAD_AES_256_CBC_HMAC_SHA_512-Deterministic"
+#define MONGOC_AEAD_AES_256_CBC_HMAC_SHA_512_RANDOM \
+   "AEAD_AES_256_CBC_HMAC_SHA_512-Random"
+#define MONGOC_AEAD_AES_256_CBC_HMAC_SHA_512_DETERMINISTIC \
+   "AEAD_AES_256_CBC_HMAC_SHA_512-Deterministic"
 
 BSON_BEGIN_DECLS
 
 typedef struct _mongoc_auto_encryption_opts_t mongoc_auto_encryption_opts_t;
 
 MONGOC_EXPORT (mongoc_auto_encryption_opts_t *)
-mongoc_auto_encryption_opts_new (void);
+mongoc_auto_encryption_opts_new (void) BSON_GNUC_WARN_UNUSED_RESULT;
 
 MONGOC_EXPORT (void)
 mongoc_auto_encryption_opts_destroy (mongoc_auto_encryption_opts_t *opts);
@@ -55,6 +57,10 @@ mongoc_auto_encryption_opts_set_kms_providers (
    mongoc_auto_encryption_opts_t *opts, const bson_t *kms_providers);
 
 MONGOC_EXPORT (void)
+mongoc_auto_encryption_opts_set_tls_opts (mongoc_auto_encryption_opts_t *opts,
+                                          const bson_t *tls_opts);
+
+MONGOC_EXPORT (void)
 mongoc_auto_encryption_opts_set_schema_map (mongoc_auto_encryption_opts_t *opts,
                                             const bson_t *schema_map);
 
@@ -74,7 +80,7 @@ typedef struct _mongoc_client_encryption_datakey_opts_t
    mongoc_client_encryption_datakey_opts_t;
 
 MONGOC_EXPORT (mongoc_client_encryption_opts_t *)
-mongoc_client_encryption_opts_new (void);
+mongoc_client_encryption_opts_new (void) BSON_GNUC_WARN_UNUSED_RESULT;
 
 MONGOC_EXPORT (void)
 mongoc_client_encryption_opts_destroy (mongoc_client_encryption_opts_t *opts);
@@ -92,9 +98,13 @@ MONGOC_EXPORT (void)
 mongoc_client_encryption_opts_set_kms_providers (
    mongoc_client_encryption_opts_t *opts, const bson_t *kms_providers);
 
+MONGOC_EXPORT (void)
+mongoc_client_encryption_opts_set_tls_opts (
+   mongoc_client_encryption_opts_t *opts, const bson_t *tls_opts);
+
 MONGOC_EXPORT (mongoc_client_encryption_t *)
 mongoc_client_encryption_new (mongoc_client_encryption_opts_t *opts,
-                              bson_error_t *error);
+                              bson_error_t *error) BSON_GNUC_WARN_UNUSED_RESULT;
 
 MONGOC_EXPORT (void)
 mongoc_client_encryption_destroy (
@@ -122,7 +132,7 @@ mongoc_client_encryption_decrypt (mongoc_client_encryption_t *client_encryption,
                                   bson_error_t *error);
 
 MONGOC_EXPORT (mongoc_client_encryption_encrypt_opts_t *)
-mongoc_client_encryption_encrypt_opts_new (void);
+mongoc_client_encryption_encrypt_opts_new (void) BSON_GNUC_WARN_UNUSED_RESULT;
 
 MONGOC_EXPORT (void)
 mongoc_client_encryption_encrypt_opts_destroy (
@@ -141,7 +151,7 @@ mongoc_client_encryption_encrypt_opts_set_algorithm (
    mongoc_client_encryption_encrypt_opts_t *opts, const char *algorithm);
 
 MONGOC_EXPORT (mongoc_client_encryption_datakey_opts_t *)
-mongoc_client_encryption_datakey_opts_new (void);
+mongoc_client_encryption_datakey_opts_new (void) BSON_GNUC_WARN_UNUSED_RESULT;
 
 MONGOC_EXPORT (void)
 mongoc_client_encryption_datakey_opts_destroy (

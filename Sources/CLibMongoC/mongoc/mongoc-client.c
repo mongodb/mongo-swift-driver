@@ -2587,35 +2587,30 @@ _mongoc_client_killcursors_command (mongoc_cluster_t *cluster,
 void
 mongoc_client_kill_cursor (mongoc_client_t *client, int64_t cursor_id)
 {
-   mongoc_topology_t *topology;
-   mongoc_server_description_t *selected_server;
+   mongoc_topology_t *const topology =
+      BSON_ASSERT_PTR_INLINE (client)->topology;
+   mongoc_server_description_t const *selected_server;
    mongoc_read_prefs_t *read_prefs;
    bson_error_t error;
    uint32_t server_id = 0;
+   mc_shared_tpld td = mc_tpld_take_ref (topology);
 
-   topology = client->topology;
    read_prefs = mongoc_read_prefs_new (MONGOC_READ_PRIMARY);
 
-   bson_mutex_lock (&topology->mutex);
-   if (!mongoc_topology_compatible (&topology->description, NULL, &error)) {
+   if (!mongoc_topology_compatible (td.ptr, NULL, &error)) {
       MONGOC_ERROR ("Could not kill cursor: %s", error.message);
-      bson_mutex_unlock (&topology->mutex);
+      mc_tpld_drop_ref (&td);
       mongoc_read_prefs_destroy (read_prefs);
       return;
    }
 
    /* see if there's a known writable server - do no I/O or retries */
-   selected_server =
-      mongoc_topology_description_select (&topology->description,
-                                          MONGOC_SS_WRITE,
-                                          read_prefs,
-                                          topology->local_threshold_msec);
+   selected_server = mongoc_topology_description_select (
+      td.ptr, MONGOC_SS_WRITE, read_prefs, topology->local_threshold_msec);
 
    if (selected_server) {
       server_id = selected_server->id;
    }
-
-   bson_mutex_unlock (&topology->mutex);
 
    if (server_id) {
       _mongoc_client_kill_cursor (client,
@@ -2630,6 +2625,7 @@ mongoc_client_kill_cursor (mongoc_client_t *client, int64_t cursor_id)
    }
 
    mongoc_read_prefs_destroy (read_prefs);
+   mc_tpld_drop_ref (&td);
 }
 
 
@@ -2782,7 +2778,13 @@ _mongoc_client_set_apm_callbacks_private (mongoc_client_t *client,
 
    /* A client pool sets APM callbacks for the entire pool. */
    if (client->topology->single_threaded) {
-      mongoc_topology_set_apm_callbacks (client->topology, callbacks, context);
+      mongoc_topology_set_apm_callbacks (
+         client->topology,
+         /* We are safe to modify the shared_descr directly, since we are
+          * single-threaded */
+         mc_tpld_unsafe_get_mutable (client->topology),
+         callbacks,
+         context);
    }
 
    return true;
@@ -2803,13 +2805,18 @@ mongoc_client_set_apm_callbacks (mongoc_client_t *client,
    return _mongoc_client_set_apm_callbacks_private (client, callbacks, context);
 }
 
-
 mongoc_server_description_t *
 mongoc_client_get_server_description (mongoc_client_t *client,
                                       uint32_t server_id)
 {
-   /* the error info isn't useful */
-   return mongoc_topology_server_by_id (client->topology, server_id, NULL);
+   mongoc_server_description_t *ret;
+   mc_shared_tpld td = mc_tpld_take_ref (client->topology);
+   mongoc_server_description_t const *sd =
+      mongoc_topology_description_server_by_id_const (
+         td.ptr, server_id, NULL /* <- the error info isn't useful */);
+   ret = mongoc_server_description_new_copy (sd);
+   mc_tpld_drop_ref (&td);
+   return ret;
 }
 
 
@@ -2817,21 +2824,12 @@ mongoc_server_description_t **
 mongoc_client_get_server_descriptions (const mongoc_client_t *client,
                                        size_t *n /* OUT */)
 {
-   mongoc_topology_t *topology;
-   mongoc_server_description_t **sds;
-
-   BSON_ASSERT (client);
-   BSON_ASSERT (n);
-
-   topology = client->topology;
-
-   /* in case the client is pooled */
-   bson_mutex_lock (&topology->mutex);
-
-   sds = mongoc_topology_description_get_servers (&topology->description, n);
-
-   bson_mutex_unlock (&topology->mutex);
-
+   mc_shared_tpld td =
+      mc_tpld_take_ref (BSON_ASSERT_PTR_INLINE (client)->topology);
+   mongoc_server_description_t **const sds =
+      mongoc_topology_description_get_servers (td.ptr,
+                                               BSON_ASSERT_PTR_INLINE (n));
+   mc_tpld_drop_ref (&td);
    return sds;
 }
 
@@ -3016,7 +3014,7 @@ _mongoc_client_end_sessions (mongoc_client_t *client)
    mongoc_cluster_t *cluster = &client->cluster;
    bool r;
 
-   if (t->session_pool) {
+   while (!mongoc_server_session_pool_is_empty (t->session_pool)) {
       prefs = mongoc_read_prefs_new (MONGOC_READ_PRIMARY_PREFERRED);
       server_id =
          mongoc_topology_select_server_id (t, MONGOC_SS_READ, prefs, &error);
@@ -3090,7 +3088,7 @@ mongoc_client_reset (mongoc_client_t *client)
    client->client_sessions = mongoc_set_new (8, NULL, NULL);
 
    /* Server sessions are owned by us, so we clear the pool on reset. */
-   _mongoc_topology_clear_session_pool (client->topology);
+   mongoc_server_session_pool_clear (client->topology->session_pool);
 }
 
 mongoc_change_stream_t *
@@ -3143,9 +3141,7 @@ mongoc_client_set_server_api (mongoc_client_t *client,
    }
 
    client->api = mongoc_server_api_copy (api);
-   bson_mutex_lock (&client->topology->mutex);
    _mongoc_topology_scanner_set_server_api (client->topology->scanner, api);
-   bson_mutex_unlock (&client->topology->mutex);
    return true;
 }
 
