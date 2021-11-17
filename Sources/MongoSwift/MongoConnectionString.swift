@@ -572,11 +572,19 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     }
 
     private mutating func validateAndSetDirectConnection(_ options: Options) throws {
-        guard !(options.directConnection == true && self.hosts.count > 1) else {
-            throw MongoError.InvalidArgumentError(
-                message: "Multiple hosts cannot be specified in the connection string if"
-                    + " \(OptionName.directConnection) is set to true"
-            )
+        if options.directConnection == true {
+            guard self.scheme != .srv else {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(OptionName.directConnection) cannot be set to true if the connection string scheme is"
+                        + " SRV"
+                )
+            }
+            guard self.hosts.count == 1 else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Multiple hosts cannot be specified in the connection string if"
+                        + " \(OptionName.directConnection) is set to true"
+                )
+            }
         }
         self.directConnection = options.directConnection
     }
@@ -760,7 +768,6 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         }
         if let compressors = self.compressors {
             var compressorNames: [BSON] = []
-            options[.compressors] = .array([])
             for compressor in compressors {
                 switch compressor._compressor {
                 case let .zlib(level):
@@ -938,7 +945,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
     /// Specifies how long the driver to attempt to send or receive on a socket before timing out.
     ///
-    /// - Note: This option only applies to application operations, not SDAM.
+    /// - Note: This option only applies to application operations, not server monitoring checks.
     public var socketTimeoutMS: Int?
 
     /// Specifies the maximum number of SRV results to select randomly when initially populating the seedlist, or,
@@ -1031,7 +1038,7 @@ extension StringProtocol {
             if self.contains(character) {
                 throw MongoError.InvalidArgumentError(
                     message: "\(key) in the connection string contains invalid character that must be percent-encoded:"
-                        + character
+                        + " \(character)"
                 )
             }
         }
