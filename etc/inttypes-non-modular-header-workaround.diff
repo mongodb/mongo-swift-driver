@@ -232,7 +232,7 @@ index a7c8206..55aa1d0 100644
  #undef MONGOC_LOG_DOMAIN
  #define MONGOC_LOG_DOMAIN "stream"
 diff --git a/Sources/CLibMongoC/mongoc/mongoc-topology-description.c b/Sources/CLibMongoC/mongoc/mongoc-topology-description.c
-index 012fcb0..3b052b9 100644
+index d913992c..1c8f3557 100644
 --- a/Sources/CLibMongoC/mongoc/mongoc-topology-description.c
 +++ b/Sources/CLibMongoC/mongoc/mongoc-topology-description.c
 @@ -27,6 +27,9 @@
@@ -244,4 +244,4 @@ index 012fcb0..3b052b9 100644
 +#endif
  
  static bool
- _is_data_node (mongoc_server_description_t *sd)
+ _is_data_node (const mongoc_server_description_t *sd)
