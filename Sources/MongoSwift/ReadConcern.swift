@@ -48,7 +48,7 @@ public struct ReadConcern: Codable {
     }
 
     /// Initialize a new `ReadConcern` with a `String`.
-    fileprivate init(_ level: String?) {
+    internal init(_ level: String?) {
         self.level = level
     }
 
