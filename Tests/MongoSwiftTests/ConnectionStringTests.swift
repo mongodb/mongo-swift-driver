@@ -582,8 +582,8 @@ final class ConnectionStringTests: MongoSwiftTestCase {
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    func testIPV4AddressParsing() throws {
-        // valid ipv4
+    func testIPv4AddressParsing() throws {
+        // valid IPv4
         let connString1 = try MongoConnectionString(throwsIfInvalid: "mongodb://1.2.3.4")
         guard let host = connString1.hosts.first else {
             XCTFail("connection string should contain one host")
@@ -591,7 +591,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
         expect(host.host).to(equal("1.2.3.4"))
         expect(host.type).to(equal(.ipv4))
-        // invalid ipv4 should fall back to hostname (only three numbers)
+        // invalid IPv4 should fall back to hostname (only three numbers)
         let connString2 = try MongoConnectionString(throwsIfInvalid: "mongodb://1.2.3")
         guard let host = connString2.hosts.first else {
             XCTFail("connection string should contain one host")
@@ -599,7 +599,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
         expect(host.host).to(equal("1.2.3"))
         expect(host.type).to(equal(.hostname))
-        // invalid ipv4 should fall back to hostname (numbers out of bounds)
+        // invalid IPv4 should fall back to hostname (numbers out of bounds)
         let connString3 = try MongoConnectionString(throwsIfInvalid: "mongodb://256.1.2.3")
         guard let host = connString3.hosts.first else {
             XCTFail("connection string should contain one host")

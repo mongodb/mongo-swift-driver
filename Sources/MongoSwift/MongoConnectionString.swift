@@ -144,7 +144,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 if host.hasSuffix(".sock") {
                     self.host = try host.getPercentDecoded(forKey: "UNIX domain socket")
                     self.type = .unixDomainSocket
-                } else if host.isIPV4() {
+                } else if host.isIPv4() {
                     self.host = host
                     self.type = .ipv4
                 } else {
@@ -1045,7 +1045,7 @@ extension StringProtocol {
         return decoded
     }
 
-    fileprivate func isIPV4() -> Bool {
+    fileprivate func isIPv4() -> Bool {
         let numbers = self.components(separatedBy: ".")
         guard numbers.count == 4 else {
             return false
