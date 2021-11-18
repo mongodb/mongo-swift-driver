@@ -251,8 +251,10 @@ public class MongoCursor<T: Codable>: CursorProtocol {
      * This method MAY be called if the cursor is already dead. It will have no effect.
      *
      * - Warning:
-     *    If this cursor is alive when it goes out of scope, it will leak resources. To ensure it
-     *    is dead before it leaves scope, invoke this method.
+     *    On Swift versions and platforms where structured concurrency is not available, if a cursor is alive when it
+     *    goes out of scope, it will leak resources. On those Swift versions/platforms, you must invoke this method
+     *    to ensure resources are properly cleaned up. If structured concurrency is available, it is not necessary to
+     *    call this method as resources will be cleaned up automatically during deinitialization.
      *
      * - Returns:
      *   An `EventLoopFuture` that evaluates when the cursor has completed closing. This future should not fail.
@@ -262,4 +264,18 @@ public class MongoCursor<T: Codable>: CursorProtocol {
             self.wrappedCursor.kill()
         }
     }
+
+#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+    /// When concurrency is available, we can ensure cursors are always cleaned up properly.
+    deinit {
+        let client = self.client
+        let el = self.eventLoop
+        let wrappedCursor = self.wrappedCursor
+        Task {
+            try await client.operationExecutor.execute(on: el) {
+                wrappedCursor.kill()
+            }
+        }
+    }
+#endif
 }

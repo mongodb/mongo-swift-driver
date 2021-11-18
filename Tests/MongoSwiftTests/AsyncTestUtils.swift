@@ -47,6 +47,13 @@ extension MongoClient {
         let params = try self.serverParameters().wait()
         return testRequirement.getUnmetRequirement(givenCurrent: serverVersion, topologyType, params)
     }
+
+    /// Attaches a `TestCommandMonitor` to the client and returns it.
+    internal func addCommandMonitor() -> TestCommandMonitor {
+        let monitor = TestCommandMonitor()
+        self.addCommandEventHandler(monitor)
+        return monitor
+    }
 }
 
 extension MongoDatabase {

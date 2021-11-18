@@ -32,9 +32,8 @@ extension MongoCollection {
         try await self.watch(
             pipeline,
             options: options,
-            session: session,
-            withEventType: ChangeStreamEvent<CollectionType>.self
-        )
+            session: session
+        ).get()
     }
 
     /**

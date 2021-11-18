@@ -1,22 +1,28 @@
 import Foundation
 import MongoSwift
+import NIOConcurrencyHelpers
 
 /// A command event handler that caches the events it encounters.
 /// Note: it will only cache events that occur while closures passed to `captureEvents` are executing.
 public class TestCommandMonitor: CommandEventHandler {
     private var monitoring: Bool
     private var events: [CommandEvent]
+    // Lock over monitoring and events.
+    private var lock: Lock
 
     public init() {
         self.events = []
         self.monitoring = false
+        self.lock = Lock()
     }
 
     public func handleCommandEvent(_ event: CommandEvent) {
-        guard self.monitoring else {
-            return
+        self.lock.withLock {
+            guard self.monitoring else {
+                return
+            }
+            self.events.append(event)
         }
-        self.events.append(event)
     }
 
     /// Retrieve all the command started events seen so far, clearing the event cache.
@@ -34,27 +40,43 @@ public class TestCommandMonitor: CommandEventHandler {
         withEventTypes typeFilter: [EventType]? = nil,
         withNames nameFilter: [String]? = nil
     ) -> [CommandEvent] {
-        defer { self.events.removeAll() }
-        return self.events.compactMap { event in
-            if let typeFilter = typeFilter {
-                guard typeFilter.contains(event.type) else {
-                    return nil
+        self.lock.withLock {
+            defer { self.events.removeAll() }
+            return self.events.compactMap { event in
+                if let typeFilter = typeFilter {
+                    guard typeFilter.contains(event.type) else {
+                        return nil
+                    }
                 }
-            }
-            if let nameFilter = nameFilter {
-                guard nameFilter.contains(event.commandName) else {
-                    return nil
+                if let nameFilter = nameFilter {
+                    guard nameFilter.contains(event.commandName) else {
+                        return nil
+                    }
                 }
+                return event
             }
-            return event
         }
     }
 
     /// Capture events that occur while the the provided closure executes.
     public func captureEvents<T>(_ f: () throws -> T) rethrows -> T {
-        self.monitoring = true
-        defer { self.monitoring = false }
+        self.enable()
+        defer { self.disable() }
         return try f()
+    }
+
+    /// Enable monitoring, if it is not enabled already.
+    public func enable() {
+        self.lock.withLock {
+            self.monitoring = true
+        }
+    }
+
+    /// Disable monitoring, if it is not disabled already.
+    public func disable() {
+        self.lock.withLock {
+            self.monitoring = false
+        }
     }
 }
 
