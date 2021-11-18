@@ -81,27 +81,8 @@ let skipUnsupported: [String: [String]] = [
     "valid-options.json": ["option names are normalized to lowercase"] // we don't support MONGODB-CR authentication
 ]
 
-// Tests for options that are not yet supported on MongoConnectionString.
-// TODO: delete this when MongoConnectionString is fully implemented
-let skipMongoConnectionStringUnsupported: [String: [String]] = [
-    // TODO: SWIFT-1174: unskip these tests
-    "valid-db-with-dotted-name.json": ["*"],
-    "valid-unix_socket-absolute.json": ["*"],
-    "valid-unix_socket-relative.json": ["*"]
-]
-
 func shouldSkip(file: String, test: String) -> Bool {
     if let skipList = skipUnsupported[file],
-       skipList.contains(where: test.lowercased().contains) || skipList.contains("*")
-    {
-        return true
-    }
-
-    return false
-}
-
-func shouldSkipMongoConnectionString(file: String, test: String) -> Bool {
-    if let skipList = skipMongoConnectionStringUnsupported[file],
        skipList.contains(where: test.lowercased().contains) || skipList.contains("*")
     {
         return true
@@ -115,9 +96,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         let testFiles = try retrieveSpecTestFiles(specName: specName, asType: ConnectionStringTestFile.self)
         for (filename, file) in testFiles {
             for testCase in file.tests {
-                guard !shouldSkip(file: filename, test: testCase.description)
-                    && !shouldSkipMongoConnectionString(file: filename, test: testCase.description)
-                else {
+                guard !shouldSkip(file: filename, test: testCase.description) else {
                     continue
                 }
 
@@ -601,5 +580,32 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         opts = MongoClientOptions(loadBalanced: true)
         expect(try ConnectionString("mongodb://localhost:27017/?directConnection=true", options: opts))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+    }
+
+    func testIPV4AddressParsing() throws {
+        // valid ipv4
+        let connString1 = try MongoConnectionString(throwsIfInvalid: "mongodb://1.2.3.4")
+        guard let host = connString1.hosts.first else {
+            XCTFail("connection string should contain one host")
+            return
+        }
+        expect(host.host).to(equal("1.2.3.4"))
+        expect(host.type).to(equal(.ipv4))
+        // invalid ipv4 should fall back to hostname (only three numbers)
+        let connString2 = try MongoConnectionString(throwsIfInvalid: "mongodb://1.2.3")
+        guard let host = connString2.hosts.first else {
+            XCTFail("connection string should contain one host")
+            return
+        }
+        expect(host.host).to(equal("1.2.3"))
+        expect(host.type).to(equal(.hostname))
+        // invalid ipv4 should fall back to hostname (numbers out of bounds)
+        let connString3 = try MongoConnectionString(throwsIfInvalid: "mongodb://256.1.2.3")
+        guard let host = connString3.hosts.first else {
+            XCTFail("connection string should contain one host")
+            return
+        }
+        expect(host.host).to(equal("256.1.2.3"))
+        expect(host.type).to(equal(.hostname))
     }
 }

@@ -92,7 +92,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             return port
         }
 
-        private enum HostType: String {
+        internal enum HostType: String {
             case ipv4
             case ipLiteral = "ip_literal"
             case hostname
@@ -105,7 +105,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         /// The port number.
         public let port: UInt16?
 
-        private let type: HostType
+        internal let type: HostType
 
         /// Initializes a ServerAddress, using the default localhost:27017 if a host/port is not provided.
         internal init(_ hostAndPort: String = "localhost:27017") throws {
@@ -114,7 +114,6 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             }
 
             // Check if host is an IPv6 literal.
-            // TODO: SWIFT-1407: support IPv4 address parsing.
             if hostAndPort.first == "[" {
                 let ipLiteralRegex = try NSRegularExpression(pattern: #"^\[(.*)\](?::([0-9]+))?$"#)
                 guard
@@ -135,18 +134,29 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 self.type = .ipLiteral
             } else {
                 let parts = hostAndPort.components(separatedBy: ":")
-                self.host = String(parts[0])
                 guard parts.count <= 2 else {
                     throw MongoError.InvalidArgumentError(
                         message: "expected only a single port delimiter ':' in \(hostAndPort)"
                     )
                 }
+
+                let host = parts[0]
+                if host.hasSuffix(".sock") {
+                    self.host = try host.getPercentDecoded(forKey: "UNIX domain socket")
+                    self.type = .unixDomainSocket
+                } else if host.isIPV4() {
+                    self.host = host
+                    self.type = .ipv4
+                } else {
+                    self.host = try host.getPercentDecoded(forKey: "hostname")
+                    self.type = .hostname
+                }
+
                 if parts.count > 1 {
                     self.port = try HostIdentifier.parsePort(from: parts[1])
                 } else {
                     self.port = nil
                 }
-                self.type = .hostname
             }
         }
 
@@ -420,7 +430,6 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             throw MongoError.InvalidArgumentError(message: "Invalid connection string")
         }
         let identifiersAndOptions = schemeAndRest[1].components(separatedBy: "/")
-        // TODO: SWIFT-1174: handle unescaped slashes in unix domain sockets.
         guard identifiersAndOptions.count <= 2 else {
             throw MongoError.InvalidArgumentError(
                 message: "Connection string contains an unescaped slash"
@@ -484,6 +493,9 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             self.defaultAuthDB = decoded
             // If no other authentication options were provided, we should use the defaultAuthDB as the credential
             // source. This will be overwritten later if an authSource is provided.
+            if self.credential == nil {
+                self.credential = MongoCredential()
+            }
             self.credential?.source = decoded
         }
 
@@ -1031,6 +1043,19 @@ extension StringProtocol {
             )
         }
         return decoded
+    }
+
+    fileprivate func isIPV4() -> Bool {
+        let numbers = self.components(separatedBy: ".")
+        guard numbers.count == 4 else {
+            return false
+        }
+        for number in numbers {
+            guard let n = Int(number), (0...255).contains(n) else {
+                return false
+            }
+        }
+        return true
     }
 
     fileprivate func getValidatedUserInfo(forKey key: String) throws -> String {
