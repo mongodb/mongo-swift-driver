@@ -265,8 +265,9 @@ public class MongoCursor<T: Codable>: CursorProtocol {
         }
     }
 
-#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+#if compiler(>=5.5) && canImport(_Concurrency)
     /// When concurrency is available, we can ensure cursors are always cleaned up properly.
+    @available(macOS 12, *)
     deinit {
         let client = self.client
         let el = self.eventLoop

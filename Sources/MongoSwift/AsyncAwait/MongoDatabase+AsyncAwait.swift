@@ -1,5 +1,6 @@
-#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+#if compiler(>=5.5) && canImport(_Concurrency)
 /// Extension to `MongoDatabase` to support async/await APIs.
+@available(macOS 12, *)
 extension MongoDatabase {
     /**
      *   Drops this database.
@@ -22,7 +23,7 @@ extension MongoDatabase {
      *   - options: Optional `CreateCollectionOptions` to use for the collection.
      *   - session: Optional `ClientSession` to use when executing this command.
      *
-     * - Returns: the newly created `MongoCollection<Document>`.
+     * - Returns: the newly created `MongoCollection<BSONDocument>`.
      *
      * - Throws:
      *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.

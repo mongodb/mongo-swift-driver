@@ -79,7 +79,8 @@ public final class ClientSession {
             }
         }
 
-#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+#if compiler(>=5.5) && canImport(_Concurrency)
+        @available(macOS 12, *)
         fileprivate func cleanup(using client: MongoClient, on eventLoop: EventLoop?) async throws {
             try await self.cleanup(using: client, on: eventLoop).get()
         }
@@ -332,30 +333,34 @@ public final class ClientSession {
 
     /// Cleans up internal state.
     deinit {
-#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
-        // Pull out all necessary values into new references to avoid referencing `self` within the `Task`, since the
-        // `Task` is going to outlive `self`.
-        switch self.state {
-        case .notStarted, .ended:
-            return
-        case .started:
-            let state = self.state
-            let client = self.client
-            let el = self.eventLoop
-            _ = Task {
-                try await state.cleanup(using: client, on: el)
-                // it might seem like we should make `state` mutable and mark it as `ended` here, however `state` is
-                // our own copy of the state no one else has access to or could inspect so there is no need to update
-                // it for bookkeeping purposes. also, we would then need to make a mutable copy of the state within the
-                // task here as the compiler won't allow us to mutate a variable declared outside the task.
+#if compiler(>=5.5) && canImport(_Concurrency)
+        if #available(macOS 12, *) {
+            // Pull out all necessary values into new references to avoid referencing `self` within the `Task`, since
+            // the `Task` is going to outlive `self`.
+            switch self.state {
+            case .notStarted, .ended:
+                return
+            case .started:
+                let state = self.state
+                let client = self.client
+                let el = self.eventLoop
+                _ = Task {
+                    try await state.cleanup(using: client, on: el)
+                    // it might seem like we should make `state` mutable and mark it as `ended` here, however `state`
+                    // is our own copy of the state no one else has access to or could inspect so there is no need to
+                    // update it for bookkeeping purposes. also, we would then need to make a mutable copy of the state
+                    // within the task here as the compiler won't allow us to mutate a variable declared outside the
+                    // task.
+                }
             }
+
+            return
         }
-#else
+#endif
         guard case .ended = self.state else {
             assertionFailure("ClientSession was not ended before going out of scope; please call ClientSession.end()")
             return
         }
-#endif
     }
 
     /**

@@ -1,5 +1,6 @@
-#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+#if compiler(>=5.5) && canImport(_Concurrency)
 /// Extension to `MongoClient` to support async/await APIs.
+@available(macOS 12, *)
 extension MongoClient {
     /**
      * Closes this `MongoClient`, closing all connections to the server and cleaning up internal state.

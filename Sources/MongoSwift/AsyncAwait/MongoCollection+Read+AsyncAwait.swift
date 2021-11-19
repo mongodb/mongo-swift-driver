@@ -1,5 +1,6 @@
-#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+#if compiler(>=5.5) && canImport(_Concurrency)
 /// Extension to `MongoCollection` to support async/await read APIs.
+@available(macOS 12, *)
 extension MongoCollection {
     /**
      * Finds the documents in this collection which match the provided filter.
