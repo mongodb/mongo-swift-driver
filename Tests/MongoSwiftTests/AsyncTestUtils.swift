@@ -57,7 +57,7 @@ extension MongoClient {
 }
 
 extension MongoDatabase {
-    fileprivate func syncDropOrFail() {
+    internal func syncDropOrFail() {
         do {
             try self.drop().wait()
         } catch {
