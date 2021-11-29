@@ -10,42 +10,15 @@ assignees: ''
 <!--
   Make sure you have read CONTRIBUTING.md completely before you file a new
   issue! 
-
-  If possible, try to determine if the bug is actually part of the Swift driver,
-  or if the issue is actually from `libmongoc` or `libbson`. If so, you should
-  file the issue with the representative projects.
 -->
 
-**Swift version**
-What does this command give you?
-```
-$ swift --version
-```
+## Versions/Environment
+1. What version of Swift are you using? (Run `swift --version`)
+2. What operating system are you using? (Run `uname -a`)
+3. What versions of the driver and its dependencies are you using? (Run `swift package show-dependencies`)
+4. What version of MongoDB are you using? (Check with the MongoDB shell using `db.version()`) 
+5. What is your MongoDB topology (standalone, replica set, sharded cluster, serverless)?
 
-**Operating system**
-What does this command give you?
-```
-$ uname -a
-```
-
-**Driver version**
-What does this command give you?
-```
-$ cat Package.resolved # Applies if you are using Swift package manager
-```
-
-**What is the version(s) of `mongod` that you are running with the driver?**
-Try running:
-```
-$ mongod --version
-```
-or, running this in a MongoDB shell connected to the relevant node(s):
-```
-> db.version()
-```
-
-**What is your server topology?**
-How is your MongoDB deployment configured?
 
 
 ## Describe the bug
@@ -58,12 +31,13 @@ A clear and concise description of what the bug is.
 clue in the right direction?
 * Did this issue arise out of nowhere, or after an update (of the driver,
 server, and/or Swift)? 
-* Is there a workaround that seems to avoid this this issue?
 * Are there multiple ways of triggering this bug (perhaps more than one
 function produce a crash)?
-* If you know how to reproduce the bug, use the `BugReport` project in our
-`Examples/` directory to write some demo code showcasing it so that we have
-something to go off of.
+* If you know how to reproduce this bug, please include a code snippet here:
+```
+
+```
+
 
 **To Reproduce**
 Steps to reproduce the behavior:
@@ -73,6 +47,3 @@ Steps to reproduce the behavior:
 4. And then, finally, do this.
 5. Bug occurs.
 
-
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
