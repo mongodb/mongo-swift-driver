@@ -111,9 +111,8 @@ _mongoc_topology_description_monitor_opening (mongoc_topology_description_t *td)
       _mongoc_topology_description_monitor_changed (prev_td, td);
    }
 
-   for (i = 0; i < td->servers->items_len; i++) {
-      sd = (mongoc_server_description_t *) mongoc_set_get_item (td->servers,
-                                                                (int) i);
+   for (i = 0; i < mc_tpld_servers (td)->items_len; i++) {
+      sd = mongoc_set_get_item (mc_tpld_servers (td), (int) i);
       _mongoc_topology_description_monitor_server_opening (td, sd);
    }
 
@@ -127,12 +126,12 @@ _mongoc_topology_description_monitor_opening (mongoc_topology_description_t *td)
 
       /* LoadBalanced deployments must have exactly one host listed. Otherwise,
        * an error would have occurred when constructing the topology. */
-      BSON_ASSERT (td->servers->items_len == 1);
-      sd = (mongoc_server_description_t *) mongoc_set_get_item (td->servers, 0);
+      BSON_ASSERT (mc_tpld_servers (td)->items_len == 1);
+      sd = mongoc_set_get_item (mc_tpld_servers (td), 0);
       prev_sd = mongoc_server_description_new_copy (sd);
       BSON_ASSERT (prev_sd);
       if (td->apm_callbacks.topology_changed) {
-         mongoc_topology_description_destroy (prev_td);
+         mongoc_topology_description_cleanup (prev_td);
          _mongoc_topology_description_copy_to (td, prev_td);
       }
       sd->type = MONGOC_SERVER_LOAD_BALANCER;
@@ -144,7 +143,7 @@ _mongoc_topology_description_monitor_opening (mongoc_topology_description_t *td)
    }
 
    if (prev_td) {
-      mongoc_topology_description_destroy (prev_td);
+      mongoc_topology_description_cleanup (prev_td);
       bson_free (prev_td);
    }
 }
@@ -177,11 +176,11 @@ _mongoc_topology_description_monitor_closed (
       mongoc_apm_topology_closed_t event;
 
       if (td->type == MONGOC_TOPOLOGY_LOAD_BALANCED) {
-         mongoc_server_description_t *sd;
+         const mongoc_server_description_t *sd;
 
          /* LoadBalanced deployments must have exactly one host listed. */
-         BSON_ASSERT (td->servers->items_len == 1);
-         sd = (mongoc_server_description_t *) mongoc_set_get_item (td->servers, 0);
+         BSON_ASSERT (mc_tpld_servers_const (td)->items_len == 1);
+         sd = mongoc_set_get_item_const (mc_tpld_servers_const (td), 0);
          _mongoc_topology_description_monitor_server_closed (td, sd);
       }
       bson_oid_copy (&td->topology_id, &event.topology_id);
