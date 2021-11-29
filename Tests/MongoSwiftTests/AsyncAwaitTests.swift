@@ -113,6 +113,31 @@ final class AsyncAwaitTests: MongoSwiftTestCase {
             }
         }
     }
+
+    func testConcurrentClientUsage() throws {
+        testAsync {
+            try await self.withTestNamespace { _, db, _ in
+                defer {
+                    db.syncDropOrFail()
+                }
+                try await withThrowingTaskGroup(of: Int.self) { group in
+                    for i in 1...20 {
+                        group.addTask {
+                            let coll = db.collection("concurrent-client-test-\(i)")
+                            for j in 1...100 {
+                                try await coll.insertOne(["_id": .int32(Int32(j))])
+                            }
+                            return try await coll.countDocuments()
+                        }
+                    }
+
+                    for try await result in group {
+                        expect(result).to(equal(100))
+                    }
+                }
+            }
+        }
+    }
 }
 
 final class MongoCursorAsyncAwaitTests: MongoSwiftTestCase {
