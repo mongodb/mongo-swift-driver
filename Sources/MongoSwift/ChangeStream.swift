@@ -286,8 +286,11 @@ public class ChangeStream<T: Codable>: CursorProtocol {
 
 #if compiler(>=5.5) && canImport(_Concurrency)
     /// When concurrency is available, we can ensure change streams are always cleaned up properly.
-    @available(macOS 12, *)
     deinit {
+        // We can't do this with an @available check on the method; see https://bugs.swift.org/browse/SR-15537.
+        guard #available(macOS 12, *) else {
+            return
+        }
         let client = self.client
         let el = self.eventLoop
         let wrappedCursor = self.wrappedCursor
