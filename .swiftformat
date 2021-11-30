@@ -43,3 +43,6 @@
 
 # creates non-compiling code on Swift 5.1
 --disable preferKeyPath
+
+# older swift versions 
+--disable redundantBackticks

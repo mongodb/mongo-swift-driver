@@ -95,7 +95,13 @@ final class CrudTests: MongoSwiftTestCase {
             "unacknowledged-findOneAndDelete-hint-clientError": ["*"],
             "unacknowledged-bulkWrite-delete-hint-clientError": ["*"],
             "unacknowledged-bulkWrite-update-hint-clientError": ["*"],
-            "unacknowledged-bulkWrite-replace-hint-clientError": ["*"]
+            "unacknowledged-bulkWrite-replace-hint-clientError": ["*"],
+            // Skipping because libmongoc throws a client error and these tests expect a server error
+            // TODO: SWIFT-1429 unskip
+            "deleteOne-let": ["*"],
+            "deleteMany-let": ["*"],
+            "updateOne-let": ["*"],
+            "updateMany-let": ["*"]
         ]
         // Skipping due to a bug in server latest. TODO: SWIFT-1359 unskip
         let client = try MongoClient.makeTestClient()

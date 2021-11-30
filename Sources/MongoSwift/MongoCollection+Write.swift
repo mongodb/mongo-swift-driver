@@ -271,7 +271,8 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
-        let modelOptions = DeleteModelOptions(collation: options?.collation, hint: options?.hint)
+        // swiftlint:disable colon
+        let modelOptions = DeleteModelOptions(collation: options?.collation, hint: options?.hint, `let`: options?.let)
         let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }
@@ -303,7 +304,8 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
-        let modelOptions = DeleteModelOptions(collation: options?.collation, hint: options?.hint)
+        // swiftlint:disable colon
+        let modelOptions = DeleteModelOptions(collation: options?.collation, hint: options?.hint, `let`: options?.let)
         let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }
@@ -362,6 +364,10 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
 
+    /// Variables that can be accessed within the operation using the double
+    /// dollar sign prefix in the form `$$<variable_name>`. This option is only available on MongoDB 5.0+.
+    public var `let`: BSONDocument?
+
     /// When true, creates a new document if no document matches the query.
     public var upsert: Bool?
 
@@ -374,6 +380,7 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
         hint: IndexHint? = nil,
+        `let`: BSONDocument? = nil,
         upsert: Bool? = nil,
         writeConcern: WriteConcern? = nil
     ) {
@@ -381,6 +388,7 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
         self.hint = hint
+        self.`let` = `let`
         self.upsert = upsert
         self.writeConcern = writeConcern
     }
@@ -397,6 +405,10 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
 
+    /// Variables that can be accessed within the operation using the double
+    /// dollar sign prefix in the form `$$<variable_name>`. This option is only available on MongoDB 5.0+.
+    public var `let`: BSONDocument?
+
     /// When true, creates a new document if no document matches the query.
     public var upsert: Bool?
 
@@ -408,12 +420,14 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
         hint: IndexHint? = nil,
+        `let`: BSONDocument? = nil,
         upsert: Bool? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
         self.hint = hint
+        self.`let` = `let`
         self.upsert = upsert
         self.writeConcern = writeConcern
     }
@@ -427,6 +441,10 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
 
+    /// Variables that can be accessed within the operation using the double
+    /// dollar sign prefix in the form `$$<variable_name>`. This option is only available on MongoDB 5.0+.
+    public var `let`: BSONDocument?
+
     /// An optional `WriteConcern` to use for the command.
     public var writeConcern: WriteConcern?
 
@@ -434,10 +452,12 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     public init(
         collation: BSONDocument? = nil,
         hint: IndexHint? = nil,
+        `let`: BSONDocument? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.collation = collation
         self.hint = hint
+        self.`let` = `let`
         self.writeConcern = writeConcern
     }
 
