@@ -1,5 +1,6 @@
-#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+#if compiler(>=5.5) && canImport(_Concurrency)
 /// Extension to `MongoCollection` to support async/await APIs.
+@available(macOS 12, *)
 extension MongoCollection {
     /**
      * Drops this collection from its parent database.

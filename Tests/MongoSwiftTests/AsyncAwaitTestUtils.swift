@@ -1,4 +1,4 @@
-#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+#if compiler(>=5.5) && canImport(_Concurrency)
 
 import Foundation
 import MongoSwift
@@ -7,6 +7,7 @@ import TestsCommon
 import XCTest
 
 /// Temporary utility function until XCTest supports `async` tests.
+@available(macOS 12, *)
 func testAsync(_ block: @escaping () async throws -> Void) {
     let group = DispatchGroup()
     group.enter()
@@ -21,6 +22,7 @@ func testAsync(_ block: @escaping () async throws -> Void) {
     group.wait()
 }
 
+@available(macOS 12, *)
 extension Task where Success == Never, Failure == Never {
     ///  Helper taken from https://www.hackingwithswift.com/quick-start/concurrency/how-to-make-a-task-sleep to support
     /// configuring with seconds rather than nanoseconds.
@@ -32,6 +34,7 @@ extension Task where Success == Never, Failure == Never {
 
 /// Asserts that the provided block returns true within the specified timeout. Nimble's `toEventually` can only be used
 /// rom the main testing thread which is too restrictive for our purposes testing the async/await APIs.
+@available(macOS 12, *)
 func assertIsEventuallyTrue(
     description: String,
     timeout: TimeInterval = 5,
@@ -48,6 +51,7 @@ func assertIsEventuallyTrue(
     XCTFail("Expected condition \"\(description)\" to be true within \(timeout) seconds, but was not")
 }
 
+@available(macOS 12, *)
 extension MongoSwiftTestCase {
     internal func withTestClient<T>(
         _ uri: String = MongoSwiftTestCase.getConnectionString().toString(),
@@ -89,6 +93,7 @@ extension MongoSwiftTestCase {
     // swiftlint:enable large_tuple
 }
 
+@available(macOS 12, *)
 extension MongoClient {
     internal func serverVersion() async throws -> ServerVersion {
         let reply = try await self.db("admin").runCommand(
