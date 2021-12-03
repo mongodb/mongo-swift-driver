@@ -1,4 +1,9 @@
 #if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+// TODO: SWIFT-1421 remove this comment and the os(Linux) check above. if the described bug is not fixed, we'll need to
+// adjust our macOS < 12 testing to skip these tests by providing a filter to `swift test`.
+// we shouldn't have to check the operating system here, but there is a bug currently where on older macOS versions
+// the @available checks don't work. since we don't have support for macOS 12+ in CI, we can work around this by just
+// only defining the tests on Linux for now.
 
 import Foundation
 @testable import MongoSwift
@@ -8,6 +13,7 @@ import NIOConcurrencyHelpers
 import TestsCommon
 import XCTest
 
+@available(macOS 12, *)
 final class AsyncAwaitTests: MongoSwiftTestCase {
     func testMongoClient() throws {
         testAsync {
@@ -140,6 +146,7 @@ final class AsyncAwaitTests: MongoSwiftTestCase {
     }
 }
 
+@available(macOS 12, *)
 final class MongoCursorAsyncAwaitTests: MongoSwiftTestCase {
     func testAsyncSequenceConformance() throws {
         testAsync {
@@ -242,6 +249,7 @@ final class MongoCursorAsyncAwaitTests: MongoSwiftTestCase {
     }
 }
 
+@available(macOS 12, *)
 final class ChangeStreamAsyncAwaitTests: MongoSwiftTestCase {
     func testIteration() throws {
         testAsync {

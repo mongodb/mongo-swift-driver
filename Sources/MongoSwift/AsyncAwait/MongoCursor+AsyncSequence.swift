@@ -1,5 +1,6 @@
-#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+#if compiler(>=5.5) && canImport(_Concurrency)
 /// Extension to `MongoCursor` to support async/await APIs.
+@available(macOS 12, *)
 extension MongoCursor: AsyncSequence, AsyncIteratorProtocol {
     public typealias AsyncIterator = MongoCursor
 

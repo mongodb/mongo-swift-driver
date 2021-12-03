@@ -1,5 +1,6 @@
-#if compiler(>=5.5) && canImport(_Concurrency) && os(Linux)
+#if compiler(>=5.5) && canImport(_Concurrency)
 /// Extension to `ClientSession` to support async/await APIs.
+@available(macOS 12, *)
 extension ClientSession {
     /**
      * Starts a multi-document transaction for all subsequent operations in this session.
