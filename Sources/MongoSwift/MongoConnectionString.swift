@@ -25,7 +25,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         case authMechanism = "authmechanism"
         case authMechanismProperties = "authmechanismproperties"
         case compressors
-        case connectTimeoutMS = "connecttimeooutms"
+        case connectTimeoutMS = "connecttimeoutms"
         case directConnection = "directconnection"
         case heartbeatFrequencyMS = "heartbeatfrequencyms"
         case journal
@@ -382,7 +382,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// Parses a new `MongoConnectionString` instance from the provided string.
     /// - Throws:
     ///   - `MongoError.InvalidArgumentError` if the input is invalid.
-    public init(throwsIfInvalid input: String) throws {
+    public init(string input: String) throws {
         let schemeAndRest = input.components(separatedBy: "://")
         guard schemeAndRest.count == 2, let scheme = Scheme(schemeAndRest[0]) else {
             throw MongoError.InvalidArgumentError(
@@ -526,6 +526,91 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         try self.validate()
     }
 
+    /// Updates this `MongoConnectionString` to incorporate options specified in the provided `MongoClientOptions`. If
+    /// the same option is specified in both, the option in the `MongoClientOptions` takes precedence.
+    /// - Throws:
+    ///     - `MongoError.InvalidArgumentError` if the provided `MongoClientOptions` contains any invalid options, or
+    ///       applying the options leads to an invalid combination of options.
+    public mutating func applyOptions(_ options: MongoClientOptions) throws {
+        if let appName = options.appName {
+            self.appName = appName
+        }
+        if let compressors = options.compressors {
+            self.compressors = compressors
+        }
+        if let connectTimeoutMS = options.connectTimeoutMS {
+            self.connectTimeoutMS = connectTimeoutMS
+        }
+        if let credential = options.credential {
+            self.credential = credential
+        }
+        if let directConnection = options.directConnection {
+            self.directConnection = directConnection
+        }
+        if let heartbeatFrequencyMS = options.heartbeatFrequencyMS {
+            self.heartbeatFrequencyMS = heartbeatFrequencyMS
+        }
+        if let loadBalanced = options.loadBalanced {
+            self.loadBalanced = loadBalanced
+        }
+        if let localThresholdMS = options.localThresholdMS {
+            self.localThresholdMS = localThresholdMS
+        }
+        if let maxPoolSize = options.maxPoolSize {
+            self.maxPoolSize = maxPoolSize
+        }
+        if let readConcern = options.readConcern {
+            self.readConcern = readConcern
+        }
+        if let readPreference = options.readPreference {
+            self.readPreference = readPreference
+        }
+        if let replicaSet = options.replicaSet {
+            self.replicaSet = replicaSet
+        }
+        if let retryReads = options.retryReads {
+            self.retryReads = retryReads
+        }
+        if let retryWrites = options.retryWrites {
+            self.retryWrites = retryWrites
+        }
+        if let serverSelectionTimeoutMS = options.serverSelectionTimeoutMS {
+            self.serverSelectionTimeoutMS = serverSelectionTimeoutMS
+        }
+        if let tls = options.tls {
+            self.tls = tls
+        }
+        if let tlsAllowInvalidCertificates = options.tlsAllowInvalidCertificates {
+            self.tlsAllowInvalidCertificates = tlsAllowInvalidCertificates
+        }
+        if let tlsAllowInvalidHostnames = options.tlsAllowInvalidHostnames {
+            self.tlsAllowInvalidHostnames = tlsAllowInvalidHostnames
+        }
+        if let tlsCAFile = options.tlsCAFile {
+            self.tlsCAFile = tlsCAFile
+        }
+        if let tlsCertificateKeyFile = options.tlsCertificateKeyFile {
+            self.tlsCertificateKeyFile = tlsCertificateKeyFile
+        }
+        if let tlsCertificateKeyFilePassword = options.tlsCertificateKeyFilePassword {
+            self.tlsCertificateKeyFilePassword = tlsCertificateKeyFilePassword
+        }
+        if let tlsDisableCertificateRevocationCheck = options.tlsDisableCertificateRevocationCheck {
+            self.tlsDisableCertificateRevocationCheck = tlsDisableCertificateRevocationCheck
+        }
+        if let tlsDisableOCSPEndpointCheck = options.tlsDisableOCSPEndpointCheck {
+            self.tlsDisableOCSPEndpointCheck = tlsDisableOCSPEndpointCheck
+        }
+        if let tlsInsecure = options.tlsInsecure {
+            self.tlsInsecure = tlsInsecure
+        }
+        if let writeConcern = options.writeConcern {
+            self.writeConcern = writeConcern
+        }
+
+        try self.validate()
+    }
+
     private mutating func validate() throws {
         func optionError(name: OptionName, violation: String) -> MongoError.InvalidArgumentError {
             MongoError.InvalidArgumentError(
@@ -533,12 +618,12 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             )
         }
 
+        // Validate option values.
         if let source = self.credential?.source, source.isEmpty {
             throw optionError(name: .authSource, violation: "not be empty")
         }
-        // TODO: compressors?
-        if let connectTimeoutMS = self.connectTimeoutMS, connectTimeoutMS < 0 {
-            throw optionError(name: .connectTimeoutMS, violation: "be nonnnegative")
+        if let connectTimeoutMS = self.connectTimeoutMS, connectTimeoutMS <= 0 {
+            throw optionError(name: .connectTimeoutMS, violation: "be positive")
         }
         if let heartbeatFrequencyMS = self.heartbeatFrequencyMS, heartbeatFrequencyMS < 500 {
             throw optionError(name: .heartbeatFrequencyMS, violation: "be >= 500")
@@ -568,6 +653,14 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         }
         if let wTimeoutMS = self.writeConcern?.wtimeoutMS, wTimeoutMS < 0 {
             throw optionError(name: .wTimeoutMS, violation: "be nonnegative")
+        }
+
+        // Validate the compressors do not contain any duplicates. Currently this is equivalent to checking that the
+        // size of the compressors list does not exceed one as we only support one compressor.
+        if let compressors = self.compressors, compressors.count > 1 {
+            throw MongoError.InvalidArgumentError(
+                message: "The \(OptionName.compressors) list in the connection string must not contain duplicates"
+            )
         }
 
         // Validate the credential and set defaults as necessary.
@@ -757,7 +850,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         let container = try decoder.singleValueContainer()
         let stringValue = try container.decode(String.self)
         do {
-            try self.init(throwsIfInvalid: stringValue)
+            try self.init(string: stringValue)
         } catch let error as MongoError.InvalidArgumentError {
             throw DecodingError.dataCorruptedError(
                 in: container,
@@ -768,7 +861,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
     /// `LosslessStringConvertible` protocol requirements
     public init?(_ description: String) {
-        try? self.init(throwsIfInvalid: description)
+        try? self.init(string: description)
     }
 
     public var description: String {

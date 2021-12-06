@@ -62,7 +62,7 @@ final class AuthTests: MongoSwiftTestCase {
                 }
 
                 guard testCase.valid else {
-                    expect(try MongoConnectionString(throwsIfInvalid: testCase.uri))
+                    expect(try MongoConnectionString(string: testCase.uri))
                         .to(
                             throwError(errorType: MongoError.InvalidArgumentError.self),
                             description: testCase.description
@@ -70,7 +70,7 @@ final class AuthTests: MongoSwiftTestCase {
                     return
                 }
 
-                let connString = try MongoConnectionString(throwsIfInvalid: testCase.uri)
+                let connString = try MongoConnectionString(string: testCase.uri)
                 if let testCredential = testCase.credential {
                     // We've already skipped tests that contain an invalid auth mechanism, so this should never throw.
                     var credential = try testCredential.toMongoCredential()
