@@ -225,7 +225,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         fileprivate var tlsInsecure: Bool?
         fileprivate var w: WriteConcern.W?
         fileprivate var wTimeoutMS: Int?
-        fileprivate var zlibCompressionLevel: Int32?
+        fileprivate var zlibCompressionLevel: Int?
 
         fileprivate init(_ uriOptions: String) throws {
             let options = uriOptions.components(separatedBy: "&")
@@ -251,62 +251,33 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                     )
                 }
                 let value = try nameAndValue[1].getPercentDecoded(forKey: name.rawValue)
-                let prefix: () -> String = { "Value for \(name) in the connection string must " }
                 switch name {
                 case .appName:
                     self.appName = value
                 case .authSource:
-                    if value.isEmpty {
-                        throw MongoError.InvalidArgumentError(message: prefix() + "not be empty")
-                    }
                     self.authSource = value
                 case .authMechanism:
                     self.authMechanism = try MongoCredential.Mechanism(value)
                 case .authMechanismProperties:
                     self.authMechanismProperties = try Self.parseAuthMechanismProperties(properties: value)
                 case .compressors:
-                    if value.isEmpty {
-                        throw MongoError.InvalidArgumentError(message: prefix() + "not be empty")
-                    }
                     self.compressors = value.components(separatedBy: ",")
                 case .connectTimeoutMS:
-                    let n = try value.getInt(forKey: name.rawValue)
-                    guard n >= 0 else {
-                        throw MongoError.InvalidArgumentError(message: prefix() + "be nonnegative")
-                    }
-                    self.connectTimeoutMS = n
+                    self.connectTimeoutMS = try value.getInt(forKey: name.rawValue)
                 case .directConnection:
                     self.directConnection = try value.getBool(forKey: name.rawValue)
                 case .heartbeatFrequencyMS:
-                    let n = try value.getInt(forKey: name.rawValue)
-                    guard n >= 500 else {
-                        throw MongoError.InvalidArgumentError(message: prefix() + "be >= 500")
-                    }
-                    self.heartbeatFrequencyMS = n
+                    self.heartbeatFrequencyMS = try value.getInt(forKey: name.rawValue)
                 case .journal:
                     self.journal = try value.getBool(forKey: name.rawValue)
                 case .loadBalanced:
                     self.loadBalanced = try value.getBool(forKey: name.rawValue)
                 case .localThresholdMS:
-                    let n = try value.getInt(forKey: name.rawValue)
-                    guard n >= 0 else {
-                        throw MongoError.InvalidArgumentError(message: prefix() + "be nonnegative")
-                    }
-                    self.localThresholdMS = n
+                    self.localThresholdMS = try value.getInt(forKey: name.rawValue)
                 case .maxPoolSize:
-                    let n = try value.getInt(forKey: name.rawValue)
-                    guard n > 0 else {
-                        throw MongoError.InvalidArgumentError(message: prefix() + "be positive")
-                    }
-                    self.maxPoolSize = n
+                    self.maxPoolSize = try value.getInt(forKey: name.rawValue)
                 case .maxStalenessSeconds:
-                    let n = try value.getInt(forKey: name.rawValue)
-                    guard n == -1 || n >= 90 else {
-                        throw MongoError.InvalidArgumentError(
-                            message: prefix() + "be -1 (for no max staleness check) or >= 90"
-                        )
-                    }
-                    self.maxStalenessSeconds = n
+                    self.maxStalenessSeconds = try value.getInt(forKey: name.rawValue)
                 case .readConcernLevel:
                     self.readConcern = ReadConcern(value)
                 case .readPreference:
@@ -324,24 +295,12 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 case .retryWrites:
                     self.retryWrites = try value.getBool(forKey: name.rawValue)
                 case .serverSelectionTimeoutMS:
-                    let n = try value.getInt(forKey: name.rawValue)
-                    guard n > 0 else {
-                        throw MongoError.InvalidArgumentError(message: prefix() + "be positive")
-                    }
+                    self.serverSelectionTimeoutMS = try value.getInt(forKey: name.rawValue)
                 case .socketTimeoutMS:
-                    let n = try value.getInt(forKey: name.rawValue)
-                    guard n >= 0 else {
-                        throw MongoError.InvalidArgumentError(message: prefix() + "be nonnegative")
-                    }
-                    self.socketTimeoutMS = n
+                    self.socketTimeoutMS = try value.getInt(forKey: name.rawValue)
                 case .srvMaxHosts:
-                    let n = try value.getInt(forKey: name.rawValue)
-                    guard n >= 0 else {
-                        throw MongoError.InvalidArgumentError(message: prefix() + "be nonnegative")
-                    }
-                    self.srvMaxHosts = n
+                    self.srvMaxHosts = try value.getInt(forKey: name.rawValue)
                 case .srvServiceName:
-                    try value.validateSRVServiceName()
                     self.srvServiceName = value
                 case .ssl:
                     self.ssl = try value.getBool(forKey: name.rawValue)
@@ -358,8 +317,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 case .tlsCertificateKeyFilePassword:
                     self.tlsCertificateKeyFilePassword = value
                 case .tlsDisableCertificateRevocationCheck:
-                    self.tlsDisableCertificateRevocationCheck =
-                        try value.getBool(forKey: name.rawValue)
+                    self.tlsDisableCertificateRevocationCheck = try value.getBool(forKey: name.rawValue)
                 case .tlsDisableOCSPEndpointCheck:
                     self.tlsDisableOCSPEndpointCheck = try value.getBool(forKey: name.rawValue)
                 case .tlsInsecure:
@@ -367,18 +325,9 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 case .w:
                     self.w = try WriteConcern.W(value)
                 case .wTimeoutMS:
-                    let n = try value.getInt(forKey: name.rawValue)
-                    guard n >= 0 else {
-                        throw MongoError.InvalidArgumentError(message: prefix() + "be nonnegative")
-                    }
-                    self.wTimeoutMS = n
+                    self.wTimeoutMS = try value.getInt(forKey: name.rawValue)
                 case .zlibCompressionLevel:
-                    let n = try value.getInt(forKey: name.rawValue)
-                    guard (-1...9).contains(n) else {
-                        throw MongoError.InvalidArgumentError(message: prefix() + "be between -1 and 9 (inclusive)")
-                    }
-                    // This cast will always work because we've validated that n is between -1 and 9.
-                    self.zlibCompressionLevel = Int32(n)
+                    self.zlibCompressionLevel = try value.getInt(forKey: name.rawValue)
                 }
             }
         }
@@ -514,40 +463,47 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         }
 
         guard authDatabaseAndOptions.count == 2 else {
-            // No options were specified
+            // no options were specified
             return
         }
 
         let options = try Options(authDatabaseAndOptions[1])
 
-        // Validate and set compressors
+        // Validate and set compressors. This validation is only necessary for compressors provided in the URI string
+        // and therefore is not included in the general validate method.
         try self.validateAndSetCompressors(options)
 
         // Parse authentication options into a MongoCredential
-        try self.validateAndUpdateCredential(options)
+        var credential = self.credential ?? MongoCredential()
+        credential.mechanism = options.authMechanism
+        credential.mechanismProperties = options.authMechanismProperties
+        credential.source = options.authSource
+        self.credential = credential != MongoCredential() ? credential : nil
 
-        // Validate and set directConnection
-        try self.validateAndSetDirectConnection(options)
-
-        // Validate and set loadBalanced
-        try self.validateAndSetLoadBalanced(options)
-
-        // Validate and set read preference
+        // Validate and set the read preference. This validation is only necessary for a read preference provided in
+        // the URI string and therefore is not included in the general validate method.
         try self.validateAndSetReadPreference(options)
 
-        // Validate and set SRV options
-        try self.validateAndSetSRVOptions(options)
-
-        // Validate and set TLS options
-        try self.validateAndSetTLSOptions(options)
-
-        // Validate and set write concern
+        // Validate and set the write concern. This validation is only necessary for a write concern provided in the
+        // URI string and therefore is not included in the general validate method.
         try self.validateAndSetWriteConcern(options)
 
-        // Set rest of options
+        // ssl can only be provided in a URI string, so this validation is not included in the general validate method.
+        if let tls = options.tls, let ssl = options.ssl, tls != ssl {
+            throw MongoError.InvalidArgumentError(
+                message: "\(OptionName.tls) and \(OptionName.ssl) must have the same value if both are specified in"
+                    + " the connection string"
+            )
+        }
+        // If either tls or ssl is specified, the value should be stored in the tls field.
+        self.tls = options.tls ?? options.ssl
+
+        // Set rest of options.
         self.appName = options.appName
         self.connectTimeoutMS = options.connectTimeoutMS
+        self.directConnection = options.directConnection
         self.heartbeatFrequencyMS = options.heartbeatFrequencyMS
+        self.loadBalanced = options.loadBalanced
         self.localThresholdMS = options.localThresholdMS
         self.maxPoolSize = options.maxPoolSize
         self.readConcern = options.readConcern
@@ -556,36 +512,86 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         self.retryWrites = options.retryWrites
         self.serverSelectionTimeoutMS = options.serverSelectionTimeoutMS
         self.socketTimeoutMS = options.socketTimeoutMS
+        self.srvMaxHosts = options.srvMaxHosts
+        self.srvServiceName = options.srvServiceName
+        self.tlsAllowInvalidCertificates = options.tlsAllowInvalidCertificates
+        self.tlsAllowInvalidHostnames = options.tlsAllowInvalidHostnames
+        self.tlsCAFile = options.tlsCAFile
+        self.tlsCertificateKeyFile = options.tlsCertificateKeyFile
+        self.tlsCertificateKeyFilePassword = options.tlsCertificateKeyFilePassword
+        self.tlsDisableCertificateRevocationCheck = options.tlsDisableCertificateRevocationCheck
+        self.tlsDisableOCSPEndpointCheck = options.tlsDisableOCSPEndpointCheck
+        self.tlsInsecure = options.tlsInsecure
+
+        try self.validate()
     }
 
-    private mutating func validateAndSetCompressors(_ options: Options) throws {
-        if let compressorStrings = options.compressors {
-            self.compressors = try compressorStrings.map {
-                try Compressor(name: $0, level: options.zlibCompressionLevel)
-            }
-        }
-    }
-
-    private mutating func validateAndUpdateCredential(_ options: Options) throws {
-        if let mechanism = options.authMechanism {
-            var credential = self.credential ?? MongoCredential()
-            credential.source = options.authSource ?? mechanism.getDefaultSource(defaultAuthDB: self.defaultAuthDB)
-            credential.mechanismProperties = options.authMechanismProperties
-            try mechanism.validateAndUpdateCredential(credential: &credential)
-            credential.mechanism = mechanism
-            self.credential = credential
-        } else if options.authMechanismProperties != nil {
-            throw MongoError.InvalidArgumentError(
-                message: "Connection string specified \(OptionName.authMechanismProperties) but no"
-                    + " \(OptionName.authMechanism) was specified"
+    private mutating func validate() throws {
+        func optionError(name: OptionName, violation: String) -> MongoError.InvalidArgumentError {
+            MongoError.InvalidArgumentError(
+                message: "Value for \(name) in the connection string must " + violation
             )
-        } else if let authSource = options.authSource {
-            // If no mechanism was provided but authentication was requested and an authSource was provided, populate
-            // the source field with the authSource. Otherwise, source will fall back to the defaultAuthDB if provided,
-            // or "admin" if not.
-            if self.credential != nil {
-                self.credential?.source = authSource
-            } else {
+        }
+
+        if let source = self.credential?.source, source.isEmpty {
+            throw optionError(name: .authSource, violation: "not be empty")
+        }
+        // TODO: compressors?
+        if let connectTimeoutMS = self.connectTimeoutMS, connectTimeoutMS < 0 {
+            throw optionError(name: .connectTimeoutMS, violation: "be nonnnegative")
+        }
+        if let heartbeatFrequencyMS = self.heartbeatFrequencyMS, heartbeatFrequencyMS < 500 {
+            throw optionError(name: .heartbeatFrequencyMS, violation: "be >= 500")
+        }
+        if let localThresholdMS = self.localThresholdMS, localThresholdMS < 0 {
+            throw optionError(name: .localThresholdMS, violation: "be nonnegative")
+        }
+        if let maxPoolSize = self.maxPoolSize, maxPoolSize <= 0 {
+            throw optionError(name: .maxPoolSize, violation: "be positive")
+        }
+        if let maxStalenessSeconds = self.readPreference?.maxStalenessSeconds,
+           !(maxStalenessSeconds == -1 || maxStalenessSeconds >= 90)
+        {
+            throw optionError(name: .maxStalenessSeconds, violation: "be -1 (for no max staleness check) or >= 90")
+        }
+        if let serverSelectionTimeoutMS = self.serverSelectionTimeoutMS, serverSelectionTimeoutMS <= 0 {
+            throw optionError(name: .serverSelectionTimeoutMS, violation: "be positive")
+        }
+        if let socketTimeoutMS = self.socketTimeoutMS, socketTimeoutMS < 0 {
+            throw optionError(name: .socketTimeoutMS, violation: "be nonnegative")
+        }
+        if let srvMaxHosts = self.srvMaxHosts, srvMaxHosts < 0 {
+            throw optionError(name: .srvMaxHosts, violation: "be nonnegative")
+        }
+        if let srvServiceName = self.srvServiceName {
+            try srvServiceName.validateSRVServiceName()
+        }
+        if let wTimeoutMS = self.writeConcern?.wtimeoutMS, wTimeoutMS < 0 {
+            throw optionError(name: .wTimeoutMS, violation: "be nonnegative")
+        }
+
+        // Validate the credential and set defaults as necessary.
+        if self.credential != nil {
+            // If no source was specified, fall back to:
+            // 1) the mechanism's default if one was provided
+            // 2) the defaultAuthDB if one was provided
+            // 3) "admin"
+            if self.credential?.source == nil {
+                let defaultSource = self.credential?.mechanism?.getDefaultSource(defaultAuthDB: self.defaultAuthDB)
+                    ?? self.defaultAuthDB
+                    ?? "admin"
+                self.credential?.source = defaultSource
+            }
+            if self.credential?.mechanism != nil {
+                // credential cannot be nil within the external conditional
+                // swiftlint:disable:next force_unwrapping
+                try self.credential?.mechanism?.validateAndUpdateCredential(credential: &self.credential!)
+            } else if self.credential?.mechanismProperties != nil {
+                throw MongoError.InvalidArgumentError(
+                    message: "Connection string specified \(OptionName.authMechanismProperties) but no"
+                        + " \(OptionName.authMechanism) was specified"
+                )
+            } else if self.credential?.source != nil && self.credential?.username == nil {
                 // The authentication mechanism defaults to SCRAM if an authMechanism is not provided, and SCRAM
                 // requires a username.
                 throw MongoError.InvalidArgumentError(
@@ -595,10 +601,9 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 )
             }
         }
-    }
 
-    private mutating func validateAndSetDirectConnection(_ options: Options) throws {
-        if options.directConnection == true {
+        // Validate that directConnection is not set with incompatible options.
+        if self.directConnection == true {
             guard self.scheme != .srv else {
                 throw MongoError.InvalidArgumentError(
                     message: "\(OptionName.directConnection) cannot be set to true if the connection string scheme is"
@@ -612,31 +617,104 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 )
             }
         }
-        self.directConnection = options.directConnection
-    }
 
-    private mutating func validateAndSetLoadBalanced(_ options: Options) throws {
-        if options.loadBalanced == true {
+        // Validate that loadBalanced is not set with incompatible options.
+        if self.loadBalanced == true {
             if self.hosts.count > 1 {
                 throw MongoError.InvalidArgumentError(
                     message: "\(OptionName.loadBalanced) cannot be set to true if multiple hosts are specified in the"
                         + " connection string"
                 )
             }
-            if options.replicaSet != nil {
+            if self.replicaSet != nil {
                 throw MongoError.InvalidArgumentError(
                     message: "\(OptionName.loadBalanced) cannot be set to true if \(OptionName.replicaSet) is"
                         + " specified in the connection string"
                 )
             }
-            if options.directConnection == true {
+            if self.directConnection == true {
                 throw MongoError.InvalidArgumentError(
                     message: "\(OptionName.loadBalanced) and \(OptionName.directConnection) cannot both be set to true"
                         + " in the connection string"
                 )
             }
         }
-        self.loadBalanced = options.loadBalanced
+
+        // Validate that SRV options are not set with incompatible options.
+        guard self.scheme == .srv || (self.srvMaxHosts == nil && self.srvServiceName == nil) else {
+            throw MongoError.InvalidArgumentError(
+                message: "\(OptionName.srvMaxHosts) and \(OptionName.srvServiceName) must not be specified if the"
+                    + " connection string scheme is not SRV"
+            )
+        }
+        if let srvMaxHosts = self.srvMaxHosts {
+            guard !(srvMaxHosts > 0 && self.replicaSet != nil) else {
+                throw MongoError.InvalidArgumentError(
+                    message: "\(OptionName.replicaSet) must not be specified in the connection string if the value for"
+                        + " \(OptionName.srvMaxHosts) is greater than zero"
+                )
+            }
+            guard !(srvMaxHosts > 0 && self.loadBalanced == true) else {
+                throw MongoError.InvalidArgumentError(
+                    message: "The value for \(OptionName.loadBalanced) in the connection string must not be true if"
+                        + " the value for \(OptionName.srvMaxHosts) is greater than zero"
+                )
+            }
+        }
+
+        // Validate that TLS options are not set with incompatible options.
+        guard self.tlsInsecure == nil
+            || (self.tlsAllowInvalidCertificates == nil
+                && self.tlsAllowInvalidHostnames == nil
+                && self.tlsDisableCertificateRevocationCheck == nil
+                && self.tlsDisableOCSPEndpointCheck == nil)
+        else {
+            throw MongoError.InvalidArgumentError(
+                message: "\(OptionName.tlsAllowInvalidCertificates), \(OptionName.tlsAllowInvalidHostnames),"
+                    + " \(OptionName.tlsDisableCertificateRevocationCheck), and"
+                    + " \(OptionName.tlsDisableOCSPEndpointCheck) cannot be specified if \(OptionName.tlsInsecure)"
+                    + " is specified in the connection string"
+            )
+        }
+        guard !(self.tlsAllowInvalidCertificates != nil && self.tlsDisableOCSPEndpointCheck != nil) else {
+            throw MongoError.InvalidArgumentError(
+                message: "\(OptionName.tlsAllowInvalidCertificates) and \(OptionName.tlsDisableOCSPEndpointCheck)"
+                    + " cannot both be specified in the connection string"
+            )
+        }
+        guard !(self.tlsAllowInvalidCertificates != nil && self.tlsDisableCertificateRevocationCheck != nil) else {
+            throw MongoError.InvalidArgumentError(
+                message: "\(OptionName.tlsAllowInvalidCertificates) and"
+                    + " \(OptionName.tlsDisableCertificateRevocationCheck) cannot both be specified in the connection"
+                    + " string"
+            )
+        }
+        guard !(self.tlsDisableOCSPEndpointCheck != nil && self.tlsDisableCertificateRevocationCheck != nil) else {
+            throw MongoError.InvalidArgumentError(
+                message: "\(OptionName.tlsDisableOCSPEndpointCheck) and"
+                    + " \(OptionName.tlsDisableCertificateRevocationCheck) cannot both be specified in the connection"
+                    + " string"
+            )
+        }
+    }
+
+    private mutating func validateAndSetCompressors(_ options: Options) throws {
+        if let compressorStrings = options.compressors {
+            self.compressors = try compressorStrings.map {
+                switch $0 {
+                case "zlib":
+                    if let zlibCompressionLevel = options.zlibCompressionLevel {
+                        return try Compressor.zlib(level: zlibCompressionLevel)
+                    } else {
+                        return Compressor.zlib
+                    }
+                case let other:
+                    throw MongoError.InvalidArgumentError(
+                        message: "Unrecognized compressor specified in the connection string: \(other)"
+                    )
+                }
+            }
+        }
     }
 
     private mutating func validateAndSetReadPreference(_ options: Options) throws {
@@ -651,87 +729,12 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 tagSets: options.readPreferenceTags,
                 maxStalenessSeconds: options.maxStalenessSeconds
             )
-        }
-    }
-
-    private mutating func validateAndSetSRVOptions(_ options: Options) throws {
-        guard self.scheme == .srv || (options.srvMaxHosts == nil && options.srvServiceName == nil) else {
+        } else if options.readPreferenceTags != nil || options.maxStalenessSeconds != nil {
             throw MongoError.InvalidArgumentError(
-                message: "\(OptionName.srvMaxHosts) and \(OptionName.srvServiceName) must not be specified if the"
-                    + " connection string scheme is not SRV"
+                message: "\(OptionName.readPreferenceTags) and \(OptionName.maxStalenessSeconds) should not be"
+                    + " specified in the connection string if \(OptionName.readPreference) is not specified"
             )
         }
-        if let srvMaxHosts = options.srvMaxHosts {
-            guard !(srvMaxHosts > 0 && options.replicaSet != nil) else {
-                throw MongoError.InvalidArgumentError(
-                    message: "\(OptionName.replicaSet) must not be specified in the connection string if the value for"
-                        + " \(OptionName.srvMaxHosts) is greater than zero"
-                )
-            }
-            guard !(srvMaxHosts > 0 && options.loadBalanced == true) else {
-                throw MongoError.InvalidArgumentError(
-                    message: "The value for \(OptionName.loadBalanced) in the connection string must not be true if"
-                        + " the value for \(OptionName.srvMaxHosts) is greater than zero"
-                )
-            }
-        }
-        self.srvMaxHosts = options.srvMaxHosts
-        self.srvServiceName = options.srvServiceName
-    }
-
-    private mutating func validateAndSetTLSOptions(_ options: Options) throws {
-        guard options.tlsInsecure == nil
-            || (options.tlsAllowInvalidCertificates == nil
-                && options.tlsAllowInvalidHostnames == nil
-                && options.tlsDisableCertificateRevocationCheck == nil
-                && options.tlsDisableOCSPEndpointCheck == nil)
-        else {
-            throw MongoError.InvalidArgumentError(
-                message: "\(OptionName.tlsAllowInvalidCertificates), \(OptionName.tlsAllowInvalidHostnames),"
-                    + " \(OptionName.tlsDisableCertificateRevocationCheck), and"
-                    + " \(OptionName.tlsDisableOCSPEndpointCheck) cannot be specified if \(OptionName.tlsInsecure)"
-                    + " is specified in the connection string"
-            )
-        }
-        guard !(options.tlsAllowInvalidCertificates != nil && options.tlsDisableOCSPEndpointCheck != nil) else {
-            throw MongoError.InvalidArgumentError(
-                message: "\(OptionName.tlsAllowInvalidCertificates) and \(OptionName.tlsDisableOCSPEndpointCheck)"
-                    + " cannot both be specified in the connection string"
-            )
-        }
-        guard !(options.tlsAllowInvalidCertificates != nil && options.tlsDisableCertificateRevocationCheck != nil)
-        else {
-            throw MongoError.InvalidArgumentError(
-                message: "\(OptionName.tlsAllowInvalidCertificates) and"
-                    + " \(OptionName.tlsDisableCertificateRevocationCheck) cannot both be specified in the connection"
-                    + " string"
-            )
-        }
-        guard !(options.tlsDisableOCSPEndpointCheck != nil
-            && options.tlsDisableCertificateRevocationCheck != nil)
-        else {
-            throw MongoError.InvalidArgumentError(
-                message: "\(OptionName.tlsDisableOCSPEndpointCheck) and"
-                    + " \(OptionName.tlsDisableCertificateRevocationCheck) cannot both be specified in the connection"
-                    + " string"
-            )
-        }
-        if let tls = options.tls, let ssl = options.ssl, tls != ssl {
-            throw MongoError.InvalidArgumentError(
-                message: "\(OptionName.tls) and \(OptionName.ssl) must have the same value if both are specified in"
-                    + " the connection string"
-            )
-        }
-        // if either tls or ssl is specified, the value should be stored in the tls field
-        self.tls = options.tls ?? options.ssl
-        self.tlsAllowInvalidCertificates = options.tlsAllowInvalidCertificates
-        self.tlsAllowInvalidHostnames = options.tlsAllowInvalidHostnames
-        self.tlsCAFile = options.tlsCAFile
-        self.tlsCertificateKeyFile = options.tlsCertificateKeyFile
-        self.tlsCertificateKeyFilePassword = options.tlsCertificateKeyFilePassword
-        self.tlsDisableCertificateRevocationCheck = options.tlsDisableCertificateRevocationCheck
-        self.tlsDisableOCSPEndpointCheck = options.tlsDisableOCSPEndpointCheck
-        self.tlsInsecure = options.tlsInsecure
     }
 
     private mutating func validateAndSetWriteConcern(_ options: Options) throws {
