@@ -216,7 +216,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         let testConnStr = MongoSwiftTestCase.getConnectionString()
         let rsName = testConnStr.replicaSet!
 
-        var connStrWithoutRS = testConnStr.toString()
+        var connStrWithoutRS = testConnStr.description
         connStrWithoutRS.removeSubstring("replicaSet=\(rsName)")
         // need to delete the extra & in case replicaSet was first
         connStrWithoutRS = connStrWithoutRS.replacingOccurrences(of: "?&", with: "?")
@@ -231,14 +231,14 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
         // setting actual name via both client options and URI should succeed in connecting
         opts.replicaSet = rsName
-        try self.withTestClient(testConnStr.toString(), options: opts) { client in
+        try self.withTestClient(testConnStr.description, options: opts) { client in
             expect(try client.listDatabases().wait()).toNot(throwError())
         }
 
         // setting to an incorrect repl set name via client options should fail to connect
         // speed up server selection timeout to fail faster
         opts.replicaSet! += "xyz"
-        try self.withTestClient(testConnStr.toString() + "&serverSelectionTimeoutMS=1000", options: opts) { client in
+        try self.withTestClient(testConnStr.description + "&serverSelectionTimeoutMS=1000", options: opts) { client in
             expect(try client.listDatabases().wait()).to(throwError())
         }
     }
@@ -311,7 +311,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
         let watcher = HeartbeatWatcher()
 
-        // verify that we can speed up the heartbeat frequency
+        // verify that we can speed up the heartbeat frqequency
         try self.withTestClient(options: MongoClientOptions(heartbeatFrequencyMS: 2000)) { client in
             client.addSDAMEventHandler(watcher)
             _ = try client.listDatabases().wait()

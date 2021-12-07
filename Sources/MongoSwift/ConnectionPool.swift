@@ -78,7 +78,10 @@ internal class ConnectionPool {
     internal static let PoolClosedError = MongoError.LogicError(message: "ConnectionPool was already closed")
 
     /// Initializes the pool using the provided `ConnectionString`.
-    internal init(from connString: ConnectionString, executor: OperationExecutor, serverAPI: MongoServerAPI?) throws {
+    internal init(
+        from connString: MongoConnectionString,
+        executor: OperationExecutor, serverAPI: MongoServerAPI?
+    ) throws {
         let poolFut = executor.execute(on: nil) { () -> OpaquePointer in
             try connString.withMongocURI { uriPtr in
                 guard let pool = mongoc_client_pool_new(uriPtr) else {

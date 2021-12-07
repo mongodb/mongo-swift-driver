@@ -41,7 +41,7 @@ open class MongoSwiftTestCase: XCTestCase {
     /// Gets the connection string to use from the environment variable, $MONGODB_URI. If the variable does not exist,
     /// will return a default of "mongodb://127.0.0.1/". If singleMongos is true and this is a sharded topology, will
     /// edit $MONGODB_URI as needed so that it only contains a single host.
-    public static func getConnectionString(singleMongos: Bool = true) -> ConnectionString {
+    public static func getConnectionString(singleMongos: Bool = true) -> MongoConnectionString {
         switch (MongoSwiftTestCase.topologyType, singleMongos) {
         case (.sharded, true):
             let hosts = self.getHosts()
@@ -50,20 +50,20 @@ open class MongoSwiftTestCase: XCTestCase {
             for host in hosts[1...] {
                 output.removeSubstring(",\(host.description)")
             }
-            return try! ConnectionString(output)
+            return try! MongoConnectionString(string: output)
         case (.loadBalanced, true):
             guard let uri = Self.singleMongosLoadBalancedURI else {
                 fatalError("Missing SINGLE_MONGOS_LB_URI environment variable")
             }
-            return try! ConnectionString(uri)
+            return try! MongoConnectionString(string: uri)
         case (.loadBalanced, false):
             guard let uri = Self.multipleMongosLoadBalancedURI else {
                 fatalError("Missing MULTI_MONGOS_LB_URI environment variable")
             }
-            return try! ConnectionString(uri)
+            return try! MongoConnectionString(string: uri)
         default:
             // just return as-is.
-            return try! ConnectionString(Self.uri)
+            return try! MongoConnectionString(string: Self.uri)
         }
     }
 

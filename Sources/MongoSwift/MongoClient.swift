@@ -291,15 +291,41 @@ public class MongoClient {
 
     /**
      * Create a new client for a MongoDB deployment. For options that included in both the connection string URI
-     * and the MongoClientOptions struct, the final value is set in descending order of priority: the value specified in
-     * MongoClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
+     * and the `MongoClientOptions` struct, the final value is set in descending order of priority: the value specified
+     * in `MongoClientOptions` (if non-nil), the value specified in the URI, or the default value if both are unset.
      *
      * - Parameters:
      *   - connectionString: the connection string to connect to.
      *   - eventLoopGroup: A SwiftNIO `EventLoopGroup` which the client will use for executing operations. It is the
      *                     user's responsibility to ensure the group remains active for as long as the client does, and
      *                     to ensure the group is properly shut down when it is no longer in use.
-     *   - options: optional `MongoClientOptions` to use for this client
+     *   - options: optional `MongoClientOptions` to use for this client.
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
+     *
+     * - Throws:
+     *   - A `MongoError.InvalidArgumentError` if the connection string passed in is improperly formatted.
+     */
+    convenience public init(
+        _ connectionString: String = "mongodb://localhost:27017",
+        using eventLoopGroup: EventLoopGroup,
+        options: MongoClientOptions? = nil
+    ) throws {
+        let connString = try MongoConnectionString(string: connectionString)
+        try self.init(connString, using: eventLoopGroup, options: options)
+    }
+    
+    /**
+     * Create a new client for a MongoDB deployment. For options that included in both the `MongoConnectionString`
+     * and the `MongoClientOptions` struct, the final value is set in descending order of priority: the value specified
+     * in `MongoClientOptions` (if non-nil), the value specified in the URI, or the default value if both are unset.
+     *
+     * - Parameters:
+     *   - connectionString: the `MongoConnectionString` to connect to.
+     *   - eventLoopGroup: A SwiftNIO `EventLoopGroup` which the client will use for executing operations. It is the
+     *                     user's responsibility to ensure the group remains active for as long as the client does, and
+     *                     to ensure the group is properly shut down when it is no longer in use.
+     *   - options: optional `MongoClientOptions` to use for this client.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
      *
@@ -307,39 +333,42 @@ public class MongoClient {
      *   - A `MongoError.InvalidArgumentError` if the connection string passed in is improperly formatted.
      */
     public init(
-        _ connectionString: String = "mongodb://localhost:27017",
+        _ connectionString: MongoConnectionString,
         using eventLoopGroup: EventLoopGroup,
         options: MongoClientOptions? = nil
     ) throws {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
+        
+        // Make a copy of the connection string to allow for mutation and apply options.
+        var connString = connectionString
+        if let options = options {
+            try connString.applyOptions(options)
+        }
 
-        let connString = try ConnectionString(connectionString, options: options)
         self.operationExecutor = OperationExecutor(
             eventLoopGroup: eventLoopGroup,
             threadPoolSize: options?.threadPoolSize ?? MongoClient.defaultThreadPoolSize
         )
         self.connectionPool = try ConnectionPool(
-            from: connString,
+            from: connectionString,
             executor: self.operationExecutor,
             serverAPI: options?.serverAPI
         )
 
-        let rc = connString.readConcern
-        if !rc.isDefault {
+        if let rc = connectionString.readConcern, !rc.isDefault {
             self.readConcern = rc
         } else {
             self.readConcern = nil
         }
 
-        let wc = connString.writeConcern
-        if !wc.isDefault {
+        if let wc = connString.writeConcern, !wc.isDefault {
             self.writeConcern = wc
         } else {
             self.writeConcern = nil
         }
 
-        self.readPreference = connString.readPreference
+        self.readPreference = connString.readPreference ?? ReadPreference.primary
         self.encoder = BSONEncoder(options: options)
         self.decoder = BSONDecoder(options: options)
         self.sdamEventHandlers = []

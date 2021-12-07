@@ -218,7 +218,7 @@ extension SpecTestFile {
             return
         }
 
-        let connString = MongoSwiftTestCase.getConnectionString().toString()
+        let connString = MongoSwiftTestCase.getConnectionString().description
         var setupClientOptions = MongoClientOptions()
         setupClientOptions.minHeartbeatFrequencyMS = 50
         setupClientOptions.heartbeatFrequencyMS = 50
@@ -347,7 +347,7 @@ extension SpecTest {
         }
 
         let client = try MongoClient.makeTestClient(
-            connectionString.toString(), options: options
+            connectionString.description, options: options
         )
         let monitor = client.addCommandMonitor()
 

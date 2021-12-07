@@ -1,3 +1,4 @@
+import CLibMongoC
 import Foundation
 import SwiftBSON
 
@@ -383,6 +384,9 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// - Throws:
     ///   - `MongoError.InvalidArgumentError` if the input is invalid.
     public init(string input: String) throws {
+        // Set minHeartbeatFrequencyMS to a default of 500.
+        self.minHeartbeatFrequencyMS = 500
+        
         let schemeAndRest = input.components(separatedBy: "://")
         guard schemeAndRest.count == 2, let scheme = Scheme(schemeAndRest[0]) else {
             throw MongoError.InvalidArgumentError(
@@ -497,7 +501,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         }
         // If either tls or ssl is specified, the value should be stored in the tls field.
         self.tls = options.tls ?? options.ssl
-
+        
         // Set rest of options.
         self.appName = options.appName
         self.connectTimeoutMS = options.connectTimeoutMS
@@ -558,6 +562,9 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         }
         if let maxPoolSize = options.maxPoolSize {
             self.maxPoolSize = maxPoolSize
+        }
+        if let minHeartbeatFrequencyMS = options.minHeartbeatFrequencyMS {
+            self.minHeartbeatFrequencyMS = minHeartbeatFrequencyMS
         }
         if let readConcern = options.readConcern {
             self.readConcern = readConcern
@@ -625,8 +632,8 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         if let connectTimeoutMS = self.connectTimeoutMS, connectTimeoutMS <= 0 {
             throw optionError(name: .connectTimeoutMS, violation: "be positive")
         }
-        if let heartbeatFrequencyMS = self.heartbeatFrequencyMS, heartbeatFrequencyMS < 500 {
-            throw optionError(name: .heartbeatFrequencyMS, violation: "be >= 500")
+        if let heartbeatFrequencyMS = self.heartbeatFrequencyMS, heartbeatFrequencyMS < self.minHeartbeatFrequencyMS {
+            throw optionError(name: .heartbeatFrequencyMS, violation: "be >= \(self.minHeartbeatFrequencyMS)")
         }
         if let localThresholdMS = self.localThresholdMS, localThresholdMS < 0 {
             throw optionError(name: .localThresholdMS, violation: "be nonnegative")
@@ -1089,6 +1096,15 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         }
         return options
     }
+    
+    internal func withMongocURI<T>(_ body: (OpaquePointer) throws -> T) throws -> T {
+        var error = bson_error_t()
+        guard let uri = mongoc_uri_new_with_error(self.description, &error) else {
+            throw extractMongoError(error: error)
+        }
+        defer { mongoc_uri_destroy(uri) }
+        return try body(uri)
+    }
 
     /// Specifies the format this connection string is in.
     public var scheme: Scheme
@@ -1137,6 +1153,9 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// The maximum number of connections that may be associated with a connection pool created by this client at a
     /// given time. This includes in-use and available connections. Defaults to 100.
     public var maxPoolSize: Int?
+    
+    /// An alternative lower bound for heartbeatFrequencyMS, used for speeding up tests (default 500ms).
+    internal var minHeartbeatFrequencyMS: Int
 
     /// Specifies a ReadConcern to use for the client.
     public var readConcern: ReadConcern?

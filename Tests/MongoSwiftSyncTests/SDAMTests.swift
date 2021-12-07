@@ -44,10 +44,11 @@ final class SDAMTests: MongoSwiftTestCase {
         let receivedEvents = try captureInitialSDAMEvents()
 
         let connString = MongoSwiftTestCase.getConnectionString()
-        guard let hostAddress = connString.hosts?[0] else {
+        guard let connStringHost = connString.hosts.first else {
             XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
             return
         }
+        let hostAddress = ServerAddress(host: connStringHost.host, port: connStringHost.port ?? 27017)
 
         expect(receivedEvents.count).to(equal(5))
         expect(receivedEvents[0].topologyOpeningValue).toNot(beNil())
@@ -111,10 +112,11 @@ final class SDAMTests: MongoSwiftTestCase {
         let receivedEvents = try captureInitialSDAMEvents()
 
         let connString = MongoSwiftTestCase.getConnectionString()
-        guard let hostAddress = connString.hosts?[0] else {
+        guard let connStringHost = connString.hosts.first else {
             XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
             return
         }
+        let hostAddress = ServerAddress(host: connStringHost.host, port: connStringHost.port ?? 27017)
 
         guard receivedEvents.count == 5 else {
             XCTFail("Expected to receive 5 events, but instead received \(receivedEvents.count)")

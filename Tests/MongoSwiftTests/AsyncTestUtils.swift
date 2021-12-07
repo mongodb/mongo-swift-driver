@@ -6,7 +6,7 @@ import XCTest
 
 extension MongoClient {
     internal static func makeTestClient(
-        _ uri: String = MongoSwiftTestCase.getConnectionString().toString(),
+        _ uri: String = MongoSwiftTestCase.getConnectionString().description,
         eventLoopGroup: EventLoopGroup,
         options: MongoClientOptions? = nil
     ) throws -> MongoClient {
@@ -78,7 +78,7 @@ extension MongoCollection {
 
 extension MongoSwiftTestCase {
     internal func withTestClient<T>(
-        _ uri: String = MongoSwiftTestCase.getConnectionString().toString(),
+        _ uri: String = MongoSwiftTestCase.getConnectionString().description,
         options: MongoClientOptions? = nil,
         eventLoopGroup: EventLoopGroup? = nil,
         f: (MongoClient) throws -> T

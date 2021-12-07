@@ -101,7 +101,7 @@ final class SyncAuthTests: MongoSwiftTestCase {
 
         // 2. For each test user, verify that you can connect and run a command requiring authentication for the
         //    following cases:
-        let connString = MongoSwiftTestCase.getConnectionString().toString()
+        let connString = MongoSwiftTestCase.getConnectionString().description
         for user in testUsers {
             // - Explicitly specifying each mechanism the user supports.
             try user.mechanisms.forEach { mech in
