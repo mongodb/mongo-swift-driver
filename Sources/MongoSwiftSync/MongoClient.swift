@@ -25,15 +25,14 @@ public class MongoClient {
     internal let asyncClient: MongoSwift.MongoClient
 
     /**
-     * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
-     * and the MongoClientOptions struct, the final value is set in descending order of priority: the value specified in
-     * MongoClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
+     * Create a new client connection to a MongoDB server. For options that are included in both the
+     * `MongoConnectionString` and the `MongoClientOptions` struct, the final value is set in descending order of
+     * priority: the value specified in `MongoClientOptions` (if non-nil), the value specified in the
+     * `MongoConnectionString`, or the default value if both are unset.
      *
      * - Parameters:
      *   - connectionString: the connection string to connect to.
-     *   - options: optional `MongoClientOptions` to use for this client
-     *
-     * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
+     *   - options: optional `MongoClientOptions` to use for this client.
      *
      * - Throws:
      *   - A `MongoError.InvalidArgumentError` if the connection string passed in is improperly formatted.
@@ -52,13 +51,14 @@ public class MongoClient {
     }
 
     /**
-     * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
-     * and the MongoClientOptions struct, the final value is set in descending order of priority: the value specified in
-     * MongoClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
+     * Create a new client connection to a MongoDB server. For options that are included in both the connection string
+     * URI and the `MongoClientOptions` struct, the final value is set in descending order of priority: the value
+     * specified in `MongoClientOptions` (if non-nil), the value specified in the URI, or the default value if both are
+     * unset.
      *
      * - Parameters:
      *   - connectionString: the connection string to connect to.
-     *   - options: optional `MongoClientOptions` to use for this client
+     *   - options: optional `MongoClientOptions` to use for this client.
      *
      * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
      *

@@ -93,7 +93,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// A struct representing a host identifier, consisting of a host and an optional port.
     /// In standard connection strings, this describes the address of a mongod or mongos to connect to.
     /// In mongodb+srv connection strings, this describes a DNS name to be queried for SRV and TXT records.
-    public struct HostIdentifier: Equatable, CustomStringConvertible, Hashable {
+    public struct HostIdentifier: Equatable, CustomStringConvertible {
         private static func parsePort(from: String) throws -> UInt16 {
             guard let port = UInt16(from), port > 0 else {
                 throw MongoError.InvalidArgumentError(
@@ -634,7 +634,10 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 throw optionError(name: .connectTimeoutMS, violation: "be positive")
             }
             if connectTimeoutMS > Int32.max {
-                throw optionError(name: .connectTimeoutMS, violation: "fit in an Int32")
+                throw optionError(
+                    name: .connectTimeoutMS,
+                    violation: "be <= \(Int32.max) (maximum 32-bit integer value)"
+                )
             }
         }
         if let heartbeatFrequencyMS = self.heartbeatFrequencyMS {
@@ -642,7 +645,10 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 throw optionError(name: .heartbeatFrequencyMS, violation: "be >= \(self.minHeartbeatFrequencyMS)")
             }
             if heartbeatFrequencyMS > Int32.max {
-                throw optionError(name: .heartbeatFrequencyMS, violation: "fit in an Int32")
+                throw optionError(
+                    name: .heartbeatFrequencyMS,
+                    violation: "be <= \(Int32.max) (maximum 32-bit integer value)"
+                )
             }
         }
         if let localThresholdMS = self.localThresholdMS {
@@ -650,7 +656,10 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 throw optionError(name: .localThresholdMS, violation: "be nonnegative")
             }
             if localThresholdMS > Int32.max {
-                throw optionError(name: .localThresholdMS, violation: "fit in an Int32")
+                throw optionError(
+                    name: .localThresholdMS,
+                    violation: "be <= \(Int32.max) (maximum 32-bit integer value)"
+                )
             }
         }
         if let maxPoolSize = self.maxPoolSize {
@@ -658,7 +667,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 throw optionError(name: .maxPoolSize, violation: "be positive")
             }
             if maxPoolSize > Int32.max {
-                throw optionError(name: .maxPoolSize, violation: "fit in an Int32")
+                throw optionError(name: .maxPoolSize, violation: "be <= \(Int32.max) (maximum 32-bit integer value)")
             }
         }
         if let maxStalenessSeconds = self.readPreference?.maxStalenessSeconds,
@@ -671,7 +680,10 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 throw optionError(name: .serverSelectionTimeoutMS, violation: "be positive")
             }
             if serverSelectionTimeoutMS > Int32.max {
-                throw optionError(name: .serverSelectionTimeoutMS, violation: "fit in an Int32")
+                throw optionError(
+                    name: .serverSelectionTimeoutMS,
+                    violation: "be <= \(Int32.max) (maximum 32-bit integer value)"
+                )
             }
         }
         if let socketTimeoutMS = self.socketTimeoutMS, socketTimeoutMS < 0 {

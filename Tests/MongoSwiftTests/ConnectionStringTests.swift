@@ -191,7 +191,6 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(connStr3.appName).to(equal("MyApp"))
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testReplSetOption() throws {
         // option is set correctly from options struct
         var opts = MongoClientOptions(replicaSet: "rs0")
@@ -220,7 +219,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         connStrWithoutRS.removeSubstring("replicaSet=\(rsName)")
         // need to delete the extra & in case replicaSet was first
         connStrWithoutRS = connStrWithoutRS.replacingOccurrences(of: "?&", with: "?")
-        // need to delete exta & in case replicaSet was between two options
+        // need to delete the extra & in case replicaSet was between two options
         connStrWithoutRS = connStrWithoutRS.replacingOccurrences(of: "&&", with: "&")
 
         // setting actual name via options struct only should succeed in connecting
@@ -302,7 +301,6 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         fileprivate init() {}
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testHeartbeatFrequencyMSWithMonitoring() throws {
         guard MongoSwiftTestCase.topologyType == .single else {
             print(unsupportedTopologyMessage(testName: self.name))
@@ -319,8 +317,6 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
 
         let succeeded = watcher.succeeded
-
-        print(succeeded)
 
         // the last success time should be roughly 2s after the second-to-last succeeded time.
         // we can't use started events here because streamable monitor checks begin immediately after previous
