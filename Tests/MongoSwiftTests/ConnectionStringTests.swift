@@ -152,7 +152,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
                 // Assert that the URI successfully round-trips through the MongoConnectionString's description
                 // property. Note that we cannot compare the description to the original URI directly because the
                 // ordering of the options is not preserved.
-                let connStringFromDescription = try MongoConnectionString(throwsIfInvalid: connString.description)
+                let connStringFromDescription = try MongoConnectionString(string: connString.description)
                 connStringFromDescription.assertMatchesTestCase(testCase)
             }
         }
@@ -268,19 +268,19 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         var connStr4 = try MongoConnectionString(string: "mongodb://localhost:27017")
         expect(try connStr4.applyOptions(opts2)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-//        guard !MongoSwiftTestCase.is32Bit else {
-//            print("Skipping remainder of test, only supported on 64-bit platforms")
-//            return
-//        }
-//
-//        let tooLarge = Int(Int32.max) + 1
-//
-//        let opts3 = MongoClientOptions(heartbeatFrequencyMS: tooLarge)
-//        var connStr5 = try MongoConnectionString(string: "mongodb://localhost:27017")
-//        expect(try connStr5.applyOptions(opts3)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
-//
-//        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?heartbeatFrequencyMS=\(tooLarge)"))
-//            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        guard !MongoSwiftTestCase.is32Bit else {
+            print("Skipping remainder of test, only supported on 64-bit platforms")
+            return
+        }
+
+        let tooLarge = Int(Int32.max) + 1
+
+        let opts3 = MongoClientOptions(heartbeatFrequencyMS: tooLarge)
+        var connStr5 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr5.applyOptions(opts3)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?heartbeatFrequencyMS=\(tooLarge)"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
     fileprivate class HeartbeatWatcher: SDAMEventHandler {
@@ -311,7 +311,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
         let watcher = HeartbeatWatcher()
 
-        // verify that we can speed up the heartbeat frqequency
+        // verify that we can speed up the heartbeat frequency
         try self.withTestClient(options: MongoClientOptions(heartbeatFrequencyMS: 2000)) { client in
             client.addSDAMEventHandler(watcher)
             _ = try client.listDatabases().wait()
@@ -319,6 +319,8 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
 
         let succeeded = watcher.succeeded
+
+        print(succeeded)
 
         // the last success time should be roughly 2s after the second-to-last succeeded time.
         // we can't use started events here because streamable monitor checks begin immediately after previous
@@ -356,22 +358,21 @@ final class ConnectionStringTests: MongoSwiftTestCase {
             string: "mongodb://localhost:27017/?serverSelectionTimeoutMS=\(tooSmall)"
         )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-//        guard !MongoSwiftTestCase.is32Bit else {
-//            print("Skipping remainder of test, only supported on 64-bit platforms")
-//            return
-//        }
-//
-//        let tooLarge = Int(Int32.max) + 1
-//
-//        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?serverSelectionTimeoutMS=\(tooLarge)"))
-//            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-//
-//        let opts3 = MongoClientOptions(serverSelectionTimeoutMS: tooLarge)
-//        var connStr5 = try MongoConnectionString(string: "mongodb://localhost:27017")
-//        expect(try connStr5.applyOptions(opts3)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        guard !MongoSwiftTestCase.is32Bit else {
+            print("Skipping remainder of test, only supported on 64-bit platforms")
+            return
+        }
+
+        let tooLarge = Int(Int32.max) + 1
+
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?serverSelectionTimeoutMS=\(tooLarge)"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        let opts3 = MongoClientOptions(serverSelectionTimeoutMS: tooLarge)
+        var connStr5 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr5.applyOptions(opts3)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testServerSelectionTimeoutMSWithCommand() throws {
         let opts = MongoClientOptions(serverSelectionTimeoutMS: 1000)
         try self.withTestClient("mongodb://localhost:27099", options: opts) { client in
@@ -409,19 +410,19 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         var connStr4 = try MongoConnectionString(string: "mongodb://localhost:27017")
         expect(try connStr4.applyOptions(opts2)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-//        guard !MongoSwiftTestCase.is32Bit else {
-//            print("Skipping remainder of test, requires 64-bit platform")
-//            return
-//        }
-//
-//        let tooLarge = Int(Int32.max) + 1
-//
-//        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?localThresholdMS=\(tooLarge)"))
-//            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-//
-//        let opts3 = MongoClientOptions(localThresholdMS: tooLarge)
-//        var connStr5 = try MongoConnectionString(string: "mongodb://localhost:27017")
-//        expect(try connStr5.applyOptions(opts3)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        guard !MongoSwiftTestCase.is32Bit else {
+            print("Skipping remainder of test, requires 64-bit platform")
+            return
+        }
+
+        let tooLarge = Int(Int32.max) + 1
+
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?localThresholdMS=\(tooLarge)"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        let opts3 = MongoClientOptions(localThresholdMS: tooLarge)
+        var connStr5 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr5.applyOptions(opts3)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
     func testConnectTimeoutMSOption() throws {
@@ -457,19 +458,19 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         var connStr5 = try MongoConnectionString(string: "mongodb://localhost:27017")
         expect(try connStr5.applyOptions(opts3)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-//        guard !MongoSwiftTestCase.is32Bit else {
-//            print("Skipping remainder of test, requires 64-bit platform")
-//            return
-//        }
-//
-//        let tooLarge = Int(Int32.max) + 1
-//
-//        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?connectTimeoutMS=\(tooLarge)"))
-//            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-//
-//        let opts4 = MongoClientOptions(connectTimeoutMS: tooLarge)
-//        var connStr6 = try MongoConnectionString(string: "mongodb://localhost:27017")
-//        expect(try connStr6.applyOptions(opts4)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        guard !MongoSwiftTestCase.is32Bit else {
+            print("Skipping remainder of test, requires 64-bit platform")
+            return
+        }
+
+        let tooLarge = Int(Int32.max) + 1
+
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?connectTimeoutMS=\(tooLarge)"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        let opts4 = MongoClientOptions(connectTimeoutMS: tooLarge)
+        var connStr6 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr6.applyOptions(opts4)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
     func testUnsupportedOptions() throws {

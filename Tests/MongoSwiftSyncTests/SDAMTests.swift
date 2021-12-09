@@ -43,8 +43,7 @@ final class SDAMTests: MongoSwiftTestCase {
 
         let receivedEvents = try captureInitialSDAMEvents()
 
-        let connString = MongoSwiftTestCase.getConnectionString()
-        guard let connStringHost = connString.hosts.first else {
+        guard let connStringHost = MongoSwiftTestCase.getConnectionString().hosts.first else {
             XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
             return
         }
@@ -87,7 +86,7 @@ final class SDAMTests: MongoSwiftTestCase {
         let prevTopology = event4.previousDescription
         let newTopology = event4.newDescription
 
-        expect(prevTopology.type).to(equal(.unknown))
+        expect(prevTopology.type).to(equal(.single))
         expect(newTopology.type).to(equal(.single))
 
         expect(prevTopology.servers).to(beEmpty())
@@ -206,7 +205,7 @@ final class SDAMTests: MongoSwiftTestCase {
             return
         }
 
-        let hostURIs = Self.getConnectionStringPerHost().map { $0.toString() }
+        let hostURIs = Self.getConnectionStringPerHost()
 
         let optsFalse = MongoClientOptions(directConnection: false)
         let optsTrue = MongoClientOptions(directConnection: true)

@@ -24,14 +24,6 @@ extension String {
     }
 }
 
-extension ConnectionString {
-    public func toString() -> String {
-        self.withMongocURI { uri in
-            String(cString: mongoc_uri_get_string(uri))
-        }
-    }
-}
-
 open class MongoSwiftTestCase: XCTestCase {
     /// Gets the name of the database the test case is running against.
     public class var testDatabase: String {
@@ -68,12 +60,13 @@ open class MongoSwiftTestCase: XCTestCase {
     }
 
     /// Get a connection string for the specified host only.
-    public static func getConnectionString(forHost serverAddress: ServerAddress) -> ConnectionString {
-        Self.getConnectionStringPerHost().first { $0.hosts!.contains(serverAddress) }!
+    public static func getConnectionString(forHost serverAddress: ServerAddress) -> MongoConnectionString {
+        let hostIdentifier = try! MongoConnectionString.HostIdentifier(serverAddress.description)
+        return Self.getConnectionStringPerHost().first { $0.hosts.contains(hostIdentifier) }!
     }
 
     /// Returns a different connection string per host specified in MONGODB_URI.
-    public static func getConnectionStringPerHost() -> [ConnectionString] {
+    public static func getConnectionStringPerHost() -> [MongoConnectionString] {
         let uri = Self.uri
 
         let regex = try! NSRegularExpression(pattern: #"mongodb:\/\/(?:.*@)?([^\/]+)(?:\/|$)"#)
@@ -82,13 +75,15 @@ open class MongoSwiftTestCase: XCTestCase {
 
         let hostsRange = Range(match.range(at: 1), in: uri)!
 
-        return try! ConnectionString(uri).hosts!.map { host in
-            try! ConnectionString(uri.replacingCharacters(in: hostsRange, with: host.description))
+        return try! MongoConnectionString(string: uri).hosts.map { host in
+            try! MongoConnectionString(string: uri.replacingCharacters(in: hostsRange, with: host.description))
         }
     }
 
     public static func getHosts() -> [ServerAddress] {
-        try! ConnectionString(self.uri).hosts!
+        try! MongoConnectionString(string: self.uri).hosts.map {
+            ServerAddress(host: $0.host.description, port: $0.port ?? 27017)
+        }
     }
 
     // indicates whether we are running on a 32-bit platform

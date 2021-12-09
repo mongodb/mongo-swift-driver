@@ -40,7 +40,7 @@ public class MongoClient {
      *   - A `MongoError.InvalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
      *     built with TLS support.
      */
-    public init(_ connectionString: String = "mongodb://localhost:27017", options: MongoClientOptions? = nil) throws {
+    public init(_ connectionString: MongoConnectionString, options: MongoClientOptions? = nil) throws {
         let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 5)
         do {
             self.asyncClient = try MongoSwift.MongoClient(connectionString, using: eventLoopGroup, options: options)
@@ -49,6 +49,30 @@ public class MongoClient {
             try eventLoopGroup.syncShutdownGracefully()
             throw error
         }
+    }
+
+    /**
+     * Create a new client connection to a MongoDB server. For options that included in both the connection string URI
+     * and the MongoClientOptions struct, the final value is set in descending order of priority: the value specified in
+     * MongoClientOptions (if non-nil), the value specified in the URI, or the default value if both are unset.
+     *
+     * - Parameters:
+     *   - connectionString: the connection string to connect to.
+     *   - options: optional `MongoClientOptions` to use for this client
+     *
+     * - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
+     *
+     * - Throws:
+     *   - A `MongoError.InvalidArgumentError` if the connection string passed in is improperly formatted.
+     *   - A `MongoError.InvalidArgumentError` if the connection string specifies the use of TLS but libmongoc was not
+     *     built with TLS support.
+     */
+    public convenience init(
+        _ connectionString: String = "mongodb://localhost:27017",
+        options: MongoClientOptions? = nil
+    ) throws {
+        let connString = try MongoConnectionString(string: connectionString)
+        try self.init(connString, options: options)
     }
 
     deinit {

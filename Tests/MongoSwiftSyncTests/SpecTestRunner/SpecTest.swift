@@ -239,7 +239,7 @@ extension SpecTestFile {
             opts.directConnection = true // connect directly to mongoses
             for host in MongoSwiftTestCase.getHosts() {
                 let connString = MongoSwiftTestCase.getConnectionString(forHost: host)
-                let client = try MongoClient.makeTestClient(connString.toString(), options: opts)
+                let client = try MongoClient.makeTestClient(connString, options: opts)
                 mongosClients[host] = client
             }
         }

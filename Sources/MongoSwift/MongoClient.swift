@@ -306,7 +306,7 @@ public class MongoClient {
      * - Throws:
      *   - A `MongoError.InvalidArgumentError` if the connection string passed in is improperly formatted.
      */
-    convenience public init(
+    public convenience init(
         _ connectionString: String = "mongodb://localhost:27017",
         using eventLoopGroup: EventLoopGroup,
         options: MongoClientOptions? = nil
@@ -314,7 +314,7 @@ public class MongoClient {
         let connString = try MongoConnectionString(string: connectionString)
         try self.init(connString, using: eventLoopGroup, options: options)
     }
-    
+
     /**
      * Create a new client for a MongoDB deployment. For options that included in both the `MongoConnectionString`
      * and the `MongoClientOptions` struct, the final value is set in descending order of priority: the value specified
@@ -339,7 +339,7 @@ public class MongoClient {
     ) throws {
         // Initialize mongoc. Repeated calls have no effect so this is safe to do every time.
         initializeMongoc()
-        
+
         // Make a copy of the connection string to allow for mutation and apply options.
         var connString = connectionString
         if let options = options {
@@ -350,13 +350,14 @@ public class MongoClient {
             eventLoopGroup: eventLoopGroup,
             threadPoolSize: options?.threadPoolSize ?? MongoClient.defaultThreadPoolSize
         )
+
         self.connectionPool = try ConnectionPool(
-            from: connectionString,
+            from: connString,
             executor: self.operationExecutor,
             serverAPI: options?.serverAPI
         )
 
-        if let rc = connectionString.readConcern, !rc.isDefault {
+        if let rc = connString.readConcern, !rc.isDefault {
             self.readConcern = rc
         } else {
             self.readConcern = nil

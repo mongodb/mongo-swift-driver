@@ -115,7 +115,15 @@ extension MongoClient {
     }
 
     static func makeTestClient(
-        _ uri: String = MongoSwiftTestCase.getConnectionString().description,
+        _ uri: MongoConnectionString = MongoSwiftTestCase.getConnectionString(),
+        options: MongoClientOptions? = nil
+    ) throws -> MongoClient {
+        let opts = resolveClientOptions(options)
+        return try MongoClient(uri, options: opts)
+    }
+
+    static func makeTestClient(
+        _ uri: String,
         options: MongoClientOptions? = nil
     ) throws -> MongoClient {
         let opts = resolveClientOptions(options)

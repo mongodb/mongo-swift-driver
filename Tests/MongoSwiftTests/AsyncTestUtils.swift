@@ -14,6 +14,15 @@ extension MongoClient {
         return try MongoClient(uri, using: eventLoopGroup, options: opts)
     }
 
+    internal static func makeTestClient(
+        _ uri: MongoConnectionString,
+        eventLoopGroup: EventLoopGroup,
+        options: MongoClientOptions? = nil
+    ) throws -> MongoClient {
+        let opts = resolveClientOptions(options)
+        return try MongoClient(uri, using: eventLoopGroup, options: opts)
+    }
+
     internal func syncCloseOrFail() {
         do {
             try self.syncClose()

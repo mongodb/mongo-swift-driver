@@ -93,7 +93,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// A struct representing a host identifier, consisting of a host and an optional port.
     /// In standard connection strings, this describes the address of a mongod or mongos to connect to.
     /// In mongodb+srv connection strings, this describes a DNS name to be queried for SRV and TXT records.
-    public struct HostIdentifier: Equatable, CustomStringConvertible {
+    public struct HostIdentifier: Equatable, CustomStringConvertible, Hashable {
         private static func parsePort(from: String) throws -> UInt16 {
             guard let port = UInt16(from), port > 0 else {
                 throw MongoError.InvalidArgumentError(
@@ -386,7 +386,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     public init(string input: String) throws {
         // Set minHeartbeatFrequencyMS to a default of 500.
         self.minHeartbeatFrequencyMS = 500
-        
+
         let schemeAndRest = input.components(separatedBy: "://")
         guard schemeAndRest.count == 2, let scheme = Scheme(schemeAndRest[0]) else {
             throw MongoError.InvalidArgumentError(
@@ -440,7 +440,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         self.hosts = hosts
 
         guard identifiersAndOptions.count == 2 else {
-            // No auth DB or options were specified
+            // no auth DB or options were specified
             return
         }
 
@@ -501,7 +501,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         }
         // If either tls or ssl is specified, the value should be stored in the tls field.
         self.tls = options.tls ?? options.ssl
-        
+
         // Set rest of options.
         self.appName = options.appName
         self.connectTimeoutMS = options.connectTimeoutMS
@@ -629,25 +629,50 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         if let source = self.credential?.source, source.isEmpty {
             throw optionError(name: .authSource, violation: "not be empty")
         }
-        if let connectTimeoutMS = self.connectTimeoutMS, connectTimeoutMS <= 0 {
-            throw optionError(name: .connectTimeoutMS, violation: "be positive")
+        if let connectTimeoutMS = self.connectTimeoutMS {
+            if connectTimeoutMS <= 0 {
+                throw optionError(name: .connectTimeoutMS, violation: "be positive")
+            }
+            if connectTimeoutMS > Int32.max {
+                throw optionError(name: .connectTimeoutMS, violation: "fit in an Int32")
+            }
         }
-        if let heartbeatFrequencyMS = self.heartbeatFrequencyMS, heartbeatFrequencyMS < self.minHeartbeatFrequencyMS {
-            throw optionError(name: .heartbeatFrequencyMS, violation: "be >= \(self.minHeartbeatFrequencyMS)")
+        if let heartbeatFrequencyMS = self.heartbeatFrequencyMS {
+            if heartbeatFrequencyMS < self.minHeartbeatFrequencyMS {
+                throw optionError(name: .heartbeatFrequencyMS, violation: "be >= \(self.minHeartbeatFrequencyMS)")
+            }
+            if heartbeatFrequencyMS > Int32.max {
+                throw optionError(name: .heartbeatFrequencyMS, violation: "fit in an Int32")
+            }
         }
-        if let localThresholdMS = self.localThresholdMS, localThresholdMS < 0 {
-            throw optionError(name: .localThresholdMS, violation: "be nonnegative")
+        if let localThresholdMS = self.localThresholdMS {
+            if localThresholdMS < 0 {
+                throw optionError(name: .localThresholdMS, violation: "be nonnegative")
+            }
+            if localThresholdMS > Int32.max {
+                throw optionError(name: .localThresholdMS, violation: "fit in an Int32")
+            }
         }
-        if let maxPoolSize = self.maxPoolSize, maxPoolSize <= 0 {
-            throw optionError(name: .maxPoolSize, violation: "be positive")
+        if let maxPoolSize = self.maxPoolSize {
+            if maxPoolSize <= 0 {
+                throw optionError(name: .maxPoolSize, violation: "be positive")
+            }
+            if maxPoolSize > Int32.max {
+                throw optionError(name: .maxPoolSize, violation: "fit in an Int32")
+            }
         }
         if let maxStalenessSeconds = self.readPreference?.maxStalenessSeconds,
            !(maxStalenessSeconds == -1 || maxStalenessSeconds >= 90)
         {
             throw optionError(name: .maxStalenessSeconds, violation: "be -1 (for no max staleness check) or >= 90")
         }
-        if let serverSelectionTimeoutMS = self.serverSelectionTimeoutMS, serverSelectionTimeoutMS <= 0 {
-            throw optionError(name: .serverSelectionTimeoutMS, violation: "be positive")
+        if let serverSelectionTimeoutMS = self.serverSelectionTimeoutMS {
+            if serverSelectionTimeoutMS <= 0 {
+                throw optionError(name: .serverSelectionTimeoutMS, violation: "be positive")
+            }
+            if serverSelectionTimeoutMS > Int32.max {
+                throw optionError(name: .serverSelectionTimeoutMS, violation: "fit in an Int32")
+            }
         }
         if let socketTimeoutMS = self.socketTimeoutMS, socketTimeoutMS < 0 {
             throw optionError(name: .socketTimeoutMS, violation: "be nonnegative")
@@ -690,14 +715,6 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 throw MongoError.InvalidArgumentError(
                     message: "Connection string specified \(OptionName.authMechanismProperties) but no"
                         + " \(OptionName.authMechanism) was specified"
-                )
-            } else if self.credential?.source != nil && self.credential?.username == nil {
-                // The authentication mechanism defaults to SCRAM if an authMechanism is not provided, and SCRAM
-                // requires a username.
-                throw MongoError.InvalidArgumentError(
-                    message: "No username provided for authentication in the connection string but an authentication"
-                        + " source was provided. To use an authentication mechanism that does not require a username,"
-                        + " specify an \(OptionName.authMechanism) in the connection string."
                 )
             }
         }
@@ -1096,7 +1113,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         }
         return options
     }
-    
+
     internal func withMongocURI<T>(_ body: (OpaquePointer) throws -> T) throws -> T {
         var error = bson_error_t()
         guard let uri = mongoc_uri_new_with_error(self.description, &error) else {
@@ -1153,7 +1170,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// The maximum number of connections that may be associated with a connection pool created by this client at a
     /// given time. This includes in-use and available connections. Defaults to 100.
     public var maxPoolSize: Int?
-    
+
     /// An alternative lower bound for heartbeatFrequencyMS, used for speeding up tests (default 500ms).
     internal var minHeartbeatFrequencyMS: Int
 
@@ -1241,17 +1258,6 @@ extension BSONDocument {
         }
         set {
             self[name.rawValue] = newValue
-        }
-    }
-}
-
-extension Compressor {
-    fileprivate init(name: String, level: Int32?) throws {
-        switch name {
-        case "zlib":
-            self._compressor = .zlib(level: level)
-        case let other:
-            throw MongoError.InvalidArgumentError(message: "\(other) compression is not supported")
         }
     }
 }

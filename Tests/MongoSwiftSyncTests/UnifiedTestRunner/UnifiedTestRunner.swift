@@ -46,7 +46,7 @@ struct UnifiedTestRunner {
             var mongosClients = [ServerAddress: MongoClient]()
             for host in MongoSwiftTestCase.getHosts() {
                 let connString = MongoSwiftTestCase.getConnectionString(forHost: host)
-                let client = try MongoClient.makeTestClient(connString.toString())
+                let client = try MongoClient.makeTestClient(connString)
                 mongosClients[host] = client
             }
             self.internalClient = .mongosClients(mongosClients)
