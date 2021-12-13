@@ -7,10 +7,10 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// Characters that must not be present in a database name.
     private static let forbiddenDBCharacters = ["/", "\\", " ", "\"", "$"]
 
-    /// General delimeters as defined by RFC 3986. These characters must be percent-encoded when present in the hosts,
+    /// General delimiters as defined by RFC 3986. These characters must be percent-encoded when present in the hosts,
     /// default authentication database, and user info.
     /// - SeeAlso: https://datatracker.ietf.org/doc/html/rfc3986#section-2.2
-    fileprivate static let genDelims = ":/?#[@"
+    fileprivate static let genDelims = ":/?#[]@"
 
     /// Characters that do not need to be percent-encoded when reconstructing the hosts, default authentication
     /// database, and user info.
