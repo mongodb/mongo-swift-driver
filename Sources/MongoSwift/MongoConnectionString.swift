@@ -4,10 +4,20 @@ import SwiftBSON
 /// Represents a MongoDB connection string.
 /// - SeeAlso: https://docs.mongodb.com/manual/reference/connection-string/
 public struct MongoConnectionString: Codable, LosslessStringConvertible {
+    /// Characters that must not be present in a database name.
     private static let forbiddenDBCharacters = ["/", "\\", " ", "\"", "$"]
-    /// Forbidden characters per RFC 3986.
+
+    /// General delimiters as defined by RFC 3986. These characters must be percent-encoded when present in the hosts,
+    /// default authentication database, and user info.
     /// - SeeAlso: https://datatracker.ietf.org/doc/html/rfc3986#section-2.2
-    fileprivate static let forbiddenUserInfoCharacters = [":", "/", "?", "#", "[", "]", "@"]
+    fileprivate static let genDelims = ":/?#[]@"
+
+    /// Characters that do not need to be percent-encoded when reconstructing the hosts, default authentication
+    /// database, and user info.
+    fileprivate static let allowedForNonOptionEncoding = CharacterSet(charactersIn: genDelims).inverted
+
+    /// Characters that do not need to be percent-encoded when reconstructing URI options.
+    fileprivate static let allowedForOptionEncoding = CharacterSet(charactersIn: "=&,:").inverted
 
     fileprivate enum OptionName: String {
         case appName = "appname"
@@ -161,17 +171,21 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         }
 
         public var description: String {
-            var ret = ""
+            var hostDescription = ""
             switch self.type {
             case .ipLiteral:
-                ret += "[\(self.host)]"
-            default:
-                ret += "\(self.host)"
+                hostDescription += "[\(self.host)]"
+            case .ipv4:
+                hostDescription += self.host
+            case .unixDomainSocket, .hostname:
+                hostDescription += self.host.getPercentEncoded(
+                    withAllowedCharacters: MongoConnectionString.allowedForNonOptionEncoding
+                )
             }
             if let port = self.port {
-                ret += ":\(port)"
+                hostDescription += ":\(port)"
             }
-            return ret
+            return hostDescription
         }
     }
 
@@ -573,7 +587,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 self.credential?.source = authSource
             } else {
                 // The authentication mechanism defaults to SCRAM if an authMechanism is not provided, and SCRAM
-                // requires a username
+                // requires a username.
                 throw MongoError.InvalidArgumentError(
                     message: "No username provided for authentication in the connection string but an authentication"
                         + " source was provided. To use an authentication mechanism that does not require a username,"
@@ -754,12 +768,104 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         try? self.init(throwsIfInvalid: description)
     }
 
-    // TODO: SWIFT-1405: add options to description
     public var description: String {
-        var des = ""
-        des += "\(self.scheme)://"
-        des += self.hosts.map { $0.description }.joined(separator: ",")
-        return des
+        var uri = ""
+        uri += "\(self.scheme)://"
+        if let username = self.credential?.username {
+            uri += username.getPercentEncoded(withAllowedCharacters: Self.allowedForNonOptionEncoding)
+            if let password = self.credential?.password {
+                uri += ":" + password.getPercentEncoded(withAllowedCharacters: Self.allowedForNonOptionEncoding)
+            }
+            uri += "@"
+        }
+        uri += self.hosts.map { $0.description }.joined(separator: ",")
+        // A trailing slash in the connection string is valid so we can append this unconditionally.
+        uri += "/"
+        if let defaultAuthDB = self.defaultAuthDB {
+            uri += defaultAuthDB.getPercentEncoded(withAllowedCharacters: Self.allowedForNonOptionEncoding)
+        }
+        uri += "?"
+        uri.appendOption(name: .appName, option: self.appName)
+        uri.appendOption(name: .authMechanism, option: self.credential?.mechanism?.description)
+        uri.appendOption(name: .authMechanismProperties, option: self.credential?.mechanismProperties?.map {
+            var property = $0.key + ":"
+            switch $0.value {
+            case let .string(s):
+                property += s
+            case let .bool(b):
+                property += String(b)
+            // the possible values for authMechanismProperties are only strings and booleans
+            default:
+                property += ""
+            }
+            return property
+        }.joined(separator: ","))
+        uri.appendOption(name: .authSource, option: self.credential?.source)
+        uri.appendOption(name: .compressors, option: self.compressors?.map {
+            switch $0._compressor {
+            case let .zlib(level):
+                uri.appendOption(name: .zlibCompressionLevel, option: level)
+                return "zlib"
+            }
+        }.joined(separator: ","))
+        uri.appendOption(name: .connectTimeoutMS, option: self.connectTimeoutMS)
+        uri.appendOption(name: .directConnection, option: self.directConnection)
+        uri.appendOption(name: .heartbeatFrequencyMS, option: self.heartbeatFrequencyMS)
+        uri.appendOption(name: .journal, option: self.writeConcern?.journal)
+        uri.appendOption(name: .loadBalanced, option: self.loadBalanced)
+        uri.appendOption(name: .localThresholdMS, option: self.localThresholdMS)
+        uri.appendOption(name: .maxPoolSize, option: self.maxPoolSize)
+        uri.appendOption(name: .maxStalenessSeconds, option: self.readPreference?.maxStalenessSeconds)
+        uri.appendOption(name: .readConcernLevel, option: self.readConcern?.level)
+        uri.appendOption(name: .readPreference, option: self.readPreference?.mode.rawValue)
+        if let tagSets = self.readPreference?.tagSets {
+            for tags in tagSets {
+                uri.appendOption(name: .readPreferenceTags, option: tags.map {
+                    var tag = $0.key + ":"
+                    switch $0.value {
+                    case let .string(s):
+                        tag += s
+                    // tags are always parsed as strings
+                    default:
+                        tag += ""
+                    }
+                    return tag
+                }.joined(separator: ","))
+            }
+        }
+        uri.appendOption(name: .replicaSet, option: self.replicaSet)
+        uri.appendOption(name: .retryReads, option: self.retryReads)
+        uri.appendOption(name: .retryWrites, option: self.retryWrites)
+        uri.appendOption(name: .serverSelectionTimeoutMS, option: self.serverSelectionTimeoutMS)
+        uri.appendOption(name: .socketTimeoutMS, option: self.socketTimeoutMS)
+        uri.appendOption(name: .srvMaxHosts, option: self.srvMaxHosts)
+        uri.appendOption(name: .srvServiceName, option: self.srvServiceName)
+        uri.appendOption(name: .tls, option: self.tls)
+        uri.appendOption(name: .tlsAllowInvalidCertificates, option: self.tlsAllowInvalidCertificates)
+        uri.appendOption(name: .tlsAllowInvalidHostnames, option: self.tlsAllowInvalidHostnames)
+        uri.appendOption(name: .tlsCAFile, option: self.tlsCAFile)
+        uri.appendOption(name: .tlsCertificateKeyFile, option: self.tlsCertificateKeyFile)
+        uri.appendOption(name: .tlsCertificateKeyFilePassword, option: self.tlsCertificateKeyFilePassword)
+        uri.appendOption(
+            name: .tlsDisableCertificateRevocationCheck,
+            option: self.tlsDisableCertificateRevocationCheck
+        )
+        uri.appendOption(name: .tlsDisableOCSPEndpointCheck, option: self.tlsDisableOCSPEndpointCheck)
+        uri.appendOption(name: .tlsInsecure, option: self.tlsInsecure)
+        uri.appendOption(name: .w, option: self.writeConcern?.w.map {
+            switch $0 {
+            case let .number(n):
+                return String(n)
+            case .majority:
+                return "majority"
+            case let .custom(other):
+                return other
+            }
+        })
+        uri.appendOption(name: .wTimeoutMS, option: self.writeConcern?.wtimeoutMS)
+        // Pop either the trailing "&" or the trailing "?" if no options were present.
+        _ = uri.popLast()
+        return uri
     }
 
     /// Returns a document containing all of the options provided after the ? of the URI.
@@ -769,14 +875,14 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         if let appName = self.appName {
             options[.appName] = .string(appName)
         }
-        if let authSource = self.credential?.source {
-            options[.authSource] = .string(authSource)
-        }
         if let authMechanism = self.credential?.mechanism {
             options[.authMechanism] = .string(authMechanism.description)
         }
         if let authMechanismProperties = self.credential?.mechanismProperties {
             options[.authMechanismProperties] = .document(authMechanismProperties)
+        }
+        if let authSource = self.credential?.source {
+            options[.authSource] = .string(authSource)
         }
         if let compressors = self.compressors {
             var compressorNames: [BSON] = []
@@ -1035,6 +1141,17 @@ extension Compressor {
     }
 }
 
+extension String {
+    fileprivate mutating func appendOption(name: MongoConnectionString.OptionName, option: CustomStringConvertible?) {
+        if let option = option {
+            let optionString = option.description.getPercentEncoded(
+                withAllowedCharacters: MongoConnectionString.allowedForOptionEncoding
+            )
+            self += name.rawValue + "=" + optionString + "&"
+        }
+    }
+}
+
 extension StringProtocol {
     fileprivate func getPercentDecoded(forKey key: String) throws -> String {
         guard let decoded = self.removingPercentEncoding else {
@@ -1058,8 +1175,12 @@ extension StringProtocol {
         return true
     }
 
+    fileprivate func getPercentEncoded(withAllowedCharacters allowed: CharacterSet) -> String {
+        self.addingPercentEncoding(withAllowedCharacters: allowed) ?? String(self)
+    }
+
     fileprivate func getValidatedUserInfo(forKey key: String) throws -> String {
-        for character in MongoConnectionString.forbiddenUserInfoCharacters {
+        for character in MongoConnectionString.genDelims {
             if self.contains(character) {
                 throw MongoError.InvalidArgumentError(
                     message: "\(key) in the connection string contains invalid character that must be percent-encoded:"
