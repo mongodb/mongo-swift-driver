@@ -164,15 +164,10 @@ public struct DeleteModelOptions: Codable {
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
 
-    /// Variables that can be accessed within the operation using the double
-    /// dollar sign prefix in the form `$$<variable_name>`. This option is only available on MongoDB 5.0+.
-    public var `let`: BSONDocument?
-
     /// Initializer allowing any/all options to be omitted or optional.
-    public init(collation: BSONDocument? = nil, hint: IndexHint? = nil, `let`: BSONDocument? = nil) {
+    public init(collation: BSONDocument? = nil, hint: IndexHint? = nil) {
         self.collation = collation
         self.hint = hint
-        self.`let` = `let`
     }
 }
 
@@ -201,9 +196,6 @@ public struct UpdateModelOptions: Codable {
     public var collation: BSONDocument?
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
-    /// Variables that can be accessed within the operation using the double
-    /// dollar sign prefix in the form `$$<variable_name>`. This option is only available on MongoDB 5.0+.
-    public var `let`: BSONDocument?
     /// When `true`, creates a new document if no document matches the query.
     public var upsert: Bool?
 
@@ -212,13 +204,11 @@ public struct UpdateModelOptions: Codable {
         arrayFilters: [BSONDocument]? = nil,
         collation: BSONDocument? = nil,
         hint: IndexHint? = nil,
-        `let`: BSONDocument? = nil,
         upsert: Bool? = nil
     ) {
         self.arrayFilters = arrayFilters
         self.collation = collation
         self.hint = hint
-        self.`let` = `let`
         self.upsert = upsert
     }
 }
