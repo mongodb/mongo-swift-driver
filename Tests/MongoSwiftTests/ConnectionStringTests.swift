@@ -91,6 +91,38 @@ func shouldSkip(file: String, test: String) -> Bool {
     return false
 }
 
+extension MongoConnectionString {
+    fileprivate func assertMatchesTestCase(_ testCase: ConnectionStringTestCase) {
+        // Assert that hosts match, if present.
+        if let expectedHosts = testCase.hosts {
+            let actualHosts = self.hosts
+            for expectedHost in expectedHosts {
+                guard actualHosts.contains(where: { expectedHost.matches($0) }) else {
+                    XCTFail("No host found matching \(expectedHost) in host list \(actualHosts)")
+                    return
+                }
+            }
+        }
+
+        // Assert that authentication information matches, if present.
+        if let expectedAuth = testCase.auth {
+            let actual = self.credential ?? MongoCredential()
+            guard expectedAuth.matches(actual) else {
+                XCTFail("Expected credentials: \(expectedAuth) do not match parsed credentials: \(actual)")
+                return
+            }
+        }
+
+        // Assert that options match, if present.
+        if let expectedOptions = testCase.options {
+            let actualOptions = self.options
+            for (key, value) in expectedOptions {
+                expect(actualOptions[key.lowercased()]).to(sortedEqual(value))
+            }
+        }
+    }
+}
+
 final class ConnectionStringTests: MongoSwiftTestCase {
     func runTests(_ specName: String) throws {
         let testFiles = try retrieveSpecTestFiles(specName: specName, asType: ConnectionStringTestFile.self)
@@ -113,35 +145,15 @@ final class ConnectionStringTests: MongoSwiftTestCase {
                     continue
                 }
 
+                // Assert that the MongoConnectionString matches the expected output.
                 let connString = try MongoConnectionString(throwsIfInvalid: testCase.uri)
+                connString.assertMatchesTestCase(testCase)
 
-                // Assert that hosts match, if present
-                if let expectedHosts = testCase.hosts {
-                    let actualHosts = connString.hosts
-                    for expectedHost in expectedHosts {
-                        guard actualHosts.contains(where: { expectedHost.matches($0) }) else {
-                            XCTFail("No host found matching \(expectedHost) in host list \(actualHosts)")
-                            continue
-                        }
-                    }
-                }
-
-                // Assert that auth matches, if present
-                if let expectedAuth = testCase.auth {
-                    let actual = connString.credential ?? MongoCredential()
-                    guard expectedAuth.matches(actual) else {
-                        XCTFail("Expected credentials: \(expectedAuth) do not match parsed credentials: \(actual)")
-                        continue
-                    }
-                }
-
-                // Assert that options match, if present
-                if let expectedOptions = testCase.options {
-                    let actualOptions = connString.options
-                    for (key, value) in expectedOptions {
-                        expect(actualOptions[key.lowercased()]).to(sortedEqual(value))
-                    }
-                }
+                // Assert that the URI successfully round-trips through the MongoConnectionString's description
+                // property. Note that we cannot compare the description to the original URI directly because the
+                // ordering of the options is not preserved.
+                let connStringFromDescription = try MongoConnectionString(throwsIfInvalid: connString.description)
+                connStringFromDescription.assertMatchesTestCase(testCase)
             }
         }
     }
@@ -155,11 +167,11 @@ final class ConnectionStringTests: MongoSwiftTestCase {
     }
 
     func testCodable() throws {
-        let connStr = try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017")
+        let connStr = try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/")
         let encodedData = try JSONEncoder().encode(connStr)
         let decodedResult = try JSONDecoder().decode(MongoConnectionString.self, from: encodedData)
         expect(connStr.description).to(equal(decodedResult.description))
-        expect(connStr.description).to(equal("mongodb://localhost:27017"))
+        expect(connStr.description).to(equal("mongodb://localhost:27017/"))
     }
 
     // TODO: SWIFT-1416 Test string conversion behavior after changing to MongoConnectionString
