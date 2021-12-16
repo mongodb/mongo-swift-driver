@@ -210,7 +210,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
         try FindAndModifyOptions(
             collation: self.collation,
             hint: self.hint,
-            // swiftlint:disable colon
+            // swiftlint:disable:next colon
             `let`: self.let,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
@@ -232,7 +232,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     ) {
         self.collation = collation
         self.hint = hint
-        self.`let` = `let`
+        self.let = `let`
         self.maxTimeMS = maxTimeMS
         self.projection = projection
         self.sort = sort
@@ -278,7 +278,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
             hint: self.hint,
-            // swiftlint:disable colon
+            // swiftlint:disable:next colon
             `let`: self.let,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
@@ -305,7 +305,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
         self.hint = hint
-        self.`let` = `let`
+        self.let = `let`
         self.maxTimeMS = maxTimeMS
         self.projection = projection
         self.returnDocument = returnDocument
@@ -357,7 +357,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
             hint: self.hint,
-            // swiftlint:disable colon
+            // swiftlint:disable:next colon
             `let`: self.let,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
@@ -386,7 +386,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
         self.hint = hint
-        self.`let` = `let`
+        self.let = `let`
         self.maxTimeMS = maxTimeMS
         self.projection = projection
         self.returnDocument = returnDocument

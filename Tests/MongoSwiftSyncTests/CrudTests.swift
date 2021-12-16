@@ -75,9 +75,18 @@ final class CrudTests: MongoSwiftTestCase {
     }
 
     func testCrudUnified() throws {
+        let skipFiles: [String] = [
+            // Skipping because we use bulk-write for these commands and can't pass extra options
+            // TODO: SWIFT-1429 unskip
+            "deleteOne-let.json",
+            "deleteMany-let.json",
+            "updateOne-let.json",
+            "updateMany-let.json"
+        ]
         let files = try retrieveSpecTestFiles(
             specName: "crud",
             subdirectory: "unified",
+            excludeFiles: skipFiles,
             asType: UnifiedTestFile.self
         )
         let runner = try UnifiedTestRunner()
@@ -95,13 +104,7 @@ final class CrudTests: MongoSwiftTestCase {
             "unacknowledged-findOneAndDelete-hint-clientError": ["*"],
             "unacknowledged-bulkWrite-delete-hint-clientError": ["*"],
             "unacknowledged-bulkWrite-update-hint-clientError": ["*"],
-            "unacknowledged-bulkWrite-replace-hint-clientError": ["*"],
-            // Skipping because we use bulk-write for these commands and can't pass extra options
-            // TODO: SWIFT-1429 unskip
-            "deleteOne-let": ["*"],
-            "deleteMany-let": ["*"],
-            "updateOne-let": ["*"],
-            "updateMany-let": ["*"]
+            "unacknowledged-bulkWrite-replace-hint-clientError": ["*"]
         ]
         // Skipping due to a bug in server latest. TODO: SWIFT-1359 unskip
         let client = try MongoClient.makeTestClient()

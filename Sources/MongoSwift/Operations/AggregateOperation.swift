@@ -72,7 +72,7 @@ public struct AggregateOptions: Codable {
         self.collation = collation
         self.comment = comment
         self.hint = hint
-        self.`let` = `let`
+        self.let = `let`
         self.maxTimeMS = maxTimeMS
         self.readConcern = readConcern
         self.readPreference = readPreference

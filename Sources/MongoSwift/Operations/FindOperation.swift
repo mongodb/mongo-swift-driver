@@ -173,7 +173,7 @@ public struct FindOptions: Codable {
         self.comment = comment
         self.cursorType = cursorType
         self.hint = hint
-        self.`let` = `let`
+        self.let = `let`
         self.limit = limit
         self.max = max
         self.maxAwaitTimeMS = maxAwaitTimeMS
@@ -194,7 +194,7 @@ public struct FindOptions: Codable {
         self.collation = findOneOptions.collation
         self.comment = findOneOptions.comment
         self.hint = findOneOptions.hint
-        self.`let` = findOneOptions.`let`
+        self.let = findOneOptions.let
         self.max = findOneOptions.max
         self.maxTimeMS = findOneOptions.maxTimeMS
         self.min = findOneOptions.min
@@ -287,7 +287,7 @@ public struct FindOneOptions: Codable {
         self.collation = collation
         self.comment = comment
         self.hint = hint
-        self.`let` = `let`
+        self.let = `let`
         self.max = max
         self.maxTimeMS = maxTimeMS
         self.min = min
