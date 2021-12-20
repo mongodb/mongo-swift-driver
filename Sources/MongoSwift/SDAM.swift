@@ -354,3 +354,86 @@ public struct TopologyDescription: Equatable {
         // the buffer is documented as always containing non-nil pointers (if non-empty).
     }
 }
+
+extension TopologyDescription {
+    internal func findSuitableServers(readPreference: ReadPreference?) -> [ServerDescription] {
+        switch self.type {
+        case .unknown:
+            return []
+        case .single,
+             .loadBalanced:
+            return self.servers
+        case .replicaSetNoPrimary,
+             .replicaSetWithPrimary:
+            switch readPreference?.mode {
+            case .primary:
+                for server in self.servers where server.type == .rsPrimary {
+                    return [server]
+                }
+            case .secondary:
+                var secondaries = [ServerDescription]()
+                for server in self.servers where server.type == .rsSecondary {
+                    secondaries.append(server)
+                }
+                return self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
+            case .nearest:
+                var secondariesAndPrimary = [ServerDescription]()
+                for server in self.servers where server.type == .rsSecondary || server.type == .rsPrimary {
+                    secondariesAndPrimary.append(server)
+                }
+                return self.replicaSetHelper(readPreference: readPreference, servers: secondariesAndPrimary)
+            case .secondaryPreferred:
+                // If mode is 'secondaryPreferred', attempt the selection algorithm with mode 'secondary' and the
+                // user's maxStalenessSeconds and tag_sets.If no server matches, select the primary.
+                var secondaries = [ServerDescription]()
+                var primary = [ServerDescription]()
+                for server in self.servers {
+                    if server.type == .rsSecondary {
+                        secondaries.append(server)
+                    }
+                    if server.type == .rsPrimary {
+                        primary.append(server)
+                    }
+                }
+                let matches = self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
+                return matches.isEmpty ? primary : matches
+            case .primaryPreferred:
+                // If mode is 'primaryPreferred', select the primary if it is known, otherwise attempt
+                // the selection algorithm with mode 'secondary' and the user's maxStalenessSeconds and tag_sets.
+                var secondaries = [ServerDescription]()
+                var primary = [ServerDescription]()
+                for server in self.servers {
+                    if server.type == .rsSecondary {
+                        secondaries.append(server)
+                    }
+                    if server.type == .rsPrimary {
+                        primary.append(server)
+                    }
+                }
+                return primary.isEmpty
+                    ? self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
+                    : primary
+            default:
+                return []
+            }
+            return []
+        case .sharded:
+            var suitable = [ServerDescription]()
+            for server in self.servers where server.type == .mongos {
+                suitable.append(server)
+            }
+            return suitable
+        default:
+            return []
+        }
+    }
+
+    internal func replicaSetHelper(
+        readPreference _: ReadPreference?,
+        servers _: [ServerDescription]
+    ) -> [ServerDescription] {
+        // TODO: Filter out servers staler than maxStalenessSeconds
+        // TODO: Select servers matching the tag_sets
+        // TODO: Filter based on latency window
+    }
+}
