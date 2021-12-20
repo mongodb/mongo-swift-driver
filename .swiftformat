@@ -44,5 +44,5 @@
 # creates non-compiling code on Swift 5.1
 --disable preferKeyPath
 
-# older swift versions 
+# swift version 5.1.5 requires backticks in argument lists. 
 --disable redundantBackticks
