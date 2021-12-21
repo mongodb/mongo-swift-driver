@@ -88,6 +88,10 @@ public struct FindOptions: Codable {
     /// A hint for the index to use.
     public var hint: IndexHint?
 
+    /// Variables that can be accessed within the operation using the double
+    /// dollar sign prefix in the form `$$<variable_name>`. This option is only available on MongoDB 5.0+.
+    public var `let`: BSONDocument?
+
     /// The maximum number of documents to return.
     public var limit: Int?
 
@@ -147,6 +151,7 @@ public struct FindOptions: Codable {
         comment: String? = nil,
         cursorType: MongoCursorType? = nil,
         hint: IndexHint? = nil,
+        `let`: BSONDocument? = nil,
         limit: Int? = nil,
         max: BSONDocument? = nil,
         maxAwaitTimeMS: Int? = nil,
@@ -168,6 +173,7 @@ public struct FindOptions: Codable {
         self.comment = comment
         self.cursorType = cursorType
         self.hint = hint
+        self.let = `let`
         self.limit = limit
         self.max = max
         self.maxAwaitTimeMS = maxAwaitTimeMS
@@ -188,6 +194,7 @@ public struct FindOptions: Codable {
         self.collation = findOneOptions.collation
         self.comment = findOneOptions.comment
         self.hint = findOneOptions.hint
+        self.let = findOneOptions.let
         self.max = findOneOptions.max
         self.maxTimeMS = findOneOptions.maxTimeMS
         self.min = findOneOptions.min
@@ -203,7 +210,7 @@ public struct FindOptions: Codable {
 
     // Encode everything except `self.readPreference`, because this is sent to libmongoc separately
     internal enum CodingKeys: String, CodingKey, CaseIterable {
-        case allowDiskUse, allowPartialResults, awaitData, batchSize, collation, comment, hint, limit, max,
+        case allowDiskUse, allowPartialResults, awaitData, batchSize, collation, comment, hint, `let`, limit, max,
              maxAwaitTimeMS, maxTimeMS, min, noCursorTimeout, projection, readConcern, returnKey,
              showRecordID = "showRecordId", tailable, skip, sort
     }
@@ -222,6 +229,10 @@ public struct FindOneOptions: Codable {
 
     /// A hint for the index to use.
     public var hint: IndexHint?
+
+    /// Variables that can be accessed within the operation using the double
+    /// dollar sign prefix in the form `$$<variable_name>`. This option is only available on MongoDB 5.0+.
+    public var `let`: BSONDocument?
 
     /// The exclusive upper bound for a specific index.
     public var max: BSONDocument?
@@ -260,6 +271,7 @@ public struct FindOneOptions: Codable {
         collation: BSONDocument? = nil,
         comment: String? = nil,
         hint: IndexHint? = nil,
+        `let`: BSONDocument? = nil,
         max: BSONDocument? = nil,
         maxTimeMS: Int? = nil,
         min: BSONDocument? = nil,
@@ -275,6 +287,7 @@ public struct FindOneOptions: Codable {
         self.collation = collation
         self.comment = comment
         self.hint = hint
+        self.let = `let`
         self.max = max
         self.maxTimeMS = maxTimeMS
         self.min = min
