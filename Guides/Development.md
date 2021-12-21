@@ -30,6 +30,8 @@ Run `swift build` or simply `make` in the project's root directory.
 
 If you add symbols you may need to run `make exports` which will generate [Sources/MongoSwiftSync/Exports.swift](Sources/MongoSwiftSync/Exports.swift). This makes symbols declared in `MongoSwift` available to importers of `MongoSwiftSync`.
 
+Note: Do not run `make clean`.
+
 ### In Xcode
 We do not provide or maintain an already-generated `.xcodeproj` in our repository. Instead, you must generate it locally.
 
@@ -76,11 +78,13 @@ Our documentation site is automatically generated from the source code using [Ja
 If you'd like to preview how new documentation you've written will look when published, you can regenerate it by running `./etc/generate-docs.sh` and then inspecting the generated HTML files in `/docs`.
 
 ## Linting and Style
-We use [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew) for linting. You can see our configuration in the `.swiftlint.yml` file in the project's root directory.  Run `swiftlint` in the root directory to lint all of our files. Running `swiftlint autocorrect` will correct some types of violations.
+We use [SwiftLint](https://github.com/realm/SwiftLint#using-homebrew) for linting. You can see our configuration in the `.swiftlint.yml` file in the project's root directory.  Run `swiftlint` in the root directory to lint all of our files. Running `swiftlint --fix` will correct some types of violations.
 
 We use [SwiftFormat](https://github.com/nicklockwood/SwiftFormat) for formatting the code. You can see our configuration in the `.swiftformat` file in the project's root directory. Our linter config contains a superset of the rules that our formatter does, so some manual tweaking may be necessary to satisfy both once the formatter is run (e.g. line length enforcement). Most of the time, the formatter should put the code into a format that passes the linter. You can run the formatter on all of the files by running `swiftformat .` from the root directory.
 
 To pass all the formatting stages of our testing matrix, both `swiftlint --strict` and `swiftformat --lint .` must finish successfully.
+
+`make lint-and-format` runs `swiftlint --fix`, `swiftlint --strict` and `swiftformat --lint .`.
 
 For style guidance, look at Swift's [API design guidelines](https://swift.org/documentation/api-design-guidelines/) and Google's [Swift Style Guide](https://google.github.io/swift/).
 
@@ -116,7 +120,6 @@ If you have a setup for developing the driver in an editor other than the ones l
 ## Workflow
 1. Create a feature branch, named by the corresponding JIRA ticket if exists, along with a short descriptor of the work: for example, `SWIFT-30/writeconcern`.
 1. Do your work on the branch.
-1. If you add, remove, or rename any tests, make sure to update `LinuxMain.swift` accordingly. If you are on MacOS, you can do that by running `make linuxmain`.
 1. Ensure your code passes both the linter and the formatter.
 1. Make sure your code builds and passes all tests on:
     - [Travis](https://travis-ci.org/mongodb/mongo-swift-driver). Every time you push to GitHub or open a pull request, it will trigger a new build, which includes running the linter, formatter, and basic tests.
@@ -137,7 +140,7 @@ Please feel free to leave reviews on your own code when you open a pull request 
 ### Responding to a review
 You can use the same batching approach as above to respond to review comments. Once you've posted your responses and pushed new commits addressing the comments, re-request reviews from your reviewers by clicking the arrow circle icons next to their names on the list of reviewers.
 
-**Note**: GitHub allows marking comment threads on pull requests as "resolved", which hides them from view. Always allow the _original commenter_ to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.
+**Note**: GitHub allows marking comment threads on pull requests as "resolved", which hides them from view. Always allow the _original commenter_ (is this still true?) to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.
 
 ## Resources
 

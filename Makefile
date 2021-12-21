@@ -39,8 +39,13 @@ test-pretty:
 	set -o pipefail && swift test $(FILTERARG) 2>&1 | xcpretty
 
 lint:
-	swiftlint autocorrect
+	swiftlint --fix
 	swiftlint
+
+lint-and-format:
+	swiftlint --fix
+	swiftlint --strict --quiet
+	swiftformat --lint .
 
 # MacOS only
 coverage:
