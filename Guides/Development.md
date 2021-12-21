@@ -140,7 +140,7 @@ Please feel free to leave reviews on your own code when you open a pull request 
 ### Responding to a review
 You can use the same batching approach as above to respond to review comments. Once you've posted your responses and pushed new commits addressing the comments, re-request reviews from your reviewers by clicking the arrow circle icons next to their names on the list of reviewers.
 
-**Note**: GitHub allows marking comment threads on pull requests as "resolved", which hides them from view. Always allow the _original commenter_ (is this still true?) to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.
+**Note**: GitHub allows marking comment threads on pull requests as "resolved", which hides them from view. Always allow the _original commenter_ to resolve a conversation. This allows them to verify that your changes match what they requested before the conversation is hidden.
 
 ## Resources
 

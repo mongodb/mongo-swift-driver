@@ -66,6 +66,7 @@ extension MongoSwiftTestCase {
         return try await f(client)
     }
 
+    // swiftlint:disable large_tuple
     // see: https://github.com/realm/SwiftLint/issues/3753
     internal func withTestNamespace<T>(
         ns: MongoNamespace? = nil,
