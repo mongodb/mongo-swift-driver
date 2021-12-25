@@ -1,6 +1,6 @@
 #if compiler(>=5.5) && canImport(_Concurrency)
 /// Extension to `ChangeStream` to support async/await APIs.
-@available(macOS 12, *)
+@available(macOS 10.15.0, *)
 extension ChangeStream: AsyncSequence, AsyncIteratorProtocol {
     public typealias AsyncIterator = ChangeStream
 

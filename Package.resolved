@@ -1,0 +1,52 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Nimble",
+        "repositoryURL": "https://github.com/Quick/Nimble.git",
+        "state": {
+          "branch": null,
+          "revision": "7a46a5fc86cb917f69e3daf79fcb045283d8f008",
+          "version": "8.1.2"
+        }
+      },
+      {
+        "package": "swift-bson",
+        "repositoryURL": "https://github.com/mongodb/swift-bson",
+        "state": {
+          "branch": null,
+          "revision": "558c7ff441da4599a18dc5eee5b4c6c6d74a1b8b",
+          "version": "3.0.1"
+        }
+      },
+      {
+        "package": "swift-extras-base64",
+        "repositoryURL": "https://github.com/swift-extras/swift-extras-base64",
+        "state": {
+          "branch": null,
+          "revision": "778e00dd7cc2b7970742f061cffc87dd570e6bfa",
+          "version": "0.5.0"
+        }
+      },
+      {
+        "package": "swift-extras-json",
+        "repositoryURL": "https://github.com/swift-extras/swift-extras-json",
+        "state": {
+          "branch": null,
+          "revision": "122b9454ef01bf89a4c190b8fd3717ddd0a2fbd0",
+          "version": "0.6.0"
+        }
+      },
+      {
+        "package": "swift-nio",
+        "repositoryURL": "https://github.com/apple/swift-nio",
+        "state": {
+          "branch": null,
+          "revision": "154f1d32366449dcccf6375a173adf4ed2a74429",
+          "version": "2.38.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

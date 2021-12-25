@@ -13,7 +13,7 @@ import NIOConcurrencyHelpers
 import TestsCommon
 import XCTest
 
-@available(macOS 12, *)
+@available(macOS 10.15.0, *)
 final class AsyncAwaitTests: MongoSwiftTestCase {
     func testMongoClient() throws {
         testAsync {
@@ -146,7 +146,7 @@ final class AsyncAwaitTests: MongoSwiftTestCase {
     }
 }
 
-@available(macOS 12, *)
+@available(macOS 10.15.0, *)
 final class MongoCursorAsyncAwaitTests: MongoSwiftTestCase {
     func testAsyncSequenceConformance() throws {
         testAsync {
@@ -249,7 +249,7 @@ final class MongoCursorAsyncAwaitTests: MongoSwiftTestCase {
     }
 }
 
-@available(macOS 12, *)
+@available(macOS 10.15.0, *)
 final class ChangeStreamAsyncAwaitTests: MongoSwiftTestCase {
     func testIteration() throws {
         testAsync {

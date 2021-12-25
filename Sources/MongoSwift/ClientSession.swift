@@ -80,7 +80,7 @@ public final class ClientSession {
         }
 
 #if compiler(>=5.5) && canImport(_Concurrency)
-        @available(macOS 12, *)
+        @available(macOS 10.15.0, *)
         fileprivate func cleanup(using client: MongoClient, on eventLoop: EventLoop?) async throws {
             try await self.cleanup(using: client, on: eventLoop).get()
         }

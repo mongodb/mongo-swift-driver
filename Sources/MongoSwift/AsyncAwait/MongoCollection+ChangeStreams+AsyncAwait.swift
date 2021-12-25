@@ -1,6 +1,6 @@
 #if compiler(>=5.5) && canImport(_Concurrency)
 /// Extension to `MongoCollection` to support async/await change stream APIs.
-@available(macOS 12, *)
+@available(macOS 10.15.0, *)
 extension MongoCollection {
     /**
      * Starts a `ChangeStream` on a collection. The `CollectionType` will be associated with the `fullDocument`
