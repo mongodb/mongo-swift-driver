@@ -6,8 +6,9 @@ import XCTest
 extension MongoSwiftTestCase {
     /// Gets the path of the directory containing spec files.
     static var specsPath: String {
-        // Approach taken from https://stackoverflow.com/a/58034307. Once we drop Swift < 5.3 we can switch to
-        // including the JSON files as Resources via our package manifest instead.
+        // Approach taken from https://stackoverflow.com/a/58034307
+        // TODO: SWIFT-1442 Once we drop Swift < 5.3 we can switch to including the JSON files as Resources via our
+        // package manifest instead.
         let thisFile = URL(fileURLWithPath: #file)
         let baseDirectory = thisFile.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         return baseDirectory.appendingPathComponent("Tests").appendingPathComponent("Specs").path
