@@ -691,7 +691,7 @@ tasks:
             OCSP_TLS_SHOULD_SUCCEED: "false"
 
     - name: test-ocsp-rsa-valid-cert-server-does-not-staple
-      tags: ["ocsp", "ocsp-rsa"]
+      tags: ["ocsp", "ocsp-rsa", "fails-macos"]
       commands:
         - func: "prepare resources"
         - func: "run-valid-ocsp-server"
@@ -721,7 +721,7 @@ tasks:
             OCSP_TLS_SHOULD_SUCCEED: "false"
 
     - name: test-ocsp-rsa-soft-fail
-      tags: ["ocsp", "ocsp-rsa"]
+      tags: ["ocsp", "ocsp-rsa", "fails-macos"]
       commands:
         - func: "prepare resources"
         - func: "bootstrap mongo-orchestration"
@@ -790,7 +790,7 @@ tasks:
             OCSP_TLS_SHOULD_SUCCEED: "false"
 
     - name: test-ocsp-rsa-delegate-valid-cert-server-does-not-staple
-      tags: ["ocsp", "ocsp-rsa"]
+      tags: ["ocsp", "ocsp-rsa", "fails-macos"]
       commands:
         - func: "prepare resources"
         - func: run-valid-delegate-ocsp-server
@@ -1344,7 +1344,8 @@ buildvariants:
   batchtime: 20160 # 14 days
   tasks:
       # macOS MongoDB servers do not staple OCSP responses and only support RSA.
-      - name: ".ocsp-rsa !.ocsp-staple"
+      # TODO SWIFT-1134: Remove and unskip fails-macos tags.
+      - name: ".ocsp-rsa !.ocsp-staple !.fails-macos"
 
 - matrix_name: "versioned-api-tests"
   matrix_spec:

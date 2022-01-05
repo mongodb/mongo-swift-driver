@@ -75,9 +75,18 @@ final class CrudTests: MongoSwiftTestCase {
     }
 
     func testCrudUnified() throws {
+        let skipFiles: [String] = [
+            // Skipping because we use bulk-write for these commands and can't pass extra options
+            // TODO: SWIFT-1429 unskip
+            "deleteOne-let.json",
+            "deleteMany-let.json",
+            "updateOne-let.json",
+            "updateMany-let.json"
+        ]
         let files = try retrieveSpecTestFiles(
             specName: "crud",
             subdirectory: "unified",
+            excludeFiles: skipFiles,
             asType: UnifiedTestFile.self
         )
         let runner = try UnifiedTestRunner()

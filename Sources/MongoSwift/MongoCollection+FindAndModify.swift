@@ -190,6 +190,10 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
 
+    /// Variables that can be accessed within the operation using the double
+    /// dollar sign prefix in the form `$$<variable_name>`. This option is only available on MongoDB 5.0+.
+    public var `let`: BSONDocument?
+
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
 
@@ -206,6 +210,8 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
         try FindAndModifyOptions(
             collation: self.collation,
             hint: self.hint,
+            // swiftlint:disable:next colon
+            `let`: self.let,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
             remove: true,
@@ -218,6 +224,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     public init(
         collation: BSONDocument? = nil,
         hint: IndexHint? = nil,
+        `let`: BSONDocument? = nil,
         maxTimeMS: Int? = nil,
         projection: BSONDocument? = nil,
         sort: BSONDocument? = nil,
@@ -225,6 +232,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     ) {
         self.collation = collation
         self.hint = hint
+        self.let = `let`
         self.maxTimeMS = maxTimeMS
         self.projection = projection
         self.sort = sort
@@ -242,6 +250,10 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
+
+    /// Variables that can be accessed within the operation using the double
+    /// dollar sign prefix in the form `$$<variable_name>`. This option is only available on MongoDB 5.0+.
+    public var `let`: BSONDocument?
 
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
@@ -266,6 +278,8 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
             hint: self.hint,
+            // swiftlint:disable:next colon
+            `let`: self.let,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
             returnDocument: self.returnDocument,
@@ -280,6 +294,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
         hint: IndexHint? = nil,
+        `let`: BSONDocument? = nil,
         maxTimeMS: Int? = nil,
         projection: BSONDocument? = nil,
         returnDocument: ReturnDocument? = nil,
@@ -290,6 +305,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
         self.hint = hint
+        self.let = `let`
         self.maxTimeMS = maxTimeMS
         self.projection = projection
         self.returnDocument = returnDocument
@@ -312,6 +328,10 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
+
+    /// Variables that can be accessed within the operation using the double
+    /// dollar sign prefix in the form `$$<variable_name>`. This option is only available on MongoDB 5.0+.
+    public var `let`: BSONDocument?
 
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
@@ -337,6 +357,8 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
             hint: self.hint,
+            // swiftlint:disable:next colon
+            `let`: self.let,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
             returnDocument: self.returnDocument,
@@ -352,6 +374,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
         hint: IndexHint? = nil,
+        `let`: BSONDocument? = nil,
         maxTimeMS: Int? = nil,
         projection: BSONDocument? = nil,
         returnDocument: ReturnDocument? = nil,
@@ -363,6 +386,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
         self.hint = hint
+        self.let = `let`
         self.maxTimeMS = maxTimeMS
         self.projection = projection
         self.returnDocument = returnDocument
