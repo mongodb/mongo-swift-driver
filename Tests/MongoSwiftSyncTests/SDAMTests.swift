@@ -249,15 +249,7 @@ final class SDAMTests: MongoSwiftTestCase {
     }
 
     func testServerSelection() throws {
-        let receivedEvents = try captureInitialSDAMEvents()
-
-        let connString = MongoSwiftTestCase.getConnectionString()
-        guard let hostAddress = connString.hosts?[0] else {
-            XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
-            return
-        }
-
-        print(MongoSwiftTestCase.topologyType)
+        print(MongoSwiftTestCase.topologyType.description)
     }
 }
 

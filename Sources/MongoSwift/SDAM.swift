@@ -430,10 +430,11 @@ extension TopologyDescription {
 
     internal func replicaSetHelper(
         readPreference _: ReadPreference?,
-        servers _: [ServerDescription]
+        servers: [ServerDescription]
     ) -> [ServerDescription] {
         // TODO: Filter out servers staler than maxStalenessSeconds
         // TODO: Select servers matching the tag_sets
-        // TODO: Filter based on latency window
+        // While waiting for the above to be implemented, this helper just returns the servers it was passed
+        return servers
     }
 }
