@@ -10,6 +10,7 @@ extension MongoSwiftTestCase {
         // TODO: SWIFT-1442 Once we drop Swift < 5.3 we can switch to including the JSON files as Resources via our
         // package manifest instead.
         let thisFile = URL(fileURLWithPath: #file)
+        // We are in Sources/TestsCommon/SpecTestUtils.swift; drop 3 components to get up to the root directory.
         let baseDirectory = thisFile.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         return baseDirectory.appendingPathComponent("Tests").appendingPathComponent("Specs").path
     }
