@@ -466,6 +466,6 @@ extension TopologyDescription {
         // TODO: Filter out servers staler than maxStalenessSeconds
         // TODO: Select servers matching the tag_sets
         // While waiting for the above to be implemented, this helper just returns the servers it was passed
-        return servers
+        servers
     }
 }
