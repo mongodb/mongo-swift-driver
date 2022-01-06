@@ -50,17 +50,25 @@ extension MongoCursor: AsyncSequence, AsyncIteratorProtocol {
      *   - `DecodingError` if an error occurs decoding the server's response to a `T`.
      */
     public func next() async throws -> T? {
-        while try await self.isAlive() {
-            if Task.isCancelled {
-                return nil
-            }
-            if let doc = try await self.tryNext() {
-                return doc
-            }
-            await Task.yield()
+        guard !Task.isCancelled else {
+            return nil
         }
 
-        return nil
+        switch self.cursorType {
+        case .nonTailable:
+            return try await self.next().get()
+        case .tailable, .tailableAwait:
+            while try await self.isAlive() {
+                if Task.isCancelled {
+                    return nil
+                }
+                if let doc = try await self.tryNext() {
+                    return doc
+                }
+                await Task.yield()
+            }
+            return nil
+        }
     }
 
     /**

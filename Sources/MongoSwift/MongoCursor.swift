@@ -38,6 +38,8 @@ public class MongoCursor<T: Codable>: CursorProtocol {
 
     private let wrappedCursor: Cursor<MongocCursor>
 
+    internal let cursorType: MongoCursorType
+
     /// The `EventLoop` this `MongoCursor` is bound to.
     internal let eventLoop: EventLoop?
 
@@ -67,6 +69,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
         self.client = client
         self.decoder = decoder
         self.eventLoop = eventLoop
+        self.cursorType = cursorType ?? .nonTailable
 
         self.wrappedCursor = try Cursor(
             mongocCursor: MongocCursor(referencing: cursorPtr),
