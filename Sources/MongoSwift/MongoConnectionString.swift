@@ -384,9 +384,6 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// - Throws:
     ///   - `MongoError.InvalidArgumentError` if the input is invalid.
     public init(string input: String) throws {
-        // Set minHeartbeatFrequencyMS to a default of 500.
-        self.minHeartbeatFrequencyMS = 500
-
         let schemeAndRest = input.components(separatedBy: "://")
         guard schemeAndRest.count == 2, let scheme = Scheme(schemeAndRest[0]) else {
             throw MongoError.InvalidArgumentError(
@@ -1184,7 +1181,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     public var maxPoolSize: Int?
 
     /// An alternative lower bound for heartbeatFrequencyMS, used for speeding up tests (default 500ms).
-    internal var minHeartbeatFrequencyMS: Int
+    internal var minHeartbeatFrequencyMS: Int = 500
 
     /// Specifies a ReadConcern to use for the client.
     public var readConcern: ReadConcern?
