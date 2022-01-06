@@ -438,6 +438,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
         guard identifiersAndOptions.count == 2 else {
             // no auth DB or options were specified
+            try self.validate()
             return
         }
 
@@ -465,6 +466,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
         guard authDatabaseAndOptions.count == 2 else {
             // no options were specified
+            try self.validate()
             return
         }
 
@@ -474,7 +476,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         // and therefore is not included in the general validate method.
         try self.validateAndSetCompressors(options)
 
-        // Parse authentication options into a MongoCredential
+        // Parse authentication options into a MongoCredential.
         var credential = self.credential ?? MongoCredential()
         credential.mechanism = options.authMechanism
         credential.mechanismProperties = options.authMechanismProperties
@@ -728,7 +730,8 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             }
         }
 
-        // Validate that directConnection is not set with incompatible options.
+        // Validate that directConnection is not set with incompatible options. If directConnection is not specified,
+        // explicitly set it to false to override libmongoc's default value of true.
         if self.directConnection == true {
             guard self.scheme != .srv else {
                 throw MongoError.InvalidArgumentError(
@@ -742,6 +745,9 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                         + " \(OptionName.directConnection) is set to true"
                 )
             }
+        }
+        if self.directConnection == nil {
+            self.directConnection = false
         }
 
         // Validate that loadBalanced is not set with incompatible options.

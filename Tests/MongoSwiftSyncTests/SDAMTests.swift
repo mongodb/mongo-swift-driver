@@ -86,7 +86,7 @@ final class SDAMTests: MongoSwiftTestCase {
         let prevTopology = event4.previousDescription
         let newTopology = event4.newDescription
 
-        expect(prevTopology.type).to(equal(.single))
+        expect(prevTopology.type).to(equal(.unknown))
         expect(newTopology.type).to(equal(.single))
 
         expect(prevTopology.servers).to(beEmpty())
@@ -213,7 +213,11 @@ final class SDAMTests: MongoSwiftTestCase {
         // We should succeed in discovering the primary in all of these cases:
         let testClientsShouldSucceed = try
             hostURIs.map { try MongoClient.makeTestClient($0) } + // option unspecified
-            hostURIs.map { try MongoClient.makeTestClient("\($0)&directConnection=false") } + // false in URI
+            hostURIs.map {
+                var uri = $0
+                uri.replicaSet = nil
+                return try MongoClient.makeTestClient(uri)
+            } + // option and replicaSet unspecified
             hostURIs.map { try MongoClient.makeTestClient($0, options: optsFalse) } // false in options struct
 
         // separately connect to each host and verify we are able to perform a write, meaning
@@ -225,7 +229,11 @@ final class SDAMTests: MongoSwiftTestCase {
         }
 
         let testClientsShouldMostlyFail = try
-            hostURIs.map { try MongoClient.makeTestClient("\($0)&directConnection=true") } + // true in URI
+            hostURIs.map {
+                var uri = $0
+                uri.directConnection = true
+                return try MongoClient.makeTestClient(uri)
+            } + // true in URI
             hostURIs.map { try MongoClient.makeTestClient($0, options: optsTrue) } // true in options struct
 
         // 4 of 6 attempts to perform writes should fail assuming these are 3-node replica sets, since in 2 cases we
