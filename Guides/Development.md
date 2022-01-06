@@ -30,8 +30,6 @@ Run `swift build` or simply `make` in the project's root directory.
 
 If you add symbols you may need to run `make exports` which will generate [Sources/MongoSwiftSync/Exports.swift](Sources/MongoSwiftSync/Exports.swift). This makes symbols declared in `MongoSwift` available to importers of `MongoSwiftSync`.
 
-Note: Do not run `make clean`.
-
 ### In Xcode
 We do not provide or maintain an already-generated `.xcodeproj` in our repository. Instead, you must generate it locally.
 
@@ -121,9 +119,7 @@ If you have a setup for developing the driver in an editor other than the ones l
 1. Create a feature branch, named by the corresponding JIRA ticket if exists, along with a short descriptor of the work: for example, `SWIFT-30/writeconcern`.
 1. Do your work on the branch.
 1. Ensure your code passes both the linter and the formatter.
-1. Make sure your code builds and passes all tests on:
-    - [Travis](https://travis-ci.org/mongodb/mongo-swift-driver). Every time you push to GitHub or open a pull request, it will trigger a new build, which includes running the linter, formatter, and basic tests.
-    - (If you work at MongoDB) [Evergreen](https://evergreen.mongodb.com/waterfall/mongo-swift-driver) - Our Evergreen matrix tests a variety of MongoDB configurations, operating systems, and Swift language versions, and provides a way to more robustly test the driver. A new Evergreen build is automatically triggered for every commit to `main`, but for more complex pull requests it's a good idea to run patches on Evergreen before merging.
+1. Make sure your code builds and passes all tests on [Evergreen](https://evergreen.mongodb.com/waterfall/mongo-swift-driver). Our Evergreen matrix tests a variety of MongoDB configurations, operating systems, and Swift language versions, and provides a way to more robustly test the driver. A new Evergreen build is automatically triggered for every commit to `main`, but for more complex pull requests it's a good idea to run patches on Evergreen before merging.
 1. Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on `main`.
 1. Go through code review to get the team's approval on your changes. (See the next section on [Code Review](#code-review) for more details on this process.) Once you get the required approvals and your code passes all tests:
 1. Rebase on `main` again if needed.
