@@ -223,6 +223,29 @@ public struct ServerDescription {
         } ?? []
         self.tags = hello?.tags ?? [:]
     }
+
+    internal init(type: ServerType
+    ) {
+        self.type = type
+
+        self.address = ServerAddress(host: "fake", port: 80)
+        self.serverId = 0
+        self.roundTripTime = 0
+        self.lastUpdateTime = Date()
+        self.lastWriteDate = nil
+        self.minWireVersion = 0
+        self.maxWireVersion = 0
+        self.me = self.address
+        self.setName = nil
+        self.setVersion = nil
+        self.electionID = nil
+        self.primary = nil
+        self.logicalSessionTimeoutMinutes = nil
+        self.hosts = []
+        self.passives = []
+        self.arbiters = []
+        self.tags = [:]
+    }
 }
 
 extension ServerDescription: Equatable {
@@ -353,10 +376,18 @@ public struct TopologyDescription: Equatable {
         self.servers = size > 0 ? Array(buffer).map { ServerDescription($0!) } : []
         // the buffer is documented as always containing non-nil pointers (if non-empty).
     }
+
+    internal init(
+        type: TopologyType,
+        servers: [ServerDescription]
+    ) {
+        self.type = type
+        self.servers = servers
+    }
 }
 
 extension TopologyDescription {
-    internal func findSuitableServers(readPreference: ReadPreference?) -> [ServerDescription] {
+    internal func findSuitableServers(readPreference: ReadPreference? = nil) -> [ServerDescription] {
         switch self.type {
         case .unknown:
             return []

@@ -247,10 +247,6 @@ final class SDAMTests: MongoSwiftTestCase {
             description: "Writes should fail when connecting to secondaries with directConnection=true"
         )
     }
-
-    func testServerSelection() throws {
-        print(MongoSwiftTestCase.topologyType.description)
-    }
 }
 
 /// SDAM monitoring event handler that behaves similarly to the `TestCommandMonitor`
