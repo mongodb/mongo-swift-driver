@@ -171,8 +171,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         let encodedData = try JSONEncoder().encode(connStr)
         let decodedResult = try JSONDecoder().decode(MongoConnectionString.self, from: encodedData)
         expect(connStr.description).to(equal(decodedResult.description))
-        // directConnection is always specified in URIs to override libmongoc behavior
-        expect(connStr.description).to(equal("mongodb://localhost:27017/?directconnection=false"))
+        expect(connStr.description).to(equal("mongodb://localhost:27017/"))
     }
 
     func testAppNameOption() throws {
@@ -621,20 +620,5 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
         expect(host.host).to(equal("256.1.2.3"))
         expect(host.type).to(equal(.hostname))
-    }
-
-    func testDirectConnectionOverridden() throws {
-        // directConnection overridden to false when not specified
-        var connString1 = try MongoConnectionString(string: "mongodb://localhost:27017")
-        expect(connString1.directConnection).to(equal(false))
-
-        // directConnection not overridden when specified
-        let connString2 = try MongoConnectionString(string: "mongodb://localhost27017/?directconnection=true")
-        expect(connString2.directConnection).to(equal(true))
-
-        // directConnection not overridden when specified via options
-        let opts = MongoClientOptions(directConnection: true)
-        try connString1.applyOptions(opts)
-        expect(connString1.directConnection).to(equal(true))
     }
 }

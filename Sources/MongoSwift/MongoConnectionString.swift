@@ -730,8 +730,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             }
         }
 
-        // Validate that directConnection is not set with incompatible options. If directConnection is not specified,
-        // explicitly set it to false to override libmongoc's default value of true.
+        // Validate that directConnection is not set with incompatible options.
         if self.directConnection == true {
             guard self.scheme != .srv else {
                 throw MongoError.InvalidArgumentError(
@@ -745,9 +744,6 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                         + " \(OptionName.directConnection) is set to true"
                 )
             }
-        }
-        if self.directConnection == nil {
-            self.directConnection = false
         }
 
         // Validate that loadBalanced is not set with incompatible options.
@@ -1130,12 +1126,16 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     }
 
     internal func withMongocURI<T>(_ body: (OpaquePointer) throws -> T) throws -> T {
+        var uri = self
+        if uri.directConnection == nil {
+            uri.directConnection = false
+        }
         var error = bson_error_t()
-        guard let uri = mongoc_uri_new_with_error(self.description, &error) else {
+        guard let mongocURI = mongoc_uri_new_with_error(uri.description, &error) else {
             throw extractMongoError(error: error)
         }
-        defer { mongoc_uri_destroy(uri) }
-        return try body(uri)
+        defer { mongoc_uri_destroy(mongocURI) }
+        return try body(mongocURI)
     }
 
     /// Specifies the format this connection string is in.
