@@ -116,9 +116,6 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                     // try selecting a server to trigger SDAM
                     _ = try client.connectionPool.selectServer(forWrites: false)
 
-                    // get resolved connection string after SDAM has been started.
-                    let connStr = try client.connectionPool.getConnectionString()
-
                     guard testCase.error != true else {
                         XCTFail("Expected error for test case \(testCase.comment ?? ""), got none")
                         return
@@ -133,7 +130,8 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
                     // "You MUST verify that each of the values of the Connection String Options under options match the
                     // Client's parsed value for that option."
-                    let connStrOptions = connStr.options ?? [:]
+                    let connStr = try client.connectionPool.getConnectionString()
+                    let connStrOptions = try client.connectionPool.getConnectionStringOptions()
                     for (k, v) in Array(testCase.options ?? [:]) + Array(testCase.parsedOptions ?? [:]) {
                         switch k {
                         // the test files still use SSL, but libmongoc uses TLS
@@ -141,13 +139,13 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                             expect(connStrOptions["tls"]).to(equal(v))
                         // these values are not returned as part of the options doc
                         case "authSource", "auth_database":
-                            expect(connStr.authSource).to(equal(v.stringValue))
+                            expect(try client.connectionPool.getConnectionStringAuthSource()).to(equal(v.stringValue))
                         case "user":
-                            expect(connStr.username).to(equal(v.stringValue))
+                            expect(connStr.credential?.username).to(equal(v.stringValue))
                         case "password":
-                            expect(connStr.password).to(equal(v.stringValue))
+                            expect(connStr.credential?.password).to(equal(v.stringValue))
                         case "db":
-                            expect(connStr.db).to(equal(v.stringValue))
+                            expect(connStr.defaultAuthDB).to(equal(v.stringValue))
                         default:
                             // there are some case inconsistencies between the tests and libmongoc
                             expect(connStrOptions[k.lowercased()]).to(equal(v))

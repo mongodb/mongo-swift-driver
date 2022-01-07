@@ -2,6 +2,7 @@ import CLibMongoC
 import Foundation
 import NIO
 import NIOConcurrencyHelpers
+import SwiftBSON
 
 /// A connection to the database.
 internal class Connection {
@@ -77,8 +78,12 @@ internal class ConnectionPool {
 
     internal static let PoolClosedError = MongoError.LogicError(message: "ConnectionPool was already closed")
 
-    /// Initializes the pool using the provided `ConnectionString`.
-    internal init(from connString: ConnectionString, executor: OperationExecutor, serverAPI: MongoServerAPI?) throws {
+    /// Initializes the pool using the provided `MongoConnectionString`.
+    internal init(
+        from connString: MongoConnectionString,
+        executor: OperationExecutor,
+        serverAPI: MongoServerAPI?
+    ) throws {
         let poolFut = executor.execute(on: nil) { () -> OpaquePointer in
             try connString.withMongocURI { uriPtr in
                 guard let pool = mongoc_client_pool_new(uriPtr) else {
@@ -240,16 +245,53 @@ internal class ConnectionPool {
         }
     }
 
-    /// Retrieves the connection string used to create this pool. If SDAM has been started in libmongoc, the getters
-    /// on the returned connection string will return any values that were retrieved from TXT records. Throws an error
-    /// if the connection string cannot be retrieved.
-    internal func getConnectionString() throws -> ConnectionString {
+    /// Retrieves the connection string used to create this pool. Note that options retrieved from TXT records will not
+    /// be present in this connection string. To inspect those options, use `getConnectionStringOptions`. Throws an
+    /// error if the connection string cannot be retrieved.
+    internal func getConnectionString() throws -> MongoConnectionString {
         try self.withConnection { connection in
             try connection.withMongocConnection { connPtr in
                 guard let uri = mongoc_client_get_uri(connPtr) else {
                     throw MongoError.InternalError(message: "Couldn't retrieve client's connection string")
                 }
-                return ConnectionString(copying: uri)
+                guard let uriString = mongoc_uri_get_string(uri) else {
+                    throw MongoError.InternalError(message: "Couldn't retrieve URI string")
+                }
+                return try MongoConnectionString(string: String(cString: uriString))
+            }
+        }
+    }
+
+    /// Retrieves the options configured on the connection string used to create this pool. If SDAM has been started in
+    /// libmongoc, these will include any values that were retrieved from TXT records. Note that these options will not
+    /// include `authSource`; to retrieve that value, use `getConnectionStringAuthSource`. Throws an error if the
+    /// connection string cannot be retrieved.
+    internal func getConnectionStringOptions() throws -> BSONDocument {
+        try self.withConnection { connection in
+            try connection.withMongocConnection { connPtr in
+                guard let uri = mongoc_client_get_uri(connPtr) else {
+                    throw MongoError.InternalError(message: "Couldn't retrieve client's connection string")
+                }
+                guard let options = mongoc_uri_get_options(uri) else {
+                    return BSONDocument()
+                }
+                return BSONDocument(copying: options)
+            }
+        }
+    }
+
+    /// Retrieves the `authSource` configured on the connection string used to create this pool. If SDAM has been
+    /// started in libmongoc, this will return the up-to-date value after SRV lookup.
+    internal func getConnectionStringAuthSource() throws -> String? {
+        try self.withConnection { connection in
+            try connection.withMongocConnection { connPtr in
+                guard let uri = mongoc_client_get_uri(connPtr) else {
+                    throw MongoError.InternalError(message: "Couldn't retrieve client's connection string")
+                }
+                guard let authSource = mongoc_uri_get_auth_source(uri) else {
+                    return nil
+                }
+                return String(cString: authSource)
             }
         }
     }

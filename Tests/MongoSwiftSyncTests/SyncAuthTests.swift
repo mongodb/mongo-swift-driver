@@ -35,39 +35,19 @@ struct TestUser {
     }
 
     /// Adds this user's username and password, and an optionally provided auth mechanism, to the connection string.
-    func addToConnString(_ connStr: String, mechanism: MongoCredential.Mechanism? = nil) throws -> String {
-        // find where the first / is.
-        guard let firstSlash = connStr.firstIndex(of: "/") else {
-            throw TestError(message: "expected connection string to contain slash")
+    func addToConnString(
+        _ connStr: MongoConnectionString,
+        mechanism: MongoCredential.Mechanism? = nil
+    ) throws -> MongoConnectionString {
+        var newConnString = connStr
+        var newCredential = MongoCredential()
+        if let mechanism = mechanism {
+            newCredential.mechanism = mechanism
         }
-
-        // this should also be a / in a properly formatted URI.
-        let nextIdx = connStr.index(after: firstSlash)
-        guard connStr[nextIdx] == "/" else {
-            throw TestError(message: "expected connection string to contain '//'")
-        }
-
-        // we want to split right after the // to insert the username and password.
-        let splitIdx = connStr.index(firstSlash, offsetBy: 2)
-        // if the connection string already has a username, remove the portion up through the @ sign to get what should
-        // come after the username.
-        let afterUsername = MongoSwiftTestCase.auth ? connStr.drop { $0 != "@" }.dropFirst() : connStr[splitIdx...]
-
-        let joined = "\(connStr[..<splitIdx])\(self.username):\(self.password)@\(afterUsername)"
-        guard let mech = mechanism else {
-            return joined
-        }
-
-        // assume there are already URL parameters if there's a ?, e.g. mongodb://...../?replset=replset0
-        if connStr.contains("?") {
-            return "\(joined)&authMechanism=\(mech.description)"
-        }
-        // assume it is a URI that ends with a / and has no params, e.g. mongodb://localhost:27017/
-        else if connStr.hasSuffix("/") {
-            return "\(joined)?authMechanism=\(mech.description)"
-        }
-        // assume the URI does not end with a / and also has no params, e.g. mongodb://localhost:27017
-        return "\(joined)/?authMechanism=\(mech.description)"
+        newCredential.username = self.username
+        newCredential.password = self.password
+        newConnString.credential = newCredential
+        return newConnString
     }
 }
 
@@ -101,7 +81,7 @@ final class SyncAuthTests: MongoSwiftTestCase {
 
         // 2. For each test user, verify that you can connect and run a command requiring authentication for the
         //    following cases:
-        let connString = MongoSwiftTestCase.getConnectionString().toString()
+        let connString = MongoSwiftTestCase.getConnectionString()
         for user in testUsers {
             // - Explicitly specifying each mechanism the user supports.
             try user.mechanisms.forEach { mech in

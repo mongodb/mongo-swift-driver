@@ -218,7 +218,7 @@ extension SpecTestFile {
             return
         }
 
-        let connString = MongoSwiftTestCase.getConnectionString().toString()
+        let connString = MongoSwiftTestCase.getConnectionString()
         var setupClientOptions = MongoClientOptions()
         setupClientOptions.minHeartbeatFrequencyMS = 50
         setupClientOptions.heartbeatFrequencyMS = 50
@@ -239,7 +239,7 @@ extension SpecTestFile {
             opts.directConnection = true // connect directly to mongoses
             for host in MongoSwiftTestCase.getHosts() {
                 let connString = MongoSwiftTestCase.getConnectionString(forHost: host)
-                let client = try MongoClient.makeTestClient(connString.toString(), options: opts)
+                let client = try MongoClient.makeTestClient(connString, options: opts)
                 mongosClients[host] = client
             }
         }
@@ -346,9 +346,7 @@ extension SpecTest {
             options.heartbeatFrequencyMS = 50
         }
 
-        let client = try MongoClient.makeTestClient(
-            connectionString.toString(), options: options
-        )
+        let client = try MongoClient.makeTestClient(connectionString, options: options)
         let monitor = client.addCommandMonitor()
 
         if let failPoint = self.failPoint {

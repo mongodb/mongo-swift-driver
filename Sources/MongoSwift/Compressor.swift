@@ -1,6 +1,6 @@
 /// Specifies a library to use for network compression.
-public struct Compressor: CustomStringConvertible {
-    internal enum _Compressor {
+public struct Compressor: CustomStringConvertible, Equatable {
+    internal enum _Compressor: Equatable {
         case zlib(level: Int32?)
     }
 

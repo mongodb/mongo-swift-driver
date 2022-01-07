@@ -43,11 +43,11 @@ final class SDAMTests: MongoSwiftTestCase {
 
         let receivedEvents = try captureInitialSDAMEvents()
 
-        let connString = MongoSwiftTestCase.getConnectionString()
-        guard let hostAddress = connString.hosts?[0] else {
+        guard let connStringHost = MongoSwiftTestCase.getConnectionString().hosts.first else {
             XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
             return
         }
+        let hostAddress = ServerAddress(host: connStringHost.host, port: connStringHost.port ?? 27017)
 
         expect(receivedEvents.count).to(equal(5))
         expect(receivedEvents[0].topologyOpeningValue).toNot(beNil())
@@ -111,10 +111,11 @@ final class SDAMTests: MongoSwiftTestCase {
         let receivedEvents = try captureInitialSDAMEvents()
 
         let connString = MongoSwiftTestCase.getConnectionString()
-        guard let hostAddress = connString.hosts?[0] else {
+        guard let connStringHost = connString.hosts.first else {
             XCTFail("Could not get hosts for uri: \(MongoSwiftTestCase.getConnectionString())")
             return
         }
+        let hostAddress = ServerAddress(host: connStringHost.host, port: connStringHost.port ?? 27017)
 
         guard receivedEvents.count == 5 else {
             XCTFail("Expected to receive 5 events, but instead received \(receivedEvents.count)")
@@ -204,7 +205,7 @@ final class SDAMTests: MongoSwiftTestCase {
             return
         }
 
-        let hostURIs = Self.getConnectionStringPerHost().map { $0.toString() }
+        let hostURIs = Self.getConnectionStringPerHost()
 
         let optsFalse = MongoClientOptions(directConnection: false)
         let optsTrue = MongoClientOptions(directConnection: true)
@@ -212,7 +213,11 @@ final class SDAMTests: MongoSwiftTestCase {
         // We should succeed in discovering the primary in all of these cases:
         let testClientsShouldSucceed = try
             hostURIs.map { try MongoClient.makeTestClient($0) } + // option unspecified
-            hostURIs.map { try MongoClient.makeTestClient("\($0)&directConnection=false") } + // false in URI
+            hostURIs.map {
+                var uri = $0
+                uri.replicaSet = nil
+                return try MongoClient.makeTestClient(uri)
+            } + // option and replicaSet unspecified
             hostURIs.map { try MongoClient.makeTestClient($0, options: optsFalse) } // false in options struct
 
         // separately connect to each host and verify we are able to perform a write, meaning
@@ -224,7 +229,11 @@ final class SDAMTests: MongoSwiftTestCase {
         }
 
         let testClientsShouldMostlyFail = try
-            hostURIs.map { try MongoClient.makeTestClient("\($0)&directConnection=true") } + // true in URI
+            hostURIs.map {
+                var uri = $0
+                uri.directConnection = true
+                return try MongoClient.makeTestClient(uri)
+            } + // true in URI
             hostURIs.map { try MongoClient.makeTestClient($0, options: optsTrue) } // true in options struct
 
         // 4 of 6 attempts to perform writes should fail assuming these are 3-node replica sets, since in 2 cases we
