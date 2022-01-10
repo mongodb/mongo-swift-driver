@@ -21,7 +21,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
         let singleTopology = TopologyDescription(type: .single, servers: [standaloneServer])
         expect(singleTopology.findSuitableServers()[0].type).to(equal(.standalone))
 
-        // replica set
+        // replica set with primary
         let replicaSetTopology = TopologyDescription(type: .replicaSetWithPrimary, servers: [
             rsPrimaryServer,
             rsSecondaryServer1,
@@ -32,6 +32,25 @@ final class ServerSelectionTests: MongoSwiftTestCase {
         expect(replicaSetSuitableServers[0].type)
             .to(equal(.rsPrimary))
         expect(replicaSetSuitableServers).to(haveCount(1))
+
+        let primaryPrefReadPreferemce = ReadPreference(.primaryPreferred)
+        let replicaSetSuitableServers2 = replicaSetTopology
+            .findSuitableServers(readPreference: primaryPrefReadPreferemce)
+        expect(replicaSetSuitableServers2[0].type).to(equal(.rsPrimary))
+        expect(replicaSetSuitableServers2).to(haveCount(1))
+
+        // replica set without primary
+        let replicaSetNoPrimaryTopology = TopologyDescription(type: .replicaSetNoPrimary, servers: [
+            rsSecondaryServer1,
+            rsSecondaryServer2
+        ])
+        let replicaSetNoPrimarySuitableServers = replicaSetNoPrimaryTopology
+            .findSuitableServers(readPreference: primaryReadPreference)
+        expect(replicaSetNoPrimarySuitableServers).to(haveCount(0))
+
+        let replicaSetNoPrimarySuitableServer2 = replicaSetNoPrimaryTopology.findSuitableServers(readPreference: nil)
+        expect(replicaSetNoPrimarySuitableServer2[0].type).to(equal(.rsSecondary))
+        expect(replicaSetNoPrimarySuitableServer2).to(haveCount(2))
 
         // sharded
         let shardedTopology = TopologyDescription(type: .sharded, servers: [

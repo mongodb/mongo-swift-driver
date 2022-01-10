@@ -409,17 +409,16 @@ extension TopologyDescription {
                 let primaries = self.servers.filter { $0.type == .rsPrimary }
                 let matches = self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
                 return matches.isEmpty ? primaries : matches
-            case .primaryPreferred:
-                // If mode is 'primaryPreferred', select the primary if it is known, otherwise attempt
-                // the selection algorithm with mode 'secondary' and the user's maxStalenessSeconds and tag_sets.
+            default:
+                // If mode is 'primaryPreferred' or a readPreference is not provided, select the primary if it is known,
+                // otherwise attempt the selection algorithm with mode 'secondary' and the user's
+                // maxStalenessSeconds and tag_sets.
                 let primaries = self.servers.filter { $0.type == .rsPrimary }
                 if !primaries.isEmpty {
                     return primaries
                 }
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
                 return self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
-            default:
-                return []
             }
         case .sharded:
             return self.servers.filter { $0.type == .mongos }
