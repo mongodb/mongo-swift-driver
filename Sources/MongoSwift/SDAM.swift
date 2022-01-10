@@ -224,10 +224,9 @@ public struct ServerDescription {
         self.tags = hello?.tags ?? [:]
     }
 
-    internal init(type: ServerType
-    ) {
+    // For testing purposes
+    internal init(type: ServerType) {
         self.type = type
-
         self.address = ServerAddress(host: "fake", port: 80)
         self.serverId = 0
         self.roundTripTime = 0
@@ -377,10 +376,8 @@ public struct TopologyDescription: Equatable {
         // the buffer is documented as always containing non-nil pointers (if non-empty).
     }
 
-    internal init(
-        type: TopologyType,
-        servers: [ServerDescription]
-    ) {
+    // For testing purposes
+    internal init(type: TopologyType, servers: [ServerDescription]) {
         self.type = type
         self.servers = servers
     }
@@ -398,62 +395,34 @@ extension TopologyDescription {
              .replicaSetWithPrimary:
             switch readPreference?.mode {
             case .primary:
-                for server in self.servers where server.type == .rsPrimary {
-                    return [server]
-                }
+                return self.servers.filter { $0.type == .rsPrimary }
             case .secondary:
-                var secondaries = [ServerDescription]()
-                for server in self.servers where server.type == .rsSecondary {
-                    secondaries.append(server)
-                }
+                let secondaries = self.servers.filter { $0.type == .rsSecondary }
                 return self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
             case .nearest:
-                var secondariesAndPrimary = [ServerDescription]()
-                for server in self.servers where server.type == .rsSecondary || server.type == .rsPrimary {
-                    secondariesAndPrimary.append(server)
-                }
+                let secondariesAndPrimary = self.servers.filter { $0.type == .rsSecondary || $0.type == .rsPrimary }
                 return self.replicaSetHelper(readPreference: readPreference, servers: secondariesAndPrimary)
             case .secondaryPreferred:
                 // If mode is 'secondaryPreferred', attempt the selection algorithm with mode 'secondary' and the
                 // user's maxStalenessSeconds and tag_sets.If no server matches, select the primary.
-                var secondaries = [ServerDescription]()
-                var primary = [ServerDescription]()
-                for server in self.servers {
-                    if server.type == .rsSecondary {
-                        secondaries.append(server)
-                    }
-                    if server.type == .rsPrimary {
-                        primary.append(server)
-                    }
-                }
+                let secondaries = self.servers.filter { $0.type == .rsSecondary }
+                let primaries = self.servers.filter { $0.type == .rsPrimary }
                 let matches = self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
-                return matches.isEmpty ? primary : matches
+                return matches.isEmpty ? primaries : matches
             case .primaryPreferred:
                 // If mode is 'primaryPreferred', select the primary if it is known, otherwise attempt
                 // the selection algorithm with mode 'secondary' and the user's maxStalenessSeconds and tag_sets.
-                var secondaries = [ServerDescription]()
-                var primary = [ServerDescription]()
-                for server in self.servers {
-                    if server.type == .rsSecondary {
-                        secondaries.append(server)
-                    }
-                    if server.type == .rsPrimary {
-                        primary.append(server)
-                    }
+                let primaries = self.servers.filter { $0.type == .rsPrimary }
+                if !primaries.isEmpty {
+                    return primaries
                 }
-                return primary.isEmpty
-                    ? self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
-                    : primary
+                let secondaries = self.servers.filter { $0.type == .rsSecondary }
+                return self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
             default:
                 return []
             }
-            return []
         case .sharded:
-            var suitable = [ServerDescription]()
-            for server in self.servers where server.type == .mongos {
-                suitable.append(server)
-            }
-            return suitable
+            return self.servers.filter { $0.type == .mongos }
         default:
             return []
         }
