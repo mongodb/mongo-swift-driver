@@ -8,22 +8,22 @@ This application is intended to demonstrate best practices for integrating the d
 
 The application contains both a REST API as well as a minimal frontend built with Vapor's templating language [Leaf](https://github.com/vapor/leaf).
 
-This application require Swift 5.2 and MongoDB 3.6+. It will run on Linux as well as macOS 10.15+.
+This application requires Swift 5.5+ and MongoDB 3.6+. It will run on Linux as well as macOS 12+.
+
+If you are looking for an example application that uses older Swift versions prior to the introduction of structured concurrency, please refer to a previous version of this application and README [here](https://github.com/mongodb/mongo-swift-driver/tree/5d9fad121d7cb3ded61087de300ff007766ccd55/Examples/VaporExample).
 
 ## Building and Running the Application
 1. Install MongoDB on your system if you haven't already. Downloads are available [here](https://www.mongodb.com/download-center/community).
 1. Start up MongoDB running locally: `mongod --dbpath some-directory-here`. You may need to specify a `dbpath` directory for the database to use.
 1. Run `./loadData.sh` to load example application data into the database.
-1. Install Swift 5.2+ on your system if you haven't already. You can download Swift and find instructions for installing it [here](https://swift.org/download/).
+1. Install Swift 5.5+ on your system if you haven't already. You can download Swift and find instructions for installing it [here](https://swift.org/download/).
 1. From the root directory of the project, run `swift build`. This will likely take a while the first time you do so.
 1. Once building has completed, run `swift run` from the root directory. You should get a message that the server has started running on `http://127.0.0.1:8080`.
 1. Open up your browser and visit `http://127.0.0.1:8080`. You should see the application and be able to test out adding, deleting, and editing data in the collection.
 
 ## Application Architecture
 
-This is a fully asynchronous application. At its core is [SwiftNIO](https://github.com/apple/swift-nio), which is used to implement both Vapor and the MongoDB driver.
-
-The application has both web and REST API interfaces, which support storing a list of kittens and details about them.
+This is a fully asynchronous application with both web and REST API interfaces, which support storing a list of kittens and details about them.
 
 The server will handle the following types of web requests:
 1. A GET request at the root URL `/` loads the main index page containing a list of kittens.
@@ -43,19 +43,14 @@ If you'd like to point the application to a MongoDB server elsewhere (e.g. on [M
 
 The call to `configure()` initializes a global `MongoClient` to back your application. `MongoClient` is implemented with that approach in mind: it is safe to use across threads, and is backed by a [connection pool](https://en.wikipedia.org/wiki/Connection_pool) which enables sharing resources throughout the application.
 
-Throughout your application, you can access the global client via `app.mongoDB.client`. Note that the global client may return `EventLoopFuture`s on *any* `EventLoop` in the application's `EventLoopGroup`, so if you use this client you will need to ensure you "hop" the futures back to the event loop you are currently on. See the `EventLoopFuture` [documentation](https://apple.github.io/swift-nio/docs/current/NIO/Classes/EventLoopFuture.html) for more details.
-
-To avoid the need to hop `EventLoop`s, whenever you are using MongoDB in a request handler, we strongly recommend you use an `EventLoopBoundMongoClient` instead, accessible via `req.mongoDB.client`. This type is a small wrapper around the global client, which returns `EventLoopFuture`s on a specific `EventLoop` which it is "bound" to. Using an `EventLoopBoundMongoClient` that is backed by the same `EventLoop` as a `Request` means you can use the client within a request handler without worrying about thread safety. You can access an `EventLoopBoundMongoClient` for a `Request` via `req.mongoDB.client`.
-
-`MongoDatabase`s and `MongoCollection`s you retrieve from an `EventLoopBoundMongoClient` will automatically be bound to the same event loop as the parent client.
+Throughout your application, you can access the global client via `app.mongoDB.client`.
 
 For convenience, we recommend adding your own computed properties to `Request` that return `MongoDatabase`s and `MongoCollection`s you frequently access, as is shown in `Sources/App/routes.swift` 
 with the `kittenCollection` property:
 ```swift
 extension Request {
-    /// Convenience extension for obtaining a collection which uses the same event loop as a request.
     var kittenCollection: MongoCollection<Kitten> {
-        self.mongoDB.client.db("home").collection("kittens", withType: Kitten.self)
+        self.application.mongoDB.client.db("home").collection("kittens", withType: Kitten.self)
     }
 }
 ```
@@ -70,7 +65,7 @@ When creating a `MongoCollection`, you can pass in the name of a `Codable` type:
 let collection = req.mongoDB.client.db("home").collection("kittens", withType: Kitten.self)
 ```
 
-This will instantiate a `MongoCollection<Kitten>`. You can then use `Kitten` directly with many API methods -- for example, `insertOne` will directly accept a `Kitten` instance, and `findOne` will return an `EventLoopFuture<Kitten>`.
+This will instantiate a `MongoCollection<Kitten>`. You can then use `Kitten` directly with many API methods -- for example, `insertOne` will directly accept a `Kitten` instance, and `findOne` will return a `Kitten?`.
 
 Sometimes you may need to work with the `BSONDocument` type as well, for example when providing a query filter. If you want to construct these documents from `Codable` types you may do so using `BSONEncoder`, as we do with the `updateDocument` in the `updateKitten()` method via the `KittenUpdate` struct.
 

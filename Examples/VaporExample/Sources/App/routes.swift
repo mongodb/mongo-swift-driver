@@ -47,9 +47,9 @@ func restAPIRoutes(_ app: Application) throws {
 }
 
 extension Request {
-    /// Convenience extension for obtaining a collection which uses the same event loop as a request.
+    /// Convenience extension for obtaining a collection.
     var kittenCollection: MongoCollection<Kitten> {
-        self.mongoDB.client.db("home").collection("kittens", withType: Kitten.self)
+        self.application.mongoDB.client.db("home").collection("kittens", withType: Kitten.self)
     }
 
     /// Constructs a document using the name from this request which can be used a filter for MongoDB
