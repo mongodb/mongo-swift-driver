@@ -29,8 +29,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
         ])
         let primaryReadPreference = ReadPreference(.primary)
         let replicaSetSuitableServers = replicaSetTopology.findSuitableServers(readPreference: primaryReadPreference)
-        expect(replicaSetSuitableServers[0].type)
-            .to(equal(.rsPrimary))
+        expect(replicaSetSuitableServers[0].type).to(equal(.rsPrimary))
         expect(replicaSetSuitableServers).to(haveCount(1))
 
         let primaryPrefReadPreferemce = ReadPreference(.primaryPreferred)
@@ -49,8 +48,12 @@ final class ServerSelectionTests: MongoSwiftTestCase {
         expect(replicaSetNoPrimarySuitableServers).to(haveCount(0))
 
         let replicaSetNoPrimarySuitableServer2 = replicaSetNoPrimaryTopology.findSuitableServers(readPreference: nil)
-        expect(replicaSetNoPrimarySuitableServer2[0].type).to(equal(.rsSecondary))
-        expect(replicaSetNoPrimarySuitableServer2).to(haveCount(2))
+        expect(replicaSetNoPrimarySuitableServer2).to(haveCount(0))
+
+        let replicaSetNoPrimarySuitableServer3 = replicaSetNoPrimaryTopology
+            .findSuitableServers(readPreference: primaryPrefReadPreferemce)
+        expect(replicaSetNoPrimarySuitableServer3[0].type).to(equal(.rsSecondary))
+        expect(replicaSetNoPrimarySuitableServer3).to(haveCount(2))
 
         // sharded
         let shardedTopology = TopologyDescription(type: .sharded, servers: [

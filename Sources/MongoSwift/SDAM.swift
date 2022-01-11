@@ -292,7 +292,7 @@ public struct TopologyDescription: Equatable {
 
         /// Internal representation of topology type. If enums could be marked non-exhaustive in Swift, this would be
         /// the public representation too.
-        private enum _TopologyType: String, Equatable {
+        fileprivate enum _TopologyType: String, Equatable {
             case single = "Single"
             case replicaSetNoPrimary = "ReplicaSetNoPrimary"
             case replicaSetWithPrimary = "ReplicaSetWithPrimary"
@@ -301,7 +301,7 @@ public struct TopologyDescription: Equatable {
             case loadBalanced = "LoadBalanced"
         }
 
-        private let _topologyType: _TopologyType
+        fileprivate let _topologyType: _TopologyType
 
         private init(_ _type: _TopologyType) {
             self._topologyType = _type
@@ -385,7 +385,7 @@ public struct TopologyDescription: Equatable {
 
 extension TopologyDescription {
     internal func findSuitableServers(readPreference: ReadPreference? = nil) -> [ServerDescription] {
-        switch self.type {
+        switch self.type._topologyType {
         case .unknown:
             return []
         case .single,
@@ -394,8 +394,6 @@ extension TopologyDescription {
         case .replicaSetNoPrimary,
              .replicaSetWithPrimary:
             switch readPreference?.mode {
-            case .primary:
-                return self.servers.filter { $0.type == .rsPrimary }
             case .secondary:
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
                 return self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
@@ -409,7 +407,7 @@ extension TopologyDescription {
                 let primaries = self.servers.filter { $0.type == .rsPrimary }
                 let matches = self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
                 return matches.isEmpty ? primaries : matches
-            default:
+            case .primaryPreferred:
                 // If mode is 'primaryPreferred' or a readPreference is not provided, select the primary if it is known,
                 // otherwise attempt the selection algorithm with mode 'secondary' and the user's
                 // maxStalenessSeconds and tag_sets.
@@ -419,11 +417,12 @@ extension TopologyDescription {
                 }
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
                 return self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
+            default:
+                // the default mode is 'primary'.
+                return self.servers.filter { $0.type == .rsPrimary }
             }
         case .sharded:
             return self.servers.filter { $0.type == .mongos }
-        default:
-            return []
         }
     }
 
