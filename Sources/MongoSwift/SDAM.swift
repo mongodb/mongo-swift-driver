@@ -396,16 +396,16 @@ extension TopologyDescription {
             switch readPreference?.mode {
             case .secondary:
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
-                return self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
+                return self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
             case .nearest:
                 let secondariesAndPrimary = self.servers.filter { $0.type == .rsSecondary || $0.type == .rsPrimary }
-                return self.replicaSetHelper(readPreference: readPreference, servers: secondariesAndPrimary)
+                return self.filterReplicaSetServers(readPreference: readPreference, servers: secondariesAndPrimary)
             case .secondaryPreferred:
                 // If mode is 'secondaryPreferred', attempt the selection algorithm with mode 'secondary' and the
                 // user's maxStalenessSeconds and tag_sets.If no server matches, select the primary.
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
                 let primaries = self.servers.filter { $0.type == .rsPrimary }
-                let matches = self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
+                let matches = self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
                 return matches.isEmpty ? primaries : matches
             case .primaryPreferred:
                 // If mode is 'primaryPreferred' or a readPreference is not provided, select the primary if it is known,
@@ -416,7 +416,7 @@ extension TopologyDescription {
                     return primaries
                 }
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
-                return self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
+                return self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
             default:
                 // the default mode is 'primary'.
                 return self.servers.filter { $0.type == .rsPrimary }
@@ -426,7 +426,7 @@ extension TopologyDescription {
         }
     }
 
-    internal func replicaSetHelper(
+    internal func filterReplicaSetServers(
         readPreference _: ReadPreference?,
         servers: [ServerDescription]
     ) -> [ServerDescription] {
