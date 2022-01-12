@@ -225,7 +225,7 @@ public struct ServerDescription {
     }
 
     // For testing purposes
-    internal init(type: ServerType) {
+    internal init(type: ServerType, tags: [String: String]? = nil) {
         self.type = type
         self.address = ServerAddress(host: "fake", port: 80)
         self.serverId = 0
@@ -243,7 +243,7 @@ public struct ServerDescription {
         self.hosts = []
         self.passives = []
         self.arbiters = []
-        self.tags = [:]
+        self.tags = tags ?? [:]
     }
 }
 
@@ -384,7 +384,7 @@ public struct TopologyDescription: Equatable {
 }
 
 extension TopologyDescription {
-    internal func findSuitableServers(readPreference: ReadPreference? = nil) -> [ServerDescription] {
+    internal func findSuitableServers(readPreference: ReadPreference? = nil) throws -> [ServerDescription] {
         switch self.type._topologyType {
         case .unknown:
             return []
@@ -394,6 +394,13 @@ extension TopologyDescription {
         case .replicaSetNoPrimary,
              .replicaSetWithPrimary:
             switch readPreference?.mode {
+            case .primary:
+                guard readPreference?.tagSets == nil || readPreference?.tagSets == [BSONDocument()] else {
+                    throw MongoError.InternalError(
+                        message: "non-empty tag set was given in tag_sets and the mode field was 'primary'"
+                    )
+                }
+                return self.servers.filter { $0.type == .rsPrimary }
             case .secondary:
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
                 return self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
@@ -427,12 +434,25 @@ extension TopologyDescription {
     }
 
     internal func replicaSetHelper(
-        readPreference _: ReadPreference?,
+        readPreference: ReadPreference?,
         servers: [ServerDescription]
     ) -> [ServerDescription] {
+        let tagSets = readPreference?.tagSets ?? []
+        let matches = servers.filter { doTagsMatch(serverTags: $0.tags, tagSets: tagSets) }
         // TODO: Filter out servers staler than maxStalenessSeconds
-        // TODO: Select servers matching the tag_sets
-        // While waiting for the above to be implemented, this helper just returns the servers it was passed
-        servers
+        return matches
+    }
+
+    internal func doTagsMatch(serverTags: [String: String], tagSets: [BSONDocument]) -> Bool {
+        if tagSets.isEmpty {
+            return true
+        }
+        for tagSet in tagSets {
+            let matches = tagSet.allSatisfy { serverTags[$0.key] == $0.value.stringValue }
+            if matches {
+                return true
+            }
+        }
+        return false
     }
 }
