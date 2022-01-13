@@ -223,6 +223,28 @@ public struct ServerDescription {
         } ?? []
         self.tags = hello?.tags ?? [:]
     }
+
+    // For testing purposes
+    internal init(type: ServerType) {
+        self.type = type
+        self.address = ServerAddress(host: "fake", port: 80)
+        self.serverId = 0
+        self.roundTripTime = 0
+        self.lastUpdateTime = Date()
+        self.lastWriteDate = nil
+        self.minWireVersion = 0
+        self.maxWireVersion = 0
+        self.me = self.address
+        self.setName = nil
+        self.setVersion = nil
+        self.electionID = nil
+        self.primary = nil
+        self.logicalSessionTimeoutMinutes = nil
+        self.hosts = []
+        self.passives = []
+        self.arbiters = []
+        self.tags = [:]
+    }
 }
 
 extension ServerDescription: Equatable {
@@ -270,7 +292,7 @@ public struct TopologyDescription: Equatable {
 
         /// Internal representation of topology type. If enums could be marked non-exhaustive in Swift, this would be
         /// the public representation too.
-        private enum _TopologyType: String, Equatable {
+        fileprivate enum _TopologyType: String, Equatable {
             case single = "Single"
             case replicaSetNoPrimary = "ReplicaSetNoPrimary"
             case replicaSetWithPrimary = "ReplicaSetWithPrimary"
@@ -279,7 +301,7 @@ public struct TopologyDescription: Equatable {
             case loadBalanced = "LoadBalanced"
         }
 
-        private let _topologyType: _TopologyType
+        fileprivate let _topologyType: _TopologyType
 
         private init(_ _type: _TopologyType) {
             self._topologyType = _type
@@ -352,5 +374,65 @@ public struct TopologyDescription: Equatable {
         // swiftlint:disable:next force_unwrapping
         self.servers = size > 0 ? Array(buffer).map { ServerDescription($0!) } : []
         // the buffer is documented as always containing non-nil pointers (if non-empty).
+    }
+
+    // For testing purposes
+    internal init(type: TopologyType, servers: [ServerDescription]) {
+        self.type = type
+        self.servers = servers
+    }
+}
+
+extension TopologyDescription {
+    internal func findSuitableServers(readPreference: ReadPreference? = nil) -> [ServerDescription] {
+        switch self.type._topologyType {
+        case .unknown:
+            return []
+        case .single,
+             .loadBalanced:
+            return self.servers
+        case .replicaSetNoPrimary,
+             .replicaSetWithPrimary:
+            switch readPreference?.mode {
+            case .secondary:
+                let secondaries = self.servers.filter { $0.type == .rsSecondary }
+                return self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
+            case .nearest:
+                let secondariesAndPrimary = self.servers.filter { $0.type == .rsSecondary || $0.type == .rsPrimary }
+                return self.filterReplicaSetServers(readPreference: readPreference, servers: secondariesAndPrimary)
+            case .secondaryPreferred:
+                // If mode is 'secondaryPreferred', attempt the selection algorithm with mode 'secondary' and the
+                // user's maxStalenessSeconds and tag_sets.If no server matches, select the primary.
+                let secondaries = self.servers.filter { $0.type == .rsSecondary }
+                let primaries = self.servers.filter { $0.type == .rsPrimary }
+                let matches = self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
+                return matches.isEmpty ? primaries : matches
+            case .primaryPreferred:
+                // If mode is 'primaryPreferred' or a readPreference is not provided, select the primary if it is known,
+                // otherwise attempt the selection algorithm with mode 'secondary' and the user's
+                // maxStalenessSeconds and tag_sets.
+                let primaries = self.servers.filter { $0.type == .rsPrimary }
+                if !primaries.isEmpty {
+                    return primaries
+                }
+                let secondaries = self.servers.filter { $0.type == .rsSecondary }
+                return self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
+            default:
+                // the default mode is 'primary'.
+                return self.servers.filter { $0.type == .rsPrimary }
+            }
+        case .sharded:
+            return self.servers.filter { $0.type == .mongos }
+        }
+    }
+
+    internal func filterReplicaSetServers(
+        readPreference _: ReadPreference?,
+        servers: [ServerDescription]
+    ) -> [ServerDescription] {
+        // TODO: Filter out servers staler than maxStalenessSeconds
+        // TODO: Select servers matching the tag_sets
+        // While waiting for the above to be implemented, this helper just returns the servers it was passed
+        servers
     }
 }
