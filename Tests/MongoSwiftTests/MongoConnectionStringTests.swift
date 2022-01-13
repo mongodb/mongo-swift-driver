@@ -136,7 +136,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
                 // the driver does not implement logging, we throw errors where the spec indicates to log a warning.
                 // TODO: SWIFT-511: revisit when we implement logging spec.
                 guard testCase.valid && testCase.warning != true else {
-                    expect(try MongoConnectionString(throwsIfInvalid: testCase.uri)).to(
+                    expect(try MongoConnectionString(string: testCase.uri)).to(
                         throwError(
                             errorType: MongoError.InvalidArgumentError.self
                         ),
@@ -146,13 +146,13 @@ final class ConnectionStringTests: MongoSwiftTestCase {
                 }
 
                 // Assert that the MongoConnectionString matches the expected output.
-                let connString = try MongoConnectionString(throwsIfInvalid: testCase.uri)
+                let connString = try MongoConnectionString(string: testCase.uri)
                 connString.assertMatchesTestCase(testCase)
 
                 // Assert that the URI successfully round-trips through the MongoConnectionString's description
                 // property. Note that we cannot compare the description to the original URI directly because the
                 // ordering of the options is not preserved.
-                let connStringFromDescription = try MongoConnectionString(throwsIfInvalid: connString.description)
+                let connStringFromDescription = try MongoConnectionString(string: connString.description)
                 connStringFromDescription.assertMatchesTestCase(testCase)
             }
         }
@@ -167,42 +167,44 @@ final class ConnectionStringTests: MongoSwiftTestCase {
     }
 
     func testCodable() throws {
-        let connStr = try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/")
+        let connStr = try MongoConnectionString(string: "mongodb://localhost:27017/")
         let encodedData = try JSONEncoder().encode(connStr)
         let decodedResult = try JSONDecoder().decode(MongoConnectionString.self, from: encodedData)
         expect(connStr.description).to(equal(decodedResult.description))
         expect(connStr.description).to(equal("mongodb://localhost:27017/"))
     }
 
-    // TODO: SWIFT-1416 Test string conversion behavior after changing to MongoConnectionString
     func testAppNameOption() throws {
         // option is set correctly from options struct
-        let opts1 = MongoClientOptions(appName: "MyApp")
-        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts1)
+        let opts = MongoClientOptions(appName: "MyApp")
+        var connStr1 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        try connStr1.applyOptions(opts)
         expect(connStr1.appName).to(equal("MyApp"))
 
         // option is parsed correctly from string
-        let connStr2 = try ConnectionString("mongodb://localhost:27017/?appName=MyApp")
+        let connStr2 = try MongoConnectionString(string: "mongodb://localhost:27017/?appName=MyApp")
         expect(connStr2.appName).to(equal("MyApp"))
 
         // options struct overrides string
-        let connStr3 = try ConnectionString("mongodb://localhost:27017/?appName=MyApp2", options: opts1)
+        var connStr3 = try MongoConnectionString(string: "mongodb://localhost:27017/?appName=MyApp2")
+        try connStr3.applyOptions(opts)
         expect(connStr3.appName).to(equal("MyApp"))
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testReplSetOption() throws {
         // option is set correctly from options struct
         var opts = MongoClientOptions(replicaSet: "rs0")
-        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts)
+        var connStr1 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        try connStr1.applyOptions(opts)
         expect(connStr1.replicaSet).to(equal("rs0"))
 
         // option is parsed correctly from string
-        let connStr2 = try ConnectionString("mongodb://localhost:27017/?replicaSet=rs1")
+        let connStr2 = try MongoConnectionString(string: "mongodb://localhost:27017/?replicaSet=rs1")
         expect(connStr2.replicaSet).to(equal("rs1"))
 
         // options struct overrides string
-        let connStr3 = try ConnectionString("mongodb://localhost:27017/?replicaSet=rs1", options: opts)
+        var connStr3 = try MongoConnectionString(string: "mongodb://localhost:27017/?replicaSet=rs1")
+        try connStr3.applyOptions(opts)
         expect(connStr3.replicaSet).to(equal("rs0"))
 
         guard MongoSwiftTestCase.topologyType == .replicaSetWithPrimary else {
@@ -213,11 +215,11 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         let testConnStr = MongoSwiftTestCase.getConnectionString()
         let rsName = testConnStr.replicaSet!
 
-        var connStrWithoutRS = testConnStr.toString()
+        var connStrWithoutRS = testConnStr.description
         connStrWithoutRS.removeSubstring("replicaSet=\(rsName)")
         // need to delete the extra & in case replicaSet was first
         connStrWithoutRS = connStrWithoutRS.replacingOccurrences(of: "?&", with: "?")
-        // need to delete exta & in case replicaSet was between two options
+        // need to delete the extra & in case replicaSet was between two options
         connStrWithoutRS = connStrWithoutRS.replacingOccurrences(of: "&&", with: "&")
 
         // setting actual name via options struct only should succeed in connecting
@@ -228,41 +230,42 @@ final class ConnectionStringTests: MongoSwiftTestCase {
 
         // setting actual name via both client options and URI should succeed in connecting
         opts.replicaSet = rsName
-        try self.withTestClient(testConnStr.toString(), options: opts) { client in
+        try self.withTestClient(testConnStr.description, options: opts) { client in
             expect(try client.listDatabases().wait()).toNot(throwError())
         }
 
         // setting to an incorrect repl set name via client options should fail to connect
         // speed up server selection timeout to fail faster
         opts.replicaSet! += "xyz"
-        try self.withTestClient(testConnStr.toString() + "&serverSelectionTimeoutMS=1000", options: opts) { client in
+        try self.withTestClient(testConnStr.description + "&serverSelectionTimeoutMS=1000", options: opts) { client in
             expect(try client.listDatabases().wait()).to(throwError())
         }
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testHeartbeatFrequencyMSOption() throws {
         // option is set correctly from options struct
-        let opts = MongoClientOptions(heartbeatFrequencyMS: 50000)
-        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts)
-        expect(connStr1.options?["heartbeatfrequencyms"]?.int32Value).to(equal(50000))
+        let opts1 = MongoClientOptions(heartbeatFrequencyMS: 50000)
+        var connStr1 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        try connStr1.applyOptions(opts1)
+        expect(connStr1.options["heartbeatfrequencyms"]?.int32Value).to(equal(50000))
 
         // option is parsed correctly from string
-        let connStr2 = try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=50000")
-        expect(connStr2.options?["heartbeatfrequencyms"]?.int32Value).to(equal(50000))
+        let connStr2 = try MongoConnectionString(string: "mongodb://localhost:27017/?heartbeatFrequencyMS=50000")
+        expect(connStr2.options["heartbeatfrequencyms"]?.int32Value).to(equal(50000))
 
         // options struct overrides string
-        let connStr3 = try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=20000", options: opts)
-        expect(connStr3.options?["heartbeatfrequencyms"]?.int32Value).to(equal(50000))
+        var connStr3 = try MongoConnectionString(string: "mongodb://localhost:27017/?heartbeatFrequencyMS=20000")
+        try connStr3.applyOptions(opts1)
+        expect(connStr3.options["heartbeatfrequencyms"]?.int32Value).to(equal(50000))
 
         let tooSmall = 60
-        expect(try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=\(tooSmall)"))
+
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?heartbeatFrequencyMS=\(tooSmall)"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-        expect(try ConnectionString(
-            "mongodb://localhost:27017",
-            options: MongoClientOptions(heartbeatFrequencyMS: tooSmall)
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        let opts2 = MongoClientOptions(heartbeatFrequencyMS: tooSmall)
+        var connStr4 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr4.applyOptions(opts2)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         guard !MongoSwiftTestCase.is32Bit else {
             print("Skipping remainder of test, only supported on 64-bit platforms")
@@ -270,12 +273,12 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
 
         let tooLarge = Int(Int32.max) + 1
-        expect(try ConnectionString(
-            "mongodb://localhost:27017",
-            options: MongoClientOptions(heartbeatFrequencyMS: tooLarge)
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-        expect(try ConnectionString("mongodb://localhost:27017/?heartbeatFrequencyMS=\(tooLarge)"))
+        let opts3 = MongoClientOptions(heartbeatFrequencyMS: tooLarge)
+        var connStr5 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr5.applyOptions(opts3)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?heartbeatFrequencyMS=\(tooLarge)"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
@@ -298,7 +301,6 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         fileprivate init() {}
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testHeartbeatFrequencyMSWithMonitoring() throws {
         guard MongoSwiftTestCase.topologyType == .single else {
             print(unsupportedTopologyMessage(testName: self.name))
@@ -326,29 +328,30 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(difference).to(beCloseTo(2.0, within: 0.2))
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testServerSelectionTimeoutMS() throws {
         // option is set correctly from options struct
-        let opts = MongoClientOptions(serverSelectionTimeoutMS: 10000)
-        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts)
-        expect(connStr1.options?["serverselectiontimeoutms"]?.int32Value).to(equal(10000))
+        let opts1 = MongoClientOptions(serverSelectionTimeoutMS: 10000)
+        var connStr1 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        try connStr1.applyOptions(opts1)
+        expect(connStr1.options["serverselectiontimeoutms"]?.int32Value).to(equal(10000))
 
         // option is parsed correctly from string
-        let connStr2 = try ConnectionString("mongodb://localhost:27017/?serverSelectionTimeoutMS=10000")
-        expect(connStr2.options?["serverselectiontimeoutms"]?.int32Value).to(equal(10000))
+        let connStr2 = try MongoConnectionString(string: "mongodb://localhost:27017/?serverSelectionTimeoutMS=10000")
+        expect(connStr2.options["serverselectiontimeoutms"]?.int32Value).to(equal(10000))
 
         // options struct overrides string
-        let connStr3 = try ConnectionString("mongodb://localhost:27017/?serverSelectionTimeoutMS=5000", options: opts)
-        expect(connStr3.options?["serverselectiontimeoutms"]?.int32Value).to(equal(10000))
+        var connStr3 = try MongoConnectionString(string: "mongodb://localhost:27017/?serverSelectionTimeoutMS=5000")
+        try connStr3.applyOptions(opts1)
+        expect(connStr3.options["serverselectiontimeoutms"]?.int32Value).to(equal(10000))
 
         let tooSmall = 0
 
-        expect(try ConnectionString(
-            "mongodb://localhost:27017",
-            options: MongoClientOptions(serverSelectionTimeoutMS: tooSmall)
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
-        expect(try ConnectionString(
-            "mongodb://localhost:27017/?serverSelectionTimeoutMS=\(tooSmall)"
+        let opts2 = MongoClientOptions(serverSelectionTimeoutMS: tooSmall)
+        var connStr4 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr4.applyOptions(opts2)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        expect(try MongoConnectionString(
+            string: "mongodb://localhost:27017/?serverSelectionTimeoutMS=\(tooSmall)"
         )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         guard !MongoSwiftTestCase.is32Bit else {
@@ -357,16 +360,15 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
 
         let tooLarge = Int(Int32.max) + 1
-        expect(try ConnectionString("mongodb://localhost:27017/?serverSelectionTimeoutMS=\(tooLarge)"))
+
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?serverSelectionTimeoutMS=\(tooLarge)"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-        expect(try ConnectionString(
-            "mongodb://localhost:27017",
-            options: MongoClientOptions(serverSelectionTimeoutMS: tooLarge)
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        let opts3 = MongoClientOptions(serverSelectionTimeoutMS: tooLarge)
+        var connStr5 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr5.applyOptions(opts3)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testServerSelectionTimeoutMSWithCommand() throws {
         let opts = MongoClientOptions(serverSelectionTimeoutMS: 1000)
         try self.withTestClient("mongodb://localhost:27099", options: opts) { client in
@@ -379,30 +381,30 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testLocalThresholdMSOption() throws {
         // option is set correctly from options struct
-        let opts = MongoClientOptions(localThresholdMS: 100)
-        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts)
-        expect(connStr1.options?["localthresholdms"]?.int32Value).to(equal(100))
+        let opts1 = MongoClientOptions(localThresholdMS: 100)
+        var connStr1 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        try connStr1.applyOptions(opts1)
+        expect(connStr1.options["localthresholdms"]?.int32Value).to(equal(100))
 
         // option is parsed correctly from string
-        let connStr2 = try ConnectionString("mongodb://localhost:27017/?localThresholdMS=100")
-        expect(connStr2.options?["localthresholdms"]?.int32Value).to(equal(100))
+        let connStr2 = try MongoConnectionString(string: "mongodb://localhost:27017/?localThresholdMS=100")
+        expect(connStr2.options["localthresholdms"]?.int32Value).to(equal(100))
 
         // options struct overrides string
-        let connStr3 = try ConnectionString("mongodb://localhost:27017/?localThresholdMS=50", options: opts)
-        expect(connStr3.options?["localthresholdms"]?.int32Value).to(equal(100))
+        var connStr3 = try MongoConnectionString(string: "mongodb://localhost:27017/?localThresholdMS=50")
+        try connStr3.applyOptions(opts1)
+        expect(connStr3.options["localthresholdms"]?.int32Value).to(equal(100))
 
         let tooSmall = -10
-        expect(try ConnectionString(
-            "mongodb://localhost:27017",
-            options: MongoClientOptions(localThresholdMS: tooSmall)
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-        expect(try ConnectionString(
-            "mongodb://localhost:27017/?localThresholdMS=\(tooSmall)"
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?localThresholdMS=\(tooSmall)"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        let opts2 = MongoClientOptions(localThresholdMS: tooSmall)
+        var connStr4 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr4.applyOptions(opts2)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         guard !MongoSwiftTestCase.is32Bit else {
             print("Skipping remainder of test, requires 64-bit platform")
@@ -410,48 +412,47 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
 
         let tooLarge = Int(Int32.max) + 1
-        expect(try ConnectionString("mongodb://localhost:27017/?localThresholdMS=\(tooLarge)"))
+
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?localThresholdMS=\(tooLarge)"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-        expect(try ConnectionString(
-            "mongodb://localhost:27017",
-            options: MongoClientOptions(localThresholdMS: tooLarge)
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        let opts3 = MongoClientOptions(localThresholdMS: tooLarge)
+        var connStr5 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr5.applyOptions(opts3)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testConnectTimeoutMSOption() throws {
         // option is set correctly from options struct
-        let opts = MongoClientOptions(connectTimeoutMS: 100)
-        let connStr1 = try ConnectionString("mongodb://localhost:27017", options: opts)
-        expect(connStr1.options?["connecttimeoutms"]?.int32Value).to(equal(100))
+        let opts1 = MongoClientOptions(connectTimeoutMS: 100)
+        var connStr1 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        try connStr1.applyOptions(opts1)
+        expect(connStr1.options["connecttimeoutms"]?.int32Value).to(equal(100))
 
         // option is parsed correctly from string
-        let connStr2 = try ConnectionString("mongodb://localhost:27017/?connectTimeoutMS=100")
-        expect(connStr2.options?["connecttimeoutms"]?.int32Value).to(equal(100))
+        let connStr2 = try MongoConnectionString(string: "mongodb://localhost:27017/?connectTimeoutMS=100")
+        expect(connStr2.options["connecttimeoutms"]?.int32Value).to(equal(100))
 
         // options struct overrides string
-        let connStr3 = try ConnectionString("mongodb://localhost:27017/?connectTimeoutMS=50", options: opts)
-        expect(connStr3.options?["connecttimeoutms"]?.int32Value).to(equal(100))
+        var connStr3 = try MongoConnectionString(string: "mongodb://localhost:27017/?connectTimeoutMS=50")
+        try connStr3.applyOptions(opts1)
+        expect(connStr3.options["connecttimeoutms"]?.int32Value).to(equal(100))
 
         // test invalid options
-        expect(try ConnectionString(
-            "mongodb://localhost:27017",
-            options: MongoClientOptions(connectTimeoutMS: 0)
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?connectTimeoutMS=0"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-        expect(try ConnectionString(
-            "mongodb://localhost:27017/?connectTimeoutMS=0"
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        let opts2 = MongoClientOptions(connectTimeoutMS: 0)
+        var connStr4 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr4.applyOptions(opts2)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         let tooSmall = -10
-        expect(try ConnectionString(
-            "mongodb://localhost:27017",
-            options: MongoClientOptions(connectTimeoutMS: tooSmall)
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-        expect(try ConnectionString(
-            "mongodb://localhost:27017/?connectTimeoutMS=\(tooSmall)"
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?connectTimeoutMS=\(tooSmall)"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        let opts3 = MongoClientOptions(connectTimeoutMS: tooSmall)
+        var connStr5 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr5.applyOptions(opts3)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         guard !MongoSwiftTestCase.is32Bit else {
             print("Skipping remainder of test, requires 64-bit platform")
@@ -459,32 +460,31 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         }
 
         let tooLarge = Int(Int32.max) + 1
-        expect(try ConnectionString("mongodb://localhost:27017/?connectTimeoutMS=\(tooLarge)"))
+
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?connectTimeoutMS=\(tooLarge)"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-        expect(try ConnectionString(
-            "mongodb://localhost:27017",
-            options: MongoClientOptions(connectTimeoutMS: tooLarge)
-        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        let opts4 = MongoClientOptions(connectTimeoutMS: tooLarge)
+        var connStr6 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr6.applyOptions(opts4)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testUnsupportedOptions() throws {
         // options we know of but don't support yet should throw errors
-        expect(try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/?minPoolSize=10"))
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?minPoolSize=10"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-        expect(try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/?maxIdleTimeMS=10"))
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?maxIdleTimeMS=10"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-        expect(try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/?waitQueueMultiple=10"))
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?waitQueueMultiple=10"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-        expect(try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/?waitQueueTimeoutMS=10"))
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?waitQueueTimeoutMS=10"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         // options we don't know of should throw errors
-        expect(try MongoConnectionString(throwsIfInvalid: "mongodb://localhost:27017/?blah=10"))
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?blah=10"))
             .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionString
     func testCompressionOptions() throws {
         // zlib level validation
         expect(try Compressor.zlib(level: -2)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
@@ -495,108 +495,109 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         // options are set correctly from options struct
         var opts = MongoClientOptions()
         opts.compressors = [.zlib]
-        var connStr = try ConnectionString("mongodb://localhost:27017", options: opts)
-        expect(connStr.compressors).to(equal(["zlib"]))
+        var connStr = try MongoConnectionString(string: "mongodb://localhost:27017")
+        try connStr.applyOptions(opts)
+        expect(connStr.compressors).to(equal([.zlib]))
 
         opts.compressors = [try .zlib(level: 6)]
-        connStr = try ConnectionString("mongodb://localhost:27017", options: opts)
-        expect(connStr.compressors).to(equal(["zlib"]))
-        expect(connStr.options?["zlibcompressionlevel"]?.int32Value).to(equal(6))
+        connStr = try MongoConnectionString(string: "mongodb://localhost:27017")
+        try connStr.applyOptions(opts)
+        expect(connStr.compressors).to(equal([try .zlib(level: 6)]))
 
         // options parsed correctly from string
-        connStr = try ConnectionString("mongodb://localhost:27017/?compressors=zlib&zlibcompressionlevel=6")
-        expect(connStr.compressors).to(equal(["zlib"]))
-        expect(connStr.options?["zlibcompressionlevel"]?.int32Value).to(equal(6))
+        connStr = try MongoConnectionString(
+            string: "mongodb://localhost:27017/?compressors=zlib&zlibcompressionlevel=6"
+        )
+        expect(connStr.compressors).to(equal([try .zlib(level: 6)]))
 
         // options struct overrides string
         opts.compressors = []
-        connStr = try ConnectionString("mongodb://localhost:27017/?compressors=zlib", options: opts)
+        connStr = try MongoConnectionString(string: "mongodb://localhost:27017/?compressors=zlib")
+        try connStr.applyOptions(opts)
         expect(connStr.compressors).to(beEmpty())
 
         opts.compressors = [try .zlib(level: 6)]
-        connStr = try ConnectionString(
-            "mongodb://localhost:27017/?compressors=zlib&zlibcompressionlevel=4",
-            options: opts
+        connStr = try MongoConnectionString(
+            string: "mongodb://localhost:27017/?compressors=zlib&zlibcompressionlevel=4"
         )
-        expect(connStr.compressors).to(equal(["zlib"]))
-        expect(connStr.options?["zlibcompressionlevel"]?.int32Value).to(equal(6))
+        try connStr.applyOptions(opts)
+        expect(connStr.compressors).to(equal([try .zlib(level: 6)]))
 
         // duplicate compressors should error
         opts.compressors = [.zlib, try .zlib(level: 1)]
-        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        connStr = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
-        // unfortunately, we can't error on an unsupported compressor provided via URI. libmongoc will generate a
-        // warning but does not provide us access to the see the full specified list.
+        expect(try MongoConnectionString(string: "mongodb://localhost:27017/?compressors=unsupported"))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
-    // TODO: SWIFT-1416: Test string conversion behavior after changing to MongoConnectionStringtes
     func testInvalidOptionsCombinations() throws {
+        var opts: MongoClientOptions
+        var connStr: MongoConnectionString
+
         // tlsInsecure and conflicting options
-        var opts = MongoClientOptions(tlsAllowInvalidCertificates: true, tlsInsecure: true)
-        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        opts = MongoClientOptions(tlsAllowInvalidCertificates: true, tlsInsecure: true)
+        connStr = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         opts = MongoClientOptions(tlsAllowInvalidHostnames: true, tlsInsecure: true)
-        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         // one in URI, one in options struct
         opts = MongoClientOptions(tlsAllowInvalidCertificates: true)
-        expect(try ConnectionString("mongodb://localhost:27017/?tlsInsecure=true", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        connStr = try MongoConnectionString(string: "mongodb://localhost:27107/?tlsInsecure=true")
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         opts = MongoClientOptions(tlsAllowInvalidHostnames: true)
-        expect(try ConnectionString("mongodb://localhost:27017/?tlsInsecure=true", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         opts = MongoClientOptions(tlsInsecure: true)
-        expect(try ConnectionString("mongodb://localhost:27017/?tlsAllowInvalidHostnames=true", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
-        expect(try ConnectionString("mongodb://localhost:27017/?tlsAllowInvalidCertificates=true", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        connStr = try MongoConnectionString(string: "mongodb://localhost:27017/?tlsAllowInvalidHostnames=true")
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        connStr = try MongoConnectionString(string: "mongodb://localhost:27017/?tlsAllowInvalidCertificates=true")
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         // directConnection cannot be used with SRV URIs
         opts = MongoClientOptions(directConnection: true)
-        expect(try ConnectionString("mongodb+srv://test3.test.build.10gen.cc", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        connStr = try MongoConnectionString(string: "mongodb+srv://test3.test.build.10gen.cc")
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         // directConnection=true cannot be used with multiple seeds
-        expect(try ConnectionString("mongodb://localhost:27017,localhost:27018", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        connStr = try MongoConnectionString(string: "mongodb://localhost:27017,localhost:27018")
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         // The cases where the conflicting options are all in the connection string are already covered by the URI
         // options tests, so here we only check behavior for cases where 1+ option is specified via the options struct.
 
         // loadBalanced=true cannot be used with multiple seeds
         opts = MongoClientOptions(loadBalanced: true)
-        expect(try ConnectionString("mongodb://localhost:27017,localhost:27018", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         // loadBalanced=true cannot be used with replica set option
-        expect(try ConnectionString("mongodb://localhost:27017/?replicaSet=xyz", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        connStr = try MongoConnectionString(string: "mongodb://localhost:27017/?replicaSet=xyz")
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
         opts.replicaSet = "xyz"
-        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        connStr = try MongoConnectionString(string: "mongodb://localhost:27017")
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         // loadBalanced=true cannot be used with directConnection=true
         opts = MongoClientOptions(directConnection: true, loadBalanced: true)
-        expect(try ConnectionString("mongodb://localhost:27017", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         opts = MongoClientOptions(directConnection: true)
-        expect(try ConnectionString("mongodb://localhost:27017/?loadBalanced=true", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        connStr = try MongoConnectionString(string: "mongodb://localhost:27017/?loadBalanced=true")
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         opts = MongoClientOptions(loadBalanced: true)
-        expect(try ConnectionString("mongodb://localhost:27017/?directConnection=true", options: opts))
-            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
     func testIPv4AddressParsing() throws {
         // valid IPv4
-        let connString1 = try MongoConnectionString(throwsIfInvalid: "mongodb://1.2.3.4")
+        let connString1 = try MongoConnectionString(string: "mongodb://1.2.3.4")
         guard let host = connString1.hosts.first else {
             XCTFail("connection string should contain one host")
             return
@@ -604,7 +605,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(host.host).to(equal("1.2.3.4"))
         expect(host.type).to(equal(.ipv4))
         // invalid IPv4 should fall back to hostname (only three numbers)
-        let connString2 = try MongoConnectionString(throwsIfInvalid: "mongodb://1.2.3")
+        let connString2 = try MongoConnectionString(string: "mongodb://1.2.3")
         guard let host = connString2.hosts.first else {
             XCTFail("connection string should contain one host")
             return
@@ -612,7 +613,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(host.host).to(equal("1.2.3"))
         expect(host.type).to(equal(.hostname))
         // invalid IPv4 should fall back to hostname (numbers out of bounds)
-        let connString3 = try MongoConnectionString(throwsIfInvalid: "mongodb://256.1.2.3")
+        let connString3 = try MongoConnectionString(string: "mongodb://256.1.2.3")
         guard let host = connString3.hosts.first else {
             XCTFail("connection string should contain one host")
             return

@@ -394,25 +394,18 @@ extension TopologyDescription {
         case .replicaSetNoPrimary,
              .replicaSetWithPrimary:
             switch readPreference?.mode {
-            case .primary:
-                guard readPreference?.tagSets == nil || readPreference?.tagSets == [BSONDocument()] else {
-                    throw MongoError.InternalError(
-                        message: "non-empty tag set was given in tag_sets and the mode field was 'primary'"
-                    )
-                }
-                return self.servers.filter { $0.type == .rsPrimary }
             case .secondary:
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
-                return self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
+                return self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
             case .nearest:
                 let secondariesAndPrimary = self.servers.filter { $0.type == .rsSecondary || $0.type == .rsPrimary }
-                return self.replicaSetHelper(readPreference: readPreference, servers: secondariesAndPrimary)
+                return self.filterReplicaSetServers(readPreference: readPreference, servers: secondariesAndPrimary)
             case .secondaryPreferred:
                 // If mode is 'secondaryPreferred', attempt the selection algorithm with mode 'secondary' and the
                 // user's maxStalenessSeconds and tag_sets.If no server matches, select the primary.
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
                 let primaries = self.servers.filter { $0.type == .rsPrimary }
-                let matches = self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
+                let matches = self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
                 return matches.isEmpty ? primaries : matches
             case .primaryPreferred:
                 // If mode is 'primaryPreferred' or a readPreference is not provided, select the primary if it is known,
@@ -423,9 +416,14 @@ extension TopologyDescription {
                     return primaries
                 }
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
-                return self.replicaSetHelper(readPreference: readPreference, servers: secondaries)
-            default:
+                return self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
+            default: // or .primary
                 // the default mode is 'primary'.
+                guard readPreference?.tagSets == nil || readPreference?.tagSets == [BSONDocument()] else {
+                    throw MongoError.InternalError(
+                        message: "non-empty tag set was given in tag_sets and the mode field was 'primary'"
+                    )
+                }
                 return self.servers.filter { $0.type == .rsPrimary }
             }
         case .sharded:
@@ -433,7 +431,7 @@ extension TopologyDescription {
         }
     }
 
-    internal func replicaSetHelper(
+    internal func filterReplicaSetServers(
         readPreference: ReadPreference?,
         servers: [ServerDescription]
     ) -> [ServerDescription] {

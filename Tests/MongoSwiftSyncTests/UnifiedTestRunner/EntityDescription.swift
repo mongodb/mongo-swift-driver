@@ -136,7 +136,7 @@ struct UnifiedTestClient {
     init(_ clientDescription: EntityDescription.Client) throws {
         let connStr = MongoSwiftTestCase.getConnectionString(
             singleMongos: clientDescription.useMultipleMongoses != true
-        ).toString()
+        )
         var opts = clientDescription.uriOptions ?? MongoClientOptions()
         opts.serverAPI = clientDescription.serverAPI
         // If the test might execute a configureFailPoint command, for each target client the test runner MAY

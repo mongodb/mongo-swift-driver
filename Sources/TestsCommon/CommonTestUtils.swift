@@ -24,14 +24,6 @@ extension String {
     }
 }
 
-extension ConnectionString {
-    public func toString() -> String {
-        self.withMongocURI { uri in
-            String(cString: mongoc_uri_get_string(uri))
-        }
-    }
-}
-
 open class MongoSwiftTestCase: XCTestCase {
     /// Gets the name of the database the test case is running against.
     public class var testDatabase: String {
@@ -41,54 +33,47 @@ open class MongoSwiftTestCase: XCTestCase {
     /// Gets the connection string to use from the environment variable, $MONGODB_URI. If the variable does not exist,
     /// will return a default of "mongodb://127.0.0.1/". If singleMongos is true and this is a sharded topology, will
     /// edit $MONGODB_URI as needed so that it only contains a single host.
-    public static func getConnectionString(singleMongos: Bool = true) -> ConnectionString {
+    public static func getConnectionString(singleMongos: Bool = true) -> MongoConnectionString {
         switch (MongoSwiftTestCase.topologyType, singleMongos) {
         case (.sharded, true):
-            let hosts = self.getHosts()
-            var output = Self.uri
-            // remove all but the first host so we connect to a single mongos.
-            for host in hosts[1...] {
-                output.removeSubstring(",\(host.description)")
-            }
-            return try! ConnectionString(output)
+            var connString = Self.uri
+            connString.hosts.removeSubrange(1..<connString.hosts.count)
+            return connString
         case (.loadBalanced, true):
             guard let uri = Self.singleMongosLoadBalancedURI else {
                 fatalError("Missing SINGLE_MONGOS_LB_URI environment variable")
             }
-            return try! ConnectionString(uri)
+            return try! MongoConnectionString(string: uri)
         case (.loadBalanced, false):
             guard let uri = Self.multipleMongosLoadBalancedURI else {
                 fatalError("Missing MULTI_MONGOS_LB_URI environment variable")
             }
-            return try! ConnectionString(uri)
+            return try! MongoConnectionString(string: uri)
         default:
             // just return as-is.
-            return try! ConnectionString(Self.uri)
+            return Self.uri
         }
     }
 
     /// Get a connection string for the specified host only.
-    public static func getConnectionString(forHost serverAddress: ServerAddress) -> ConnectionString {
-        Self.getConnectionStringPerHost().first { $0.hosts!.contains(serverAddress) }!
+    public static func getConnectionString(forHost serverAddress: ServerAddress) -> MongoConnectionString {
+        let hostIdentifier = try! MongoConnectionString.HostIdentifier(serverAddress.description)
+        return Self.getConnectionStringPerHost().first { $0.hosts.contains(hostIdentifier) }!
     }
 
     /// Returns a different connection string per host specified in MONGODB_URI.
-    public static func getConnectionStringPerHost() -> [ConnectionString] {
-        let uri = Self.uri
-
-        let regex = try! NSRegularExpression(pattern: #"mongodb:\/\/(?:.*@)?([^\/]+)(?:\/|$)"#)
-        let range = NSRange(uri.startIndex..<uri.endIndex, in: uri)
-        let match = regex.firstMatch(in: uri, range: range)!
-
-        let hostsRange = Range(match.range(at: 1), in: uri)!
-
-        return try! ConnectionString(uri).hosts!.map { host in
-            try! ConnectionString(uri.replacingCharacters(in: hostsRange, with: host.description))
+    public static func getConnectionStringPerHost() -> [MongoConnectionString] {
+        Self.uri.hosts.map { host in
+            var singleHostURI = Self.uri
+            singleHostURI.hosts = [host]
+            return singleHostURI
         }
     }
 
     public static func getHosts() -> [ServerAddress] {
-        try! ConnectionString(self.uri).hosts!
+        Self.uri.hosts.map {
+            ServerAddress(host: $0.host.description, port: $0.port ?? 27017)
+        }
     }
 
     // indicates whether we are running on a 32-bit platform
@@ -120,11 +105,11 @@ open class MongoSwiftTestCase: XCTestCase {
         return TopologyDescription.TopologyType(from: topology)
     }
 
-    public static var uri: String {
+    public static var uri: MongoConnectionString {
         guard let uri = ProcessInfo.processInfo.environment["MONGODB_URI"] else {
-            return "mongodb://127.0.0.1/"
+            return try! MongoConnectionString(string: "mongodb://127.0.0.1/")
         }
-        return uri
+        return try! MongoConnectionString(string: uri)
     }
 
     public static var singleMongosLoadBalancedURI: String? {

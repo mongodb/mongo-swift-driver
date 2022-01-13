@@ -54,7 +54,7 @@ func assertIsEventuallyTrue(
 @available(macOS 12, *)
 extension MongoSwiftTestCase {
     internal func withTestClient<T>(
-        _ uri: String = MongoSwiftTestCase.getConnectionString().toString(),
+        _ uri: String = MongoSwiftTestCase.getConnectionString().description,
         options: MongoClientOptions? = nil,
         eventLoopGroup: EventLoopGroup? = nil,
         f: (MongoClient) async throws -> T
