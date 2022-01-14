@@ -384,7 +384,7 @@ public struct TopologyDescription: Equatable {
 }
 
 extension TopologyDescription {
-    internal func findSuitableServers(readPreference: ReadPreference? = nil) throws -> [ServerDescription] {
+    internal func findSuitableServers(readPreference: ReadPreference? = nil) -> [ServerDescription] {
         switch self.type._topologyType {
         case .unknown:
             return []
@@ -439,7 +439,7 @@ extension TopologyDescription {
         }
         for tagSet in tagSets {
             let matches = servers.filter { server in tagSet.allSatisfy { server.tags[$0.key] == $0.value.stringValue } }
-            if matches.count >= 1 {
+            if !matches.isEmpty {
                 return matches
             }
         }

@@ -23,57 +23,57 @@ final class ServerSelectionTests: MongoSwiftTestCase {
     let tagSet2: BSONDocument = ["dc": "ny"]
     let tagSet3: BSONDocument = ["size": "small"]
 
-    func testUnknownTopology() throws {
+    func testUnknownTopology() {
         let unkownTopology = TopologyDescription(type: .unknown, servers: [standaloneServer])
-        expect(try unkownTopology.findSuitableServers()).to(haveCount(0))
+        expect(unkownTopology.findSuitableServers()).to(haveCount(0))
     }
 
-    func testSingleTopology() throws {
+    func testSingleTopology() {
         let singleTopology = TopologyDescription(type: .single, servers: [standaloneServer])
-        expect(try singleTopology.findSuitableServers()[0].type).to(equal(.standalone))
+        expect(singleTopology.findSuitableServers()[0].type).to(equal(.standalone))
     }
 
-    func testReplicaSetWithPrimaryTopology() throws {
+    func testReplicaSetWithPrimaryTopology() {
         let replicaSetTopology = TopologyDescription(type: .replicaSetWithPrimary, servers: [
             rsPrimaryServer,
             rsSecondaryServer1,
             rsSecondaryServer2
         ])
-        let replicaSetSuitableServers = try replicaSetTopology
+        let replicaSetSuitableServers = replicaSetTopology
             .findSuitableServers(readPreference: self.primaryReadPreference)
         expect(replicaSetSuitableServers[0].type).to(equal(.rsPrimary))
         expect(replicaSetSuitableServers).to(haveCount(1))
 
-        let replicaSetSuitableServers2 = try replicaSetTopology
+        let replicaSetSuitableServers2 = replicaSetTopology
             .findSuitableServers(readPreference: self.primaryPrefReadPreferemce)
         expect(replicaSetSuitableServers2[0].type).to(equal(.rsPrimary))
         expect(replicaSetSuitableServers2).to(haveCount(1))
     }
 
-    func testReplicaSetNoPrimaryTopology() throws {
+    func testReplicaSetNoPrimaryTopology() {
         let replicaSetNoPrimaryTopology = TopologyDescription(type: .replicaSetNoPrimary, servers: [
             rsSecondaryServer1,
             rsSecondaryServer2
         ])
-        let suitable1 = try replicaSetNoPrimaryTopology
+        let suitable1 = replicaSetNoPrimaryTopology
             .findSuitableServers(readPreference: self.primaryReadPreference)
         expect(suitable1).to(haveCount(0))
 
-        let suitable2 = try replicaSetNoPrimaryTopology
+        let suitable2 = replicaSetNoPrimaryTopology
             .findSuitableServers(readPreference: nil)
         expect(suitable2).to(haveCount(0))
 
-        let suitable3 = try replicaSetNoPrimaryTopology
+        let suitable3 = replicaSetNoPrimaryTopology
             .findSuitableServers(readPreference: self.primaryPrefReadPreferemce)
         expect(suitable3[0].type).to(equal(.rsSecondary))
         expect(suitable3).to(haveCount(2))
     }
 
-    func testShardedTopology() throws {
+    func testShardedTopology() {
         let shardedTopology = TopologyDescription(type: .sharded, servers: [
             mongosServer
         ])
-        let shardedSuitableServers = try shardedTopology.findSuitableServers()
+        let shardedSuitableServers = shardedTopology.findSuitableServers()
         expect(shardedSuitableServers[0].type)
             .to(equal(.mongos))
         expect(shardedSuitableServers).to(haveCount(1))
@@ -92,8 +92,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
             maxStalenessSeconds: nil
         )
 
-        let suitable = try topology
-            .findSuitableServers(readPreference: secondaryReadPreferenceWithTagSet)
+        let suitable = topology.findSuitableServers(readPreference: secondaryReadPreferenceWithTagSet)
         expect(suitable[0].type).to(equal(.rsSecondary))
         expect(suitable).to(haveCount(1))
 
@@ -104,8 +103,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
             maxStalenessSeconds: nil
         )
 
-        let suitable2 = try topology
-            .findSuitableServers(readPreference: secondaryReadPreferenceWithTagSet2)
+        let suitable2 = topology.findSuitableServers(readPreference: secondaryReadPreferenceWithTagSet2)
         expect(suitable2[0].type).to(equal(.rsSecondary))
         expect(suitable2).to(haveCount(2))
 
@@ -130,7 +128,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
             tagSets: [emptyTagSet],
             maxStalenessSeconds: nil
         )
-        let replicaSetSuitableServers = try replicaSetTopology
+        let replicaSetSuitableServers = replicaSetTopology
             .findSuitableServers(readPreference: primaryReadPreferenceWithEmptyTagSet)
         expect(replicaSetSuitableServers[0].type).to(equal(.rsPrimary))
         expect(replicaSetSuitableServers).to(haveCount(1))
