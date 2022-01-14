@@ -419,11 +419,6 @@ extension TopologyDescription {
                 return self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
             default: // or .primary
                 // the default mode is 'primary'.
-                guard readPreference?.tagSets == nil || readPreference?.tagSets == [BSONDocument()] else {
-                    throw MongoError.InternalError(
-                        message: "non-empty tag set was given in tag_sets and the mode field was 'primary'"
-                    )
-                }
                 return self.servers.filter { $0.type == .rsPrimary }
             }
         case .sharded:
