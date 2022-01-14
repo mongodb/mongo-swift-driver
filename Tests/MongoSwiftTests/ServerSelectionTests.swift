@@ -6,56 +6,70 @@ import TestsCommon
 import XCTest
 
 final class ServerSelectionTests: MongoSwiftTestCase {
-    func testServerSelection() throws {
-        let standaloneServer = ServerDescription(type: .standalone)
-        let rsPrimaryServer = ServerDescription(type: .rsPrimary)
-        let rsSecondaryServer1 = ServerDescription(type: .rsSecondary)
-        let rsSecondaryServer2 = ServerDescription(type: .rsSecondary)
-        let mongosServer = ServerDescription(type: .mongos)
+    // Servers
+    let standaloneServer = ServerDescription(type: .standalone)
+    let rsPrimaryServer = ServerDescription(type: .rsPrimary)
+    let rsSecondaryServer1 = ServerDescription(type: .rsSecondary, tags: ["dc": "ny", "rack": "2", "size": "large"])
+    let rsSecondaryServer2 = ServerDescription(type: .rsSecondary)
+    let rsSecondaryServer3 = ServerDescription(type: .rsSecondary, tags: ["dc": "ny", "rack": "3", "size": "small"])
+    let mongosServer = ServerDescription(type: .mongos)
 
-        // unknown
+    // Read Preferences
+    let primaryReadPreference = ReadPreference(.primary)
+    let primaryPrefReadPreferemce = ReadPreference(.primaryPreferred)
+
+    // Tag Sets
+    let tagSet: BSONDocument = ["dc": "ny", "rack": "2"]
+    let tagSet2: BSONDocument = ["dc": "ny"]
+    let tagSet3: BSONDocument = ["size": "small"]
+
+    func testUnknownTopology() {
         let unkownTopology = TopologyDescription(type: .unknown, servers: [standaloneServer])
         expect(unkownTopology.findSuitableServers()).to(haveCount(0))
+    }
 
-        // single
+    func testSingleTopology() {
         let singleTopology = TopologyDescription(type: .single, servers: [standaloneServer])
         expect(singleTopology.findSuitableServers()[0].type).to(equal(.standalone))
+    }
 
-        // replica set with primary
+    func testReplicaSetWithPrimaryTopology() {
         let replicaSetTopology = TopologyDescription(type: .replicaSetWithPrimary, servers: [
             rsPrimaryServer,
             rsSecondaryServer1,
             rsSecondaryServer2
         ])
-        let primaryReadPreference = ReadPreference(.primary)
-        let replicaSetSuitableServers = replicaSetTopology.findSuitableServers(readPreference: primaryReadPreference)
+        let replicaSetSuitableServers = replicaSetTopology
+            .findSuitableServers(readPreference: self.primaryReadPreference)
         expect(replicaSetSuitableServers[0].type).to(equal(.rsPrimary))
         expect(replicaSetSuitableServers).to(haveCount(1))
 
-        let primaryPrefReadPreferemce = ReadPreference(.primaryPreferred)
         let replicaSetSuitableServers2 = replicaSetTopology
-            .findSuitableServers(readPreference: primaryPrefReadPreferemce)
+            .findSuitableServers(readPreference: self.primaryPrefReadPreferemce)
         expect(replicaSetSuitableServers2[0].type).to(equal(.rsPrimary))
         expect(replicaSetSuitableServers2).to(haveCount(1))
+    }
 
-        // replica set without primary
+    func testReplicaSetNoPrimaryTopology() {
         let replicaSetNoPrimaryTopology = TopologyDescription(type: .replicaSetNoPrimary, servers: [
             rsSecondaryServer1,
             rsSecondaryServer2
         ])
-        let replicaSetNoPrimarySuitableServers = replicaSetNoPrimaryTopology
-            .findSuitableServers(readPreference: primaryReadPreference)
-        expect(replicaSetNoPrimarySuitableServers).to(haveCount(0))
+        let suitable1 = replicaSetNoPrimaryTopology
+            .findSuitableServers(readPreference: self.primaryReadPreference)
+        expect(suitable1).to(haveCount(0))
 
-        let replicaSetNoPrimarySuitableServer2 = replicaSetNoPrimaryTopology.findSuitableServers(readPreference: nil)
-        expect(replicaSetNoPrimarySuitableServer2).to(haveCount(0))
+        let suitable2 = replicaSetNoPrimaryTopology
+            .findSuitableServers(readPreference: nil)
+        expect(suitable2).to(haveCount(0))
 
-        let replicaSetNoPrimarySuitableServer3 = replicaSetNoPrimaryTopology
-            .findSuitableServers(readPreference: primaryPrefReadPreferemce)
-        expect(replicaSetNoPrimarySuitableServer3[0].type).to(equal(.rsSecondary))
-        expect(replicaSetNoPrimarySuitableServer3).to(haveCount(2))
+        let suitable3 = replicaSetNoPrimaryTopology
+            .findSuitableServers(readPreference: self.primaryPrefReadPreferemce)
+        expect(suitable3[0].type).to(equal(.rsSecondary))
+        expect(suitable3).to(haveCount(2))
+    }
 
-        // sharded
+    func testShardedTopology() {
         let shardedTopology = TopologyDescription(type: .sharded, servers: [
             mongosServer
         ])
@@ -63,5 +77,60 @@ final class ServerSelectionTests: MongoSwiftTestCase {
         expect(shardedSuitableServers[0].type)
             .to(equal(.mongos))
         expect(shardedSuitableServers).to(haveCount(1))
+    }
+
+    func testTagSets() throws {
+        // tag set 1
+        let topology = TopologyDescription(type: .replicaSetNoPrimary, servers: [
+            rsSecondaryServer1,
+            rsSecondaryServer2,
+            rsSecondaryServer3
+        ])
+        let secondaryReadPreferenceWithTagSet = try ReadPreference(
+            .secondaryPreferred,
+            tagSets: [tagSet, tagSet3], // tagSet3 should be ignored, because tagSet matches some servers
+            maxStalenessSeconds: nil
+        )
+
+        let suitable = topology.findSuitableServers(readPreference: secondaryReadPreferenceWithTagSet)
+        expect(suitable[0].type).to(equal(.rsSecondary))
+        expect(suitable).to(haveCount(1))
+
+        // tag set 2
+        let secondaryReadPreferenceWithTagSet2 = try ReadPreference(
+            .secondaryPreferred,
+            tagSets: [tagSet2],
+            maxStalenessSeconds: nil
+        )
+
+        let suitable2 = topology.findSuitableServers(readPreference: secondaryReadPreferenceWithTagSet2)
+        expect(suitable2[0].type).to(equal(.rsSecondary))
+        expect(suitable2).to(haveCount(2))
+
+        // invalid tag set passing
+        expect(try ReadPreference(
+            .primary,
+            tagSets: [self.tagSet],
+            maxStalenessSeconds: nil
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        // valid tag set passing
+        let replicaSetTopology = TopologyDescription(type: .replicaSetWithPrimary, servers: [
+            rsPrimaryServer,
+            rsSecondaryServer1,
+            rsSecondaryServer2
+        ])
+
+        let emptyTagSet: BSONDocument = [:]
+
+        let primaryReadPreferenceWithEmptyTagSet = try ReadPreference(
+            .primary,
+            tagSets: [emptyTagSet],
+            maxStalenessSeconds: nil
+        )
+        let replicaSetSuitableServers = replicaSetTopology
+            .findSuitableServers(readPreference: primaryReadPreferenceWithEmptyTagSet)
+        expect(replicaSetSuitableServers[0].type).to(equal(.rsPrimary))
+        expect(replicaSetSuitableServers).to(haveCount(1))
     }
 }

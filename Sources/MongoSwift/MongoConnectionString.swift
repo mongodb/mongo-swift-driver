@@ -20,7 +20,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// Characters that do not need to be percent-encoded when reconstructing URI options.
     fileprivate static let allowedForOptionEncoding = CharacterSet(charactersIn: "=&,:").inverted
 
-    fileprivate enum OptionName: String {
+    internal enum OptionName: String {
         case appName = "appname"
         case authSource = "authsource"
         case authMechanism = "authmechanism"

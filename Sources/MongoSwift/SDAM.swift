@@ -225,7 +225,7 @@ public struct ServerDescription {
     }
 
     // For testing purposes
-    internal init(type: ServerType) {
+    internal init(type: ServerType, tags: [String: String]? = nil) {
         self.type = type
         self.address = ServerAddress(host: "fake", port: 80)
         self.serverId = 0
@@ -243,7 +243,7 @@ public struct ServerDescription {
         self.hosts = []
         self.passives = []
         self.arbiters = []
-        self.tags = [:]
+        self.tags = tags ?? [:]
     }
 }
 
@@ -417,7 +417,7 @@ extension TopologyDescription {
                 }
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
                 return self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
-            default:
+            default: // or .primary
                 // the default mode is 'primary'.
                 return self.servers.filter { $0.type == .rsPrimary }
             }
@@ -427,12 +427,22 @@ extension TopologyDescription {
     }
 
     internal func filterReplicaSetServers(
-        readPreference _: ReadPreference?,
+        readPreference: ReadPreference?,
         servers: [ServerDescription]
     ) -> [ServerDescription] {
         // TODO: Filter out servers staler than maxStalenessSeconds
-        // TODO: Select servers matching the tag_sets
-        // While waiting for the above to be implemented, this helper just returns the servers it was passed
-        servers
+
+        // Filter by tag_sets
+        let tagSets = readPreference?.tagSets ?? []
+        if tagSets.isEmpty {
+            return servers
+        }
+        for tagSet in tagSets {
+            let matches = servers.filter { server in tagSet.allSatisfy { server.tags[$0.key] == $0.value.stringValue } }
+            if !matches.isEmpty {
+                return matches
+            }
+        }
+        return []
     }
 }
