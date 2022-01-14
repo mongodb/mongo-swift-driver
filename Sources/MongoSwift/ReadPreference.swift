@@ -206,7 +206,7 @@ public struct ReadPreference: Equatable {
             if mode == .primary {
                 guard tagSets == [BSONDocument()] else {
                     throw MongoError.InvalidArgumentError(
-                        message: "Invalid \(MONGOC_URI_READPREFERENCETAGS) \(tagSets): " +
+                        message: "Invalid \(MongoConnectionString.OptionName.readPreferenceTags) \(tagSets): " +
                             "when mode is primary, tag_sets must be empty"
                     )
                 }
