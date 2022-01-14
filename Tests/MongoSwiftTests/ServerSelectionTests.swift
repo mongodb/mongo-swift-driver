@@ -21,6 +21,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
     // Tag Sets
     let tagSet: BSONDocument = ["dc": "ny", "rack": "2"]
     let tagSet2: BSONDocument = ["dc": "ny"]
+    let tagSet3: BSONDocument = ["size": "small"]
 
     func testUnknownTopology() throws {
         let unkownTopology = TopologyDescription(type: .unknown, servers: [standaloneServer])
@@ -87,7 +88,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
         ])
         let secondaryReadPreferenceWithTagSet = try ReadPreference(
             .secondaryPreferred,
-            tagSets: [tagSet],
+            tagSets: [tagSet, tagSet3], // tagSet3 should be ignored, because tagSet matches some servers
             maxStalenessSeconds: nil
         )
 
@@ -109,22 +110,20 @@ final class ServerSelectionTests: MongoSwiftTestCase {
         expect(suitable2).to(haveCount(2))
 
         // invalid tag set passing
-        let primaryReadPreferenceWithTagSet = try ReadPreference(
+        expect(try ReadPreference(
             .primary,
-            tagSets: [tagSet],
+            tagSets: [self.tagSet],
             maxStalenessSeconds: nil
-        )
+        ))
+        .to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
+        // valid tag set passing
         let replicaSetTopology = TopologyDescription(type: .replicaSetWithPrimary, servers: [
             rsPrimaryServer,
             rsSecondaryServer1,
             rsSecondaryServer2
         ])
 
-        expect(try replicaSetTopology.findSuitableServers(readPreference: primaryReadPreferenceWithTagSet))
-            .to(throwError(errorType: MongoError.InternalError.self))
-
-        // valid tag set passing
         let emptyTagSet: BSONDocument = [:]
 
         let primaryReadPreferenceWithEmptyTagSet = try ReadPreference(

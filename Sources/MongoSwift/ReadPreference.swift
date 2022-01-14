@@ -202,6 +202,16 @@ public struct ReadPreference: Equatable {
                 )
             }
         }
+        if let tagSets = tagSets {
+            if mode == .primary {
+                guard tagSets == [BSONDocument()] else {
+                    throw MongoError.InvalidArgumentError(
+                        message: "Invalid \(MONGOC_URI_READPREFERENCETAGS) \(tagSets): " +
+                            "when mode is primary, tag_sets must be empty"
+                    )
+                }
+            }
+        }
         self.mode = mode
         self.tagSets = tagSets
         self.maxStalenessSeconds = maxStalenessSeconds

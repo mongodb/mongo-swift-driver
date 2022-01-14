@@ -435,22 +435,19 @@ extension TopologyDescription {
         readPreference: ReadPreference?,
         servers: [ServerDescription]
     ) -> [ServerDescription] {
-        let tagSets = readPreference?.tagSets ?? []
-        let matches = servers.filter { doTagsMatch(serverTags: $0.tags, tagSets: tagSets) }
         // TODO: Filter out servers staler than maxStalenessSeconds
-        return matches
-    }
 
-    internal func doTagsMatch(serverTags: [String: String], tagSets: [BSONDocument]) -> Bool {
+        // Filter by tag_sets
+        let tagSets = readPreference?.tagSets ?? []
         if tagSets.isEmpty {
-            return true
+            return servers
         }
         for tagSet in tagSets {
-            let matches = tagSet.allSatisfy { serverTags[$0.key] == $0.value.stringValue }
-            if matches {
-                return true
+            let matches = servers.filter { server in tagSet.allSatisfy { server.tags[$0.key] == $0.value.stringValue } }
+            if matches.count >= 1 {
+                return matches
             }
         }
-        return false
+        return []
     }
 }
