@@ -114,8 +114,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
             .primary,
             tagSets: [self.tagSet],
             maxStalenessSeconds: nil
-        ))
-        .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+        )).to(throwError(errorType: MongoError.InvalidArgumentError.self))
 
         // valid tag set passing
         let replicaSetTopology = TopologyDescription(type: .replicaSetWithPrimary, servers: [
