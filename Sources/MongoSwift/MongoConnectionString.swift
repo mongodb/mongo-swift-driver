@@ -416,6 +416,8 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             // If no other authentication options or defaultAuthDB were provided, we should use "admin" as the
             // credential source. This will be overwritten later if a defaultAuthDB or an authSource is provided.
             credential.source = "admin"
+            // Overwrite the sourceFromAuthSource field to false as the source is a default.
+            credential.sourceFromAuthSource = false
             self.credential = credential
         }
 
@@ -462,6 +464,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                 self.credential = MongoCredential()
             }
             self.credential?.source = decoded
+            self.credential?.sourceFromAuthSource = false
         }
 
         guard authDatabaseAndOptions.count == 2 else {
@@ -717,6 +720,8 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                     ?? self.defaultAuthDB
                     ?? "admin"
                 self.credential?.source = defaultSource
+                // Overwrite the sourceFromAuthSource field to false as the source is a default.
+                self.credential?.sourceFromAuthSource = false
             }
             if self.credential?.mechanism != nil {
                 // credential cannot be nil within the external conditional
@@ -931,7 +936,9 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             }
             return property
         }.joined(separator: ","))
-        uri.appendOption(name: .authSource, option: self.credential?.source)
+        if self.credential?.sourceFromAuthSource == true {
+            uri.appendOption(name: .authSource, option: self.credential?.source)
+        }
         uri.appendOption(name: .compressors, option: self.compressors?.map {
             switch $0._compressor {
             case let .zlib(level):
