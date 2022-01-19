@@ -113,7 +113,7 @@ do {
 ### Handling a CommandError
 ```swift
 do {
-    try db.runCommand(["asdfasdf": "sadfsadfasdf"])
+    try await db.runCommand(["asdfasdf": "sadfsadfasdf"])
 } catch let commandError as MongoError.CommandError {
     print("Command failed: code: \(commandError.code) message: \(commandError.message)")
 } catch { ... }
@@ -127,8 +127,8 @@ Command failed: code: 59 message: no such command: 'asdfasdf'
 ```swift
 // if you want to ignore duplicate key errors
 do {
-    try coll.insertOne(["_id": 1])
-    try coll.insertOne(["_id": 1])
+    try await coll.insertOne(["_id": 1])
+    try await coll.insertOne(["_id": 1])
 } catch let writeError as MongoError.WriteError where writeError.writeFailure?.code == 11000 {
     print("duplicate key error: \(1) \(writeError.writeFailure?.message ?? "")")
 }
@@ -140,10 +140,10 @@ duplicate key error: 1 E11000 duplicate key error collection: mydb.mycoll1 index
 
 ### Handling a BulkWriteError
 ```swift
-let docs: [Document] = [["_id": 2], ["_id": 1]]
+let docs: [BSONDocument] = [["_id": 2], ["_id": 1]]
 do {
-    try coll.insertOne(["_id": 1])
-    try coll.insertMany(docs)
+    try await coll.insertOne(["_id": 1])
+    try await coll.insertMany(docs)
 } catch let bwe as MongoError.BulkWriteError {
     if let writeErrors = bwe.writeFailures {
         writeErrors.forEach { err in print("Write Error inserting \(docs[err.index]), code: \(err.code), message: \(err.message)") }
