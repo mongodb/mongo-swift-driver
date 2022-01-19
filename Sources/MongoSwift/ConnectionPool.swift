@@ -296,6 +296,22 @@ internal class ConnectionPool {
         }
     }
 
+    /// Retrieves the `defaultAuthDB` configured on the connection string used to create this pool. If SDAM has been
+    /// started in libmongoc, this will return the up-to-date value after SRV lookup.
+    internal func getConnectionStringAuthDB() throws -> String? {
+        try self.withConnection { connection in
+            try connection.withMongocConnection { connPtr in
+                guard let uri = mongoc_client_get_uri(connPtr) else {
+                    throw MongoError.InternalError(message: "Couldn't retrieve client's connection string")
+                }
+                guard let authSource = mongoc_uri_get_database(uri) else {
+                    return nil
+                }
+                return String(cString: authSource)
+            }
+        }
+    }
+
     /// Sets the provided APM callbacks on this pool, using the provided client as the "context" value. **This method
     /// may only be called before any connections are checked out of the pool.** Ideally this code would just live in
     /// `ConnectionPool.init`. However, the client we accept here has to be fully initialized before we can pass it

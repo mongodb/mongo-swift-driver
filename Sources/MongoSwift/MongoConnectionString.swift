@@ -120,10 +120,6 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
 
         /// Initializes a ServerAddress, using the default localhost:27017 if a host/port is not provided.
         internal init(_ hostAndPort: String = "localhost:27017") throws {
-            guard !hostAndPort.contains("?") else {
-                throw MongoError.InvalidArgumentError(message: "\(hostAndPort) contains invalid characters")
-            }
-
             // Check if host is an IPv6 literal.
             if hostAndPort.first == "[" {
                 let ipLiteralRegex = try NSRegularExpression(pattern: #"^\[(.*)\](?::([0-9]+))?$"#)
@@ -228,7 +224,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         fileprivate var wTimeoutMS: Int?
         fileprivate var zlibCompressionLevel: Int?
 
-        fileprivate init(_ uriOptions: String) throws {
+        fileprivate init(_ uriOptions: Substring) throws {
             let options = uriOptions.components(separatedBy: "&")
             // tracks options that have already been set to error on duplicates
             var setOptions: Set<String> = []
@@ -384,6 +380,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
     /// - Throws:
     ///   - `MongoError.InvalidArgumentError` if the input is invalid.
     public init(string input: String) throws {
+        // Parse the connection string's scheme.
         let schemeAndRest = input.components(separatedBy: "://")
         guard schemeAndRest.count == 2, let scheme = Scheme(schemeAndRest[0]) else {
             throw MongoError.InvalidArgumentError(
@@ -391,23 +388,43 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             )
         }
         guard !schemeAndRest[1].isEmpty else {
-            throw MongoError.InvalidArgumentError(message: "Invalid connection string")
-        }
-        let identifiersAndOptions = schemeAndRest[1].components(separatedBy: "/")
-        guard identifiersAndOptions.count <= 2 else {
-            throw MongoError.InvalidArgumentError(
-                message: "Connection string contains an unescaped slash"
-            )
-        }
-        let userAndHost = identifiersAndOptions[0].components(separatedBy: "@")
-        guard userAndHost.count <= 2 else {
-            throw MongoError.InvalidArgumentError(message: "Connection string contains an unescaped @ symbol")
+            throw MongoError.InvalidArgumentError(message: "The connection string must contain host information")
         }
 
-        // do not omit empty subsequences to include an empty password
-        let userInfo = userAndHost.count == 2 ?
-            userAndHost[0].split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false) : nil
-        if let userInfo = userInfo {
+        // Split the rest of the connection string into its components.
+        let infoAndOptions = schemeAndRest[1].split(separator: "?", maxSplits: 1, omittingEmptySubsequences: false)
+        if infoAndOptions[0].isEmpty {
+            throw MongoError.InvalidArgumentError(message: "The connection string must contain host information")
+        }
+        let userHostsAndAuthDB = infoAndOptions[0].split(separator: "/", omittingEmptySubsequences: false)
+        if userHostsAndAuthDB.count > 2 {
+            throw MongoError.InvalidArgumentError(
+                message: "The user information, host information, and defaultAuthDB in the connection string must not"
+                    + " contain unescaped slashes"
+            )
+        } else if userHostsAndAuthDB.count == 1 && infoAndOptions.count == 2 {
+            throw MongoError.InvalidArgumentError(
+                message: "The connection string must contain a delimiting slash between the host information and"
+                    + " options"
+            )
+        }
+        let userInfoAndHosts = userHostsAndAuthDB[0].split(separator: "@", omittingEmptySubsequences: false)
+        if userInfoAndHosts.count > 2 {
+            throw MongoError.InvalidArgumentError(
+                message: "The user information and host information in the connection string must not contain"
+                    + " unescaped @ symbols"
+            )
+        }
+
+        // Parse user information if present and set the hosts string.
+        let hostsString: Substring
+        if userInfoAndHosts.count == 2 {
+            let userInfo = userInfoAndHosts[0].split(separator: ":", omittingEmptySubsequences: false)
+            if userInfo.count > 2 {
+                throw MongoError.InvalidArgumentError(
+                    message: "Username and password in the connection string must not contain unescaped colons"
+                )
+            }
             var credential = MongoCredential()
             credential.username = try userInfo[0].getValidatedUserInfo(forKey: "username")
             if userInfo.count == 2 {
@@ -419,10 +436,13 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             // Overwrite the sourceFromAuthSource field to false as the source is a default.
             credential.sourceFromAuthSource = false
             self.credential = credential
+            hostsString = userInfoAndHosts[1]
+        } else {
+            hostsString = userInfoAndHosts[0]
         }
 
-        let hostString = userInfo != nil ? userAndHost[1] : userAndHost[0]
-        let hosts = try hostString.components(separatedBy: ",").map(HostIdentifier.init)
+        // Parse host information.
+        let hosts = try hostsString.components(separatedBy: ",").map(HostIdentifier.init)
         if case .srv = scheme {
             guard hosts.count == 1 else {
                 throw MongoError.InvalidArgumentError(
@@ -434,46 +454,44 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
                     message: "A port cannot be specified in a mongodb+srv connection string"
                 )
             }
+            guard hosts[0].host.filter({ $0 == "." }).count >= 2 else {
+                throw MongoError.InvalidArgumentError(
+                    message: "The host specified in a mongodb+srv connection string must contain a host name, a domain"
+                        + "name, and a TLD"
+                )
+            }
         }
         self.scheme = scheme
         self.hosts = hosts
 
-        guard identifiersAndOptions.count == 2 else {
-            // no auth DB or options were specified
-            try self.validate()
-            return
-        }
-
-        let authDatabaseAndOptions = identifiersAndOptions[1].components(separatedBy: "?")
-        guard authDatabaseAndOptions.count <= 2 else {
-            throw MongoError.InvalidArgumentError(message: "Connection string contains an unescaped question mark")
-        }
-        if !authDatabaseAndOptions[0].isEmpty {
-            let decoded = try authDatabaseAndOptions[0].getPercentDecoded(forKey: "defaultAuthDB")
+        // Parse the defaultAuthDB if present.
+        if userHostsAndAuthDB.count == 2 && !userHostsAndAuthDB[1].isEmpty {
+            let defaultAuthDB = try userHostsAndAuthDB[1].getPercentDecoded(forKey: "defaultAuthDB")
             for character in Self.forbiddenDBCharacters {
-                if decoded.contains(character) {
+                if defaultAuthDB.contains(character) {
                     throw MongoError.InvalidArgumentError(
                         message: "defaultAuthDB contains invalid character: \(character)"
                     )
                 }
             }
-            self.defaultAuthDB = decoded
+            self.defaultAuthDB = defaultAuthDB
             // If no other authentication options were provided, we should use the defaultAuthDB as the credential
             // source. This will be overwritten later if an authSource is provided.
             if self.credential == nil {
                 self.credential = MongoCredential()
             }
-            self.credential?.source = decoded
+            self.credential?.source = defaultAuthDB
+            // Overwrite the sourceFromAuthSource field to false as the source is a default.
             self.credential?.sourceFromAuthSource = false
         }
 
-        guard authDatabaseAndOptions.count == 2 else {
-            // no options were specified
+        // Return early if no options were specified.
+        guard infoAndOptions.count == 2 else {
             try self.validate()
             return
         }
 
-        let options = try Options(authDatabaseAndOptions[1])
+        let options = try Options(infoAndOptions[1])
 
         // Validate and set compressors. This validation is only necessary for compressors provided in the URI string
         // and therefore is not included in the general validate method.
@@ -620,7 +638,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         try self.validate()
     }
 
-    private mutating func validate() throws {
+    internal mutating func validate() throws {
         func optionError(name: OptionName, violation: String) -> MongoError.InvalidArgumentError {
             MongoError.InvalidArgumentError(
                 message: "Value for \(name) in the connection string must " + violation

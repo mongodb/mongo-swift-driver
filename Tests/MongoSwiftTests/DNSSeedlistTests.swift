@@ -138,7 +138,9 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                         case "ssl":
                             expect(connStrOptions["tls"]).to(equal(v))
                         // these values are not returned as part of the options doc
-                        case "authSource", "auth_database":
+                        case "auth_database":
+                            expect(try client.connectionPool.getConnectionStringAuthDB()).to(equal(v.stringValue))
+                        case "authSource":
                             expect(try client.connectionPool.getConnectionStringAuthSource()).to(equal(v.stringValue))
                         case "user":
                             expect(connStr.credential?.username).to(equal(v.stringValue))
