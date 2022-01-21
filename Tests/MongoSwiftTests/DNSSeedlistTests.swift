@@ -90,6 +90,11 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
     func runDNSSeedlistTests(_ tests: [(String, DNSSeedlistTestCase)]) throws {
         for (fileName, testCase) in tests {
+            // TODO: SWIFT-1455: unskip these test
+            if fileName == "loadBalanced-no-results.json" || fileName == "loadBalanced-true-multiple-hosts.json" {
+                continue
+            }
+
             // this particular test case requires SSL is disabled. see DRIVERS-1324.
             let requiresTLS = fileName != "txt-record-with-overridden-ssl-option.json"
 
