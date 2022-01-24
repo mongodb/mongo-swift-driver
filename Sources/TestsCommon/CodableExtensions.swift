@@ -1,6 +1,5 @@
 @testable import struct MongoSwift.ReadPreference
 import MongoSwiftSync
-import TestsCommon
 
 /// Allows a type to specify a set of known keys and check whether any unknown top-level keys are found in a decoder.
 internal protocol StrictDecodable: Decodable {
@@ -126,11 +125,9 @@ extension ReadPreference.Mode: Decodable {
     }
 }
 
-extension ReadPreference: Decodable {
-    private enum CodingKeys: String, CodingKey {
-        case mode
-    }
-
+extension ReadPreference: StrictDecodable {
+    internal typealias CodingKeysType = CodingKeys
+    
     public init(from decoder: Decoder) throws {
         if let container = try? decoder.container(keyedBy: CodingKeys.self) {
             let mode = try container.decode(Mode.self, forKey: .mode)
@@ -140,6 +137,10 @@ extension ReadPreference: Decodable {
             let mode = try container.decode(ReadPreference.Mode.self)
             self.init(mode)
         }
+    }
+    
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
+        case mode, tagSets = "tag_sets"
     }
 }
 
