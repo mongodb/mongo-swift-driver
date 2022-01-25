@@ -457,7 +457,7 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
             guard hosts[0].host.filter({ $0 == "." }).count >= 2 else {
                 throw MongoError.InvalidArgumentError(
                     message: "The host specified in a mongodb+srv connection string must contain a host name, a domain"
-                        + " name, and a TLD"
+                        + " name, and a top-level domain"
                 )
             }
         }
