@@ -1,3 +1,4 @@
+import SwiftBSON
 /// Represents an authentication credential.
 public struct MongoCredential: Decodable, Equatable {
     /// A string containing the username. For auth mechanisms that do not utilize a password, this may be the entire
@@ -8,7 +9,17 @@ public struct MongoCredential: Decodable, Equatable {
     public var password: String?
 
     /// A string containing the authentication database.
-    public var source: String?
+    public var source: String? {
+        didSet {
+            self.sourceFromAuthSource = self.source != nil
+        }
+    }
+
+    /// Tracks whether the `source` was set manually (i.e. via an `authSource` or by setting the field's value) or by
+    /// a default (i.e. via the `defaultAuthDB`, the `mechanism`'s default, or the default of "admin"). This
+    /// information is necessary to determine whether the `authSource` field should be set when reconstructing a
+    /// `MongoConnectionString`.
+    internal var sourceFromAuthSource: Bool
 
     /// The authentication mechanism. A nil value for this property indicates that a mechanism wasn't specified and
     /// that mechanism negotiation is required.
@@ -21,6 +32,16 @@ public struct MongoCredential: Decodable, Equatable {
         case username, password, source, mechanism, mechanismProperties = "mechanism_properties"
     }
 
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.username = try container.decodeIfPresent(String.self, forKey: .username)
+        self.password = try container.decodeIfPresent(String.self, forKey: .password)
+        self.source = try container.decodeIfPresent(String.self, forKey: .source)
+        self.sourceFromAuthSource = self.source != nil
+        self.mechanism = try container.decodeIfPresent(Mechanism.self, forKey: .mechanism)
+        self.mechanismProperties = try container.decodeIfPresent(BSONDocument.self, forKey: .mechanismProperties)
+    }
+
     public init(
         username: String? = nil,
         password: String? = nil,
@@ -31,6 +52,7 @@ public struct MongoCredential: Decodable, Equatable {
         self.username = username
         self.password = password
         self.source = source
+        self.sourceFromAuthSource = self.source != nil
         self.mechanism = mechanism
         self.mechanismProperties = mechanismProperties
     }

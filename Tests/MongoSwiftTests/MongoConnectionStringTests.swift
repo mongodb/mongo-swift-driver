@@ -621,4 +621,44 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(host.host).to(equal("256.1.2.3"))
         expect(host.type).to(equal(.hostname))
     }
+
+    func testAuthSourceInDescription() throws {
+        // defaultAuthDB
+        let connString1 = try MongoConnectionString(string: "mongodb://localhost:27017/test")
+        expect(connString1.description).toNot(contain("authsource"))
+
+        // authSource
+        let connString2 = try MongoConnectionString(string: "mongodb://localhost:27017/?authSource=test")
+        expect(connString2.description).to(contain("authsource=test"))
+
+        // defaultAuthDB and authSource
+        let connString3 = try MongoConnectionString(string: "mongodb://localhost:27017/admin?authSource=test")
+        expect(connString3.description).to(contain("authsource=test"))
+
+        // set from options
+        let options = MongoClientOptions(credential: MongoCredential(source: "test"))
+        var connString4 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        try connString4.applyOptions(options)
+        expect(connString4.description).to(contain("authsource=test"))
+
+        // set manually
+        let credential1 = MongoCredential(username: "user", source: "test")
+        var connString5 = try MongoConnectionString(string: "mongodb://localhost:27107")
+        connString5.credential = credential1
+        expect(connString5.description).to(contain("authsource=test"))
+
+        // field changed to value
+        let credential2 = MongoCredential(username: "user")
+        var connString6 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        connString6.credential = credential2
+        connString6.credential?.source = "test"
+        expect(connString6.description).to(contain("authsource=test"))
+
+        // field changed to nil
+        let credential3 = MongoCredential(username: "user", source: "test")
+        var connString7 = try MongoConnectionString(string: "mongodb://localhost:27107")
+        connString7.credential = credential3
+        connString7.credential?.source = nil
+        expect(connString7.description).toNot(contain("authsource"))
+    }
 }

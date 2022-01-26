@@ -89,6 +89,10 @@ final class AuthTests: MongoSwiftTestCase {
                         connStringCredential.mechanismProperties = nil
                     }
 
+                    // this field is only relevant for rebuilding a connection string
+                    credential.sourceFromAuthSource = false
+                    connStringCredential.sourceFromAuthSource = false
+
                     // compare rest of non-document options normally
                     expect(connStringCredential).to(equal(credential), description: testCase.description)
                 }

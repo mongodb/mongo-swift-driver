@@ -319,6 +319,7 @@ public class MongoClient {
         if let options = options {
             try connString.applyOptions(options)
         }
+        try connString.validate()
 
         self.operationExecutor = OperationExecutor(
             eventLoopGroup: eventLoopGroup,

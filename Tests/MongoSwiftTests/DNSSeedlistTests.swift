@@ -90,6 +90,11 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
     func runDNSSeedlistTests(_ tests: [(String, DNSSeedlistTestCase)]) throws {
         for (fileName, testCase) in tests {
+            // TODO: SWIFT-1455: unskip these test
+            if fileName == "loadBalanced-no-results.json" || fileName == "loadBalanced-true-multiple-hosts.json" {
+                continue
+            }
+
             // this particular test case requires SSL is disabled. see DRIVERS-1324.
             let requiresTLS = fileName != "txt-record-with-overridden-ssl-option.json"
 
@@ -138,7 +143,9 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                         case "ssl":
                             expect(connStrOptions["tls"]).to(equal(v))
                         // these values are not returned as part of the options doc
-                        case "authSource", "auth_database":
+                        case "auth_database":
+                            expect(try client.connectionPool.getConnectionStringAuthDB()).to(equal(v.stringValue))
+                        case "authSource":
                             expect(try client.connectionPool.getConnectionStringAuthSource()).to(equal(v.stringValue))
                         case "user":
                             expect(connStr.credential?.username).to(equal(v.stringValue))
