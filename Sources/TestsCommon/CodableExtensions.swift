@@ -109,41 +109,6 @@ extension TransactionOptions: StrictDecodable {
     }
 }
 
-extension ReadPreference.Mode: Decodable {
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        var string = try container.decode(String.self)
-        // spec tests capitalize first letter of mode, so need to account for that.
-        string = string.prefix(1).lowercased() + string.dropFirst()
-        guard let mode = Self(rawValue: string) else {
-            throw DecodingError.dataCorruptedError(
-                in: container,
-                debugDescription: "can't parse ReadPreference mode from \(string)"
-            )
-        }
-        self = mode
-    }
-}
-
-extension ReadPreference: StrictDecodable {
-    internal typealias CodingKeysType = CodingKeys
-    
-    public init(from decoder: Decoder) throws {
-        if let container = try? decoder.container(keyedBy: CodingKeys.self) {
-            let mode = try container.decode(Mode.self, forKey: .mode)
-            self.init(mode)
-        } else { // sometimes the spec tests only specify the mode as a string
-            let container = try decoder.singleValueContainer()
-            let mode = try container.decode(ReadPreference.Mode.self)
-            self.init(mode)
-        }
-    }
-    
-    internal enum CodingKeys: String, CodingKey, CaseIterable {
-        case mode, tagSets = "tag_sets"
-    }
-}
-
 extension MongoClientOptions: StrictDecodable {
     internal typealias CodingKeysType = CodingKeys
 
@@ -173,5 +138,81 @@ extension MongoClientOptions: StrictDecodable {
             retryWrites: retryWrites,
             writeConcern: writeConcern
         )
+    }
+}
+
+extension ReadPreference: StrictDecodable {
+    internal typealias CodingKeysType = CodingKeys
+
+    public init(from decoder: Decoder) throws {
+        try Self.checkKeys(using: decoder)
+
+        if let container = try? decoder.container(keyedBy: CodingKeys.self) {
+            let mode = try container.decode(Mode.self, forKey: .mode)
+            let tagSets = try container.decodeIfPresent([BSONDocument].self, forKey: .tagSets)
+            try self.init(mode, tagSets: tagSets)
+        } else { // sometimes the spec tests only specify the mode as a string
+            let container = try decoder.singleValueContainer()
+            let mode = try container.decode(ReadPreference.Mode.self)
+            self.init(mode)
+        }
+    }
+
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
+        case mode, tagSets = "tag_sets"
+    }
+}
+
+extension ReadPreference.Mode: Decodable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        var string = try container.decode(String.self)
+        // spec tests capitalize first letter of mode, so need to account for that.
+        string = string.prefix(1).lowercased() + string.dropFirst()
+        guard let mode = Self(rawValue: string) else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "can't parse ReadPreference mode from \(string)"
+            )
+        }
+        self = mode
+    }
+}
+
+extension TopologyDescription: StrictDecodable {
+    internal typealias CodingKeysType = CodingKeys
+
+    public init(from decoder: Decoder) throws {
+        try Self.checkKeys(using: decoder)
+
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try values.decode(TopologyDescription.TopologyType.self, forKey: .type)
+        let servers = try values.decode([ServerDescription].self, forKey: .servers)
+
+        self.init(type: type, servers: servers)
+    }
+
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
+        case type, servers
+    }
+}
+
+extension ServerDescription: StrictDecodable {
+    internal typealias CodingKeysType = CodingKeys
+
+    public init(from decoder: Decoder) throws {
+        try Self.checkKeys(using: decoder)
+
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        let address = try ServerAddress(try values.decode(String.self, forKey: .address))
+        let type = try values.decode(ServerType.self, forKey: .type)
+        let tags = try values.decodeIfPresent([String: String].self, forKey: .tags) ?? [:]
+        // TODO: SWIFT-1461: decode and set averageRoundTripTimeMS
+
+        self.init(address: address, type: type, tags: tags)
+    }
+
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
+        case address, type, tags, averageRoundTripTimeMS = "avg_rtt_ms"
     }
 }
