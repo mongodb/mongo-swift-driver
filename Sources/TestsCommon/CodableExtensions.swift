@@ -1,5 +1,4 @@
-@testable import struct MongoSwift.ReadPreference
-import MongoSwiftSync
+@testable import MongoSwift
 
 /// Allows a type to specify a set of known keys and check whether any unknown top-level keys are found in a decoder.
 internal protocol StrictDecodable: Decodable {
