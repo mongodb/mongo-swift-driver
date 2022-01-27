@@ -145,9 +145,8 @@ extension ReadPreference: StrictDecodable {
     internal typealias CodingKeysType = CodingKeys
 
     public init(from decoder: Decoder) throws {
-        try Self.checkKeys(using: decoder)
-
         if let container = try? decoder.container(keyedBy: CodingKeys.self) {
+            try Self.checkKeys(using: decoder)
             let mode = try container.decode(Mode.self, forKey: .mode)
             let tagSets = try container.decodeIfPresent([BSONDocument].self, forKey: .tagSets)
             try self.init(mode, tagSets: tagSets)
