@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwiftSync 1.2.0 Docs
+          MongoSwiftSync 1.3.0-alpha.1 Docs
         </a>
          (99% documented)
       </p>
@@ -613,6 +613,15 @@
                 <a class="nav-group-task-link" href="Structs/Compressor.html">Compressor</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoConnectionString.html">MongoConnectionString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoConnectionString/Scheme.html">– Scheme</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoConnectionString/HostIdentifier.html">– HostIdentifier</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
@@ -679,17 +688,7 @@
 <p>If you add symbols you may need to run <code>make exports</code> which will generate <a href="Sources/MongoSwiftSync/Exports.swift">Sources/MongoSwiftSync/Exports.swift</a>. This makes symbols declared in <code>MongoSwift</code> available to importers of <code>MongoSwiftSync</code>.</p>
 <h3 id='in-xcode' class='heading'>In Xcode</h3>
 
-<p>We do not provide or maintain an already-generated <code>.xcodeproj</code> in our repository. Instead, you must generate it locally.</p>
-
-<p><strong>To generate the <code>.xcodeproj</code> file</strong>:</p>
-
-<ol>
-<li>Install the Ruby gem <code>xcodeproj</code> with <code>gem install xcodeproj</code> (you may need to <code>sudo</code>)</li>
-<li>Run <code>make project</code></li>
-<li>You&rsquo;re ready to go! Open <code>MongoSwift.xcodeproj</code> and build and test as normal.</li>
-</ol>
-
-<p>Why is this necessary? The project requires a customized &ldquo;copy resources&rdquo; build phase to include various test <code>.json</code> files. By default, this phase is not included when you run <code>swift package generate-xcodeproj</code>. So <code>make project</code> first generates the project, and then uses <code>xcodeproj</code> to manually add the files to the appropriate targets (see <code>add_json_files.rb</code>).</p>
+<p>From the driver root directory, you can run <code>xed .</code> to open the project in xcode and be able to build and run there. </p>
 <h2 id='running-tests' class='heading'>Running Tests</h2>
 
 <p><strong>NOTE</strong>: Several of the tests require a mongod instance to be running on the default host/port, <code>localhost:27017</code>. You can start this by running <code>mongod --setParameter enableTestCommands=1</code>. The <code>enableTestCommands</code> parameter is required to use some test-only commands built into MongoDB that we utilize in our tests, e.g. <code>failCommand</code>.</p>
@@ -727,11 +726,13 @@ Comments that are <em>not</em> documentation should use two slashes (<code>//</c
 <p>If you&rsquo;d like to preview how new documentation you&rsquo;ve written will look when published, you can regenerate it by running <code>./etc/generate-docs.sh</code> and then inspecting the generated HTML files in <code>/docs</code>.</p>
 <h2 id='linting-and-style' class='heading'>Linting and Style</h2>
 
-<p>We use <a href="https://github.com/realm/SwiftLint#using-homebrew">SwiftLint</a> for linting. You can see our configuration in the <code>.swiftlint.yml</code> file in the project&rsquo;s root directory.  Run <code>swiftlint</code> in the root directory to lint all of our files. Running <code>swiftlint autocorrect</code> will correct some types of violations.</p>
+<p>We use <a href="https://github.com/realm/SwiftLint#using-homebrew">SwiftLint</a> for linting. You can see our configuration in the <code>.swiftlint.yml</code> file in the project&rsquo;s root directory.  Run <code>swiftlint</code> in the root directory to lint all of our files. Running <code>swiftlint --fix</code> will correct some types of violations.</p>
 
 <p>We use <a href="https://github.com/nicklockwood/SwiftFormat">SwiftFormat</a> for formatting the code. You can see our configuration in the <code>.swiftformat</code> file in the project&rsquo;s root directory. Our linter config contains a superset of the rules that our formatter does, so some manual tweaking may be necessary to satisfy both once the formatter is run (e.g. line length enforcement). Most of the time, the formatter should put the code into a format that passes the linter. You can run the formatter on all of the files by running <code>swiftformat .</code> from the root directory.</p>
 
 <p>To pass all the formatting stages of our testing matrix, both <code>swiftlint --strict</code> and <code>swiftformat --lint .</code> must finish successfully.</p>
+
+<p><code>make lint-and-format</code> runs <code>swiftlint --fix</code>, <code>swiftlint --strict</code> and <code>swiftformat --lint .</code>.</p>
 
 <p>For style guidance, look at Swift&rsquo;s <a href="https://swift.org/documentation/api-design-guidelines/">API design guidelines</a> and Google&rsquo;s <a href="https://google.github.io/swift/">Swift Style Guide</a>.</p>
 <h2 id='editor-setup' class='heading'>Editor Setup</h2>
@@ -781,14 +782,8 @@ Comments that are <em>not</em> documentation should use two slashes (<code>//</c
 <ol>
 <li>Create a feature branch, named by the corresponding JIRA ticket if exists, along with a short descriptor of the work: for example, <code>SWIFT-30/writeconcern</code>.</li>
 <li>Do your work on the branch.</li>
-<li>If you add, remove, or rename any tests, make sure to update <code>LinuxMain.swift</code> accordingly. If you are on MacOS, you can do that by running <code>make linuxmain</code>.</li>
 <li>Ensure your code passes both the linter and the formatter.</li>
-<li>Make sure your code builds and passes all tests on:
-
-<ul>
-<li><a href="https://travis-ci.org/mongodb/mongo-swift-driver">Travis</a>. Every time you push to GitHub or open a pull request, it will trigger a new build, which includes running the linter, formatter, and basic tests.</li>
-<li>(If you work at MongoDB) <a href="https://evergreen.mongodb.com/waterfall/mongo-swift-driver">Evergreen</a> - Our Evergreen matrix tests a variety of MongoDB configurations, operating systems, and Swift language versions, and provides a way to more robustly test the driver. A new Evergreen build is automatically triggered for every commit to <code>main</code>, but for more complex pull requests it&rsquo;s a good idea to run patches on Evergreen before merging.</li>
-</ul></li>
+<li>Make sure your code builds and passes all tests on <a href="https://evergreen.mongodb.com/waterfall/mongo-swift-driver">Evergreen</a>. Our Evergreen matrix tests a variety of MongoDB configurations, operating systems, and Swift language versions, and provides a way to more robustly test the driver. If you work at MongoDB, a new Evergreen build is automatically triggered for every commit to <code>main</code> and for every pull request. If you do not work at MongoDB, ask a maintainer to trigger a test run on evergreen for you.</li>
 <li>Open a pull request on the repository. Make sure you have rebased your branch onto the latest commits on <code>main</code>.</li>
 <li>Go through code review to get the team&rsquo;s approval on your changes. (See the next section on <a href="#code-review">Code Review</a> for more details on this process.) Once you get the required approvals and your code passes all tests:</li>
 <li>Rebase on <code>main</code> again if needed.</li>
@@ -840,7 +835,7 @@ Please feel free to leave reviews on your own code when you open a pull request 
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-11-09)</p>
+      <p>&copy; 2022 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2022-01-28)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

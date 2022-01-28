@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwift 1.2.0 Docs
+          MongoSwift 1.3.0-alpha.1 Docs
         </a>
          (99% documented)
       </p>
@@ -619,6 +619,15 @@
                 <a class="nav-group-task-link" href="Structs/Compressor.html">Compressor</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoConnectionString.html">MongoConnectionString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoConnectionString/Scheme.html">– Scheme</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoConnectionString/HostIdentifier.html">– HostIdentifier</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
@@ -646,7 +655,7 @@
           <div class="section-content top-matter">
             
             <h1 id='using-the-driver-in-multithreaded-applications' class='heading'>Using the Driver in Multithreaded Applications</h1>
-<h2 id='async-api' class='heading'>Async API</h2>
+<h2 id='asynchronous-apis' class='heading'>Asynchronous APIs</h2>
 
 <p>Our asynchronous API is designed to be used in SwiftNIO-based applications running atop <code>EventLoopGroup</code>s
 composed of one or more <code>EventLoop</code>s.</p>
@@ -655,12 +664,9 @@ composed of one or more <code>EventLoop</code>s.</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="s">"mongodb://localhost:27017"</span><span class="p">,</span> <span class="nv">using</span><span class="p">:</span> <span class="n">myEventLoopGroup</span><span class="p">)</span>
 </code></pre>
 
-<p>We strongly recommend using a single, global <code><a href="Classes/MongoClient.html">MongoClient</a></code> per application. Each client is backed by a pool of connections per each server in the in MongoDB deployment, and utilizes a background thread to continuously monitor
-the state of the MongoDB deployment. Using a single client allows these resources to be efficiently shared
-throughout your application.</p>
-<h3 id='safe-use-across-event-loops' class='heading'>Safe Use Across Event Loops</h3>
+<p>We strongly recommend using a single, global <code><a href="Classes/MongoClient.html">MongoClient</a></code> per application. Each client is backed by a pool of connections per each server in the in MongoDB deployment, and utilizes a background thread to continuously monitor the state of the MongoDB deployment. Using a single client allows these resources to be efficiently shared throughout your application.</p>
 
-<p>The following types are all designed to be safe to access across multiple threads/event loops:</p>
+<p>The following types are all designed to be safe to access across multiple threads/<code>Task</code>s/<code>EventLoop</code>s:</p>
 
 <ul>
 <li><code><a href="Classes/MongoClient.html">MongoClient</a></code></li>
@@ -669,9 +675,13 @@ throughout your application.</p>
 </ul>
 
 <p><em>We make no guarantees about the safety of using any other type across threads.</em></p>
+<h3 id='special-considerations-when-using-code-eventloopfuture-code-apis' class='heading'>Special Considerations when using <code>EventLoopFuture</code> APIs</h3>
 
-<p>That said: each of these types will, by default, not necessarily always return <code>EventLoopFuture</code>s on the
-same <code>EventLoop</code> you are using them on. Each time an <code>EventLoopFuture</code> is generated, they will call
+<p><em>This section is only relevant if you are working with <code>EventLoopFuture</code>s. If you are using structured concurrency
+and async/await APIs, you do not need to worry about these considerations.</em></p>
+
+<p>Although the types listed above are thread-safe, by default each will not necessarily always return <code>EventLoopFuture</code>s
+on the same <code>EventLoop</code> you are using them on. Each time an <code>EventLoopFuture</code> is generated, they will call
 <code>EventLoopGroup.next()</code> on the <code><a href="Classes/MongoClient.html">MongoClient</a></code>&lsquo;s underyling <code>EventLoopGroup</code> to select a next <code>EventLoop</code> to use.</p>
 
 <p>To ensure thread safety when working with these returned futures, you should call <code>hop(to:)</code> on them in order
@@ -713,7 +723,7 @@ throughout your application.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-11-09)</p>
+      <p>&copy; 2022 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2022-01-28)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

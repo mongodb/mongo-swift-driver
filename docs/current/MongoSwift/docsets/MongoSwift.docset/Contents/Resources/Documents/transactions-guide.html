@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwift 1.2.0 Docs
+          MongoSwift 1.3.0-alpha.1 Docs
         </a>
          (99% documented)
       </p>
@@ -619,6 +619,15 @@
                 <a class="nav-group-task-link" href="Structs/Compressor.html">Compressor</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoConnectionString.html">MongoConnectionString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoConnectionString/Scheme.html">– Scheme</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/MongoConnectionString/HostIdentifier.html">– HostIdentifier</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/MongoNamespace.html">MongoNamespace</a>
               </li>
               <li class="nav-group-task">
@@ -649,12 +658,14 @@
 
 <p><code>MongoSwift</code> 1.0.0 added support for <a href="https://docs.mongodb.com/manual/core/transactions/">transactions</a>, which allow applications to use to execute multiple read and write operations atomically across multiple documents and/or collections. Transactions reduce the need for complicated application logic when operating on several different documents simultaneously; however, because operations on single documents are always atomic, transactions are often not necessary.</p>
 
-<p>Transactions in the driver must be started on a <code><a href="Classes/ClientSession.html">ClientSession</a></code> using <code>startTransaction()</code>. The session must then be passed to each operation in the transaction. If the session is not passed to an operation, said operation will be executed outside the context of the transaction. Transactions must be committed or aborted using <code>commitTransaction()</code> or <code>abortTransaction()</code>, respectively. Ending a session <em>aborts</em> all in-progress transactions.</p>
+<p>Transactions in the driver must be started on a <code><a href="Classes/ClientSession.html">ClientSession</a></code> using <code>startTransaction()</code>. <em>The session must then be passed to each operation in the transaction</em>. If the session is not passed to an operation, said operation will be executed outside the context of the transaction. Transactions must be committed or aborted using <code>commitTransaction()</code> or <code>abortTransaction()</code>, respectively. Ending a session <em>aborts</em> all in-progress transactions.</p>
 
 <p><strong>Note</strong>: Transactions only work with MongoDB replica sets (v4.0+) and sharded clusters (v4.2+).</p>
 <h2 id='examples' class='heading'>Examples</h2>
 
 <p>Below are some basic examples of using transactions in <code>MongoSwift</code>. In realistic use cases, transactions would ideally be retried when facing transient errors. For more detailed examples featuring retry logic, see the <a href="https://docs.mongodb.com/manual/core/transactions-in-applications/#txn-core-api">official MongoDB documentation&rsquo;s examples</a>. </p>
+
+<p>These examples use the driver&rsquo;s async/await APIs; for examples using <code>EventLoopFuture</code>s please see the <a href="https://github.com/mongodb/mongo-swift-driver/blob/79c9683d56f92540f4065f40b9f55e1911a1ff5b/Guides/Transactions-Guide.md">previous version of this guide</a>.</p>
 <h3 id='transaction-that-atomically-moves-a-code-document-code-from-one-code-mongocollection-code-to-another' class='heading'>Transaction that Atomically Moves a <code>Document</code> from One <code><a href="Structs/MongoCollection.html">MongoCollection</a></code> to Another</h3>
 
 <p>The transaction below atomically deletes the document <code>{ &quot;hello&quot;: &quot;world&quot; }</code> from the collection <code>test.src</code> and inserts the document in the collection <code>test.dest</code>. This ensures that the document exists in either <code>test.src</code> or <code>test.dest</code>, but not both or neither. Executing the delete and insert non-atomically raises the following issues:</p>
@@ -670,52 +681,36 @@
 <p>Transactions will inherit the read concern / write concern / read preference specified on the client that started the transaction&rsquo;s session unless they were also specified in either the default transaction options or in the transaction options passed to <code>startTransaction</code>. See the below sections on how to do either.</p>
 
 <p><strong>Note:</strong> All operations executed as part of a transaction will use the transaction&rsquo;s read concern / write concern / read preference. Any of those options specified on the database or collection that executes the operation or on a per-operation basis will be <em>ignored</em>.</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="kt">ClientOptions</span><span class="p">(</span><span class="nv">readConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">snapshot</span><span class="p">,</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">))</span>
-<span class="k">let</span> <span class="nv">session</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">startSession</span><span class="p">()</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span>
+    <span class="s">"your-connection-string-here"</span><span class="p">,</span>
+    <span class="nv">using</span><span class="p">:</span> <span class="n">yourEventLoopGroup</span><span class="p">,</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">MongoClientOptions</span><span class="p">(</span><span class="nv">readConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">snapshot</span><span class="p">,</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span><span class="p">)</span>
+<span class="p">)</span>
 
 <span class="k">let</span> <span class="nv">db</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"test"</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">srcColl</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"src"</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">destColl</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"dest"</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">docToMove</span><span class="p">:</span> <span class="kt">Document</span> <span class="o">=</span> <span class="p">[</span><span class="s">"hello"</span><span class="p">:</span> <span class="s">"world"</span><span class="p">]</span>
+<span class="k">let</span> <span class="nv">docToMove</span><span class="p">:</span> <span class="kt">BSONDocument</span> <span class="o">=</span> <span class="p">[</span><span class="s">"hello"</span><span class="p">:</span> <span class="s">"world"</span><span class="p">]</span>
 
-<span class="n">session</span><span class="o">.</span><span class="nf">startTransaction</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
-    <span class="n">srcColl</span><span class="o">.</span><span class="nf">deleteOne</span><span class="p">(</span><span class="n">docToMove</span><span class="p">,</span> <span class="nv">session</span><span class="p">:</span> <span class="n">session</span><span class="p">)</span>
-<span class="p">}</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
-    <span class="n">destColl</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">(</span><span class="n">docToMove</span><span class="p">,</span> <span class="nv">session</span><span class="p">:</span> <span class="n">session</span><span class="p">)</span>
-<span class="p">}</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
-    <span class="n">session</span><span class="o">.</span><span class="nf">commitTransaction</span><span class="p">()</span>
-<span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
-    <span class="n">session</span><span class="o">.</span><span class="nf">abortTransaction</span><span class="p">()</span>
-    <span class="c1">// handle error</span>
+<span class="k">try</span> <span class="n">await</span> <span class="n">client</span><span class="o">.</span><span class="n">withSession</span> <span class="p">{</span> <span class="n">session</span> <span class="k">in</span>
+    <span class="k">try</span> <span class="n">await</span> <span class="n">session</span><span class="o">.</span><span class="nf">startTransaction</span><span class="p">()</span>
+    <span class="k">do</span> <span class="p">{</span>
+        <span class="k">try</span> <span class="n">await</span> <span class="n">srcColl</span><span class="o">.</span><span class="nf">deleteOne</span><span class="p">(</span><span class="n">docToMove</span><span class="p">,</span> <span class="nv">session</span><span class="p">:</span> <span class="n">session</span><span class="p">)</span>
+        <span class="k">try</span> <span class="n">await</span> <span class="n">destColl</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">(</span><span class="n">docToMove</span><span class="p">,</span> <span class="nv">session</span><span class="p">:</span> <span class="n">session</span><span class="p">)</span>
+        <span class="k">try</span> <span class="n">await</span> <span class="n">session</span><span class="o">.</span><span class="nf">commitTransaction</span><span class="p">()</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+        <span class="k">try</span> <span class="n">await</span> <span class="n">session</span><span class="o">.</span><span class="nf">abortTransaction</span><span class="p">()</span>
+        <span class="c1">// handle error</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
 <h3 id='transaction-with-default-transaction-options' class='heading'>Transaction with Default Transaction Options</h3>
 
 <p>The default transaction options specified below apply to any transaction started on the session.</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">txnOpts</span> <span class="o">=</span> <span class="kt">TransactionOptions</span><span class="p">(</span>
-    <span class="nv">maxCommitTimeMS</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
-    <span class="nv">readConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">snapshot</span><span class="p">,</span>
-    <span class="nv">readPreference</span><span class="p">:</span> <span class="o">.</span><span class="n">primary</span><span class="p">,</span>
-    <span class="nv">writeConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span>
+    <span class="s">"your-connection-string-here"</span><span class="p">,</span>
+    <span class="nv">using</span><span class="p">:</span> <span class="n">yourEventLoopGroup</span>
 <span class="p">)</span>
-
-<span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">session</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">startSession</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt">ClientSessionOptions</span><span class="p">(</span><span class="n">defaultTransactionOptions</span><span class="p">:</span> <span class="n">txnOpts</span><span class="p">))</span>
-
-<span class="n">session</span><span class="o">.</span><span class="nf">startTransaction</span><span class="p">()</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
-    <span class="c1">// do something</span>
-<span class="p">}</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
-    <span class="n">session</span><span class="o">.</span><span class="nf">commitTransaction</span><span class="p">()</span>
-<span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
-    <span class="n">session</span><span class="o">.</span><span class="nf">abortTransaction</span><span class="p">()</span>
-    <span class="c1">// handle error</span>
-<span class="p">}</span>
-</code></pre>
-<h3 id='transaction-with-custom-transaction-options' class='heading'>Transaction with Custom Transaction Options</h3>
-
-<p><strong>Note</strong>: Any transaction options provided directly to <code>startTransaction()</code> override the default transaction options for the session. More so, the default transaction options for the session override any options inherited from the client.</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">elg</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">session</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">startSession</span><span class="p">()</span>
 
 <span class="k">let</span> <span class="nv">txnOpts</span> <span class="o">=</span> <span class="kt">TransactionOptions</span><span class="p">(</span>
     <span class="nv">maxCommitTimeMS</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
@@ -724,13 +719,41 @@
     <span class="nv">writeConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span>
 <span class="p">)</span>
 
-<span class="n">session</span><span class="o">.</span><span class="nf">startTransaction</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="n">txnOpts</span><span class="p">)</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
-    <span class="c1">// do something</span>
-<span class="p">}</span><span class="o">.</span><span class="n">flatMap</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
-    <span class="n">session</span><span class="o">.</span><span class="nf">commitTransaction</span><span class="p">()</span>
-<span class="p">}</span><span class="o">.</span><span class="n">whenFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="k">in</span>
-    <span class="n">session</span><span class="o">.</span><span class="nf">abortTransaction</span><span class="p">()</span>
-    <span class="c1">// handle error</span>
+<span class="k">try</span> <span class="n">client</span><span class="o">.</span><span class="nf">withSession</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt">ClientSessionOptions</span><span class="p">(</span><span class="n">defaultTransactionOptions</span><span class="p">:</span> <span class="n">txnOpts</span><span class="p">))</span> <span class="p">{</span> <span class="n">session</span> <span class="k">in</span>
+    <span class="k">try</span> <span class="n">await</span> <span class="n">session</span><span class="o">.</span><span class="nf">startTransaction</span><span class="p">()</span>
+    <span class="k">do</span> <span class="p">{</span>
+        <span class="c1">// perform operations here</span>
+        <span class="k">try</span> <span class="n">await</span> <span class="n">session</span><span class="o">.</span><span class="nf">commitTransaction</span><span class="p">()</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+        <span class="k">try</span> <span class="n">await</span> <span class="n">session</span><span class="o">.</span><span class="nf">abortTransaction</span><span class="p">()</span>
+        <span class="c1">// handle error</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+<h3 id='transaction-with-custom-transaction-options' class='heading'>Transaction with Custom Transaction Options</h3>
+
+<p><strong>Note</strong>: Any transaction options provided directly to <code>startTransaction()</code> override the default transaction options for the session. More so, the default transaction options for the session override any options inherited from the client.</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">MongoClient</span><span class="p">(</span>
+    <span class="s">"mongodb://localhost:27017,localhost:27018,localhost:27019/?replicaSet=b8510123-7f36-40f7-8437-bfb4ee70abbc"</span><span class="p">,</span>
+    <span class="nv">using</span><span class="p">:</span> <span class="n">elg</span>
+<span class="p">)</span>
+
+<span class="k">let</span> <span class="nv">txnOpts</span> <span class="o">=</span> <span class="kt">TransactionOptions</span><span class="p">(</span>
+    <span class="nv">maxCommitTimeMS</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="nv">readConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">snapshot</span><span class="p">,</span>
+    <span class="nv">readPreference</span><span class="p">:</span> <span class="o">.</span><span class="n">primary</span><span class="p">,</span>
+    <span class="nv">writeConcern</span><span class="p">:</span> <span class="o">.</span><span class="n">majority</span>
+<span class="p">)</span>
+
+<span class="k">try</span> <span class="n">await</span> <span class="n">client</span><span class="o">.</span><span class="n">withSession</span> <span class="p">{</span> <span class="n">session</span> <span class="k">in</span>
+    <span class="k">try</span> <span class="n">await</span> <span class="n">session</span><span class="o">.</span><span class="nf">startTransaction</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="n">txnOpts</span><span class="p">)</span>
+    <span class="k">do</span> <span class="p">{</span>
+        <span class="c1">// perform operations here</span>
+        <span class="k">try</span> <span class="n">await</span> <span class="n">session</span><span class="o">.</span><span class="nf">commitTransaction</span><span class="p">()</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+        <span class="k">try</span> <span class="n">await</span> <span class="n">session</span><span class="o">.</span><span class="nf">abortTransaction</span><span class="p">()</span>
+        <span class="c1">// handle error</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
 <h2 id='see-also' class='heading'>See Also</h2>
@@ -748,7 +771,7 @@
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2021 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2021-11-09)</p>
+      <p>&copy; 2022 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2022-01-28)</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>

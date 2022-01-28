@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>MongoConnectionString Structure Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+    <script src="../js/lunr.min.js" defer></script>
+    <script src="../js/typeahead.jquery.js" defer></script>
+    <script src="../js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+    <a name="//apple_ref/swift/Struct/MongoConnectionString" class="dashAnchor"></a>
+
+    <a title="MongoConnectionString Structure Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="../index.html">
+          MongoSwiftSync 1.3.0-alpha.1 Docs
+        </a>
+         (99% documented)
+      </p>
+    
+      <p class="header-col--secondary">
+        <form role="search" action="../search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/mongodb/mongo-swift-driver">
+            <img class="header-icon" src="../img/gh.png"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
+            <img class="header-icon" src="../img/dash.png"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="../index.html">MongoSwiftSync Reference</a>
+      <img class="carat" src="../img/carat.png" />
+      MongoConnectionString Structure Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../General%20Guides.html">General Guides</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../development.html">Development</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../multithreaded-usage.html">Multithreaded-Usage</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../bson-guide.html">BSON-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../json-interop.html">JSON-Interop</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../codable-guide.html">Codable-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../bson-migration-guide.html">BSON-Migration-Guide</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Core%20Types.html">Core Types</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MongoClient.html">MongoClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoClientOptions.html">MongoClientOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoDatabase.html">MongoDatabase</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoDatabaseOptions.html">MongoDatabaseOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoCollection.html">MongoCollection</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoCollectionOptions.html">MongoCollectionOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../BSON%20Types.html">BSON Types</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSON.html">BSON</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONType.html">BSONType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONBinary.html">BSONBinary</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONBinary/Subtype.html">– Subtype</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONCode.html">BSONCode</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONCodeWithScope.html">BSONCodeWithScope</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONDBPointer.html">BSONDBPointer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONDecimal128.html">BSONDecimal128</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONDocument.html">BSONDocument</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONObjectID.html">BSONObjectID</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONRegularExpression.html">BSONRegularExpression</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONSymbol.html">BSONSymbol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONTimestamp.html">BSONTimestamp</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Replica%20Set%20%26%20Sharded%20Cluster-Related%20Settings.html">Replica Set &amp; Sharded Cluster-Related Settings</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadConcern.html">ReadConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference.html">ReadPreference</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReadPreference/Mode.html">– Mode</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WriteConcern.html">WriteConcern</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WriteConcern/W.html">– W</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Authentication%20%26%20TLS.html">Authentication &amp; TLS</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../tls-guide.html">TLS-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoCredential.html">MongoCredential</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoCredential/Mechanism.html">– Mechanism</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Reading%20Data.html">Reading Data</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CountDocumentsOptions.html">CountDocumentsOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DistinctOptions.html">DistinctOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/EstimatedDocumentCountOptions.html">EstimatedDocumentCountOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FindOneOptions.html">FindOneOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FindOptions.html">FindOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AggregateOptions.html">AggregateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/IndexHint.html">IndexHint</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Cursors.html">Cursors</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MongoCursor.html">MongoCursor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoCursorType.html">MongoCursorType</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Writing%20Data.html">Writing Data</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/InsertOneOptions.html">InsertOneOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/InsertOneResult.html">InsertOneResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Writing%20Data.html#/s:10MongoSwift17InsertManyOptionsa">InsertManyOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/InsertManyResult.html">InsertManyResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReplaceOptions.html">ReplaceOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateOptions.html">UpdateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateResult.html">UpdateResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DeleteOptions.html">DeleteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DeleteResult.html">DeleteResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FindOneAndDeleteOptions.html">FindOneAndDeleteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FindOneAndReplaceOptions.html">FindOneAndReplaceOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FindOneAndUpdateOptions.html">FindOneAndUpdateOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ReturnDocument.html">ReturnDocument</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Bulk%20Writes.html">Bulk Writes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BulkWriteOptions.html">BulkWriteOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BulkWriteResult.html">BulkWriteResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/WriteModel.html">WriteModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateModelOptions.html">UpdateModelOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DeleteModelOptions.html">DeleteModelOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ReplaceOneModelOptions.html">ReplaceOneModelOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Errors.html">Errors</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../error-handling-guide.html">Error-Handling-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Errors.html#/s:10MongoSwift0A13ErrorProtocolP">MongoErrorProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/MongoLabeledError.html">MongoLabeledError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Errors.html#/s:10MongoSwift0A12RuntimeErrorP">MongoRuntimeError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Errors.html#/s:10MongoSwift0A11ServerErrorP">MongoServerError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Errors.html#/s:10MongoSwift0A9UserErrorP">MongoUserError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError.html">MongoError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/CommandError.html">– CommandError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/WriteError.html">– WriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/BulkWriteError.html">– BulkWriteError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/ConnectionError.html">– ConnectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/AuthenticationError.html">– AuthenticationError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/CompatibilityError.html">– CompatibilityError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/ServerSelectionError.html">– ServerSelectionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/WriteFailure.html">– WriteFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/WriteConcernFailure.html">– WriteConcernFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/MongoError/BulkWriteFailure.html">– BulkWriteFailure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError.html">BSONError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/InvalidArgumentError.html">– InvalidArgumentError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/InternalError.html">– InternalError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/LogicError.html">– LogicError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/BSONError/DocumentTooLargeError.html">– DocumentTooLargeError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Errors.html#/s:9SwiftBSON17BSONErrorProtocolP">BSONErrorProtocol</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Encoding%20and%20Decoding%20BSON.html">Encoding and Decoding BSON</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BSONEncoder.html">BSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BSONEncoder/DateEncodingStrategy.html">– DateEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BSONEncoder/UUIDEncodingStrategy.html">– UUIDEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BSONEncoder/DataEncodingStrategy.html">– DataEncodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BSONDecoder.html">BSONDecoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BSONDecoder/DateDecodingStrategy.html">– DateDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BSONDecoder/UUIDDecodingStrategy.html">– UUIDDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BSONDecoder/DataDecodingStrategy.html">– DataDecodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/DataCodingStrategy.html">DataCodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/DateCodingStrategy.html">DateCodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/UUIDCodingStrategy.html">UUIDCodingStrategy</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/CodingStrategyProvider.html">CodingStrategyProvider</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BSONCoderOptions.html">BSONCoderOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Change%20Streams.html">Change Streams</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../change-streams-guide.html">Change-Streams-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ChangeStream.html">ChangeStream</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ChangeStreamEvent.html">ChangeStreamEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ChangeStreamOptions.html">ChangeStreamOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OperationType.html">OperationType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ResumeToken.html">ResumeToken</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FullDocument.html">FullDocument</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateDescription.html">UpdateDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/UpdateDescription/TruncatedArrayDescription.html">– TruncatedArrayDescription</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Index%20Management.html">Index Management</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/IndexModel.html">IndexModel</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/IndexOptions.html">IndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CreateIndexOptions.html">CreateIndexOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DropIndexOptions.html">DropIndexOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Database%2FCollection%20Management.html">Database/Collection Management</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DatabaseSpecification.html">DatabaseSpecification</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ListDatabasesOptions.html">ListDatabasesOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DropDatabaseOptions.html">DropDatabaseOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CollectionSpecification.html">CollectionSpecification</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CollectionSpecificationInfo.html">CollectionSpecificationInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ListCollectionsOptions.html">ListCollectionsOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/CollectionType.html">CollectionType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CreateCollectionOptions.html">CreateCollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DropCollectionOptions.html">DropCollectionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/RenameCollectionOptions.html">RenameCollectionOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Sessions%20%26%20Transactions.html">Sessions &amp; Transactions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../transactions-guide.html">Transactions-Guide</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClientSession.html">ClientSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ClientSessionOptions.html">ClientSessionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TransactionOptions.html">TransactionOptions</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Command%20Monitoring.html">Command Monitoring</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/CommandEvent.html">CommandEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/CommandEventHandler.html">CommandEventHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CommandStartedEvent.html">CommandStartedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CommandSucceededEvent.html">CommandSucceededEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CommandFailedEvent.html">CommandFailedEvent</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Server%20Discovery%20and%20Monitoring%20%28SDAM%29%20Monitoring.html">Server Discovery and Monitoring (SDAM) Monitoring</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SDAMEvent.html">SDAMEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/SDAMEventHandler.html">SDAMEventHandler</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ServerOpeningEvent.html">ServerOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ServerClosedEvent.html">ServerClosedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ServerAddress.html">ServerAddress</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ServerDescription.html">ServerDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ServerDescription/ServerType.html">– ServerType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ServerDescriptionChangedEvent.html">ServerDescriptionChangedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ServerHeartbeatStartedEvent.html">ServerHeartbeatStartedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ServerHeartbeatFailedEvent.html">ServerHeartbeatFailedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ServerHeartbeatSucceededEvent.html">ServerHeartbeatSucceededEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TopologyOpeningEvent.html">TopologyOpeningEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TopologyClosedEvent.html">TopologyClosedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TopologyDescriptionChangedEvent.html">TopologyDescriptionChangedEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TopologyDescription.html">TopologyDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TopologyDescription/TopologyType.html">– TopologyType</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Other%20Classes.html">Other Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ExtendedJSONDecoder.html">ExtendedJSONDecoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ExtendedJSONEncoder.html">ExtendedJSONEncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ExtendedJSONEncoder/Format.html">– Format</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Other%20Functions.html">Other Functions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Other%20Functions.html#/s:10MongoSwift07cleanupaB0yyF">cleanupMongoSwift()</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Other%20Structs.html">Other Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Compressor.html">Compressor</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoConnectionString.html">MongoConnectionString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoConnectionString/Scheme.html">– Scheme</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoConnectionString/HostIdentifier.html">– HostIdentifier</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoNamespace.html">MongoNamespace</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI.html">MongoServerAPI</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MongoServerAPI/Version.html">– Version</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/RunCommandOptions.html">RunCommandOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TimeseriesOptions.html">TimeseriesOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/TimeseriesOptions/Granularity.html">– Granularity</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content top-matter">
+            <h1>MongoConnectionString</h1>
+              <div class="declaration">
+                <div class="language">
+                  
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">MongoConnectionString</span> <span class="p">:</span> <span class="kt">Codable</span><span class="p">,</span> <span class="kt">LosslessStringConvertible</span></code></pre>
+
+                </div>
+              </div>
+            <p>Represents a MongoDB connection string.</p>
+<div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <a href="https://docs.mongodb.com/manual/reference/connection-string/">https://docs.mongodb.com/manual/reference/connection-string/</a>
+
+</div>
+
+              <div class="slightly-smaller">
+                <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L7-L1291">Show on GitHub</a>
+              </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-content">
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV6SchemeV"></a>
+                    <a name="//apple_ref/swift/Struct/Scheme" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV6SchemeV">Scheme</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Represents a connection string scheme.</p>
+
+                        <a href="../Structs/MongoConnectionString/Scheme.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Scheme</span> <span class="p">:</span> <span class="kt">LosslessStringConvertible</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L63-L91">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV14HostIdentifierV"></a>
+                    <a name="//apple_ref/swift/Struct/HostIdentifier" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV14HostIdentifierV">HostIdentifier</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A struct representing a host identifier, consisting of a host and an optional port.
+In standard connection strings, this describes the address of a mongod or mongos to connect to.
+In mongodb+srv connection strings, this describes a DNS name to be queried for SRV and TXT records.</p>
+
+                        <a href="../Structs/MongoConnectionString/HostIdentifier.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">HostIdentifier</span> <span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">CustomStringConvertible</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L96-L187">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV6stringACSS_tKcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(string:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV6stringACSS_tKcfc">init(string:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Parses a new <code>MongoConnectionString</code> instance from the provided string.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <ul>
+<li><code><a href="../Enums/MongoError/InvalidArgumentError.html">MongoError.InvalidArgumentError</a></code> if the input is invalid.</li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">string</span> <span class="nv">input</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L382-L551">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV12applyOptionsyyAA0a6ClientF0VKF"></a>
+                    <a name="//apple_ref/swift/Method/applyOptions(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV12applyOptionsyyAA0a6ClientF0VKF">applyOptions(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Updates this <code>MongoConnectionString</code> to incorporate options specified in the provided <code><a href="../Structs/MongoClientOptions.html">MongoClientOptions</a></code>. If
+the same option is specified in both, the option in the <code><a href="../Structs/MongoClientOptions.html">MongoClientOptions</a></code> takes precedence.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <ul>
+<li><code><a href="../Enums/MongoError/InvalidArgumentError.html">MongoError.InvalidArgumentError</a></code> if the provided <code><a href="../Structs/MongoClientOptions.html">MongoClientOptions</a></code> contains any invalid options, or
+applying the options leads to an invalid combination of options.</li>
+</ul>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">mutating</span> <span class="kd">func</span> <span class="nf">applyOptions</span><span class="p">(</span><span class="n">_</span> <span class="nv">options</span><span class="p">:</span> <span class="kt"><a href="../Structs/MongoClientOptions.html">MongoClientOptions</a></span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L558-L639">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV6encode2toys7Encoder_p_tKF"></a>
+                    <a name="//apple_ref/swift/Method/encode(to:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV6encode2toys7Encoder_p_tKF">encode(to:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p><code>Codable</code> conformance</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">to</span> <span class="nv">encoder</span><span class="p">:</span> <span class="kt">Encoder</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L902-L905">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:Se4fromxs7Decoder_p_tKcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(from:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:Se4fromxs7Decoder_p_tKcfc">init(from:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">from</span> <span class="nv">decoder</span><span class="p">:</span> <span class="kt">Decoder</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L907-L918">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringVyACSgSScfc"></a>
+                    <a name="//apple_ref/swift/Method/init(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringVyACSgSScfc">init(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p><code>LosslessStringConvertible</code> protocol requirements</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">?(</span><span class="n">_</span> <span class="nv">description</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L921-L923">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:s23CustomStringConvertibleP11descriptionSSvp"></a>
+                    <a name="//apple_ref/swift/Property/description" class="dashAnchor"></a>
+                    <a class="token" href="#/s:s23CustomStringConvertibleP11descriptionSSvp">description</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">description</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L925-L1025">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV6schemeAC6SchemeVvp"></a>
+                    <a name="//apple_ref/swift/Property/scheme" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV6schemeAC6SchemeVvp">scheme</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies the format this connection string is in.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">scheme</span><span class="p">:</span> <span class="kt"><a href="../Structs/MongoConnectionString/Scheme.html">Scheme</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1167">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV5hostsSayAC14HostIdentifierVGvp"></a>
+                    <a name="//apple_ref/swift/Property/hosts" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV5hostsSayAC14HostIdentifierVGvp">hosts</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies one or more host/ports to connect to.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">hosts</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/MongoConnectionString/HostIdentifier.html">HostIdentifier</a></span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1170">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV13defaultAuthDBSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/defaultAuthDB" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV13defaultAuthDBSSSgvp">defaultAuthDB</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The default database to use for authentication if an <code>authSource</code> is unspecified in the connection string.
+Defaults to &ldquo;admin&rdquo; if unspecified.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">defaultAuthDB</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1174">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV7appNameSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/appName" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV7appNameSSSgvp">appName</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies a custom app name. This value is used in MongoDB logs and profiling data.</p>
+<div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <a href="https://docs.mongodb.com/manual/reference/connection-string/#urioption.appName">https://docs.mongodb.com/manual/reference/connection-string/#urioption.appName</a>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">appName</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1178">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV11compressorsSayAA10CompressorVGSgvp"></a>
+                    <a name="//apple_ref/swift/Property/compressors" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV11compressorsSayAA10CompressorVGSgvp">compressors</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies one or more compressors to use for network compression for communication between this client and
+mongod/mongos instances. Currently, the driver only supports compression via zlib.</p>
+<div class="aside aside-see-also">
+    <p class="aside-title">See also</p>
+    <a href="https://docs.mongodb.com/manual/reference/connection-string/#urioption.compressors">https://docs.mongodb.com/manual/reference/connection-string/#urioption.compressors</a>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">compressors</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Structs/Compressor.html">Compressor</a></span><span class="p">]?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1183">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV16connectTimeoutMSSiSgvp"></a>
+                    <a name="//apple_ref/swift/Property/connectTimeoutMS" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV16connectTimeoutMSSiSgvp">connectTimeoutMS</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies the maximum time, in milliseconds, for an individual connection to establish a TCP
+connection to a MongoDB server before timing out.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">connectTimeoutMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1187">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV10credentialAA0A10CredentialVSgvp"></a>
+                    <a name="//apple_ref/swift/Property/credential" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV10credentialAA0A10CredentialVSgvp">credential</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies the authentication credentials.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">credential</span><span class="p">:</span> <span class="kt"><a href="../Structs/MongoCredential.html">MongoCredential</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1190">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV06directC0SbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/directConnection" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV06directC0SbSgvp">directConnection</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies whether the client should connect directly to a single host. When false, the client will attempt to
+automatically discover all replica set members if a replica set name is provided. Defaults to false.
+It is an error to set this option to <code>true</code> when used with a mongodb+srv connection string or when multiple
+hosts are specified in the connection string.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">directConnection</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1196">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV20heartbeatFrequencyMSSiSgvp"></a>
+                    <a name="//apple_ref/swift/Property/heartbeatFrequencyMS" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV20heartbeatFrequencyMSSiSgvp">heartbeatFrequencyMS</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies how often the driver checks the state of the MongoDB deployment. Specifies the interval (in
+milliseconds) between checks, counted from the end of the previous check until the beginning of the next one.
+Defaults to 10 seconds (10,000 ms). Must be at least 500ms.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">heartbeatFrequencyMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1201">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV12loadBalancedSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/loadBalanced" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV12loadBalancedSbSgvp">loadBalanced</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies whether the driver is connecting to a load balancer.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">loadBalanced</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1204">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV16localThresholdMSSiSgvp"></a>
+                    <a name="//apple_ref/swift/Property/localThresholdMS" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV16localThresholdMSSiSgvp">localThresholdMS</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The size (in milliseconds) of the permitted latency window beyond the fastest round-trip time amongst all
+servers. By default, only servers within 15ms of the fastest round-trip time receive queries.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">localThresholdMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1208">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV11maxPoolSizeSiSgvp"></a>
+                    <a name="//apple_ref/swift/Property/maxPoolSize" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV11maxPoolSizeSiSgvp">maxPoolSize</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The maximum number of connections that may be associated with a connection pool created by this client at a
+given time. This includes in-use and available connections. Defaults to 100.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">maxPoolSize</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1212">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV11readConcernAA04ReadF0VSgvp"></a>
+                    <a name="//apple_ref/swift/Property/readConcern" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV11readConcernAA04ReadF0VSgvp">readConcern</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies a ReadConcern to use for the client.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readConcern</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadConcern.html">ReadConcern</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1218">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV14readPreferenceAA04ReadF0VSgvp"></a>
+                    <a name="//apple_ref/swift/Property/readPreference" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV14readPreferenceAA04ReadF0VSgvp">readPreference</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies a ReadPreference to use for the client.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">readPreference</span><span class="p">:</span> <span class="kt"><a href="../Structs/ReadPreference.html">ReadPreference</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1221">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV10replicaSetSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/replicaSet" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV10replicaSetSSSgvp">replicaSet</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies the name of the replica set the driver should connect to.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">replicaSet</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1224">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV10retryReadsSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/retryReads" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV10retryReadsSbSgvp">retryReads</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies whether the client should retry supported read operations (on by default).</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">retryReads</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1227">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV11retryWritesSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/retryWrites" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV11retryWritesSbSgvp">retryWrites</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies whether the client should retry supported write operations (on by default).</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">retryWrites</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1230">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV24serverSelectionTimeoutMSSiSgvp"></a>
+                    <a name="//apple_ref/swift/Property/serverSelectionTimeoutMS" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV24serverSelectionTimeoutMSSiSgvp">serverSelectionTimeoutMS</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies how long the driver should attempt to select a server for before throwing an error. Defaults to 30
+seconds (30000 ms).</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">serverSelectionTimeoutMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1234">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV15socketTimeoutMSSiSgvp"></a>
+                    <a name="//apple_ref/swift/Property/socketTimeoutMS" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV15socketTimeoutMSSiSgvp">socketTimeoutMS</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies how long the driver to attempt to send or receive on a socket before timing out.</p>
+<div class="aside aside-note">
+    <p class="aside-title">Note</p>
+    This option only applies to application operations, not server monitoring checks.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">socketTimeoutMS</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1239">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV11srvMaxHostsSiSgvp"></a>
+                    <a name="//apple_ref/swift/Property/srvMaxHosts" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV11srvMaxHostsSiSgvp">srvMaxHosts</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies the maximum number of SRV results to select randomly when initially populating the seedlist, or,
+during SRV polling, adding new hosts to the topology.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">srvMaxHosts</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1243">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV14srvServiceNameSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/srvServiceName" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV14srvServiceNameSSSgvp">srvServiceName</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies the service name to use for SRV lookup during initial DNS seedlist discovery and SRV polling.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">srvServiceName</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1246">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV3tlsSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/tls" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV3tlsSbSgvp">tls</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies whether or not to require TLS for connections to the server. By default this is set to false.</p>
+<div class="aside aside-note">
+    <p class="aside-title">Note</p>
+    Specifying any other &ldquo;tls&rdquo;-prefixed option will require TLS for connections to the server.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tls</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1251">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV27tlsAllowInvalidCertificatesSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/tlsAllowInvalidCertificates" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV27tlsAllowInvalidCertificatesSbSgvp">tlsAllowInvalidCertificates</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies whether to bypass validation of the certificate presented by the mongod/mongos instance. By default
+this is set to false.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tlsAllowInvalidCertificates</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1255">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV24tlsAllowInvalidHostnamesSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/tlsAllowInvalidHostnames" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV24tlsAllowInvalidHostnamesSbSgvp">tlsAllowInvalidHostnames</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies whether to disable hostname validation for the certificate presented by the mongod/mongos instance.
+By default this is set to false.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tlsAllowInvalidHostnames</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1259">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV9tlsCAFile10Foundation3URLVSgvp"></a>
+                    <a name="//apple_ref/swift/Property/tlsCAFile" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV9tlsCAFile10Foundation3URLVSgvp">tlsCAFile</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies the location of a local .pem file that contains the root certificate chain from the Certificate
+Authority. This file is used to validate the certificate presented by the mongod/mongos instance.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tlsCAFile</span><span class="p">:</span> <span class="kt">URL</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1263">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV21tlsCertificateKeyFile10Foundation3URLVSgvp"></a>
+                    <a name="//apple_ref/swift/Property/tlsCertificateKeyFile" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV21tlsCertificateKeyFile10Foundation3URLVSgvp">tlsCertificateKeyFile</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies the location of a local .pem file that contains either the client&rsquo;s TLS certificate or the client&rsquo;s
+TLS certificate and key. The client presents this file to the mongod/mongos instance.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tlsCertificateKeyFile</span><span class="p">:</span> <span class="kt">URL</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1267">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV29tlsCertificateKeyFilePasswordSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/tlsCertificateKeyFilePassword" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV29tlsCertificateKeyFilePasswordSSSgvp">tlsCertificateKeyFilePassword</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies the password to de-crypt the <code><a href="../Structs/MongoConnectionString.html#/s:10MongoSwift0A16ConnectionStringV21tlsCertificateKeyFile10Foundation3URLVSgvp">tlsCertificateKeyFile</a></code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tlsCertificateKeyFilePassword</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1270">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV36tlsDisableCertificateRevocationCheckSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/tlsDisableCertificateRevocationCheck" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV36tlsDisableCertificateRevocationCheckSbSgvp">tlsDisableCertificateRevocationCheck</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies whether revocation checking (CRL / OCSP) should be disabled.
+On macOS, this setting has no effect.
+By default this is set to false.
+It is an error to specify both this option and <code><a href="../Structs/MongoConnectionString.html#/s:10MongoSwift0A16ConnectionStringV27tlsDisableOCSPEndpointCheckSbSgvp">tlsDisableOCSPEndpointCheck</a></code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tlsDisableCertificateRevocationCheck</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1276">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV27tlsDisableOCSPEndpointCheckSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/tlsDisableOCSPEndpointCheck" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV27tlsDisableOCSPEndpointCheckSbSgvp">tlsDisableOCSPEndpointCheck</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies whether OCSP responder endpoints should not be requested when an OCSP response is not stapled.
+On macOS, this setting has no effect.
+By default this is set to false.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tlsDisableOCSPEndpointCheck</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1281">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV11tlsInsecureSbSgvp"></a>
+                    <a name="//apple_ref/swift/Property/tlsInsecure" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV11tlsInsecureSbSgvp">tlsInsecure</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies whether TLS constraints will be relaxed as much as possible. Currently, setting this option to <code>true</code>
+is equivalent to setting <code><a href="../Structs/MongoConnectionString.html#/s:10MongoSwift0A16ConnectionStringV27tlsAllowInvalidCertificatesSbSgvp">tlsAllowInvalidCertificates</a></code>, <code><a href="../Structs/MongoConnectionString.html#/s:10MongoSwift0A16ConnectionStringV24tlsAllowInvalidHostnamesSbSgvp">tlsAllowInvalidHostnames</a></code>, and
+<code><a href="../Structs/MongoConnectionString.html#/s:10MongoSwift0A16ConnectionStringV36tlsDisableCertificateRevocationCheckSbSgvp">tlsDisableCertificateRevocationCheck</a></code> to <code>true</code>.
+It is an error to specify both this option and any of the options enabled by it.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">tlsInsecure</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1287">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10MongoSwift0A16ConnectionStringV12writeConcernAA05WriteF0VSgvp"></a>
+                    <a name="//apple_ref/swift/Property/writeConcern" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10MongoSwift0A16ConnectionStringV12writeConcernAA05WriteF0VSgvp">writeConcern</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Specifies a WriteConcern to use for the client.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">writeConcern</span><span class="p">:</span> <span class="kt"><a href="../Structs/WriteConcern.html">WriteConcern</a></span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/mongodb/mongo-swift-driver/tree/v1.3.0-alpha.1/Sources/MongoSwift/MongoConnectionString.swift#L1290">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>&copy; 2022 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2022-01-28)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+    </section>
+  </body>
+</div>
+</html>
