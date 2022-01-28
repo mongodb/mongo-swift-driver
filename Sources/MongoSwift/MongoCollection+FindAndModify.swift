@@ -210,8 +210,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
         try FindAndModifyOptions(
             collation: self.collation,
             hint: self.hint,
-            // swiftlint:disable:next colon
-            `let`: self.let,
+            letValue: self.let,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
             remove: true,
@@ -278,8 +277,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
             hint: self.hint,
-            // swiftlint:disable:next colon
-            `let`: self.let,
+            letValue: self.let,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
             returnDocument: self.returnDocument,
@@ -357,8 +355,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
             hint: self.hint,
-            // swiftlint:disable:next colon
-            `let`: self.let,
+            letValue: self.let,
             maxTimeMS: self.maxTimeMS,
             projection: self.projection,
             returnDocument: self.returnDocument,
