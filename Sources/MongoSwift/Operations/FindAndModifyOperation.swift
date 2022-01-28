@@ -23,7 +23,7 @@ internal class FindAndModifyOptions {
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument?,
         hint: IndexHint? = nil,
-        `let`: BSONDocument? = nil,
+        letValue: BSONDocument? = nil,
         maxTimeMS: Int?,
         projection: BSONDocument?,
         remove: Bool? = nil,
@@ -89,7 +89,7 @@ internal class FindAndModifyOptions {
             case let .indexSpec(doc): extra["hint"] = .document(doc)
             }
         }
-        if let lt = `let` {
+        if let lt = letValue {
             extra["let"] = .document(lt)
         }
 
