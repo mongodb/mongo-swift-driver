@@ -59,6 +59,9 @@ import PackageDescription
 
 let package = Package(
     name: "MyPackage",
+    platforms: [
+        .macOS(.v10_14) // minimum macOS version driver supports
+    ],
     dependencies: [
         .package(url: "https://github.com/mongodb/mongo-swift-driver", .upToNextMajor(from: "1.1.0"))
     ],
@@ -79,7 +82,7 @@ Note: You should call `cleanupMongoSwift()` exactly once at the end of your appl
 
 ### Connect to MongoDB and Create a Collection
 
-**Async**:
+**Async/Await (recommended)**:
 ```swift
 import MongoSwift
 import NIO
@@ -97,6 +100,29 @@ defer {
 }
 
 let db = client.db("myDB")
+let collection = try await db.createCollection("myCollection")
+// use collection...
+```
+
+**Async (`EventLoopFuture`s)**:
+```swift
+import MongoSwift
+import NIO
+
+let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
+let client = try MongoClient("mongodb://localhost:27017", using: elg)
+
+defer {
+    // clean up driver resources
+    try? client.syncClose()
+    cleanupMongoSwift()
+
+    // shut down EventLoopGroup
+    try? elg.syncShutdownGracefully()
+}
+
+let db = client.db("myDB")
+
 let result = db.createCollection("myCollection").flatMap { collection in
     // use collection...
 }
@@ -122,7 +148,14 @@ let collection = try db.createCollection("myCollection")
 Note: we have included the client `connectionString` parameter for clarity, but if connecting to the default `"mongodb://localhost:27017"`it may be omitted.
 
 ### Create and Insert a Document
-**Async**:
+**Async/Await (recommended)**:
+```swift
+let doc: BSONDocument = ["_id": 100, "a": 1, "b": 2, "c": 3]
+let result = try await collection.insertOne(doc)
+print(result?.insertedID ?? "") // prints `.int64(100)`
+```
+
+**Async (`EventLoopFuture`s)**:
 ```swift
 let doc: BSONDocument = ["_id": 100, "a": 1, "b": 2, "c": 3]
 collection.insertOne(doc).whenSuccess { result in
@@ -138,7 +171,19 @@ print(result?.insertedID ?? "") // prints `.int64(100)`
 ```
 
 ### Find Documents
-**Async**:
+**Async/Await (recommended)**:
+```swift
+let query: BSONDocument = ["a": 1]
+// The `sort` option specifies the order in which results are returned
+// via the cursor. In this case, `["_id": -1]` indicates that the documents will
+// be returned in descending order according to the `_id` field.
+let options = FindOptions(sort: ["_id": -1])
+for try await doc in try await collection.find(query, options: options) {
+    print(doc)
+}
+```
+
+**Async (`EventLoopFuture`s)**:
 ```swift
 let query: BSONDocument = ["a": 1]
 // The `sort` option specifies the order in which results are returned

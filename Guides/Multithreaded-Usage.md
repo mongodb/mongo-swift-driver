@@ -1,6 +1,6 @@
 # Using the Driver in Multithreaded Applications
 
-## Async API
+## Asynchronous APIs
 Our asynchronous API is designed to be used in SwiftNIO-based applications running atop `EventLoopGroup`s
 composed of one or more `EventLoop`s.
 
@@ -9,20 +9,20 @@ You must pass in your application's `EventLoopGroup` when initializing a `MongoC
 let client = try MongoClient("mongodb://localhost:27017", using: myEventLoopGroup)
 ```
 
-We strongly recommend using a single, global `MongoClient` per application. Each client is backed by a pool of connections per each server in the in MongoDB deployment, and utilizes a background thread to continuously monitor
-the state of the MongoDB deployment. Using a single client allows these resources to be efficiently shared
-throughout your application.
+We strongly recommend using a single, global `MongoClient` per application. Each client is backed by a pool of connections per each server in the in MongoDB deployment, and utilizes a background thread to continuously monitor the state of the MongoDB deployment. Using a single client allows these resources to be efficiently shared throughout your application.
 
-### Safe Use Across Event Loops
-The following types are all designed to be safe to access across multiple threads/event loops:
+The following types are all designed to be safe to access across multiple threads/`Task`s/`EventLoop`s:
 * `MongoClient`
 * `MongoDatabase`
 * `MongoCollection`
 
 *We make no guarantees about the safety of using any other type across threads.*
+### Special Considerations when using `EventLoopFuture` APIs
+*This section is only relevant if you are working with `EventLoopFuture`s. If you are using structured concurrency
+and async/await APIs, you do not need to worry about these considerations.*
 
-That said: each of these types will, by default, not necessarily always return `EventLoopFuture`s on the
-same `EventLoop` you are using them on. Each time an `EventLoopFuture` is generated, they will call
+Although the types listed above are thread-safe, by default each will not necessarily always return `EventLoopFuture`s
+on the same `EventLoop` you are using them on. Each time an `EventLoopFuture` is generated, they will call
 `EventLoopGroup.next()` on the `MongoClient`'s underyling `EventLoopGroup` to select a next `EventLoop` to use.
 
 To ensure thread safety when working with these returned futures, you should call `hop(to:)` on them in order
