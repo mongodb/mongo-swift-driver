@@ -17,6 +17,8 @@ internal class FindAndModifyOptions {
     /// Initializes a new `FindAndModifyOptions` with the given settings.
     ///
     /// - Throws: `MongoError.InvalidArgumentError` if any of the options are invalid.
+    /// We use `letValue` rather than `let` for the parameter label because older Swift versions require escaping `let`
+    // in argument lists, but newer ones do not, and will generate compiler warnings if the label is escaped.
     // swiftlint:disable:next cyclomatic_complexity
     internal init(
         arrayFilters: [BSONDocument]? = nil,
