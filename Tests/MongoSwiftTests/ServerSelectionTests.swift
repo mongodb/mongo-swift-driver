@@ -7,7 +7,7 @@ import XCTest
 
 private struct ServerSelectionLogicTestFile: Decodable {
     let topologyDescription: TopologyDescription
-    let operation: String
+    let operation: OperationType
     let readPreference: ReadPreference
     let suitableServers: [ServerDescription]
     let inLatencyWindow: [ServerDescription]
@@ -16,6 +16,10 @@ private struct ServerSelectionLogicTestFile: Decodable {
         case topologyDescription = "topology_description", operation, readPreference = "read_preference",
              suitableServers = "suitable_servers", inLatencyWindow = "in_latency_window"
     }
+}
+
+private enum OperationType: String, Decodable {
+    case read, write
 }
 
 final class ServerSelectionTests: MongoSwiftTestCase {
@@ -28,7 +32,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
         for (filename, test) in tests {
             print("Running test from \(filename)...")
             // Server selection assumes that no read preference is passed for write operations.
-            let readPreference = test.operation == "read" ? test.readPreference : nil
+            let readPreference = test.operation == .read ? test.readPreference : nil
             let selectedServers = test.topologyDescription.findSuitableServers(readPreference: readPreference)
             expect(selectedServers.count).to(equal(test.suitableServers.count))
             expect(selectedServers).to(contain(test.suitableServers))
