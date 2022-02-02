@@ -245,3 +245,33 @@ index d913992c..1c8f3557 100644
  
  static bool
  _is_data_node (const mongoc_server_description_t *sd)
+diff --git a/Sources/CLibMongoC/mongoc/mongoc-server-monitor.c b/Sources/CLibMongoC/mongoc/mongoc-server-monitor.c
+index 8824d47a..431434b6 100644
+--- a/Sources/CLibMongoC/mongoc/mongoc-server-monitor.c
++++ b/Sources/CLibMongoC/mongoc/mongoc-server-monitor.c
+@@ -29,6 +29,10 @@
+ #undef MONGOC_LOG_DOMAIN
+ #define MONGOC_LOG_DOMAIN "monitor"
+
++#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
++#include <inttypes.h>
++#endif
++
+ typedef enum {
+    MONGOC_THREAD_OFF = 0,
+    MONGOC_THREAD_RUNNING,
+diff --git a/Sources/CLibMongoC/mongoc/mongoc-uri.c b/Sources/CLibMongoC/mongoc/mongoc-uri.c
+index 8ddc31e2..d50982d1 100644
+--- a/Sources/CLibMongoC/mongoc/mongoc-uri.c
++++ b/Sources/CLibMongoC/mongoc/mongoc-uri.c
+@@ -37,6 +37,10 @@
+ #include "mongoc-compression-private.h"
+ #include "utlist.h"
+
++#if !defined(_MSC_VER) || (_MSC_VER >= 1800)
++#include <inttypes.h>
++#endif
++
+ struct _mongoc_uri_t {
+    char *str;
+    bool is_srv;

@@ -360,9 +360,15 @@
  */
 #define MONGOC_TRACE 0
 
-#if MONGOC_TRACE != 1
-#  undef MONGOC_TRACE
-#endif
+enum {
+   /**
+    * @brief Compile-time constant determining whether the mongoc library was
+    * compiled with tracing enabled.
+    *
+    * Can be controlled with the 'ENABLE_TRACING" configure-time boolean option
+    */
+   MONGOC_TRACE_ENABLED = MONGOC_TRACE
+};
 
 /*
  * Set if we have ICU support.
