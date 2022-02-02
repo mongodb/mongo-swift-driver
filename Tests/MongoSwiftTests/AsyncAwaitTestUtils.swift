@@ -70,6 +70,7 @@ extension MongoSwiftTestCase {
     // see: https://github.com/realm/SwiftLint/issues/3753
     internal func withTestNamespace<T>(
         ns: MongoNamespace? = nil,
+        clientOptions: MongoClientOptions? = nil,
         collectionOptions: CreateCollectionOptions? = nil,
         _ f: (MongoClient, MongoDatabase, MongoCollection<BSONDocument>) async throws -> T
     ) async throws -> T {
@@ -77,7 +78,7 @@ extension MongoSwiftTestCase {
         guard let collName = ns.collection else {
             throw TestError(message: "missing collection")
         }
-        return try await self.withTestClient { client in
+        return try await self.withTestClient(options: clientOptions) { client in
             let database = client.db(ns.db)
             let collection: MongoCollection<BSONDocument>
             do {
@@ -144,6 +145,16 @@ extension MongoClient {
 
     internal func supportsChangeStreamOnCollection() async throws -> Bool {
         try await self.getUnmetRequirement(.changeStreamOnCollectionSupport) == nil
+    }
+}
+
+@available(macOS 12, *)
+extension TestCommandMonitor {
+    /// Capture events that occur while the the provided closure executes.
+    public func captureEvents<T>(_ f: () async throws -> T) async rethrows -> T {
+        self.enable()
+        defer { self.disable() }
+        return try await f()
     }
 }
 

@@ -144,6 +144,31 @@ final class AsyncAwaitTests: MongoSwiftTestCase {
             }
         }
     }
+
+    /// Sessions prose test 13: Test that implicit sessions only allocate their server session after a successful
+    /// connection checkout.
+    func testImplicitSessionsCreatedAfterConnectionCheckout() throws {
+        testAsync {
+            let clientOptions = MongoClientOptions(maxPoolSize: 1)
+            try await self.withTestNamespace(clientOptions: clientOptions) { client, _, coll in
+                let monitor = client.addCommandMonitor()
+                try await monitor.captureEvents {
+                    async let op1 = try coll.insertOne(["x": 1])
+                    async let op2 = try coll.insertOne(["x": 2])
+                    async let op3 = try coll.insertOne(["x": 3])
+                    _ = try await [op1, op2, op3]
+                }
+                let events = monitor.events(withEventTypes: [.commandStartedEvent], withNames: ["insert"])
+                let lsids = events.compactMap { $0.commandStartedValue!.command["lsid"] }
+                guard lsids.count == 3 else {
+                    XCTFail("Expected all 3 command events to contain lsids, but only \(lsids.count) did")
+                    return
+                }
+                expect(lsids[0]).to(equal(lsids[1]))
+                expect(lsids[1]).to(equal(lsids[2]))
+            }
+        }
+    }
 }
 
 @available(macOS 12, *)
