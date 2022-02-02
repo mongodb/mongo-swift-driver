@@ -67,7 +67,7 @@ private struct HelloResponse: Decodable {
 /// A struct describing a mongod or mongos process.
 public struct ServerDescription {
     /// The possible types for a server.
-    public struct ServerType: RawRepresentable, Equatable {
+    public struct ServerType: RawRepresentable, Equatable, Decodable {
         /// A standalone mongod server.
         public static let standalone = ServerType(.standalone)
 
@@ -225,9 +225,12 @@ public struct ServerDescription {
     }
 
     // For testing purposes
-    internal init(type: ServerType, tags: [String: String]? = nil) {
+    internal init(address: ServerAddress, type: ServerType, tags: [String: String]?) {
+        self.address = address
         self.type = type
-        self.address = ServerAddress(host: "fake", port: 80)
+        self.tags = tags ?? [:]
+
+        // these fields are not used by the server selection tests
         self.serverId = 0
         self.roundTripTime = 0
         self.lastUpdateTime = Date()
@@ -243,7 +246,6 @@ public struct ServerDescription {
         self.hosts = []
         self.passives = []
         self.arbiters = []
-        self.tags = tags ?? [:]
     }
 }
 
@@ -271,7 +273,7 @@ extension ServerDescription: Equatable {
 /// which servers are up, what type of servers they are, which is primary, and so on.
 public struct TopologyDescription: Equatable {
     /// The possible types for a topology.
-    public struct TopologyType: RawRepresentable, Equatable, CustomStringConvertible {
+    public struct TopologyType: RawRepresentable, Equatable, CustomStringConvertible, Decodable {
         /// A single mongod server.
         public static let single = TopologyType(.single)
 
@@ -402,7 +404,7 @@ extension TopologyDescription {
                 return self.filterReplicaSetServers(readPreference: readPreference, servers: secondariesAndPrimary)
             case .secondaryPreferred:
                 // If mode is 'secondaryPreferred', attempt the selection algorithm with mode 'secondary' and the
-                // user's maxStalenessSeconds and tag_sets.If no server matches, select the primary.
+                // user's maxStalenessSeconds and tag_sets. If no server matches, select the primary.
                 let secondaries = self.servers.filter { $0.type == .rsSecondary }
                 let primaries = self.servers.filter { $0.type == .rsPrimary }
                 let matches = self.filterReplicaSetServers(readPreference: readPreference, servers: secondaries)
@@ -433,8 +435,7 @@ extension TopologyDescription {
         // TODO: Filter out servers staler than maxStalenessSeconds
 
         // Filter by tag_sets
-        let tagSets = readPreference?.tagSets ?? []
-        if tagSets.isEmpty {
+        guard let tagSets = readPreference?.tagSets else {
             return servers
         }
         for tagSet in tagSets {
