@@ -147,8 +147,13 @@ extension ReadPreference: StrictDecodable {
     public init(from decoder: Decoder) throws {
         if let container = try? decoder.container(keyedBy: CodingKeys.self) {
             try Self.checkKeys(using: decoder)
+            // Some tests specify a read preference with no fields to indicate the default read preference (i.e.
+            // primary). Because this is not representable in the Swift driver due to the mode field not being
+            // optional, this sets the mode to be primary explicitly if one is not present.
             let mode = try container.decodeIfPresent(Mode.self, forKey: .mode) ?? Mode.primary
             self.init(mode)
+            // The init method that takes in these fields also performs validation, so these fields are set manually to
+            // allow decoding to succeed and ensure that validation occurs during server selection.
             self.tagSets = try container.decodeIfPresent([BSONDocument].self, forKey: .tagSets)
             self.maxStalenessSeconds = try container.decodeIfPresent(Int.self, forKey: .maxStalenessSeconds)
         } else { // sometimes the spec tests only specify the mode as a string

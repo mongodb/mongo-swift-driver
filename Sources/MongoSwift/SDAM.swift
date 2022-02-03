@@ -435,7 +435,6 @@ extension TopologyDescription {
         readPreference: ReadPreference? = nil,
         heartbeatFrequencyMS: Int
     ) throws -> [ServerDescription] {
-        // TODO: SWIFT-1456: validate read preference in selectServer
         try readPreference?.validateMaxStalenessSeconds(heartbeatFrequencyMS, topologyType: self.type)
         switch self.type._topologyType {
         case .unknown:
@@ -547,6 +546,8 @@ extension ServerDescription {
             }
             let selfInterval = self.lastUpdateTime.timeIntervalSince(lastWriteDate)
             let primaryInterval = primary.lastUpdateTime.timeIntervalSince(primaryLastWriteDate)
+            // timeIntervalSince returns a TimeInterval in seconds, so heartbeatFrequencyMS needs to be converted from
+            // milliseconds to seconds.
             let stalenessSeconds = selfInterval - primaryInterval + Double(heartbeatFrequencyMS) / 1000.0
             return Int(stalenessSeconds.rounded(.up))
         } else {
@@ -582,8 +583,8 @@ extension ReadPreference {
                 }
                 if maxStalenessSeconds < SDAMConstants.smallestMaxStalenessSeconds {
                     throw MongoError.InvalidArgumentError(
-                        message: "The maxStalenessSeconds configured for a replica set must be less than"
-                            + "\(SDAMConstants.smallestMaxStalenessSeconds)"
+                        message: "The maxStalenessSeconds configured for a replica set must be at least"
+                            + " \(SDAMConstants.smallestMaxStalenessSeconds)"
                     )
                 }
             }
