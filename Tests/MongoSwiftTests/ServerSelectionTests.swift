@@ -5,16 +5,20 @@ import NIO
 import TestsCommon
 import XCTest
 
-private struct ServerSelectionLogicTestFile: Decodable {
+private struct ServerSelectionTestFile: Decodable {
     let topologyDescription: TopologyDescription
-    let operation: OperationType
+    let operation: OperationType?
     let readPreference: ReadPreference
-    let suitableServers: [ServerDescription]
-    let inLatencyWindow: [ServerDescription]
+    let suitableServers: [ServerDescription]?
+    let inLatencyWindow: [ServerDescription]?
+
+    // additional fields for the max staleness tests
+    let error: Bool?
+    let heartbeatFrequencyMS: Int?
 
     enum CodingKeys: String, CodingKey {
         case topologyDescription = "topology_description", operation, readPreference = "read_preference",
-             suitableServers = "suitable_servers", inLatencyWindow = "in_latency_window"
+             suitableServers = "suitable_servers", inLatencyWindow = "in_latency_window", error, heartbeatFrequencyMS
     }
 }
 
@@ -43,20 +47,45 @@ private struct RTTCalculationTestFile: Decodable {
 }
 
 final class ServerSelectionTests: MongoSwiftTestCase {
+    fileprivate func runTests(_ tests: [(String, ServerSelectionTestFile)]) throws {
+        for (filename, test) in tests {
+            print("Running test from \(filename)...")
+
+            // Server selection assumes that no read preference is passed for write operations.
+            let readPreference = test.operation == .write ? nil : test.readPreference
+            let heartbeatFrequencyMS = test.heartbeatFrequencyMS ?? SDAMConstants.defaultHeartbeatFrequencyMS
+
+            let selectedServers: [ServerDescription]
+            do {
+                selectedServers = try test.topologyDescription.findSuitableServers(
+                    readPreference: readPreference,
+                    heartbeatFrequencyMS: heartbeatFrequencyMS
+                )
+            } catch where test.error != true {
+                throw error
+            } catch {
+                continue
+            }
+
+            if let suitableServers = test.suitableServers {
+                expect(selectedServers.count).to(equal(suitableServers.count))
+                expect(selectedServers).to(contain(suitableServers))
+            }
+        }
+    }
+
     func testServerSelectionLogic() throws {
         let tests = try retrieveSpecTestFiles(
             specName: "server-selection",
             subdirectory: "server_selection",
-            asType: ServerSelectionLogicTestFile.self
+            asType: ServerSelectionTestFile.self
         )
-        for (filename, test) in tests {
-            print("Running test from \(filename)...")
-            // Server selection assumes that no read preference is passed for write operations.
-            let readPreference = test.operation == .read ? test.readPreference : nil
-            let selectedServers = test.topologyDescription.findSuitableServers(readPreference: readPreference)
-            expect(selectedServers.count).to(equal(test.suitableServers.count))
-            expect(selectedServers).to(contain(test.suitableServers))
-        }
+        try runTests(tests)
+    }
+
+    func testMaxStaleness() throws {
+        let tests = try retrieveSpecTestFiles(specName: "max-staleness", asType: ServerSelectionTestFile.self)
+        try runTests(tests)
     }
 
     func testRoundTripTimeCalculation() throws {
