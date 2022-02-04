@@ -484,9 +484,9 @@ extension ServerDescription {
     internal mutating func updateAverageRoundTripTime(roundTripTime: Double) {
         if let oldAverageRTT = self.averageRoundTripTimeMS {
             let alpha = 0.2
-            self.averageRoundTripTimeMS = alpha * Double(roundTripTime) + (1 - alpha) * oldAverageRTT
+            self.averageRoundTripTimeMS = alpha * roundTripTime + (1 - alpha) * oldAverageRTT
         } else {
-            self.averageRoundTripTimeMS = Double(roundTripTime)
+            self.averageRoundTripTimeMS = roundTripTime
         }
     }
 }
