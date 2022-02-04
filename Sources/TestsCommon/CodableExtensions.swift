@@ -235,7 +235,14 @@ extension ServerDescription: StrictDecodable {
 
         // TODO: SWIFT-1461: decode and set averageRoundTripTimeMS
 
-        self.init(address, type, tags, lastWriteDate, maxWireVersion, lastUpdateTime)
+        self.init(
+            address: address,
+            type: type,
+            tags: tags,
+            lastWriteDate: lastWriteDate,
+            maxWireVersion: maxWireVersion,
+            lastUpdateTime: lastUpdateTime
+        )
     }
 
     internal enum CodingKeys: String, CodingKey, CaseIterable {

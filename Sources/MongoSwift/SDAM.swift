@@ -238,12 +238,12 @@ public struct ServerDescription {
 
     // Used for server selection/max staleness tests.
     internal init(
-        _ address: ServerAddress,
-        _ type: ServerType,
-        _ tags: [String: String]?,
-        _ lastWriteDate: Date?,
-        _ maxWireVersion: Int?,
-        _ lastUpdateTime: Date?
+        address: ServerAddress,
+        type: ServerType,
+        tags: [String: String]?,
+        lastWriteDate: Date?,
+        maxWireVersion: Int?,
+        lastUpdateTime: Date?
     ) {
         self.address = address
         self.type = type
@@ -435,7 +435,10 @@ extension TopologyDescription {
         readPreference: ReadPreference? = nil,
         heartbeatFrequencyMS: Int
     ) throws -> [ServerDescription] {
-        try readPreference?.validateMaxStalenessSeconds(heartbeatFrequencyMS, topologyType: self.type)
+        try readPreference?.validateMaxStalenessSeconds(
+            heartbeatFrequencyMS: heartbeatFrequencyMS,
+            topologyType: self.type
+        )
         switch self.type._topologyType {
         case .unknown:
             return []
@@ -444,15 +447,23 @@ extension TopologyDescription {
         case .replicaSetNoPrimary, .replicaSetWithPrimary:
             switch readPreference?.mode {
             case .secondary:
-                return self.filterReplicaSetServers(readPreference, heartbeatFrequencyMS, includePrimary: false)
+                return self.filterReplicaSetServers(
+                    readPreference: readPreference,
+                    heartbeatFrequencyMS: heartbeatFrequencyMS,
+                    includePrimary: false
+                )
             case .nearest:
-                return self.filterReplicaSetServers(readPreference, heartbeatFrequencyMS, includePrimary: true)
+                return self.filterReplicaSetServers(
+                    readPreference: readPreference,
+                    heartbeatFrequencyMS: heartbeatFrequencyMS,
+                    includePrimary: true
+                )
             case .secondaryPreferred:
                 // If mode is 'secondaryPreferred', attempt the selection algorithm with mode 'secondary' and the
                 // user's maxStalenessSeconds and tag_sets. If no server matches, select the primary.
                 let secondaryMatches = self.filterReplicaSetServers(
-                    readPreference,
-                    heartbeatFrequencyMS,
+                    readPreference: readPreference,
+                    heartbeatFrequencyMS: heartbeatFrequencyMS,
                     includePrimary: false
                 )
                 return secondaryMatches.isEmpty ? self.servers.filter { $0.type == .rsPrimary } : secondaryMatches
@@ -464,7 +475,11 @@ extension TopologyDescription {
                 if !primaries.isEmpty {
                     return primaries
                 }
-                return self.filterReplicaSetServers(readPreference, heartbeatFrequencyMS, includePrimary: false)
+                return self.filterReplicaSetServers(
+                    readPreference: readPreference,
+                    heartbeatFrequencyMS: heartbeatFrequencyMS,
+                    includePrimary: false
+                )
             default: // or .primary
                 // the default mode is 'primary'.
                 return self.servers.filter { $0.type == .rsPrimary }
@@ -476,8 +491,8 @@ extension TopologyDescription {
 
     /// Filters the replica set servers in this topology first by max staleness and then by tag sets.
     private func filterReplicaSetServers(
-        _ readPreference: ReadPreference?,
-        _ heartbeatFrequencyMS: Int,
+        readPreference: ReadPreference?,
+        heartbeatFrequencyMS: Int,
         includePrimary: Bool
     ) -> [ServerDescription] {
         // The initial set of servers from which to filter. Only include the secondaries unless includePrimary is true.
@@ -490,9 +505,9 @@ extension TopologyDescription {
             let maxLastWriteDate = self.getMaxLastWriteDate()
             servers.removeAll {
                 guard let staleness = $0.calculateStalenessSeconds(
-                    primary,
-                    maxLastWriteDate,
-                    heartbeatFrequencyMS
+                    primary: primary,
+                    maxLastWriteDate: maxLastWriteDate,
+                    heartbeatFrequencyMS: heartbeatFrequencyMS
                 ) else {
                     return false
                 }
@@ -530,9 +545,9 @@ extension ServerDescription {
     /// compare against the primary if one is present, or the maximum last write date seen in the topology if present.
     /// If staleness cannot be calculated due to an absence of values, `nil` is returned.
     fileprivate func calculateStalenessSeconds(
-        _ primary: ServerDescription?,
-        _ maxLastWriteDate: Date?,
-        _ heartbeatFrequencyMS: Int
+        primary: ServerDescription?,
+        maxLastWriteDate: Date?,
+        heartbeatFrequencyMS: Int
     ) -> Int? {
         guard self.type == .rsSecondary else {
             return 0
@@ -563,7 +578,7 @@ extension ServerDescription {
 
 extension ReadPreference {
     fileprivate func validateMaxStalenessSeconds(
-        _ heartbeatFrequencyMS: Int,
+        heartbeatFrequencyMS: Int,
         topologyType: TopologyDescription.TopologyType
     ) throws {
         if let maxStalenessSeconds = self.maxStalenessSeconds {
@@ -576,7 +591,7 @@ extension ReadPreference {
             if topologyType == .replicaSetWithPrimary || topologyType == .replicaSetNoPrimary {
                 if maxStalenessSeconds * 1000 < heartbeatFrequencyMS + SDAMConstants.idleWritePeriodMS {
                     throw MongoError.InvalidArgumentError(
-                        message: "maxStalenessSeconds must be less than the sum of the heartbeatFrequencyMS configured"
+                        message: "maxStalenessSeconds must be at least the sum of the heartbeatFrequencyMS configured"
                             + " on the client (\(heartbeatFrequencyMS)) and the idleWritePeriodMS"
                             + " (\(SDAMConstants.idleWritePeriodMS))"
                     )

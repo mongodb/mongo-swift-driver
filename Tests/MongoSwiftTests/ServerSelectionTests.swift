@@ -47,7 +47,7 @@ private struct RTTCalculationTestFile: Decodable {
 }
 
 final class ServerSelectionTests: MongoSwiftTestCase {
-    fileprivate func runTests(_ tests: [(String, ServerSelectionTestFile)]) throws {
+    private func runTests(_ tests: [(String, ServerSelectionTestFile)]) throws {
         for (filename, test) in tests {
             print("Running test from \(filename)...")
 
@@ -64,6 +64,9 @@ final class ServerSelectionTests: MongoSwiftTestCase {
             } catch where test.error != true {
                 throw error
             } catch {
+                // The error field is used by the max staleness tests to assert that an error is thrown for an invalid
+                // maxStalenessSeconds value.
+                expect(error).to(beAnInstanceOf(MongoError.InvalidArgumentError.self))
                 continue
             }
 
