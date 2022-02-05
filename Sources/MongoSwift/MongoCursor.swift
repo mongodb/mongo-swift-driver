@@ -268,7 +268,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
         }
     }
 
-#if compiler(>=5.5) && canImport(_Concurrency)
+#if compiler(>=5.5.2) && canImport(_Concurrency)
     /// When concurrency is available, we can ensure cursors are always cleaned up properly.
     deinit {
         // We can't do this with an @available check on the method; see https://bugs.swift.org/browse/SR-15537.
