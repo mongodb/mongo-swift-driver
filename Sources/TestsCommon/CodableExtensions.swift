@@ -205,7 +205,7 @@ extension ServerDescription: StrictDecodable {
         let address = try ServerAddress(try values.decode(String.self, forKey: .address))
         let type = try values.decode(ServerType.self, forKey: .type)
         let tags = try values.decodeIfPresent([String: String].self, forKey: .tags) ?? [:]
-        // TODO: SWIFT-1461: decode and set averageRoundTripTimeMS
+        // TODO: SWIFT-1456: decode and set averageRoundTripTimeMS
 
         self.init(address: address, type: type, tags: tags)
     }

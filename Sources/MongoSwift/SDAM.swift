@@ -142,6 +142,9 @@ public struct ServerDescription {
     /// The duration in milliseconds of the server's last "hello" call.
     public let roundTripTime: Int?
 
+    /// The average duration in milliseconds of the server's "hello" calls.
+    internal var averageRoundTripTimeMS: Double?
+
     /// The date of the most recent write operation seen by this server.
     public var lastWriteDate: Date?
 
@@ -194,6 +197,9 @@ public struct ServerDescription {
         self.address = ServerAddress(mongoc_server_description_host(description))
         self.serverId = mongoc_server_description_id(description)
         self.roundTripTime = Int(mongoc_server_description_round_trip_time(description))
+        // averageRoundTripTimeMS is an internally-calculated value used for server selection. Because we still rely
+        // upon libmongoc for server selection, this value is not relevant.
+        self.averageRoundTripTimeMS = nil
         self.lastUpdateTime = Date(msSinceEpoch: mongoc_server_description_last_update_time(description))
         self.type = ServerType(rawValue: String(cString: mongoc_server_description_type(description))) ?? .unknown
 
@@ -233,6 +239,7 @@ public struct ServerDescription {
         // these fields are not used by the server selection tests
         self.serverId = 0
         self.roundTripTime = 0
+        self.averageRoundTripTimeMS = nil
         self.lastUpdateTime = Date()
         self.lastWriteDate = nil
         self.minWireVersion = 0
@@ -246,6 +253,31 @@ public struct ServerDescription {
         self.hosts = []
         self.passives = []
         self.arbiters = []
+    }
+
+    // Used for RTT calculation tests.
+    internal init(averageRoundTripTimeMS: Double?) {
+        self.averageRoundTripTimeMS = averageRoundTripTimeMS
+
+        // these fields are not used by the RTT calculation tests
+        self.address = ServerAddress(host: "test", port: 0)
+        self.type = .unknown
+        self.tags = [:]
+        self.serverId = 0
+        self.roundTripTime = nil
+        self.lastWriteDate = nil
+        self.minWireVersion = 0
+        self.maxWireVersion = 0
+        self.me = nil
+        self.hosts = []
+        self.arbiters = []
+        self.passives = []
+        self.setName = nil
+        self.setVersion = nil
+        self.electionID = nil
+        self.primary = nil
+        self.lastUpdateTime = Date()
+        self.logicalSessionTimeoutMinutes = nil
     }
 }
 
@@ -445,5 +477,16 @@ extension TopologyDescription {
             }
         }
         return []
+    }
+}
+
+extension ServerDescription {
+    internal mutating func updateAverageRoundTripTime(roundTripTime: Double) {
+        if let oldAverageRTT = self.averageRoundTripTimeMS {
+            let alpha = 0.2
+            self.averageRoundTripTimeMS = alpha * roundTripTime + (1 - alpha) * oldAverageRTT
+        } else {
+            self.averageRoundTripTimeMS = roundTripTime
+        }
     }
 }
