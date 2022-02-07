@@ -1,3 +1,4 @@
+import Foundation
 @testable import MongoSwift
 
 /// Allows a type to specify a set of known keys and check whether any unknown top-level keys are found in a decoder.
@@ -146,9 +147,15 @@ extension ReadPreference: StrictDecodable {
     public init(from decoder: Decoder) throws {
         if let container = try? decoder.container(keyedBy: CodingKeys.self) {
             try Self.checkKeys(using: decoder)
-            let mode = try container.decode(Mode.self, forKey: .mode)
-            let tagSets = try container.decodeIfPresent([BSONDocument].self, forKey: .tagSets)
-            try self.init(mode, tagSets: tagSets)
+            // Some tests specify a read preference with no fields to indicate the default read preference (i.e.
+            // primary). Because this is not representable in the Swift driver due to the mode field not being
+            // optional, this sets the mode to be primary explicitly if one is not present.
+            let mode = try container.decodeIfPresent(Mode.self, forKey: .mode) ?? Mode.primary
+            self.init(mode)
+            // The init method that takes in these fields also performs validation, so these fields are set manually to
+            // allow decoding to succeed and ensure that validation occurs during server selection.
+            self.tagSets = try container.decodeIfPresent([BSONDocument].self, forKey: .tagSets)
+            self.maxStalenessSeconds = try container.decodeIfPresent(Int.self, forKey: .maxStalenessSeconds)
         } else { // sometimes the spec tests only specify the mode as a string
             let container = try decoder.singleValueContainer()
             let mode = try container.decode(ReadPreference.Mode.self)
@@ -157,7 +164,7 @@ extension ReadPreference: StrictDecodable {
     }
 
     internal enum CodingKeys: String, CodingKey, CaseIterable {
-        case mode, tagSets = "tag_sets"
+        case mode, tagSets = "tag_sets", maxStalenessSeconds
     }
 }
 
@@ -205,12 +212,40 @@ extension ServerDescription: StrictDecodable {
         let address = try ServerAddress(try values.decode(String.self, forKey: .address))
         let type = try values.decode(ServerType.self, forKey: .type)
         let tags = try values.decodeIfPresent([String: String].self, forKey: .tags) ?? [:]
-        // TODO: SWIFT-1456: decode and set averageRoundTripTimeMS
+        let maxWireVersion = try values.decodeIfPresent(Int.self, forKey: .maxWireVersion)
 
-        self.init(address: address, type: type, tags: tags)
+        var lastUpdateTime: Date?
+        if let lastUpdateTimeMS = try values.decodeIfPresent(Int64.self, forKey: .lastUpdateTime) {
+            lastUpdateTime = Date(msSinceEpoch: lastUpdateTimeMS)
+        }
+
+        // lastWriteDate is specified in a document in the form described in the error message below
+        var lastWriteDate: Date?
+        if let lastWrite = try values.decodeIfPresent(BSONDocument.self, forKey: .lastWrite) {
+            guard let lastWriteDateMS = lastWrite["lastWriteDate"]?.int64Value else {
+                throw DecodingError.dataCorruptedError(
+                    forKey: .lastWrite,
+                    in: values,
+                    debugDescription: "lastWrite should be specified in the form"
+                        + " lastWrite: { lastWriteDate: { \"$numberLong\": value } }"
+                )
+            }
+            lastWriteDate = Date(msSinceEpoch: lastWriteDateMS)
+        }
+
+        // TODO: SWIFT-1461: decode and set averageRoundTripTimeMS
+
+        self.init(
+            address: address,
+            type: type,
+            tags: tags,
+            lastWriteDate: lastWriteDate,
+            maxWireVersion: maxWireVersion,
+            lastUpdateTime: lastUpdateTime
+        )
     }
 
     internal enum CodingKeys: String, CodingKey, CaseIterable {
-        case address, type, tags, averageRoundTripTimeMS = "avg_rtt_ms"
+        case address, type, tags, averageRoundTripTimeMS = "avg_rtt_ms", lastWrite, maxWireVersion, lastUpdateTime
     }
 }
