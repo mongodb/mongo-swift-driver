@@ -81,7 +81,7 @@ MONGOC_DECL_SPECIAL_TS_POOL (
    NULL,
    NULL)
 
-typedef bool (*_mongoc_rr_resolver_fn) (const char *service,
+typedef bool (*_mongoc_rr_resolver_fn) (const char *hostname,
                                         mongoc_rr_type_t rr_type,
                                         mongoc_rr_data_t *rr_data,
                                         size_t initial_buffer_size,
@@ -234,6 +234,9 @@ mongoc_topology_compatible (const mongoc_topology_description_t *td,
  * @param topology The topology to inspect and/or update.
  * @param optype The operation that is intended to be performed.
  * @param read_prefs The read preferences for the command.
+ * @param must_use_primary An optional output parameter. Server selection might
+ * need to override the caller's read preferences' read mode to 'primary'.
+ * Whether or not that takes place will be set through this pointer.
  * @param error An output parameter for any error information.
  * @return mongoc_server_description_t* A copy of the topology's server
  * description that matches the request, or NULL if there is no such server.
@@ -247,6 +250,7 @@ mongoc_server_description_t *
 mongoc_topology_select (mongoc_topology_t *topology,
                         mongoc_ss_optype_t optype,
                         const mongoc_read_prefs_t *read_prefs,
+                        bool *must_use_primary,
                         bson_error_t *error);
 
 /**
@@ -258,6 +262,9 @@ mongoc_topology_select (mongoc_topology_t *topology,
  * @param topology The topology to inspect and/or update.
  * @param optype The operation that is intended to be performed.
  * @param read_prefs The read preferences for the command.
+ * @param must_use_primary An optional output parameter. Server selection might
+ * need to override the caller's read preferences' read mode to 'primary'.
+ * Whether or not that takes place will be set through this pointer.
  * @param error An output parameter for any error information.
  * @return uint32_t A non-zero integer ID of the server description. In case of
  * error, sets `error` and returns zero.
@@ -268,6 +275,7 @@ uint32_t
 mongoc_topology_select_server_id (mongoc_topology_t *topology,
                                   mongoc_ss_optype_t optype,
                                   const mongoc_read_prefs_t *read_prefs,
+                                  bool *must_use_primary,
                                   bson_error_t *error);
 
 /**
@@ -587,5 +595,17 @@ _mongoc_topology_invalidate_server (mongoc_topology_t *td, uint32_t server_id)
       tdmod.new_td, server_id, &error);
    mc_tpld_modify_commit (tdmod);
 }
+
+/* Return an array view to `max_hosts` or fewer elements of `hl`, or NULL if
+ * `hl` is empty. The size of the returned array is written to `hl_array_size`
+ * even if `hl` is empty.
+ *
+ * The returned array must be freed with `bson_free()`. The elements of the
+ * array must not be freed, as they are still owned by `hl`.
+ */
+const mongoc_host_list_t **
+_mongoc_apply_srv_max_hosts (const mongoc_host_list_t *hl,
+                             int32_t max_hosts,
+                             size_t *hl_array_size);
 
 #endif

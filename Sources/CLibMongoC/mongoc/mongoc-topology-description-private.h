@@ -47,6 +47,7 @@ struct _mongoc_topology_description_t {
    bson_oid_t max_election_id;
    bson_error_t compatibility_error;
    uint32_t max_server_id;
+   int32_t max_hosts; /* srvMaxHosts */
    bool stale;
    unsigned int rand_seed;
 
@@ -62,7 +63,11 @@ struct _mongoc_topology_description_t {
    void *apm_context;
 };
 
-typedef enum { MONGOC_SS_READ, MONGOC_SS_WRITE } mongoc_ss_optype_t;
+typedef enum {
+   MONGOC_SS_READ,
+   MONGOC_SS_WRITE,
+   MONGOC_SS_AGGREGATE_WITH_WRITE
+} mongoc_ss_optype_t;
 
 void
 mongoc_topology_description_init (mongoc_topology_description_t *description,
@@ -108,6 +113,7 @@ mongoc_topology_description_select (
    const mongoc_topology_description_t *description,
    mongoc_ss_optype_t optype,
    const mongoc_read_prefs_t *read_pref,
+   bool *must_use_primary,
    int64_t local_threshold_ms);
 
 mongoc_server_description_t *
@@ -142,6 +148,7 @@ mongoc_topology_description_suitable_servers (
    mongoc_ss_optype_t optype,
    const mongoc_topology_description_t *topology,
    const mongoc_read_prefs_t *read_pref,
+   bool *must_use_primary,
    size_t local_threshold_ms);
 
 bool
