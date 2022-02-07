@@ -248,6 +248,9 @@ public class MongoClient {
     /// The pool of connections backing this client.
     internal let connectionPool: ConnectionPool
 
+    /// The connection string used to create this client.
+    internal let connectionString: MongoConnectionString
+
     /// Executor responsible for executing operations on behalf of this client and its child objects.
     internal let operationExecutor: OperationExecutor
 
@@ -320,6 +323,7 @@ public class MongoClient {
             try connString.applyOptions(options)
         }
         try connString.validate()
+        self.connectionString = connString
 
         self.operationExecutor = OperationExecutor(
             eventLoopGroup: eventLoopGroup,

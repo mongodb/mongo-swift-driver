@@ -1,3 +1,4 @@
+import Atomics
 import CLibMongoC
 import Foundation
 
@@ -5,6 +6,8 @@ internal enum SDAMConstants {
     internal static let defaultHeartbeatFrequencyMS = 10000
     internal static let idleWritePeriodMS = 10000
     internal static let smallestMaxStalenessSeconds = 90
+    internal static let defaultLocalThresholdMS = 15
+    internal static let defaultServerSelectionTimeoutMS = 30000
 }
 
 /// A struct representing a network address, consisting of a host and port.
@@ -314,6 +317,22 @@ extension ServerDescription: Equatable {
     }
 }
 
+internal struct Server {
+    internal let address: ServerAddress
+    internal var operationCount: ManagedAtomic<Int>
+
+    internal init(address: ServerAddress) {
+        self.address = address
+        self.operationCount = ManagedAtomic(0)
+    }
+
+    // Used by the selection within latency window tests.
+    internal init(address: ServerAddress, operationCount: Int) {
+        self.address = address
+        self.operationCount = ManagedAtomic(operationCount)
+    }
+}
+
 /// A struct describing the state of a MongoDB deployment: its type (standalone, replica set, or sharded),
 /// which servers are up, what type of servers they are, which is primary, and so on.
 public struct TopologyDescription: Equatable {
@@ -430,12 +449,85 @@ public struct TopologyDescription: Equatable {
     }
 }
 
+extension MongoClient {
+    internal func selectServer(
+        readPreference: ReadPreference = ReadPreference.primary,
+        topology: TopologyDescription,
+        servers: [ServerAddress: Server]
+    ) throws -> Server {
+        let startTime = Date()
+        let serverSelectionTimeoutMS = self.connectionString.serverSelectionTimeoutMS
+            ?? SDAMConstants.defaultServerSelectionTimeoutMS
+        // A TimeInterval is measured in seconds, so serverSelectionTimeoutMS needs to be converted from milliseconds
+        // to seconds.
+        let endTime = Date(timeInterval: Double(serverSelectionTimeoutMS) / 1000.0, since: startTime)
+
+        while Date() < endTime {
+            var suitableServers = try topology.findSuitableServers(
+                readPreference: readPreference,
+                heartbeatFrequencyMS: self.connectionString.heartbeatFrequencyMS
+                    ?? SDAMConstants.defaultHeartbeatFrequencyMS
+            )
+            suitableServers.filterByLatency(localThresholdMS: self.connectionString.localThresholdMS)
+            var inWindowServers = suitableServers.compactMap { servers[$0.address] }
+
+            let selectedServer: Server
+            if inWindowServers.isEmpty {
+                // When pure Swift SDAM is implemented, this should instead block on a topology change occurring for
+                // endTime - Date() seconds.
+                // TODO: add an async sleep here once the driver has been updated to permit async/await on 10.15+
+                continue
+            } else if inWindowServers.count == 1 {
+                selectedServer = inWindowServers[0]
+            } else {
+                // Remove the randomly chosen servers from the list to ensure that the same server is not chosen twice.
+                let server1 = inWindowServers.remove(at: Int.random(in: 0..<inWindowServers.count))
+                let server2 = inWindowServers.remove(at: Int.random(in: 0..<inWindowServers.count))
+
+                if server1.operationCount.load(ordering: .sequentiallyConsistent)
+                    <= server2.operationCount.load(ordering: .sequentiallyConsistent)
+                {
+                    selectedServer = server1
+                } else {
+                    selectedServer = server2
+                }
+            }
+
+            selectedServer.operationCount.wrappingIncrement(ordering: .sequentiallyConsistent)
+            return selectedServer
+        }
+
+        throw MongoError.ServerSelectionError(message: "Server selection timed out: no suitable servers found using"
+            + " Read Preference: \(readPreference)\nTopology: \(topology)")
+    }
+}
+
+extension Array where Element == ServerDescription {
+    /// Filters servers according to their latency. A server is considered to be within the latency window if its
+    /// `averageRoundTripTimeMS` is no more than `localThresholdMS` (or 15 by default) milliseconds greater than the
+    /// smallest average RTT seen amongst the servers.
+    internal mutating func filterByLatency(localThresholdMS: Int?) {
+        guard let minAverageRoundTripTime = self.compactMap({ $0.averageRoundTripTimeMS }).min() else {
+            // If there is no minimum average round trip time, there are no servers to filter.
+            return
+        }
+        let maxAverageRoundTripTime = minAverageRoundTripTime
+            + Double(localThresholdMS ?? SDAMConstants.defaultLocalThresholdMS)
+        self.removeAll {
+            guard let averageRoundTripTimeMS = $0.averageRoundTripTimeMS else {
+                return false
+            }
+            return averageRoundTripTimeMS > maxAverageRoundTripTime
+        }
+    }
+}
+
 extension TopologyDescription {
     internal func findSuitableServers(
-        readPreference: ReadPreference? = nil,
+        readPreference: ReadPreference,
         heartbeatFrequencyMS: Int
     ) throws -> [ServerDescription] {
-        try readPreference?.validateMaxStalenessSeconds(
+        try readPreference.validateMaxStalenessSeconds(
             heartbeatFrequencyMS: heartbeatFrequencyMS,
             topologyType: self.type
         )
@@ -445,7 +537,7 @@ extension TopologyDescription {
         case .single, .loadBalanced:
             return self.servers
         case .replicaSetNoPrimary, .replicaSetWithPrimary:
-            switch readPreference?.mode {
+            switch readPreference.mode {
             case .secondary:
                 return self.filterReplicaSetServers(
                     readPreference: readPreference,
@@ -480,8 +572,7 @@ extension TopologyDescription {
                     heartbeatFrequencyMS: heartbeatFrequencyMS,
                     includePrimary: false
                 )
-            default: // or .primary
-                // the default mode is 'primary'.
+            case .primary:
                 return self.servers.filter { $0.type == .rsPrimary }
             }
         case .sharded:

@@ -12,10 +12,11 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "8.0.0")),
         .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.15.0")),
-        .package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "3.0.0"))
+        .package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "3.0.0")),
+        .package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.0.0"))
     ],
     targets: [
-        .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON",]),
+        .target(name: "MongoSwift", dependencies: ["Atomics", "CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON",]),
         .target(name: "MongoSwiftSync", dependencies: ["MongoSwift", "NIO"]),
         .target(name: "AtlasConnectivity", dependencies: ["MongoSwiftSync"]),
         .target(name: "TestsCommon", dependencies: ["MongoSwift", "Nimble"]),
