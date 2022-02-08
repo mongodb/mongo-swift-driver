@@ -334,6 +334,26 @@ functions:
       params:
         working_dir: "src"
         script: |
+          set -o xtrace
+          set -o errexit
+
+          if [ "${SWIFT_MINOR_VERSION}" = "main-snapshot" ]; then
+              export SWIFT_VERSION="${SWIFT_MINOR_VERSION}"
+          else
+              # otherwise, find the latest patch release for the specified version
+              ${PYTHON} -m virtualenv ./requests-env
+              ./requests-env/${VENV_BIN_DIR}/python3 -m pip install requests
+              export SWIFT_VERSION="$(./requests-env/${VENV_BIN_DIR}/python3 .evergreen/get_latest_swift_patch.py ${SWIFT_MINOR_VERSION})"
+          fi
+          echo "SWIFT_VERSION: $SWIFT_VERSION" > swift-version.yml
+          cat swift-version.yml
+    - command: expansions.update
+      params:
+        file: src/swift-version.yml
+    - command: shell.exec
+      params:
+        working_dir: "src"
+        script: |
           ${PREPARE_SHELL}
           SWIFT_VERSION=${SWIFT_VERSION} \
             sh ${PROJECT_DIRECTORY}/.evergreen/install-swift.sh
@@ -1094,27 +1114,27 @@ axes:
       - id: "5.1"
         display_name: "Swift 5.1"
         variables:
-           SWIFT_VERSION: "5.1.5"
+           SWIFT_MINOR_VERSION: "5.1"
       - id: "5.2"
         display_name: "Swift 5.2"
         variables:
-           SWIFT_VERSION: "5.2.5"
+           SWIFT_MINOR_VERSION: "5.2"
       - id: "5.3"
         display_name: "Swift 5.3"
         variables:
-          SWIFT_VERSION: "5.3.3"      
+          SWIFT_MINOR_VERSION: "5.3"      
       - id: "5.4"
         display_name: "Swift 5.4"
         variables:
-          SWIFT_VERSION: "5.4.2"
+          SWIFT_MINOR_VERSION: "5.4"
       - id: "5.5"
         display_name: "Swift 5.5"
         variables:
-          SWIFT_VERSION: "5.5.1"
+          SWIFT_MINOR_VERSION: "5.5"
       - id: "5.6-dev"
         display_name: "Swift 5.6-dev"
         variables:
-          SWIFT_VERSION: "main-snapshot"
+          SWIFT_MINOR_VERSION: "main-snapshot"
 
   - id: ssl-auth
     display_name: SSL and Auth
