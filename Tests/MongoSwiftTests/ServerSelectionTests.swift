@@ -1,3 +1,4 @@
+#if compiler(>=5.3)
 import Foundation
 @testable import MongoSwift
 import Nimble
@@ -203,3 +204,4 @@ final class ServerSelectionTests: MongoSwiftTestCase {
         }
     }
 }
+#endif
