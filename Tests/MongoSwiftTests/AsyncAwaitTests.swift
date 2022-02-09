@@ -153,19 +153,43 @@ final class AsyncAwaitTests: MongoSwiftTestCase {
             try await self.withTestNamespace(clientOptions: clientOptions) { client, _, coll in
                 let monitor = client.addCommandMonitor()
                 try await monitor.captureEvents {
-                    async let op1 = try coll.insertOne(["x": 1])
-                    async let op2 = try coll.insertOne(["x": 2])
-                    async let op3 = try coll.insertOne(["x": 3])
-                    _ = try await [op1, op2, op3]
+                    async let insert = try coll.insertOne(["x": 1])
+                    async let delete = try coll.deleteOne(["x": 2])
+                    async let update = try coll.updateOne(filter: ["x": 3], update: ["$set": ["y": 1]])
+                    async let bulk = try coll.bulkWrite([.updateOne(filter: ["x": 4], update: ["$set": ["y": 1]])])
+                    async let findOneAndDelete = try coll.findOneAndDelete(["x": 5])
+                    async let findOneAndUpdate = try coll.findOneAndUpdate(
+                        filter: ["x": 6],
+                        update: ["$set": ["y": 1]]
+                    )
+                    async let findOneAndReplace = try coll.findOneAndReplace(filter: ["x": 7], replacement: ["x": 8])
+                    async let cursor = try coll.find()
+                    // the cursor will hold onto its connection until its done being iterated, so we need to iterate to
+                    // allow the other operations to make progress.
+                    for try await _ in try await cursor {}
+                    _ = try await [
+                        insert,
+                        delete,
+                        update,
+                        bulk,
+                        findOneAndDelete,
+                        findOneAndUpdate,
+                        findOneAndReplace
+                    ] as [Any?]
                 }
-                let events = monitor.events(withEventTypes: [.commandStartedEvent], withNames: ["insert"])
-                let lsids = events.compactMap { $0.commandStartedValue!.command["lsid"] }
-                guard lsids.count == 3 else {
-                    XCTFail("Expected all 3 command events to contain lsids, but only \(lsids.count) did")
+                let events = monitor.events(withEventTypes: [.commandStartedEvent])
+                guard events.count == 8 else {
+                    XCTFail("Expected 8 command started events, but only found \(events.count)")
                     return
                 }
-                expect(lsids[0]).to(equal(lsids[1]))
-                expect(lsids[1]).to(equal(lsids[2]))
+                let lsids = events.compactMap { $0.commandStartedValue!.command["lsid"] }
+                guard lsids.count == 8 else {
+                    XCTFail("Expected 8 command started events to contain lsids, but only found \(lsids.count)")
+                    return
+                }
+                for i in 1...7 {
+                    expect(lsids[i]).to(equal(lsids[0]))
+                }
             }
         }
     }
