@@ -9,9 +9,12 @@ let package = Package(
         .library(name: "MongoSwift", targets: ["MongoSwift"]),
         .library(name: "MongoSwiftSync", targets: ["MongoSwiftSync"])
     ],
-    dependencies: getDependencies(),
+    dependencies: [
+        .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "8.0.0")),
+        .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.15.0")),
+        .package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "3.0.0"))
+    ],
     targets: [
-        .target(name: "MongoSwift", dependencies: getMongoSwiftDependencies()),
         .target(name: "MongoSwiftSync", dependencies: ["MongoSwift", "NIO"]),
         .target(name: "AtlasConnectivity", dependencies: ["MongoSwiftSync"]),
         .target(name: "TestsCommon", dependencies: ["MongoSwift", "Nimble"]),
@@ -31,22 +34,9 @@ let package = Package(
     ]
 )
 
-func getDependencies() -> [PackageDescription.Package.Dependency] {
-    var packages: [PackageDescription.Package.Dependency] = [
-        .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "8.0.0")),
-        .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.15.0")),
-        .package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "3.0.0"))
-    ]
 #if compiler(>=5.3)
-    packages.append(.package(url: "https://github.com/apple/swift-atomics.git", .upToNextMajor(from: "1.0.0")))
+package.dependencies += [ .package(url: "https://github.com/apple/swift-atomics", .upToNextMajor(from: "1.0.0")) ]
+package.targets += [ .target(name: "MongoSwift", dependencies: ["Atomics", "CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON"]) ]
+#else
+package.targets += [ .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON"]) ]
 #endif
-    return packages
-}
-
-func getMongoSwiftDependencies() -> [Target.Dependency] {
-    var dependencies: [Target.Dependency] = ["CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON"]
-#if compiler(>=5.3)
-    dependencies.append("Atomics")
-#endif
-    return dependencies
-}
