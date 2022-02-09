@@ -35,8 +35,8 @@ let package = Package(
 )
 
 #if compiler(>=5.3)
-package.dependencies += [ .package(url: "https://github.com/apple/swift-atomics", .upToNextMajor(from: "1.0.0")) ]
-package.targets += [ .target(name: "MongoSwift", dependencies: ["Atomics", "CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON"]) ]
+package.dependencies += [.package(url: "https://github.com/apple/swift-atomics", .upToNextMajor(from: "1.0.0"))]
+package.targets += [.target(name: "MongoSwift", dependencies: ["Atomics", "CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON"])]
 #else
-package.targets += [ .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON"]) ]
+package.targets += [.target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON"])]
 #endif
