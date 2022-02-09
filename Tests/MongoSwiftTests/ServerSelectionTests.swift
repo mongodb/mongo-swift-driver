@@ -104,7 +104,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
             let readPreference = test.operation == .write ? ReadPreference.primary : test.readPreference
             let heartbeatFrequencyMS = test.heartbeatFrequencyMS ?? SDAMConstants.defaultHeartbeatFrequencyMS
 
-            let selectedServers: [ServerDescription]
+            var selectedServers: [ServerDescription]
             do {
                 selectedServers = try test.topologyDescription.findSuitableServers(
                     readPreference: readPreference,
@@ -122,6 +122,12 @@ final class ServerSelectionTests: MongoSwiftTestCase {
             if let suitableServers = test.suitableServers {
                 expect(selectedServers.count).to(equal(suitableServers.count))
                 expect(selectedServers).to(contain(suitableServers))
+            }
+
+            if let inLatencyWindow = test.inLatencyWindow {
+                selectedServers.filterByLatency(localThresholdMS: nil)
+                expect(selectedServers.count).to(equal(inLatencyWindow.count))
+                expect(selectedServers).to(contain(inLatencyWindow))
             }
         }
     }

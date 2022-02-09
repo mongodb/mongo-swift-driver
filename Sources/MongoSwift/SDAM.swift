@@ -247,7 +247,8 @@ public struct ServerDescription {
         tags: [String: String]?,
         lastWriteDate: Date?,
         maxWireVersion: Int?,
-        lastUpdateTime: Date?
+        lastUpdateTime: Date?,
+        averageRoundTripTimeMS: Double?
     ) {
         self.address = address
         self.type = type
@@ -255,11 +256,11 @@ public struct ServerDescription {
         self.lastWriteDate = lastWriteDate
         self.lastUpdateTime = lastUpdateTime ?? Date()
         self.maxWireVersion = maxWireVersion ?? SDAMConstants.maxWireVersion
+        self.averageRoundTripTimeMS = averageRoundTripTimeMS
 
         // these fields are not used by the server selection tests
         self.serverId = 0
         self.roundTripTime = 0
-        self.averageRoundTripTimeMS = nil
         self.minWireVersion = SDAMConstants.minWireVersion
         self.me = self.address
         self.setName = nil
