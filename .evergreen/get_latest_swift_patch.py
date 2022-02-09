@@ -18,16 +18,17 @@ if len(components) != 2:
 major = components[0]
 minor = components[1]
 
-version_regex = '^swift-{}\.{}(\.\d+)?-RELEASE$'.format(major, minor)
+version_regex = '^swift-({}\.{}(\.(\d+))?)-RELEASE$'.format(major, minor)
 
 release_data = requests.get('https://api.github.com/repos/apple/swift/releases').json()
 tag_names = map(lambda release: release['tag_name'], release_data)
 
-matching_tags = sorted(filter(lambda tag: re.match(version_regex, tag) is not None, tag_names), reverse=True)
-if len(matching_tags) == 0:
-    print("No tags matching {} found".format(version))
-    exit(1)
+# find tags matching the specified regexes
+matches = filter(lambda match: match is not None, map(lambda tag: re.match(version_regex, tag), tag_names))
 
-# full name is swift-x.y.z-release, drop the prefix and suffix.
-tag_split = matching_tags[0].split('-')
-print(tag_split[1])
+# sort matches by their patch versions. patch versions of 0 are omitted so substitute 0 when the group is None.
+sorted_matches = sorted(matches, key=lambda match: int(match.group(2)[1:]) if match.group(2) is not None else 0, reverse=True)
+
+# map to the first match group which contains the full version number.
+sorted_version_numbers = map(lambda match: match.group(1), sorted_matches)
+print(next(sorted_version_numbers))
