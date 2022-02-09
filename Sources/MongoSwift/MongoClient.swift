@@ -69,8 +69,8 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// Determines whether the client should retry supported write operations (on by default).
     public var retryWrites: Bool?
 
-    // TODO: SWIFT-1159: add versioned API docs link.
     /// Specifies a MongoDB server API version and related options.
+    /// - SeeAlso: https://docs.mongodb.com/manual/reference/stable-api/
     public var serverAPI: MongoServerAPI?
 
     /// Specifies how long the driver should attempt to select a server for before throwing an error. Defaults to 30
