@@ -1,6 +1,6 @@
 // swift-tools-version:5.1
 
-/// Not to break Swift 5.1 compatibility. Only use new NIO if async await available.
+///  To avoid breaking Swift 5.1 compatibility, only require newer NIO versions when we need NIO's concurrency APIs.
 func getMinNIOVersion() -> PackageDescription.Package.Dependency.Requirement {
 #if compiler(>=5.5.2) && canImport(_Concurrency)
     return .upToNextMajor(from: "2.36.0")
