@@ -209,5 +209,23 @@ final class ServerSelectionTests: MongoSwiftTestCase {
             }
         }
     }
+    
+    func testReadPreferenceValidation() throws {
+        var readPreference = ReadPreference.primary
+        readPreference.tagSets = [["tag": "set"]]
+        let topology = TopologyDescription(type: .single, servers: [])
+        expect(try topology.findSuitableServers(readPreference: readPreference, heartbeatFrequencyMS: 0))
+            .to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        readPreference.tagSets = [[:]]
+        expect(try topology.findSuitableServers(readPreference: readPreference, heartbeatFrequencyMS: 0))
+            .toNot(throwError())
+
+        readPreference.tagSets = nil
+        expect(try topology.findSuitableServers(readPreference: readPreference, heartbeatFrequencyMS: 0))
+            .toNot(throwError())
+    }
+
+    // TODO: SWIFT-1496: Implement the remaining server selection tests
 }
 #endif
