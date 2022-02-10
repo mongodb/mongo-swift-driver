@@ -1,4 +1,14 @@
 // swift-tools-version:5.1
+
+/// Not to break Swift 5.1 compatibility. Only use new NIO if async await available.
+func getMinNIOVersion() -> PackageDescription.Package.Dependency.Requirement {
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+    return .upToNextMajor(from: "2.36.0")
+#else
+    return .upToNextMajor(from: "2.15.0")
+#endif
+}
+
 import PackageDescription
 let package = Package(
     name: "mongo-swift-driver",
@@ -34,12 +44,3 @@ let package = Package(
         )
     ]
 )
-
-/// Not to break Swift 5.1 compatibility. Only use new NIO if async await available.
-func getMinNIOVersion() -> PackageDescription.Package.Dependency.Requirement {
-#if compiler(>=5.5.2) && canImport(_Concurrency)
-    return .upToNextMajor(from: "2.36.0")
-#else
-    return .upToNextMajor(from: "2.15.0")
-#endif
-}
