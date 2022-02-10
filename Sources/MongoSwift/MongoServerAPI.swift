@@ -1,7 +1,7 @@
 import CLibMongoC
 
 /// A type containing options for specifying a MongoDB server API version and related behavior.
-/// - SeeAlso: https://docs.mongodb.com/manual/reference/versioned-api/
+/// - SeeAlso: https://docs.mongodb.com/manual/reference/stable-api/
 public struct MongoServerAPI: Codable {
     /// Represents a server API version.
     public struct Version: Codable, Equatable, LosslessStringConvertible {
