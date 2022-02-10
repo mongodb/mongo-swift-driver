@@ -45,6 +45,8 @@ internal class ConnectionPool {
         case opening(future: EventLoopFuture<OpaquePointer>)
         /// Indicates that the `ConnectionPool` is open and using the associated pointer to a `mongoc_client_pool_t`.
         case open(pool: OpaquePointer)
+        /// Indicates that the `ConnectionPool` failed to open due to the associated error.
+        case failedToOpen(error: Error)
         /// Indicates that the `ConnectionPool` is in the process of closing. Connections can be checked back in, but
         /// no new connections can be checked out.
         case closing(pool: OpaquePointer)
@@ -86,23 +88,38 @@ internal class ConnectionPool {
     ) throws {
         let poolFut = executor.execute(on: nil) { () -> OpaquePointer in
             try connString.withMongocURI { uriPtr in
-                guard let pool = mongoc_client_pool_new(uriPtr) else {
-                    throw MongoError.InternalError(message: "Failed to initialize libmongoc client pool")
+                var error = bson_error_t()
+                // this can fail if e.g. an invalid option is specified via a TXT record.
+                guard let pool = mongoc_client_pool_new_with_error(uriPtr, &error) else {
+                    throw extractMongoError(error: error)
                 }
 
-                guard mongoc_client_pool_set_error_api(pool, MONGOC_ERROR_API_VERSION_2) else {
-                    fatalError("Could not configure error handling on client pool")
-                }
-
-                // We always set min_heartbeat_frequency because the hard-coded default in the vendored mongoc
-                // was lowered to 50. Setting it here brings it to whatever was specified, or 500 if it wasn't.
-                mongoc_client_pool_set_min_heartbeat_frequency_msec(pool, UInt64(connString.minHeartbeatFrequencyMS))
-
-                try serverAPI?.withMongocServerAPI { apiPtr in
-                    var error = bson_error_t()
-                    guard mongoc_client_pool_set_server_api(pool, apiPtr, &error) else {
-                        throw extractMongoError(error: error)
+                do {
+                    // this should only fail due to an error of our own, e.g. calling this method multiple times or
+                    // passing in an invalid error API version.
+                    guard mongoc_client_pool_set_error_api(pool, MONGOC_ERROR_API_VERSION_2) else {
+                        throw MongoError.InternalError(message: "Could not configure error handling on client pool")
                     }
+
+                    // We always set min_heartbeat_frequency because the hard-coded default in the vendored mongoc
+                    // was lowered to 50. Setting it here brings it to whatever was specified, or 500 if it wasn't.
+                    mongoc_client_pool_set_min_heartbeat_frequency_msec(
+                        pool,
+                        UInt64(connString.minHeartbeatFrequencyMS)
+                    )
+
+                    // this should only fail due to an error of our own, e.g. calling this method multiple times or
+                    // passing in an invalid API version.
+                    try serverAPI?.withMongocServerAPI { apiPtr in
+                        guard mongoc_client_pool_set_server_api(pool, apiPtr, &error) else {
+                            throw extractMongoError(error: error)
+                        }
+                    }
+                } catch {
+                    // manually clean up the pool since we won't return it, which would be necessary for the usual
+                    // cleanup logic to execute.
+                    mongoc_client_pool_destroy(pool)
+                    throw error
                 }
 
                 return pool
@@ -130,9 +147,16 @@ internal class ConnectionPool {
             case let .open(pool):
                 return try body(pool)
             case let .opening(future):
-                let pool = try future.wait()
-                self.state = .open(pool: pool)
-                return try body(pool)
+                do {
+                    let pool = try future.wait()
+                    self.state = .open(pool: pool)
+                    return try body(pool)
+                } catch {
+                    self.state = .failedToOpen(error: error)
+                    throw error
+                }
+            case let .failedToOpen(error):
+                throw error
             case .closed, .closing:
                 throw Self.PoolClosedError
             }
@@ -147,10 +171,18 @@ internal class ConnectionPool {
             case let .open(pool):
                 self.state = .closing(pool: pool)
             case let .opening(future):
-                let pool = try future.wait()
-                self.state = .closing(pool: pool)
+                do {
+                    let pool = try future.wait()
+                    self.state = .closing(pool: pool)
+                } catch {
+                    self.state = .closed
+                    return
+                }
             case .closing, .closed:
                 throw Self.PoolClosedError
+            case .failedToOpen:
+                self.state = .closed
+                return
             }
 
             while self.connCount > 0 {
@@ -159,7 +191,7 @@ internal class ConnectionPool {
             }
 
             switch self.state {
-            case .open, .closed, .opening:
+            case .open, .closed, .opening, .failedToOpen:
                 throw MongoError.InternalError(
                     message: "ConnectionPool in unexpected state \(self.state) during close()"
                 )
@@ -209,7 +241,7 @@ internal class ConnectionPool {
                 self.stateLock.signal()
             case .closed:
                 throw Self.PoolClosedError
-            case .opening:
+            case .opening, .failedToOpen:
                 fatalError("ConnectionPool in unexpected state \(self.state) while checking in a connection")
             }
         }
