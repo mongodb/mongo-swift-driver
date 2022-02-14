@@ -182,6 +182,7 @@ public enum TestTopologyConfiguration: String, Decodable {
     /// Determines the topologyType of a client based on the reply returned by running a hello command and the
     /// first document in the config.shards collection.
     public init(helloReply: BSONDocument, shards: [BSONDocument]) throws {
+        print("helloReply: \(helloReply)")
         // Check for symptoms of different topologies
         if helloReply["msg"] != "isdbgrid" &&
             helloReply["setName"] == nil &&

@@ -222,13 +222,17 @@ extension SpecTestFile {
         var setupClientOptions = MongoClientOptions()
         setupClientOptions.minHeartbeatFrequencyMS = 50
         setupClientOptions.heartbeatFrequencyMS = 50
+        print("conn string: \(connString)")
         let setupClient = try MongoClient.makeTestClient(connString, options: setupClientOptions)
 
         if let requirements = self.runOn {
+            print("requirements: \(requirements)")
             guard try requirements.contains(where: { try setupClient.getUnmetRequirement($0) == nil }) else {
                 fileLevelLog("Skipping tests from file \(self.name), deployment requirements not met.")
                 return
             }
+        } else {
+            print("no requirements")
         }
 
         let topologyType = try setupClient.topologyType()
