@@ -145,52 +145,12 @@ final class AsyncAwaitTests: MongoSwiftTestCase {
         }
     }
 
-    /// Sessions prose test 13: Test that implicit sessions only allocate their server session after a successful
-    /// connection checkout.
-    func testImplicitSessionsCreatedAfterConnectionCheckout() throws {
+    func testTSANCrash() throws {
         testAsync {
-            let clientOptions = MongoClientOptions(maxPoolSize: 1)
-            try await self.withTestNamespace(clientOptions: clientOptions) { client, _, coll in
-                let monitor = client.addCommandMonitor()
-                try await monitor.captureEvents {
-                    async let insert = try coll.insertOne(["x": 1])
-                    async let delete = try coll.deleteOne(["x": 2])
-                    async let update = try coll.updateOne(filter: ["x": 3], update: ["$set": ["y": 1]])
-                    async let bulk = try coll.bulkWrite([.updateOne(filter: ["x": 4], update: ["$set": ["y": 1]])])
-                    async let findOneAndDelete = try coll.findOneAndDelete(["x": 5])
-                    async let findOneAndUpdate = try coll.findOneAndUpdate(
-                        filter: ["x": 6],
-                        update: ["$set": ["y": 1]]
-                    )
-                    async let findOneAndReplace = try coll.findOneAndReplace(filter: ["x": 7], replacement: ["x": 8])
-                    async let cursor = try coll.find()
-                    // the cursor will hold onto its connection until its done being iterated, so we need to iterate to
-                    // allow the other operations to make progress.
-                    for try await _ in try await cursor {}
-                    _ = try await [
-                        insert,
-                        delete,
-                        update,
-                        bulk,
-                        findOneAndDelete,
-                        findOneAndUpdate,
-                        findOneAndReplace
-                    ] as [Any?]
-                }
-                let events = monitor.events(withEventTypes: [.commandStartedEvent])
-                guard events.count == 8 else {
-                    XCTFail("Expected 8 command started events, but only found \(events.count)")
-                    return
-                }
-                let lsids = events.compactMap { $0.commandStartedValue!.command["lsid"] }
-                guard lsids.count == 8 else {
-                    XCTFail("Expected 8 command started events to contain lsids, but only found \(lsids.count)")
-                    return
-                }
-                for i in 1...7 {
-                    expect(lsids[i]).to(equal(lsids[0]))
-                }
-            }
+            let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+            let client = try MongoClient(using: elg)
+            let coll = client.db("test").collection("foo")
+            try await coll.updateOne(filter: ["x": 3], update: ["$set": ["y": 1]])
         }
     }
 }
