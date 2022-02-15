@@ -89,18 +89,3 @@ extension BSONDocument {
         self = doc
     }
 }
-
-extension BSON {
-    /// Returns the BSON as a `Double` if it is a numerical value.
-    internal func getDouble() -> Double? {
-        if let double = self.doubleValue {
-            return double
-        } else if let int32 = self.int32Value {
-            return Double(int32)
-        } else if let int64 = self.int64Value {
-            return Double(int64)
-        } else {
-            return nil
-        }
-    }
-}

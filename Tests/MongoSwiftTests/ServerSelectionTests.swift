@@ -77,7 +77,7 @@ private struct SelectionWithinLatencyWindowTest: Decodable {
             self.expectedFrequencies = try expectedFrequenciesDocument.reduce(into: [ServerAddress: Double]()) {
                 let (addressString, frequencyBSONValue) = $1
                 let address = try ServerAddress(addressString)
-                guard let frequency = frequencyBSONValue.getDouble() else {
+                guard let frequency = frequencyBSONValue.toDouble() else {
                     throw DecodingError.dataCorruptedError(
                         forKey: .expectedFrequencies,
                         in: values,

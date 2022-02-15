@@ -33,22 +33,7 @@ extension MongoClient {
         let endTime = Date(timeInterval: Double(serverSelectionTimeoutMS) / 1000.0, since: startTime)
 
         while Date() < endTime {
-            if let (min, max) = topology.getWireVersionRange() {
-                if min < SDAMConstants.minWireVersion {
-                    throw MongoError.ServerSelectionError(
-                        message: "Wire version incompatibility: a server in the topology has minWireVersion \(min) but"
-                            + " the minimum supported wire version is \(SDAMConstants.minWireVersion)\nTopology:"
-                            + " \(topology)"
-                    )
-                }
-                if max > SDAMConstants.maxWireVersion {
-                    throw MongoError.ServerSelectionError(
-                        message: "Wire version incompatibility: a server in the topology has maxWireVersion \(max) but"
-                            + " the maximum supported wire version is \(SDAMConstants.maxWireVersion)\nTopology:"
-                            + " \(topology)"
-                    )
-                }
-            }
+            try topology.validateWireVersionCompatibility()
 
             var suitableServers = try topology.findSuitableServers(
                 readPreference: readPreference,
@@ -56,7 +41,12 @@ extension MongoClient {
                     ?? SDAMConstants.defaultHeartbeatFrequencyMS
             )
             suitableServers.filterByLatency(localThresholdMS: self.connectionString.localThresholdMS)
-            var inWindowServers = suitableServers.compactMap { servers[$0.address] }
+            var inWindowServers: [Server] = suitableServers.map {
+                guard let server = servers[$0.address] else {
+                    fatalError("Expected a Server to be present in the servers map with address \($0.address)")
+                }
+                return server
+            }
 
             let selectedServer: Server
             if inWindowServers.isEmpty {
@@ -95,12 +85,15 @@ extension Array where Element == ServerDescription {
     /// smallest average RTT seen amongst the servers.
     internal mutating func filterByLatency(localThresholdMS: Int?) {
         guard let minAverageRoundTripTime = self.compactMap({ $0.averageRoundTripTimeMS }).min() else {
-            // If there is no minimum average round trip time, there are no servers to filter.
+            // The servers that made it through filtering on the topology and are now being filtered here should all be
+            // available, which means they should all have a round trip time configured on them. Therefore, if no
+            // minimum average round trip time is found, then the list of servers must be empty.
             return
         }
         let maxAverageRoundTripTime = minAverageRoundTripTime
             + Double(localThresholdMS ?? SDAMConstants.defaultLocalThresholdMS)
         self.removeAll {
+            // This condition should always be true due to the comment above.
             guard let averageRoundTripTimeMS = $0.averageRoundTripTimeMS else {
                 return false
             }
@@ -217,14 +210,23 @@ extension TopologyDescription {
         return secondaryLastWriteDates.max()
     }
 
-    fileprivate func getWireVersionRange() -> (Int, Int)? {
-        guard let min = self.servers.map({ $0.minWireVersion }).min() else {
-            return nil
+    /// Validates that this topology is compatible with the min and max wire versions of the driver. For a topology to
+    /// be compatible, each server's wire version range must overlap with the driver's wire version range.
+    fileprivate func validateWireVersionCompatibility() throws {
+        for server in servers {
+            guard server.minWireVersion <= SDAMConstants.maxWireVersion else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Server at \(server.address) requires wire version \(server.minWireVersion) but this"
+                        + " version of the MongoDB Swift driver only supports up to \(SDAMConstants.maxWireVersion)"
+                )
+            }
+            guard server.maxWireVersion >= SDAMConstants.minWireVersion else {
+                throw MongoError.InvalidArgumentError(
+                    message: "Server at \(server.address) reports maximum wire version \(server.maxWireVersion) but"
+                        + " this version of the MongoDB Swift driver requires at least \(SDAMConstants.minWireVersion)"
+                )
+            }
         }
-        guard let max = self.servers.map({ $0.maxWireVersion }).max() else {
-            return nil
-        }
-        return (min, max)
     }
 }
 
