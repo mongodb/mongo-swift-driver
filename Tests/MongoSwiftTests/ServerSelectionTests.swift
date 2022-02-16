@@ -209,7 +209,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
             }
         }
     }
-    
+
     func testReadPreferenceValidation() throws {
         var readPreference = ReadPreference.primary
         readPreference.tagSets = [["tag": "set"]]
