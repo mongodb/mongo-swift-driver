@@ -15,7 +15,6 @@ let package = Package(
         .package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "3.0.0"))
     ],
     targets: [
-        .target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON",]),
         .target(name: "MongoSwiftSync", dependencies: ["MongoSwift", "NIO"]),
         .target(name: "AtlasConnectivity", dependencies: ["MongoSwiftSync"]),
         .target(name: "TestsCommon", dependencies: ["MongoSwift", "Nimble"]),
@@ -34,3 +33,10 @@ let package = Package(
         )
     ]
 )
+
+#if compiler(>=5.3)
+package.dependencies += [.package(url: "https://github.com/apple/swift-atomics", .upToNextMajor(from: "1.0.0"))]
+package.targets += [.target(name: "MongoSwift", dependencies: ["Atomics", "CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON"])]
+#else
+package.targets += [.target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON"])]
+#endif

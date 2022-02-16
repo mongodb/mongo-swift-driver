@@ -213,6 +213,7 @@ extension ServerDescription: StrictDecodable {
         let type = try values.decode(ServerType.self, forKey: .type)
         let tags = try values.decodeIfPresent([String: String].self, forKey: .tags) ?? [:]
         let maxWireVersion = try values.decodeIfPresent(Int.self, forKey: .maxWireVersion)
+        let averageRoundTripTimeMS = try values.decodeIfPresent(Double.self, forKey: .averageRoundTripTimeMS)
 
         var lastUpdateTime: Date?
         if let lastUpdateTimeMS = try values.decodeIfPresent(Int64.self, forKey: .lastUpdateTime) {
@@ -233,15 +234,14 @@ extension ServerDescription: StrictDecodable {
             lastWriteDate = Date(msSinceEpoch: lastWriteDateMS)
         }
 
-        // TODO: SWIFT-1461: decode and set averageRoundTripTimeMS
-
         self.init(
             address: address,
             type: type,
             tags: tags,
             lastWriteDate: lastWriteDate,
             maxWireVersion: maxWireVersion,
-            lastUpdateTime: lastUpdateTime
+            lastUpdateTime: lastUpdateTime,
+            averageRoundTripTimeMS: averageRoundTripTimeMS
         )
     }
 
