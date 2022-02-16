@@ -107,7 +107,7 @@ extension TopologyDescription {
         readPreference: ReadPreference,
         heartbeatFrequencyMS: Int
     ) throws -> [ServerDescription] {
-        try readPreference.validateMaxStalenessSeconds(
+        try readPreference.validateForServerSelection(
             heartbeatFrequencyMS: heartbeatFrequencyMS,
             topologyType: self.type
         )
@@ -267,7 +267,7 @@ extension ServerDescription {
 }
 
 extension ReadPreference {
-    fileprivate func validateMaxStalenessSeconds(
+    fileprivate func validateForServerSelection(
         heartbeatFrequencyMS: Int,
         topologyType: TopologyDescription.TopologyType
     ) throws {
@@ -293,6 +293,11 @@ extension ReadPreference {
                     )
                 }
             }
+        }
+        if let tagSets = self.tagSets, tagSets.contains(where: { !$0.isEmpty }) && self.mode == .primary {
+            throw MongoError.InvalidArgumentError(
+                message: "A non-empty tag set cannot be specified when the read preference mode is primary"
+            )
         }
     }
 }
