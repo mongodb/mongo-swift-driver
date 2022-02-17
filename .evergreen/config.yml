@@ -1399,7 +1399,7 @@ buildvariants:
   display_name: "${sanitize} ${os-fully-featured} ${ssl-auth}"
   matrix_spec:
     os-fully-featured: "ubuntu-18.04"
-    swift-version: "5.5"
+    swift-version: "5.4" # TODO SWIFT-1499: update to Swift 5.5
     ssl-auth: "*"
     sanitize: "tsan"
   tasks:

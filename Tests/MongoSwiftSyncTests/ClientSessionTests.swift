@@ -320,6 +320,8 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         }
     }
 
+    /// Sessions spec test 13 was easier to write with concurrency and lives in MongoSwiftTests/AsyncAwaitTests.swift.
+
     /// Test that causal consistency guarantees are met on deployments that support cluster time.
     func testCausalConsistency() throws {
         guard MongoSwiftTestCase.topologyType != .single else {
@@ -511,17 +513,6 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             let startedEvents = monitor.commandStartedEvents()
             expect(startedEvents).to(haveCount(1))
             expect(startedEvents[0].command["readConcern"]?.documentValue?["afterClusterTime"]).to(beNil())
-        }
-
-        // Causal consistency spec test 10: When an unacknowledged write is executed in a causally consistent
-        // ClientSession the operationTime property of the ClientSession is not updated
-        try client.withSession(options: ClientSessionOptions(causalConsistency: true)) { session in
-            let collection1 = db.collection(
-                self.getCollectionName(),
-                options: MongoCollectionOptions(writeConcern: try WriteConcern(w: .number(0)))
-            )
-            try collection1.insertOne(["x": 3])
-            expect(session.operationTime).to(beNil())
         }
     }
 
