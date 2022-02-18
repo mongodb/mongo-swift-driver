@@ -1,6 +1,6 @@
-#if compiler(>=5.5) && canImport(_Concurrency)
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 /// Extension to `MongoCollection` to support async/await index management APIs.
-@available(macOS 12, *)
+@available(macOS 10.15.0, *)
 extension MongoCollection {
     /**
      * Creates an index over the collection for the provided keys with the provided options.

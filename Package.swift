@@ -1,4 +1,14 @@
 // swift-tools-version:5.1
+
+///  To avoid breaking Swift 5.1 compatibility, only require newer NIO versions when we need NIO's concurrency APIs.
+func getMinNIOVersion() -> PackageDescription.Package.Dependency.Requirement {
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+    return .upToNextMajor(from: "2.36.0")
+#else
+    return .upToNextMajor(from: "2.15.0")
+#endif
+}
+
 import PackageDescription
 let package = Package(
     name: "mongo-swift-driver",
@@ -11,7 +21,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "8.0.0")),
-        .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.15.0")),
+        .package(url: "https://github.com/apple/swift-nio", getMinNIOVersion()),
         .package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "3.0.0"))
     ],
     targets: [

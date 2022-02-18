@@ -1,6 +1,6 @@
-#if compiler(>=5.5) && canImport(_Concurrency)
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 /// Extension to `MongoCollection` to support async/await write APIs.
-@available(macOS 12, *)
+@available(macOS 10.15.0, *)
 extension MongoCollection {
     /**
      * Encodes the provided value to BSON and inserts it. If the value is missing an identifier, one will be generated

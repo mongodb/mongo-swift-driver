@@ -79,8 +79,8 @@ public final class ClientSession {
             }
         }
 
-#if compiler(>=5.5) && canImport(_Concurrency)
-        @available(macOS 12, *)
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+        @available(macOS 10.15.0, *)
         fileprivate func cleanup(using client: MongoClient, on eventLoop: EventLoop?) async throws {
             try await self.cleanup(using: client, on: eventLoop).get()
         }
@@ -333,7 +333,7 @@ public final class ClientSession {
 
     /// Cleans up internal state.
     deinit {
-#if compiler(>=5.5) && canImport(_Concurrency)
+#if compiler(>=5.5.2) && canImport(_Concurrency)
         if #available(macOS 12, *) {
             // Pull out all necessary values into new references to avoid referencing `self` within the `Task`, since
             // the `Task` is going to outlive `self`.

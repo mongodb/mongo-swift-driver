@@ -100,8 +100,8 @@ internal class OperationExecutor {
         self.threadPool.runIfActive(eventLoop: eventLoop ?? self.eventLoopGroup.next(), body)
     }
 
-#if compiler(>=5.5) && canImport(_Concurrency)
-    @available(macOS 12, *)
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+    @available(macOS 10.15.0, *)
     internal func execute<T>(on eventLoop: EventLoop?, _ body: @escaping () throws -> T) async throws -> T {
         try await self.execute(on: eventLoop, body).get()
     }
