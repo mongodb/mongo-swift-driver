@@ -19,12 +19,14 @@ internal struct Server {
     }
 }
 
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 extension MongoClient {
+    @available(macOS 10.15.0, *)
     internal func selectServer(
         readPreference: ReadPreference = ReadPreference.primary,
         topology: TopologyDescription,
         servers: [ServerAddress: Server]
-    ) throws -> Server {
+    ) async throws -> Server {
         let startTime = Date()
         let serverSelectionTimeoutMS = self.connectionString.serverSelectionTimeoutMS
             ?? SDAMConstants.defaultServerSelectionTimeoutMS
@@ -50,9 +52,8 @@ extension MongoClient {
 
             let selectedServer: Server
             if inWindowServers.isEmpty {
-                // When pure Swift SDAM is implemented, this should instead block on a topology change occurring for
-                // endTime - Date() seconds.
-                // TODO: add an async sleep here once the driver has been updated to permit async/await on 10.15+
+                let nanosecondsRemaining = endTime.timeIntervalSince(Date()) * 1_000_000_000
+                try await Task.sleep(nanoseconds: UInt64(nanosecondsRemaining))
                 continue
             } else if inWindowServers.count == 1 {
                 selectedServer = inWindowServers[0]
@@ -78,6 +79,7 @@ extension MongoClient {
             + " read preference: \(readPreference)\nTopology: \(topology)")
     }
 }
+#endif
 
 extension Array where Element == ServerDescription {
     /// Filters servers according to their latency. A server is considered to be within the latency window if its
