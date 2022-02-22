@@ -143,6 +143,8 @@ final class AsyncMongoCursorTests: MongoSwiftTestCase {
     }
 }
 
+/// These are in their own test class to make it easier to skip running them against serverless, which does not support
+/// capped collections. (CLOUDP-106443)
 final class AsyncTailableCursorTests: MongoSwiftTestCase {
     func testTailableAwaitAsyncCursor() throws {
         let collOptions = CreateCollectionOptions(capped: true, max: 3, size: 1000)
