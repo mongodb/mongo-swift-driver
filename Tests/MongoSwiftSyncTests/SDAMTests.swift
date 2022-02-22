@@ -236,8 +236,9 @@ final class SDAMTests: MongoSwiftTestCase {
             } + // true in URI
             hostURIs.map { try MongoClient.makeTestClient($0, options: optsTrue) } // true in options struct
 
-        // 4 of 6 attempts to perform writes should fail assuming these are 3-node replica sets, since in 2 cases we
-        // will directly connect to the primary, and in the other 4 we will directly connect to a secondary.
+        // we test against 3-node replica sets with one primary, one secondary, and one arbiter. 4 of 6 attempts to
+        // perform writes here should fail, since in 2 cases we directly connect to the primary, and in the other 4 we
+        // will directly connect to the secondary or arbiter.
 
         var failures = 0
         for client in testClientsShouldMostlyFail {
@@ -246,14 +247,17 @@ final class SDAMTests: MongoSwiftTestCase {
                     try collection.insertOne(["x": 1])
                 }
             } catch {
-                expect(error).to(beAnInstanceOf(MongoError.CommandError.self))
+                // the error type here can vary. when the deployment does not use auth, the error should be a
+                // CommandError. when the deployment does use auth, a write against a secondary will throw a
+                // CommandError but a write against the arbiter will throw an AuthenticationError as arbiters do not
+                // support auth.
                 failures += 1
             }
         }
 
         expect(failures).to(
             equal(4),
-            description: "Writes should fail when connecting to secondaries with directConnection=true"
+            description: "Writes should fail when connecting to secondaries and arbiters with directConnection=true"
         )
     }
 }
