@@ -25,7 +25,7 @@ let router: Router = {
     /// `Kitten` from the collection.  `MongoCollection` is safe to share across threads.
     let collection = mongoClient.db("home").collection("kittens", withType: Kitten.self)
 
-    router.get("kittens") { _, response, next -> Void in
+    router.get("kittens") { _, response, next in
         let res = collection.find().flatMap { cursor in
             cursor.toArray()
         }
