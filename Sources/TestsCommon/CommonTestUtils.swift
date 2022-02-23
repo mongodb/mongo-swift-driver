@@ -188,9 +188,7 @@ public enum TestTopologyConfiguration: String, Decodable {
             helloReply["isreplicaset"] != true
         {
             self = .single
-        } else if MongoSwiftTestCase.singleMongosLoadBalancedURI ?? "" != "" ||
-            MongoSwiftTestCase.multipleMongosLoadBalancedURI ?? "" != ""
-        {
+        } else if MongoSwiftTestCase.topologyType == .loadBalanced {
             self = .loadBalanced
         } else if helloReply["msg"] == "isdbgrid" {
             // Serverless proxy reports as a mongos but presents no shards
