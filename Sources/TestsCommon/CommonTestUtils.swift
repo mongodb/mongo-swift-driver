@@ -188,8 +188,8 @@ public enum TestTopologyConfiguration: String, Decodable {
             helloReply["isreplicaset"] != true
         {
             self = .single
-        } else if MongoSwiftTestCase.singleMongosLoadBalancedURI != nil ||
-            MongoSwiftTestCase.multipleMongosLoadBalancedURI != nil
+        } else if MongoSwiftTestCase.singleMongosLoadBalancedURI ?? "" != "" ||
+            MongoSwiftTestCase.multipleMongosLoadBalancedURI ?? "" != ""
         {
             self = .loadBalanced
         } else if helloReply["msg"] == "isdbgrid" {
