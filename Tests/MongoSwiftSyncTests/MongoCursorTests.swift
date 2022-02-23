@@ -56,6 +56,113 @@ final class MongoCursorTests: MongoSwiftTestCase {
         }
     }
 
+    func testNext() throws {
+        try self.withTestNamespace { _, _, coll in
+            // query empty collection
+            var cursor = try coll.find()
+            expect(cursor.next()).to(beNil())
+
+            // insert a doc so something matches initial query
+            try coll.insertOne(doc1)
+            cursor = try coll.find()
+
+            // next() returns a Result<Document, Error>?
+            let result = cursor.next()
+            expect(result).toNot(beNil())
+            expect(try result?.get()).to(equal(doc1))
+
+            expect(cursor.next()).to(beNil())
+            expect(cursor.isAlive()).to(beFalse())
+
+            expect(try cursor.next()?.get()).to(throwError(errorType: MongoError.LogicError.self))
+        }
+    }
+
+    func testKill() throws {
+        try self.withTestNamespace { _, _, coll in
+            _ = try coll.insertMany([[:], [:], [:]])
+            let cursor = try coll.find()
+            expect(cursor.isAlive()).to(beTrue())
+
+            expect(cursor.next()).toNot(beNil())
+            expect(cursor.isAlive()).to(beTrue())
+
+            cursor.kill()
+            expect(cursor.isAlive()).to(beFalse())
+            expect(try cursor.next()?.get()).to(throwError(errorType: MongoError.LogicError.self))
+        }
+    }
+
+    func testLazySequence() throws {
+        // Verify that the sequence behavior of normal cursors is as expected.
+        try self.withTestNamespace { _, _, coll in
+            try coll.insertMany([["_id": 1], ["_id": 2], ["_id": 3]])
+
+            var cursor = try coll.find()
+            expect(Array(cursor).count).to(equal(3))
+            expect(cursor.isAlive()).to(beFalse())
+
+            cursor = try coll.find()
+            let mapped = Array(cursor.map { _ in 1 })
+            expect(mapped).to(equal([1, 1, 1]))
+            expect(cursor.isAlive()).to(beFalse())
+
+            cursor = try coll.find()
+            let filteredMapped = cursor.filter {
+                $0.isSuccess
+            }.map { result -> Int? in
+                let document = try! result.get() // always succeeds due to filter stage
+                return document["_id"]?.toInt()
+            }
+            expect(Array(filteredMapped)).to(equal([1, 2, 3]))
+        }
+    }
+
+    func testCursorTerminatesOnError() throws {
+        try self.withTestNamespace { client, _, coll in
+            guard try client.supportsFailCommand() else {
+                printSkipMessage(testName: self.name, reason: "failCommand not supported")
+                return
+            }
+
+            try coll.insertOne([:])
+            try coll.insertOne([:])
+
+            let cursor = try coll.find([:], options: FindOptions(batchSize: 1))
+
+            let fp = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 10)
+            try fp.enable()
+            defer { fp.disable() }
+
+            var count = 0
+            for result in cursor {
+                expect(count).to(beLessThan(2))
+                if count >= 2 {
+                    break
+                }
+                // getmore should return error
+                if count == 1 {
+                    expect(try result.get()).to(throwError())
+                    if result.isSuccess { break }
+                }
+                count += 1
+            }
+        }
+    }
+
+    func testCursorClosedError() throws {
+        try self.withTestNamespace { _, _, coll in
+            let cursor = try coll.find([:], options: FindOptions(batchSize: 1))
+
+            for _ in cursor {}
+            expect(try cursor.next()?.get()).to(throwError(errorType: MongoError.LogicError.self))
+        }
+    }
+}
+
+/// These are in their own test class to make it easier to skip running them against serverless, which does not support
+/// capped collections. (CLOUDP-106443)
+final class TailableCursorTests: MongoSwiftTestCase {
     func testTailableCursor() throws {
         let collOptions = CreateCollectionOptions(capped: true, max: 3, size: 1000)
         try self.withTestNamespace(collectionOptions: collOptions) { _, _, coll in
@@ -113,43 +220,6 @@ final class MongoCursorTests: MongoSwiftTestCase {
         }
     }
 
-    func testNext() throws {
-        try self.withTestNamespace { _, _, coll in
-            // query empty collection
-            var cursor = try coll.find()
-            expect(cursor.next()).to(beNil())
-
-            // insert a doc so something matches initial query
-            try coll.insertOne(doc1)
-            cursor = try coll.find()
-
-            // next() returns a Result<Document, Error>?
-            let result = cursor.next()
-            expect(result).toNot(beNil())
-            expect(try result?.get()).to(equal(doc1))
-
-            expect(cursor.next()).to(beNil())
-            expect(cursor.isAlive()).to(beFalse())
-
-            expect(try cursor.next()?.get()).to(throwError(errorType: MongoError.LogicError.self))
-        }
-    }
-
-    func testKill() throws {
-        try self.withTestNamespace { _, _, coll in
-            _ = try coll.insertMany([[:], [:], [:]])
-            let cursor = try coll.find()
-            expect(cursor.isAlive()).to(beTrue())
-
-            expect(cursor.next()).toNot(beNil())
-            expect(cursor.isAlive()).to(beTrue())
-
-            cursor.kill()
-            expect(cursor.isAlive()).to(beFalse())
-            expect(try cursor.next()?.get()).to(throwError(errorType: MongoError.LogicError.self))
-        }
-    }
-
     func testKillTailable() throws {
         let options = CreateCollectionOptions(capped: true, max: 3, size: 1000)
         try self.withTestNamespace(ns: self.getNamespace(suffix: "tail"), collectionOptions: options) { _, _, coll in
@@ -188,30 +258,7 @@ final class MongoCursorTests: MongoSwiftTestCase {
         }
     }
 
-    func testLazySequence() throws {
-        // Verify that the sequence behavior of normal cursors is as expected.
-        try self.withTestNamespace { _, _, coll in
-            try coll.insertMany([["_id": 1], ["_id": 2], ["_id": 3]])
-
-            var cursor = try coll.find()
-            expect(Array(cursor).count).to(equal(3))
-            expect(cursor.isAlive()).to(beFalse())
-
-            cursor = try coll.find()
-            let mapped = Array(cursor.map { _ in 1 })
-            expect(mapped).to(equal([1, 1, 1]))
-            expect(cursor.isAlive()).to(beFalse())
-
-            cursor = try coll.find()
-            let filteredMapped = cursor.filter {
-                $0.isSuccess
-            }.map { result -> Int? in
-                let document = try! result.get() // always succeeds due to filter stage
-                return document["_id"]?.toInt()
-            }
-            expect(Array(filteredMapped)).to(equal([1, 2, 3]))
-        }
-
+    func testLazySequenceTailableCursor() throws {
         // Verify that map/filter are lazy by using a tailable cursor.
         let options = CreateCollectionOptions(capped: true, max: 3, size: 10000)
         try self.withTestNamespace(collectionOptions: options) { _, _, coll in
@@ -237,47 +284,6 @@ final class MongoCursorTests: MongoSwiftTestCase {
             expect(cursor.isAlive()).to(beTrue())
             cursor.kill()
             expect(cursor.isAlive()).to(beFalse())
-        }
-    }
-
-    func testCursorTerminatesOnError() throws {
-        try self.withTestNamespace { client, _, coll in
-            guard try client.supportsFailCommand() else {
-                printSkipMessage(testName: self.name, reason: "failCommand not supported")
-                return
-            }
-
-            try coll.insertOne([:])
-            try coll.insertOne([:])
-
-            let cursor = try coll.find([:], options: FindOptions(batchSize: 1))
-
-            let fp = FailPoint.failCommand(failCommands: ["getMore"], mode: .times(1), errorCode: 10)
-            try fp.enable()
-            defer { fp.disable() }
-
-            var count = 0
-            for result in cursor {
-                expect(count).to(beLessThan(2))
-                if count >= 2 {
-                    break
-                }
-                // getmore should return error
-                if count == 1 {
-                    expect(try result.get()).to(throwError())
-                    if result.isSuccess { break }
-                }
-                count += 1
-            }
-        }
-    }
-
-    func testCursorClosedError() throws {
-        try self.withTestNamespace { _, _, coll in
-            let cursor = try coll.find([:], options: FindOptions(batchSize: 1))
-
-            for _ in cursor {}
-            expect(try cursor.next()?.get()).to(throwError(errorType: MongoError.LogicError.self))
         }
     }
 }
