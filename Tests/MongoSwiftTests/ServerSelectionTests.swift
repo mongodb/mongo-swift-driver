@@ -160,7 +160,9 @@ final class ServerSelectionTests: MongoSwiftTestCase {
         }
     }
 
-    func testSelectionWithinLatencyWindow() throws {
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+    @available(macOS 10.15.0, *)
+    func testSelectionWithinLatencyWindow() async throws {
         let tests = try retrieveSpecTestFiles(
             specName: "server-selection",
             subdirectory: "in_window",
@@ -168,7 +170,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
         )
         for (filename, test) in tests {
             print("Running test from \(filename)...")
-            try self.withTestClient { client in
+            try await self.withTestClient { client in
                 var selectedServerCounts: [ServerAddress: Int] = [:]
                 let readPreference = ReadPreference.nearest
                 for _ in 1...test.iterations {
@@ -177,7 +179,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
                     let servers = test.mockedTopologyState.reduce(into: [ServerAddress: Server]()) {
                         $0[$1.address] = Server(address: $1.address, operationCount: $1.operationCount)
                     }
-                    let selectedServer = try client.selectServer(
+                    let selectedServer = try await client.selectServer(
                         readPreference: readPreference,
                         topology: test.topologyDescription,
                         servers: servers
@@ -209,6 +211,7 @@ final class ServerSelectionTests: MongoSwiftTestCase {
             }
         }
     }
+#endif
 
     func testReadPreferenceValidation() throws {
         var readPreference = ReadPreference.primary
