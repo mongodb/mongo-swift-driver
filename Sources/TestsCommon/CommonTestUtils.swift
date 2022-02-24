@@ -188,7 +188,6 @@ public enum TestTopologyConfiguration: String, Decodable {
             helloReply["isreplicaset"] != true
         {
             self = .single
-            // TODO: SWIFT-1319: eventually, we should be able to just check for serviceId here.
         } else if MongoSwiftTestCase.topologyType == .loadBalanced {
             self = .loadBalanced
         } else if helloReply["msg"] == "isdbgrid" {
@@ -712,13 +711,6 @@ extension InsertManyResult {
     }
 }
 
-// TODO: SWIFT-1319 Remove this method and usages of it.
-/// Sets the libmongoc global variable indicating whether to include mock serviceIds in hello responses to the
-/// provided value. This is necessary for load balancer testing until SERVER-58500 is complete.
-public func setMockServiceId(to value: Bool) {
-    mongoc_global_mock_service_id = value
-}
-
 /// Resolves programmatically provided client options with those specified via environment variables.
 public func resolveClientOptions(_ options: MongoClientOptions? = nil) -> MongoClientOptions {
     var opts = options ?? MongoClientOptions()
@@ -749,11 +741,6 @@ public func resolveClientOptions(_ options: MongoClientOptions? = nil) -> MongoC
     // serverless tests are required to use compression.
     if MongoSwiftTestCase.serverless {
         opts.compressors = [.zlib]
-    }
-
-    // TODO: SWIFT-1319 Remove this.
-    if MongoSwiftTestCase.topologyType == .loadBalanced {
-        setMockServiceId(to: true)
     }
 
     return opts
