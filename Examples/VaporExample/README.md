@@ -8,7 +8,7 @@ This application is intended to demonstrate best practices for integrating the d
 
 The application contains both a REST API as well as a minimal frontend built with Vapor's templating language [Leaf](https://github.com/vapor/leaf).
 
-This application requires Swift 5.5+ and MongoDB 3.6+. It will run on Linux as well as macOS 12+.
+This application requires Swift 5.5.2+ and MongoDB 3.6+. It will run on Linux as well as macOS 12+.
 
 If you are looking for an example application that uses older Swift versions prior to the introduction of structured concurrency, please refer to a previous version of this application and README [here](https://github.com/mongodb/mongo-swift-driver/tree/5d9fad121d7cb3ded61087de300ff007766ccd55/Examples/VaporExample).
 
