@@ -1,0 +1,1 @@
+mongosh $MONGODB_URI --eval "db.getSiblingDB('home').kittens.insertMany([{name:\"Roscoe\",color:\"orange\", favoriteFood: \"salmon\", lastUpdateTime: new Date()},{name:\"Chester\",color:\"tan\", favoriteFood: \"turkey\", lastUpdateTime: new Date()}]);"

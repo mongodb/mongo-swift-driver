@@ -5,10 +5,10 @@ disabled_rules:
   - todo
   - type_body_length
   - type_name
-  - inclusive_language # disabled until we complete work for the "remove offensive terminology" project.
   - cyclomatic_complexity
   - opening_brace # conflicts with SwiftFormat wrapMultilineStatementBraces
   - nesting
+  - multiple_closures_with_trailing_closure
 
 opt_in_rules:
   - array_init
@@ -51,6 +51,7 @@ excluded:
   - docs
   - Examples/*/build
   - Examples/*/.build
+  - Examples/*/*/.build
   - Sources/libbson
   - Sources/libmongoc
   - Package.swift

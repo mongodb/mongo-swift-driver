@@ -1,0 +1,418 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8B20583227BEFFDF00A9E2A1 /* KittensApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B20583127BEFFDF00A9E2A1 /* KittensApp.swift */; };
+		8B20583427BEFFDF00A9E2A1 /* KittenList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B20583327BEFFDF00A9E2A1 /* KittenList.swift */; };
+		8B20586227BF025100A9E2A1 /* KittenListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B20586127BF025100A9E2A1 /* KittenListViewModel.swift */; };
+		8B20586927BF104000A9E2A1 /* SwiftBSON in Frameworks */ = {isa = PBXBuildFile; productRef = 8B20586827BF104000A9E2A1 /* SwiftBSON */; };
+		8BC62A4727CEF38B0015343B /* Models in Frameworks */ = {isa = PBXBuildFile; productRef = 8BC62A4627CEF38B0015343B /* Models */; };
+		8BE0610A27C58DD300D5E981 /* AddKitten.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE0610927C58DD300D5E981 /* AddKitten.swift */; };
+		8BE0610C27C58E0E00D5E981 /* AddKittenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE0610B27C58E0E00D5E981 /* AddKittenViewModel.swift */; };
+		8BE0610E27C6E03D00D5E981 /* ViewUpdateDeleteKittenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE0610D27C6E03D00D5E981 /* ViewUpdateDeleteKittenViewModel.swift */; };
+		8BE0611027C6E41300D5E981 /* ViewUpdateDeleteKitten.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE0610F27C6E41300D5E981 /* ViewUpdateDeleteKitten.swift */; };
+		8BE0611227C7119200D5E981 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE0611127C7119200D5E981 /* Utilities.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		8B20582E27BEFFDF00A9E2A1 /* Kittens.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kittens.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8B20583127BEFFDF00A9E2A1 /* KittensApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KittensApp.swift; sourceTree = "<group>"; };
+		8B20583327BEFFDF00A9E2A1 /* KittenList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KittenList.swift; sourceTree = "<group>"; };
+		8B20586127BF025100A9E2A1 /* KittenListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KittenListViewModel.swift; sourceTree = "<group>"; };
+		8BE0610927C58DD300D5E981 /* AddKitten.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddKitten.swift; sourceTree = "<group>"; };
+		8BE0610B27C58E0E00D5E981 /* AddKittenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddKittenViewModel.swift; sourceTree = "<group>"; };
+		8BE0610D27C6E03D00D5E981 /* ViewUpdateDeleteKittenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewUpdateDeleteKittenViewModel.swift; sourceTree = "<group>"; };
+		8BE0610F27C6E41300D5E981 /* ViewUpdateDeleteKitten.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewUpdateDeleteKitten.swift; sourceTree = "<group>"; };
+		8BE0611127C7119200D5E981 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		8BE0611A27CEF13500D5E981 /* Models */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Models; path = ../Models; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8B20582B27BEFFDF00A9E2A1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8BC62A4727CEF38B0015343B /* Models in Frameworks */,
+				8B20586927BF104000A9E2A1 /* SwiftBSON in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8B20582527BEFFDF00A9E2A1 = {
+			isa = PBXGroup;
+			children = (
+				8BE0611927CEF13500D5E981 /* Packages */,
+				8B20583027BEFFDF00A9E2A1 /* Kittens */,
+				8B20582F27BEFFDF00A9E2A1 /* Products */,
+				8BE0611B27CEF17100D5E981 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		8B20582F27BEFFDF00A9E2A1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8B20582E27BEFFDF00A9E2A1 /* Kittens.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8B20583027BEFFDF00A9E2A1 /* Kittens */ = {
+			isa = PBXGroup;
+			children = (
+				8BE0611127C7119200D5E981 /* Utilities.swift */,
+				8B20583127BEFFDF00A9E2A1 /* KittensApp.swift */,
+				8B20585D27BEFFF700A9E2A1 /* Views */,
+				8B20585E27BF015700A9E2A1 /* ViewModels */,
+			);
+			path = Kittens;
+			sourceTree = "<group>";
+		};
+		8B20585D27BEFFF700A9E2A1 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				8BE0610927C58DD300D5E981 /* AddKitten.swift */,
+				8B20583327BEFFDF00A9E2A1 /* KittenList.swift */,
+				8BE0610F27C6E41300D5E981 /* ViewUpdateDeleteKitten.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		8B20585E27BF015700A9E2A1 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				8BE0610B27C58E0E00D5E981 /* AddKittenViewModel.swift */,
+				8B20586127BF025100A9E2A1 /* KittenListViewModel.swift */,
+				8BE0610D27C6E03D00D5E981 /* ViewUpdateDeleteKittenViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		8BE0611927CEF13500D5E981 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				8BE0611A27CEF13500D5E981 /* Models */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		8BE0611B27CEF17100D5E981 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8B20582D27BEFFDF00A9E2A1 /* Kittens */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8B20585227BEFFE100A9E2A1 /* Build configuration list for PBXNativeTarget "Kittens" */;
+			buildPhases = (
+				8B20582A27BEFFDF00A9E2A1 /* Sources */,
+				8B20582B27BEFFDF00A9E2A1 /* Frameworks */,
+				8B20582C27BEFFDF00A9E2A1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Kittens;
+			packageProductDependencies = (
+				8B20586827BF104000A9E2A1 /* SwiftBSON */,
+				8BC62A4627CEF38B0015343B /* Models */,
+			);
+			productName = Kittens;
+			productReference = 8B20582E27BEFFDF00A9E2A1 /* Kittens.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8B20582627BEFFDF00A9E2A1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1320;
+				LastUpgradeCheck = 1320;
+				TargetAttributes = {
+					8B20582D27BEFFDF00A9E2A1 = {
+						CreatedOnToolsVersion = 13.2.1;
+					};
+				};
+			};
+			buildConfigurationList = 8B20582927BEFFDF00A9E2A1 /* Build configuration list for PBXProject "Kittens" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 8B20582527BEFFDF00A9E2A1;
+			packageReferences = (
+				8B20586727BF104000A9E2A1 /* XCRemoteSwiftPackageReference "swift-bson" */,
+			);
+			productRefGroup = 8B20582F27BEFFDF00A9E2A1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8B20582D27BEFFDF00A9E2A1 /* Kittens */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8B20582C27BEFFDF00A9E2A1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8B20582A27BEFFDF00A9E2A1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8BE0611027C6E41300D5E981 /* ViewUpdateDeleteKitten.swift in Sources */,
+				8B20583427BEFFDF00A9E2A1 /* KittenList.swift in Sources */,
+				8BE0610A27C58DD300D5E981 /* AddKitten.swift in Sources */,
+				8BE0610E27C6E03D00D5E981 /* ViewUpdateDeleteKittenViewModel.swift in Sources */,
+				8BE0611227C7119200D5E981 /* Utilities.swift in Sources */,
+				8B20583227BEFFDF00A9E2A1 /* KittensApp.swift in Sources */,
+				8BE0610C27C58E0E00D5E981 /* AddKittenViewModel.swift in Sources */,
+				8B20586227BF025100A9E2A1 /* KittenListViewModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		8B20585027BEFFE100A9E2A1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		8B20585127BEFFE100A9E2A1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		8B20585327BEFFE100A9E2A1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = MongoDB.Kittens;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8B20585427BEFFE100A9E2A1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = MongoDB.Kittens;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8B20582927BEFFDF00A9E2A1 /* Build configuration list for PBXProject "Kittens" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B20585027BEFFE100A9E2A1 /* Debug */,
+				8B20585127BEFFE100A9E2A1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8B20585227BEFFE100A9E2A1 /* Build configuration list for PBXNativeTarget "Kittens" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B20585327BEFFE100A9E2A1 /* Debug */,
+				8B20585427BEFFE100A9E2A1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8B20586727BF104000A9E2A1 /* XCRemoteSwiftPackageReference "swift-bson" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mongodb/swift-bson";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8B20586827BF104000A9E2A1 /* SwiftBSON */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8B20586727BF104000A9E2A1 /* XCRemoteSwiftPackageReference "swift-bson" */;
+			productName = SwiftBSON;
+		};
+		8BC62A4627CEF38B0015343B /* Models */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Models;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 8B20582627BEFFDF00A9E2A1 /* Project object */;
+}
