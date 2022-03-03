@@ -12,8 +12,10 @@ For more details on each component, please review the corresponding README files
 
 ### 1. (Linux only) Install required system library dependencies
 If you are on Linux and attempting to run the backend server, you will need to install some system libraries which are dependencies of the MongoDB C driver (libmongoc), which the Swift driver depends on a vendored copy of. To install these, please follow the instructions [here](http://mongoc.org/libmongoc/current/installing.html#prerequisites-for-libmongoc) from libmongoc's documentation.
+
 ### 2. Start a MongoDB instance for the application to connect to. You can either do this using MongoDB Atlas (recommended) or locally.
 a. *MongoDB Atlas*: Follow the steps in the tutorial [here](https://docs.atlas.mongodb.com/getting-started/), using the MongoDB shell (`mongosh`) as your connection method in parts 5 and 6.
+
 b. *Locally*: Install and run MongoDB by following the instructions [here](https://docs.mongodb.com/manual/administration/install-community/).
 
 ### 3. Load sample data into MongoDB.
