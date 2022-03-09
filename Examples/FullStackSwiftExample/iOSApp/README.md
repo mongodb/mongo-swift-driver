@@ -11,9 +11,7 @@ The application has three SwiftUI `View`s, each defined in a file in the [Kitten
 * `AddKitten` supports adding a new kitten
 * `UpdateDeleteKitten` displays information about a kitten and supports updating and deleting a kitten
 
-<img src="../screenshots/list_view.png" width="300">
-<img src="../screenshots/add_view.png" width="300">
-<img src="../screenshots/view_update_delete_view.png" width="300">
+<img src="../screenshots/list_view.png" width="300">  <img src="../screenshots/add_view.png" width="300">  <img src="../screenshots/view_update_delete_view.png" width="300">
 
 _From left to right, the `KittenList` view, `AddKitten` view, and `UpdateDeleteKitten` view._
 
