@@ -3,7 +3,7 @@ import SwiftBSON
 
 /**
  * Represents a kitten.
- * This type conforms to `Codable` to allow us to serialize it to and deserialize it from extended JSON.
+ * This type conforms to `Codable` to allow us to serialize it to and deserialize it from extended JSON and BSON.
  * This type conforms to `Identifiable` so that SwiftUI is able to uniquely identify instances of this type when they
  * are used in the iOS interface.
  */
@@ -50,7 +50,7 @@ public struct Kitten: Identifiable, Codable {
 
 /**
  * Cat food choices.
- * This type conforms to `Codable` to allow us to serialize it to and deserialize it from extended JSON.
+ * This type conforms to `Codable` to allow us to serialize it to and deserialize it from extended JSON and BSON.
  * This type conforms to `Identifiable` so that SwiftUI is able to uniquely identify instances of this type when they
  * are used in the iOS interface.
  * This type conforms to `CaseIterable` so that we can list of the possible values in a SwiftUI picker.
@@ -66,11 +66,9 @@ public enum CatFood: String, Codable, CaseIterable, Identifiable {
 }
 
 /**
- * Cat food choices.
- * This type conforms to `Codable` to allow us to serialize it to and deserialize it from extended JSON.
- * This type conforms to `Identifiable` so that SwiftUI is able to uniquely identify instances of this type when they
- * are used in the iOS interface.
- * This type conforms to `CaseIterable` so that we can list of the possible values in a SwiftUI picker.
+ * Models the information set in a PATCH request by the frontend and an `updateOne` query by the backend to update a
+ * kitten's favorite food choice.
+ * This type conforms to `Codable` to allow us to serialize it to and deserialize it from extended JSON and BSON.
  */
 public struct KittenUpdate: Codable {
     /// The new favorite food.
