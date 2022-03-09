@@ -334,7 +334,7 @@ public final class ClientSession {
     /// Cleans up internal state.
     deinit {
 #if compiler(>=5.5.2) && canImport(_Concurrency)
-        if #available(macOS 12, *) {
+        if #available(macOS 10.15, *) {
             // Pull out all necessary values into new references to avoid referencing `self` within the `Task`, since
             // the `Task` is going to outlive `self`.
             switch self.state {

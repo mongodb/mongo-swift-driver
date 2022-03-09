@@ -1,0 +1,36 @@
+name: Test concurrency APIs on macOS
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  
+env:
+  MONGODB_VERSION: 5.0.6
+
+jobs:
+  test-concurrency:
+    runs-on: macos-latest
+
+    steps:
+    - name: Check out
+      uses: actions/checkout@v2
+    - name: Download MongoDB
+      run: |
+        curl https://fastdl.mongodb.org/osx/mongodb-macos-x86_64-${MONGODB_VERSION}.tgz --output mongodb.tgz
+        tar -xzf mongodb.tgz
+    - name: Start mongod
+      run: |
+        mkdir dbpath
+        ./mongodb-macos-x86_64-${MONGODB_VERSION}/bin/mongod --dbpath dbpath --replSet repl0 &
+    - name: Initiate replica set
+      run: |
+        ./mongodb-macos-x86_64-${MONGODB_VERSION}/bin/mongo --eval "rs.initiate()"
+    - name: Build
+      run: swift build
+    - name: Run tests
+      run: swift test --filter AsyncAwait
+      env:
+        MONGODB_TOPOLOGY: replica_set
+        MONGODB_URI: mongodb://localhost:27017/?replicaSet=repl0

@@ -146,7 +146,7 @@ extension MongoClient {
     }
 }
 
-@available(macOS 12, *)
+@available(macOS 10.15, *)
 extension TestCommandMonitor {
     /// Capture events that occur while the the provided closure executes.
     public func captureEvents<T>(_ f: () async throws -> T) async rethrows -> T {

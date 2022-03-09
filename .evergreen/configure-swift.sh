@@ -28,6 +28,8 @@ if [ "$OS" == "darwin" ]; then
     else
         sudo xcode-select -s /Applications/Xcode12.app
     fi
+
+    export DYLD_LIBRARY_PATH=${SWIFTENV_ROOT}/versions/${SWIFT_VERSION}/usr/lib/swift/macosx/
 fi
 
 # switch to current Swift version
