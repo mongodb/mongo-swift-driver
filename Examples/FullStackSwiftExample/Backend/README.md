@@ -13,7 +13,7 @@ The backend server supports the following API requests:
 1. A DELETE request at the URL `/{ID}` deletes the kitten with the specified ID.
 
 ### MongoDB Usage
-This application connects to the MongoDB server with connection string specified by the environment variable `MONGODB_URI`, or if unspecified, attempts to connect to a MongoDB server running on the default host/port with connection string `mongodb://localhost:27017`.
+This application connects to the MongoDB server with the connection string specified by the environment variable `MONGODB_URI`, or if unspecified, attempts to connect to a MongoDB server running on the default host/port with connection string `mongodb://localhost:27017`.
 
 The application uses the collection "kittens" in the database "home". This collection has a [unique index](https://docs.mongodb.com/manual/core/index-unique/) on the `_id` field, as is the default for MongoDB (more on that [here](https://docs.mongodb.com/manual/core/document/#the-_id-field)).
 
