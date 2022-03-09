@@ -46,12 +46,9 @@ You should see JSON output in response that looks something like:
 3. In the top bar on Xcode, click the triangle "play" button to build the application and launch the simulator.
 4. You should then be able to see the sample data we loaded above and create/update/delete kittens from the simulator UI.
 
-<img src="screenshots/list_view.png" width="300"><img src="screenshots/add_view.png" width="300"><img src="screenshots/view_update_delete_view.png" width="300">
+<img src="screenshots/list_view.png" width="300">  <img src="screenshots/add_view.png" width="300">  <img src="screenshots/view_update_delete_view.png" width="300">
 
 _Screenshots of the views you should see in the iOS simulator._
-
-<!-- ![add view](screenshots/add_view.png)
-![view/update/delete view](screenshots/view_update_delete_view.png) -->
 
 ## Acknowledgements
 The design and implementation of the iOS portion of this application were heavily influenced by this [YouTube series](https://www.youtube.com/playlist?list=PLMRqhzcHGw1Z7xNnqS_yUNm1k9dvq-HbM) by [Mikaela Caron](https://github.com/mikaelacaron).
