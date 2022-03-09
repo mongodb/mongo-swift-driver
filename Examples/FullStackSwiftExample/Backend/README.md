@@ -17,7 +17,7 @@ This application connects to the MongoDB server with the connection string speci
 
 The application uses the collection "kittens" in the database "home". This collection has a [unique index](https://docs.mongodb.com/manual/core/index-unique/) on the `_id` field, as is the default for MongoDB (more on that [here](https://docs.mongodb.com/manual/core/document/#the-_id-field)).
 
-The call to `app.mongoDB.configure()` in `Sources/App/configure.swift` initializes a global `MongoClient` to back your application. `MongoClient` is implemented with that approach in mind: it is safe to use across threads, and is backed by a [connection pool](https://en.wikipedia.org/wiki/Connection_pool) which enables sharing resources throughout the application.
+The call to `app.mongoDB.configure()` in `Sources/App/configure.swift` initializes a global `MongoClient` to back your application. `MongoClient` is implemented with that approach in mind: it is safe to use across threads, and is backed by a [connection pool](https://en.wikipedia.org/wiki/Connection_pool) which enables sharing resources throughout the application. You can find the API documentation for `MongoClient` [here](https://mongodb.github.io/mongodb-vapor/current/Classes/MongoClient.html).
 
 Throughout the application, the global client is accessible via `app.mongoDB.client`.
 ### Data Models
@@ -32,7 +32,7 @@ extension Request {
 }
 ```
 
-This will instantiate a `MongoCollection<Kitten>`. We can then use `Kitten` directly with many API methods -- for example, `insertOne` will directly accept a `Kitten` instance, and `findOne` will return a `Kitten?`. Since `Kitten` is  
+This will instantiate a `MongoCollection<Kitten>`. We can then use `Kitten` directly with many API methods -- for example, `insertOne` will directly accept a `Kitten` instance, and `findOne` will return a `Kitten?`. You can find the API documentation for `MongoCollection` [here](https://mongodb.github.io/mongodb-vapor/current/Structs/MongoCollection.html).
 
 In `Sources/Run/main.swift`, we globally configure Vapor to use `swift-bson`'s `ExtendedJSONEncoder` and `ExtendedJSONDecoder` for encoding/decoding JSON data, rather than the default `JSONEncoder` and `JSONDecoder`:
 ```swift
