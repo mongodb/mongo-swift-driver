@@ -103,12 +103,17 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
             let topologyWatcher = TopologyDescriptionWatcher()
 
+            let opts: MongoClientOptions?
+            if requiresTLS {
+                opts = MongoClientOptions(tlsAllowInvalidCertificates: true)
+            } else {
+                opts = nil
+            }
             do {
-                try self.withTestClient(testCase.uri) { client in
+                try self.withTestClient(testCase.uri, options: opts) { client in
                     client.addSDAMEventHandler(topologyWatcher)
 
-                    // try selecting a server to trigger SDAM
-                    _ = try client.connectionPool.selectServer(forWrites: false)
+                    _ = try client.db("admin").runCommand(["ping": 1]).wait()
 
                     guard testCase.error != true else {
                         XCTFail("Expected error for test case \(testCase.comment ?? ""), got none")
