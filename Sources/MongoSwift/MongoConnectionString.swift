@@ -604,6 +604,12 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         if let serverSelectionTimeoutMS = options.serverSelectionTimeoutMS {
             self.serverSelectionTimeoutMS = serverSelectionTimeoutMS
         }
+        if let srvMaxHosts = options.srvMaxHosts {
+            self.srvMaxHosts = srvMaxHosts
+        }
+        if let srvServiceName = options.srvServiceName {
+            self.srvServiceName = srvServiceName
+        }
         if let tls = options.tls {
             self.tls = tls
         }

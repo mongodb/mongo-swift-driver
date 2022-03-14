@@ -77,6 +77,14 @@ public struct MongoClientOptions: CodingStrategyProvider {
     /// seconds (30000 ms).
     public var serverSelectionTimeoutMS: Int?
 
+    /// The maximum number of SRV results to randomly select when initially populating the seedlist or, during SRV
+    /// polling, adding new hosts to the topology.
+    public var srvMaxHosts: Int?
+
+    /// The service name to use for SRV lookup. Must be a valid SRV service name according to RFC 6335.
+    /// -SeeAlso: https://datatracker.ietf.org/doc/html/rfc6335#section-5.1
+    public var srvServiceName: String?
+
     /**
      * `MongoSwift.MongoClient` provides an asynchronous API by running all blocking operations off of their
      * originating threads in a thread pool. `MongoSwiftSync.MongoClient` is implemented as a wrapper of the async
@@ -158,6 +166,8 @@ public struct MongoClientOptions: CodingStrategyProvider {
         retryWrites: Bool? = nil,
         serverAPI: MongoServerAPI? = nil,
         serverSelectionTimeoutMS: Int? = nil,
+        srvMaxHosts: Int? = nil,
+        srvServiceName: String? = nil,
         threadPoolSize: Int? = nil,
         tls: Bool? = nil,
         tlsAllowInvalidCertificates: Bool? = nil,
@@ -187,6 +197,8 @@ public struct MongoClientOptions: CodingStrategyProvider {
         self.retryWrites = retryWrites
         self.retryReads = retryReads
         self.serverAPI = serverAPI
+        self.srvMaxHosts = srvMaxHosts
+        self.srvServiceName = srvServiceName
         self.serverSelectionTimeoutMS = serverSelectionTimeoutMS
         self.threadPoolSize = threadPoolSize
         self.tls = tls
