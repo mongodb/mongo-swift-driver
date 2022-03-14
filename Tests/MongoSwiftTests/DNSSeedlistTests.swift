@@ -10,9 +10,9 @@ struct DNSSeedlistTestCase: Decodable {
     /// A mongodb+srv connection string.
     let uri: String
     /// The expected set of initial seeds discovered from the SRV record.
-    let seeds: [String]
+    let seeds: [String]?
     /// The discovered topology's list of hosts once SDAM completes a scan.
-    let hosts: [ServerAddress]
+    let hosts: [ServerAddress]?
     /// The parsed connection string options as discovered from URI and TXT records.
     let options: BSONDocument?
     /// Additional options present in the connection string URI such as Userinfo (as user and password), and Auth
@@ -22,9 +22,13 @@ struct DNSSeedlistTestCase: Decodable {
     let error: Bool?
     /// A comment to indicate why a test would fail.
     let comment: String?
+    /// The expected number of initial seeds discovered from the SRV record.
+    let numSeeds: Int?
+    /// The expected number of hosts discovered once SDAM completes a scan.
+    let numHosts: Int?
 
     private enum CodingKeys: String, CodingKey {
-        case uri, seeds, hosts, options, parsedOptions = "parsed_options", error, comment
+        case uri, seeds, hosts, options, parsedOptions = "parsed_options", error, comment, numSeeds, numHosts
     }
 }
 
@@ -88,6 +92,21 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
         try runDNSSeedlistTests(tests)
     }
 
+    func testInitialDNSSeedlistDiscoverySharded() throws {
+        guard MongoSwiftTestCase.topologyType == .sharded else {
+            print("Skipping test because of unsupported topology type \(MongoSwiftTestCase.topologyType)")
+            return
+        }
+
+        let tests = try retrieveSpecTestFiles(
+            specName: "initial-dns-seedlist-discovery",
+            subdirectory: "sharded",
+            asType: DNSSeedlistTestCase.self
+        )
+
+        try runDNSSeedlistTests(tests)
+    }
+
     func runDNSSeedlistTests(_ tests: [(String, DNSSeedlistTestCase)]) throws {
         for (fileName, testCase) in tests {
             // this particular test case requires SSL is disabled. see DRIVERS-1324.
@@ -124,8 +143,13 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                     // eventually matches the list of hosts."
                     // This needs to be done before the client leaves scope to ensure the SDAM machinery
                     // keeps running.
-                    expect(topologyWatcher.getLastDescription()?.servers.map { $0.address })
-                        .toEventually(equal(testCase.hosts), timeout: 5)
+                    if let expectedHosts = testCase.hosts {
+                        expect(topologyWatcher.getLastDescription()?.servers.map { $0.address })
+                            .toEventually(equal(expectedHosts), timeout: 5)
+                    } else if let expectedNumHosts = testCase.numHosts {
+                        expect(topologyWatcher.getLastDescription()?.servers)
+                            .toEventually(haveCount(expectedNumHosts), timeout: 5)
+                    }
 
                     // "You MUST verify that each of the values of the Connection String Options under options match the
                     // Client's parsed value for that option."
