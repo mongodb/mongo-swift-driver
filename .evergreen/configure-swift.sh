@@ -28,6 +28,9 @@ if [ "$OS" == "darwin" ]; then
     else
         sudo xcode-select -s /Applications/Xcode12.app
     fi
+
+    # TODO SWIFT-1421: remove this once we have new Xcode on Evergreen to test with
+    export DYLD_LIBRARY_PATH=${SWIFTENV_ROOT}/versions/${SWIFT_VERSION}/usr/lib/swift/macosx/
 fi
 
 # switch to current Swift version

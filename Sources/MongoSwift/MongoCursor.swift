@@ -272,7 +272,7 @@ public class MongoCursor<T: Codable>: CursorProtocol {
     /// When concurrency is available, we can ensure cursors are always cleaned up properly.
     deinit {
         // We can't do this with an @available check on the method; see https://bugs.swift.org/browse/SR-15537.
-        guard #available(macOS 12, *) else {
+        guard #available(macOS 10.15, *) else {
             return
         }
         let client = self.client
