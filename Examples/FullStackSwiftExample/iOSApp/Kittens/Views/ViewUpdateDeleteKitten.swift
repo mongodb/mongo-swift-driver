@@ -1,31 +1,31 @@
 import Models
 import SwiftUI
+import SwiftBSON
 
 /// View to support viewing information about and updating or deleting a kitten.
 struct ViewUpdateDeleteKitten: View {
     /// Model for the data in this view.
-    @ObservedObject private var viewModel: ViewUpdateDeleteKittenViewModel
+    @ObservedObject var viewModel: ViewUpdateDeleteKittenViewModel
     /// Presentation mode environment key. This is used to enable the view to dismiss itself on button presses.
     @Environment(\.presentationMode) private var presentationMode
-
-    init(viewModel: ViewUpdateDeleteKittenViewModel) {
-        self.viewModel = viewModel
-    }
+    
+    @State private var busy = false
+    @State private var errorMessage: String?
 
     var body: some View {
-        VStack {
-            NavigationView {
+        ZStack {
+            VStack {
                 Form {
                     Section {
                         HStack {
                             Text("Last Updated").frame(alignment: .leading)
                             Spacer()
-                            Text(viewModel.kitten.lastUpdateTime, style: .relative).frame(alignment: .trailing)
+                            Text(viewModel.kitten.lastUpdateTime, style: .relative)
                         }
                         HStack {
                             Text("Color").frame(alignment: .leading)
                             Spacer()
-                            Text(viewModel.kitten.color.capitalized).frame(alignment: .trailing)
+                            Text(viewModel.kitten.color.capitalized)
                         }
                         Picker("Favorite Food", selection: $viewModel.favoriteFood) {
                             ForEach(CatFood.allCases) { food in
@@ -33,23 +33,66 @@ struct ViewUpdateDeleteKitten: View {
                             }
                         }
                     }
-                }.navigationTitle(Text(viewModel.kitten.name))
+                }
+                if let errorMessage = errorMessage {
+                     Text(errorMessage)
+                        .foregroundColor(.red)
+                }
+                HStack {
+                    Button("Save Changes") {
+                        saveChanges()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Button("Delete Kitten", role: .destructive) {
+                        deleteKitten()
+                    }
+                    .buttonStyle(.bordered)
+                    Button("Close", role: .cancel) {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                    .buttonStyle(.bordered)
+                }
             }
-            HStack {
-                Button("Save Changes") {
-                    viewModel.updateAction {
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                }
-                Button("Delete Kitten", role: .destructive) {
-                    viewModel.deleteAction {
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                }
-                Button("Close", role: .cancel) {
-                    presentationMode.wrappedValue.dismiss()
-                }
-            }.buttonStyle(.bordered)
+            if busy {
+                ProgressView()
+            }
+        }
+        .navigationBarTitle(viewModel.kitten.name, displayMode: .inline)
+    }
+    
+    private func deleteKitten() {
+        busy = true
+        errorMessage = nil
+        Task {
+            do {
+                try await viewModel.deleteKitten()
+                presentationMode.wrappedValue.dismiss()
+            } catch {
+                errorMessage = "Failed to delete kitten: \(error.localizedDescription)"
+                busy = false
+            }
+        }
+    }
+    
+    private func saveChanges() {
+        busy = true
+        errorMessage = nil
+        Task {
+            do {
+                try await viewModel.updateKitten()
+                presentationMode.wrappedValue.dismiss()
+            } catch {
+                errorMessage = "Failed to save changes: \(error.localizedDescription)"
+                busy = false
+            }
+        }
+    }
+}
+
+struct ViewUpdateDeleteKitten_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            ViewUpdateDeleteKitten(viewModel: ViewUpdateDeleteKittenViewModel(currentKitten: Kitten(id: BSONObjectID(), name: "Tom", color: "Grey and white", favoriteFood: .turkey, lastUpdateTime: Date())))
         }
     }
 }

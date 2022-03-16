@@ -101,14 +101,3 @@ enum HTTP {
     }
 }
 
-/// Runs the provided body in a new `Task` and then calls the provided completion handler.
-func runInTask(completion: @escaping () -> Void = {}, body: @escaping () async throws -> Void) {
-    Task {
-        do {
-            try await body()
-        } catch {
-            print("Unexpected error: \(error)")
-        }
-        completion()
-    }
-}
