@@ -27,6 +27,7 @@ bson_version="$(python3 etc/get_bson_version.py)"
 git clone --depth 1 --branch "v${bson_version}" https://github.com/mongodb/swift-bson
 working_dir=${PWD}
 cd swift-bson
+swift package update
 sourcekitten doc --spm --module-name SwiftBSON > ${working_dir}/bson-docs.json
 cd $working_dir
 
