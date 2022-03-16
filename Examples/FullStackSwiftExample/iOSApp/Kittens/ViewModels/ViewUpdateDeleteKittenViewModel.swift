@@ -34,11 +34,4 @@ class ViewUpdateDeleteKittenViewModel: ObservableObject {
     private func deleteKitten() async throws {
         try await HTTP.delete(url: self.kitten.resourceURL)
     }
-
-    /// Deletes the kitten and then runs the provided completion handler.
-    func deleteAction(completion: @escaping () -> Void) {
-        runInTask(completion: completion) {
-            try await self.deleteKitten()
-        }
-    }
 }
