@@ -11,7 +11,7 @@ class AddKittenViewModel: ObservableObject {
     @Published var favoriteFood: CatFood = .chicken
 
     /// Sends a request to add a new kitten to the backend.
-   func addKitten() async throws {
+    func addKitten() async throws {
         let kitten = Kitten(name: name, color: color, favoriteFood: favoriteFood)
         try await HTTP.post(url: HTTP.baseURL, body: kitten)
     }

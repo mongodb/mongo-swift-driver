@@ -7,7 +7,7 @@ struct AddKitten: View {
     @ObservedObject var viewModel: AddKittenViewModel
     /// Presentation mode environment key. This is used to enable the view to dismiss itself on button presses.
     @Environment(\.presentationMode) private var presentationMode
-    
+
     @State private var errorMessage: String?
     @State private var busy = false
 
@@ -32,7 +32,7 @@ struct AddKitten: View {
                         Button("Add Kitten") {
                             addKitten()
                         }
-                        .disabled(viewModel.name == "")
+                        .disabled(viewModel.name.isEmpty)
                         .buttonStyle(.borderedProminent)
                         Button("Cancel", role: .cancel) {
                             presentationMode.wrappedValue.dismiss()
@@ -46,10 +46,10 @@ struct AddKitten: View {
             }
         }
     }
-    
+
     private func addKitten() {
-        errorMessage = nil
-        busy = true
+        self.errorMessage = nil
+        self.busy = true
         Task {
             do {
                 try await viewModel.addKitten()

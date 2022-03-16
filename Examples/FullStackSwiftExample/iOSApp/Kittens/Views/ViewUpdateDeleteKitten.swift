@@ -1,6 +1,6 @@
 import Models
-import SwiftUI
 import SwiftBSON
+import SwiftUI
 
 /// View to support viewing information about and updating or deleting a kitten.
 struct ViewUpdateDeleteKitten: View {
@@ -8,7 +8,7 @@ struct ViewUpdateDeleteKitten: View {
     @ObservedObject var viewModel: ViewUpdateDeleteKittenViewModel
     /// Presentation mode environment key. This is used to enable the view to dismiss itself on button presses.
     @Environment(\.presentationMode) private var presentationMode
-    
+
     @State private var busy = false
     @State private var errorMessage: String?
 
@@ -35,7 +35,7 @@ struct ViewUpdateDeleteKitten: View {
                     }
                 }
                 if let errorMessage = errorMessage {
-                     Text(errorMessage)
+                    Text(errorMessage)
                         .foregroundColor(.red)
                 }
                 HStack {
@@ -59,10 +59,10 @@ struct ViewUpdateDeleteKitten: View {
         }
         .navigationBarTitle(viewModel.kitten.name, displayMode: .inline)
     }
-    
+
     private func deleteKitten() {
-        busy = true
-        errorMessage = nil
+        self.busy = true
+        self.errorMessage = nil
         Task {
             do {
                 try await viewModel.deleteKitten()
@@ -73,10 +73,10 @@ struct ViewUpdateDeleteKitten: View {
             }
         }
     }
-    
+
     private func saveChanges() {
-        busy = true
-        errorMessage = nil
+        self.busy = true
+        self.errorMessage = nil
         Task {
             do {
                 try await viewModel.updateKitten()
@@ -92,7 +92,11 @@ struct ViewUpdateDeleteKitten: View {
 struct ViewUpdateDeleteKitten_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            ViewUpdateDeleteKitten(viewModel: ViewUpdateDeleteKittenViewModel(currentKitten: Kitten(id: BSONObjectID(), name: "Tom", color: "Grey and white", favoriteFood: .turkey, lastUpdateTime: Date())))
+            ViewUpdateDeleteKitten(
+                viewModel: ViewUpdateDeleteKittenViewModel(
+                    currentKitten: Kitten(name: "Roscoe", color: "orange", favoriteFood: .salmon)
+                )
+            )
         }
     }
 }

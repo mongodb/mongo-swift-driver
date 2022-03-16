@@ -100,4 +100,3 @@ enum HTTP {
         return data
     }
 }
-

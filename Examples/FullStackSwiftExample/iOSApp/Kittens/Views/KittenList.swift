@@ -5,11 +5,11 @@ import SwiftUI
 struct KittenList: View {
     /// Model for the data in this view.
     @StateObject private var viewModel = KittenListViewModel()
-    
+
     @State private var showingAddModal = false
     @State private var busy = false
     @State private var errorMessage: String?
-    
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -20,16 +20,20 @@ struct KittenList: View {
                     }
                     List {
                         ForEach(viewModel.kittens) { kitten in
-                            // Each element in the list is a button that, if clicked, will open the view/update/delete view for
-                            // the corresponding kitten.
-                            NavigationLink(destination: ViewUpdateDeleteKitten(viewModel: ViewUpdateDeleteKittenViewModel(currentKitten: kitten))) {
+                            // Each element in the list is a link that, if clicked, will open the view/update/delete
+                            // view for the corresponding kitten.
+                            NavigationLink(
+                                destination: ViewUpdateDeleteKitten(
+                                    viewModel: ViewUpdateDeleteKittenViewModel(currentKitten: kitten)
+                                )
+                            ) {
                                 Text(kitten.name)
                                     .font(.title3)
                             }
                         }
                     }
                     // Pull to refresh
-                    .refreshable(action: { fetchKittens () })
+                    .refreshable { fetchKittens() }
                     Button("Add Kitten") {
                         showingAddModal.toggle()
                     }
@@ -54,10 +58,10 @@ struct KittenList: View {
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
-    
+
     private func fetchKittens() {
-        busy = true
-        errorMessage = nil
+        self.busy = true
+        self.errorMessage = nil
         Task {
             do {
                 try await viewModel.fetchKittens()

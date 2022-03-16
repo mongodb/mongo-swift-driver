@@ -14,7 +14,7 @@ class ViewUpdateDeleteKittenViewModel: ObservableObject {
     }
 
     /// Sends a request to update this kitten to the backend.
-   func updateKitten() async throws {
+    func updateKitten() async throws {
         // if the selected food didn't change we don't need to do anything.
         guard self.favoriteFood != self.kitten.favoriteFood else {
             return
@@ -23,9 +23,8 @@ class ViewUpdateDeleteKittenViewModel: ObservableObject {
         try await HTTP.patch(url: self.kitten.resourceURL, body: kittenUpdate)
     }
 
-
     /// Sends a request to delete this kitten to the backend.
-   func deleteKitten() async throws {
+    func deleteKitten() async throws {
         try await HTTP.delete(url: self.kitten.resourceURL)
     }
 }
