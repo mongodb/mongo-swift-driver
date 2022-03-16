@@ -1,9 +1,9 @@
-name: Issue assignment
+---
 
+name: Issue assignment
 on:
     issues:
         types: [opened]
-
 jobs:
     auto-assign:
         runs-on: ubuntu-latest
@@ -13,3 +13,10 @@ jobs:
               with:
                   assignees: patrickfreed,kmahar,isabelatkinson
                   numOfAssignee: 1
+    add-labels:
+        runs-on: ubuntu-latest
+        steps:
+            - name: initial labeling
+              uses: andymckay/labeler@master
+              with:
+                  add-labels: "triage"
