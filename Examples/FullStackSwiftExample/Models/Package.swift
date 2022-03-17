@@ -15,8 +15,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        // TODO: Depend on a tag here.
-        .package(url: "https://github.com/mongodb/swift-bson", .branch("main"))
+        .package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "3.1.0"))
     ],
     targets: [
         .target(

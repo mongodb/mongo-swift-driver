@@ -10,7 +10,7 @@
 		8B20583227BEFFDF00A9E2A1 /* KittensApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B20583127BEFFDF00A9E2A1 /* KittensApp.swift */; };
 		8B20583427BEFFDF00A9E2A1 /* KittenList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B20583327BEFFDF00A9E2A1 /* KittenList.swift */; };
 		8B20586227BF025100A9E2A1 /* KittenListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B20586127BF025100A9E2A1 /* KittenListViewModel.swift */; };
-		8B20586927BF104000A9E2A1 /* SwiftBSON in Frameworks */ = {isa = PBXBuildFile; productRef = 8B20586827BF104000A9E2A1 /* SwiftBSON */; };
+		8B9649EE27E3B4FF00CB9DC1 /* SwiftBSON in Frameworks */ = {isa = PBXBuildFile; productRef = 8B9649ED27E3B4FF00CB9DC1 /* SwiftBSON */; };
 		8BC62A4727CEF38B0015343B /* Models in Frameworks */ = {isa = PBXBuildFile; productRef = 8BC62A4627CEF38B0015343B /* Models */; };
 		8BE0610A27C58DD300D5E981 /* AddKitten.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE0610927C58DD300D5E981 /* AddKitten.swift */; };
 		8BE0610C27C58E0E00D5E981 /* AddKittenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE0610B27C58E0E00D5E981 /* AddKittenViewModel.swift */; };
@@ -38,7 +38,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8BC62A4727CEF38B0015343B /* Models in Frameworks */,
-				8B20586927BF104000A9E2A1 /* SwiftBSON in Frameworks */,
+				8B9649EE27E3B4FF00CB9DC1 /* SwiftBSON in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -126,8 +126,8 @@
 			);
 			name = Kittens;
 			packageProductDependencies = (
-				8B20586827BF104000A9E2A1 /* SwiftBSON */,
 				8BC62A4627CEF38B0015343B /* Models */,
+				8B9649ED27E3B4FF00CB9DC1 /* SwiftBSON */,
 			);
 			productName = Kittens;
 			productReference = 8B20582E27BEFFDF00A9E2A1 /* Kittens.app */;
@@ -158,7 +158,7 @@
 			);
 			mainGroup = 8B20582527BEFFDF00A9E2A1;
 			packageReferences = (
-				8B20586727BF104000A9E2A1 /* XCRemoteSwiftPackageReference "swift-bson" */,
+				8B9649EC27E3B4FF00CB9DC1 /* XCRemoteSwiftPackageReference "swift-bson" */,
 			);
 			productRefGroup = 8B20582F27BEFFDF00A9E2A1 /* Products */;
 			projectDirPath = "";
@@ -392,20 +392,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		8B20586727BF104000A9E2A1 /* XCRemoteSwiftPackageReference "swift-bson" */ = {
+		8B9649EC27E3B4FF00CB9DC1 /* XCRemoteSwiftPackageReference "swift-bson" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/mongodb/swift-bson";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		8B20586827BF104000A9E2A1 /* SwiftBSON */ = {
+		8B9649ED27E3B4FF00CB9DC1 /* SwiftBSON */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 8B20586727BF104000A9E2A1 /* XCRemoteSwiftPackageReference "swift-bson" */;
+			package = 8B9649EC27E3B4FF00CB9DC1 /* XCRemoteSwiftPackageReference "swift-bson" */;
 			productName = SwiftBSON;
 		};
 		8BC62A4627CEF38B0015343B /* Models */ = {
