@@ -661,4 +661,42 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         connString7.credential?.source = nil
         expect(connString7.description).toNot(contain("authsource"))
     }
+
+    func testSrvMaxHosts() throws {
+        var connString1 = try MongoConnectionString(string: "mongodb+srv://test1.test.build.10gen.cc/?srvMaxHosts=1")
+        expect(connString1.srvMaxHosts).to(equal(1))
+
+        // applyOptions should properly set and override original value
+        let opts1 = MongoClientOptions(srvMaxHosts: 2)
+        try connString1.applyOptions(opts1)
+        expect(connString1.srvMaxHosts).to(equal(2))
+
+        // invalid value of option
+        let opts2 = MongoClientOptions(srvMaxHosts: -1)
+        expect(try connString1.applyOptions(opts2)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        var connString2 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        // option is only valid with SRV URIs
+        expect(try connString2.applyOptions(opts1)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+    }
+
+    func testSrvServiceName() throws {
+        var connString1 = try MongoConnectionString(
+            string: "mongodb+srv://test1.test.build.10gen.cc/?srvServiceName=customname"
+        )
+        expect(connString1.srvServiceName).to(equal("customname"))
+
+        // applyOptions should properly set and override original value
+        let opts1 = MongoClientOptions(srvServiceName: "newcustomname")
+        try connString1.applyOptions(opts1)
+        expect(connString1.srvServiceName).to(equal("newcustomname"))
+
+        // invalid value of option
+        let opts2 = MongoClientOptions(srvServiceName: "-invalid-")
+        expect(try connString1.applyOptions(opts2)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+
+        var connString2 = try MongoConnectionString(string: "mongodb://localhost:27017")
+        // option is only valid with SRV URIs
+        expect(try connString2.applyOptions(opts1)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
+    }
 }
