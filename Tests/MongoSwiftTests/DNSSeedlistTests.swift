@@ -120,6 +120,30 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
             print("Running test file \(fileName)...")
 
+            // create the user that the test attempts to authenticate as.
+            if let username = testCase.parsedOptions?["user"]?.stringValue,
+               let password = testCase.parsedOptions?["password"]?.stringValue
+            {
+                let dbName = testCase.parsedOptions?["db"]?.stringValue ?? "admin"
+                try self.withTestClient { client in
+                    let db = client.db(dbName)
+                    // ignore errors, since the user might not exist already.
+                    _ = try? db.runCommand([
+                        "dropUser": .string(username)
+                    ]).wait()
+
+                    _ = try db.runCommand([
+                        "createUser": .string(username),
+                        "pwd": .string(password),
+                        "mechanisms": [
+                            "SCRAM-SHA-1",
+                            "SCRAM-SHA-256"
+                        ],
+                        "roles": []
+                    ]).wait()
+                }
+            }
+
             let topologyWatcher = TopologyDescriptionWatcher()
 
             let opts: MongoClientOptions?
