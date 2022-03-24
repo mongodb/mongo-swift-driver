@@ -167,9 +167,12 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                     // eventually matches the list of hosts."
                     // This needs to be done before the client leaves scope to ensure the SDAM machinery
                     // keeps running.
-                    if let expectedHosts = testCase.hosts {
-                        expect(topologyWatcher.getLastDescription()?.servers.map { $0.address })
-                            .toEventually(equal(expectedHosts), timeout: 5)
+                    if let expectedHosts = testCase.hosts?.sorted(by: { $0.description < $1.description }) {
+                        expect(
+                            topologyWatcher.getLastDescription()?
+                                .servers.map { $0.address }
+                                .sorted { $0.description < $1.description }
+                        ).toEventually(equal(expectedHosts), timeout: 5)
                     } else if let expectedNumHosts = testCase.numHosts {
                         expect(topologyWatcher.getLastDescription()?.servers)
                             .toEventually(haveCount(expectedNumHosts), timeout: 5)
