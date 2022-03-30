@@ -120,6 +120,30 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
 
             print("Running test file \(fileName)...")
 
+            // create the user that the test attempts to authenticate as.
+            if let username = testCase.parsedOptions?["user"]?.stringValue,
+               let password = testCase.parsedOptions?["password"]?.stringValue
+            {
+                let dbName = testCase.parsedOptions?["db"]?.stringValue ?? "admin"
+                try self.withTestClient { client in
+                    let db = client.db(dbName)
+                    // ignore errors, since the user might not exist already.
+                    _ = try? db.runCommand([
+                        "dropUser": .string(username)
+                    ]).wait()
+
+                    _ = try db.runCommand([
+                        "createUser": .string(username),
+                        "pwd": .string(password),
+                        "mechanisms": [
+                            "SCRAM-SHA-1",
+                            "SCRAM-SHA-256"
+                        ],
+                        "roles": []
+                    ]).wait()
+                }
+            }
+
             let topologyWatcher = TopologyDescriptionWatcher()
 
             let opts: MongoClientOptions?
@@ -143,9 +167,12 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                     // eventually matches the list of hosts."
                     // This needs to be done before the client leaves scope to ensure the SDAM machinery
                     // keeps running.
-                    if let expectedHosts = testCase.hosts {
-                        expect(topologyWatcher.getLastDescription()?.servers.map { $0.address })
-                            .toEventually(equal(expectedHosts), timeout: 5)
+                    if let expectedHosts = testCase.hosts?.sorted(by: { $0.description < $1.description }) {
+                        expect(
+                            topologyWatcher.getLastDescription()?
+                                .servers.map { $0.address }
+                                .sorted { $0.description < $1.description }
+                        ).toEventually(equal(expectedHosts), timeout: 5)
                     } else if let expectedNumHosts = testCase.numHosts {
                         expect(topologyWatcher.getLastDescription()?.servers)
                             .toEventually(haveCount(expectedNumHosts), timeout: 5)
