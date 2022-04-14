@@ -24,7 +24,7 @@ fi
 if [ "$OS" == "darwin" ]; then
     # latest snapshots require a newer version of Xcode/Command Line Tools
     if [[ "$SWIFT_VERSION" == DEVELOPMENT-SNAPSHOT* ]]; then
-        sudo xcode-select -s /Applications/Xcode13.app
+        sudo xcode-select -s /Applications/Xcode13.1.app
     else
         sudo xcode-select -s /Applications/Xcode12.app
     fi

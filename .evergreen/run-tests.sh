@@ -39,8 +39,15 @@ if [ "$SANITIZE" != "false" ]; then
     SANITIZE_STATEMENT="--sanitize ${SANITIZE}"
 fi
 
+# TODO SWIFT-1421: remove this, it is currently needed due to a bug in Xcode 13.0/13.1.
+if [ "$OS" == "darwin" ]; then
+    if [[ "$SWIFT_VERSION" == DEVELOPMENT-SNAPSHOT* ]]; then
+        EXTRA_FLAGS="-Xswiftc -Xfrontend -Xswiftc -validate-tbd-against-ir=none"
+    fi
+fi
+
 # build the driver
-swift build $SANITIZE_STATEMENT
+swift build $SANITIZE_STATEMENT $EXTRA_FLAGS
 
 # test the driver
 set +o errexit # even if tests fail we want to parse the results, so disable errexit
@@ -54,7 +61,7 @@ fi
 
 MONGODB_TOPOLOGY=${TOPOLOGY} MONGODB_URI=$MONGODB_URI SINGLE_MONGOS_LB_URI=$SINGLE_MONGOS_LB_URI \
 MULTI_MONGOS_LB_URI=$MULTI_MONGOS_LB_URI MONGODB_API_VERSION=$MONGODB_API_VERSION \
-swift test --enable-test-discovery $FILTER_STATEMENT $SANITIZE_STATEMENT 2>&1 | tee ${RAW_TEST_RESULTS}
+swift test --enable-test-discovery $EXTRA_FLAGS $FILTER_STATEMENT $SANITIZE_STATEMENT 2>&1 | tee ${RAW_TEST_RESULTS}
 
 # save tests exit code
 EXIT_CODE=$?
