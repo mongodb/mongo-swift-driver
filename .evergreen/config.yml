@@ -1088,12 +1088,12 @@ axes:
           PYTHON: "/opt/mongodbtoolchain/v3/bin/python3"
           VENV_BIN_DIR: "bin"
 
-      - id: macos-10.15
-        display_name: "macOS 10.15"
-        run_on: macos-1015
+      - id: macos-11
+        display_name: "macOS 11"
+        run_on: macos-1100
         variables:
           PYTHON: "/opt/mongodbtoolchain/v3/bin/python3"
-          VENV_BIN_DIR: "bin"
+          VENV_BIN_DIR: "bin"    
 
   - id: topology
     display_name: Topology
@@ -1251,9 +1251,9 @@ buildvariants:
 
 - matrix_name: "min-version-compile"
   matrix_spec:
-  # Ubuntu 20.04 does not have Swift 5.1 toolchains.
+  # Ubuntu 20.04 does not have Swift 5.1 toolchains
     os-fully-featured:
-      - "macos-10.15"
+      - "macos-11"
       - "ubuntu-18.04"
     swift-version: "5.1"
   display_name: "Compile ${swift-version} ${os-fully-featured}"
@@ -1360,7 +1360,7 @@ buildvariants:
 
 - matrix_name: "ocsp-macos"
   matrix_spec:
-    os-fully-featured: "macos-10.15"
+    os-fully-featured: "macos-11"
     swift-version: "5.6"
     versions:
       - latest
@@ -1396,7 +1396,7 @@ buildvariants:
 - matrix_name: "check-sourcery"
   display_name: "Check Sourcery"
   matrix_spec:
-    os-fully-featured: "macos-10.15"
+    os-fully-featured: "macos-11"
     swift-version: "5.6"
   tasks:
     - name: "check-sourcery"
@@ -1414,7 +1414,7 @@ buildvariants:
 - matrix_name: "leaks"
   display_name: "Leak Checker ${os-fully-featured} ${ssl-auth}"
   matrix_spec:
-    os-fully-featured: "macos-10.15"
+    os-fully-featured: "macos-11"
     swift-version: "5.6"
     ssl-auth: "*"
     check-leaks: "leaks"
