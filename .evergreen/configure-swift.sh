@@ -22,13 +22,7 @@ if [ "$SWIFT_VERSION" = "main-snapshot" ]; then
 fi
 
 if [ "$OS" == "darwin" ]; then
-    ls /Applications
-    # 5.1, 5.2 require an older version of Xcode/Command Line Tools
-    if [[ "$SWIFT_VERSION" == 5.1.* || "$SWIFT_VERSION" == 5.2.* ]]; then
-        sudo xcode-select -s /Applications/Xcode12.app
-    else
-        sudo xcode-select -s /Applications/Xcode12.app
-    fi
+    sudo xcode-select -s /Applications/Xcode12.app
 
     # TODO SWIFT-1421: remove this once we have new Xcode on Evergreen to test with
     export DYLD_LIBRARY_PATH=${SWIFTENV_ROOT}/versions/${SWIFT_VERSION}/usr/lib/swift/macosx/
