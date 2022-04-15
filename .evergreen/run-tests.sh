@@ -40,6 +40,7 @@ if [ "$SANITIZE" != "false" ]; then
 fi
 
 # TODO SWIFT-1421: remove this, it is currently needed due to a bug in Xcode 13.0/13.1.
+# see: https://bugs.swift.org/browse/SR-14968
 if [ "$OS" == "darwin" ]; then
     if [[ "$SWIFT_VERSION" == DEVELOPMENT-SNAPSHOT* ]]; then
         EXTRA_FLAGS="-Xswiftc -Xfrontend -Xswiftc -validate-tbd-against-ir=none"

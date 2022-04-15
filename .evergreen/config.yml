@@ -1093,7 +1093,7 @@ axes:
         run_on: macos-1100
         variables:
           PYTHON: "/opt/mongodbtoolchain/v3/bin/python3"
-          VENV_BIN_DIR: "bin"    
+          VENV_BIN_DIR: "bin"
 
   - id: topology
     display_name: Topology
@@ -1251,7 +1251,7 @@ buildvariants:
 
 - matrix_name: "min-version-compile"
   matrix_spec:
-  # Ubuntu 20.04 does not have Swift 5.1 toolchains
+  # Ubuntu 20.04 does not have Swift 5.1 toolchains.
     os-fully-featured:
       - "macos-11"
       - "ubuntu-18.04"
