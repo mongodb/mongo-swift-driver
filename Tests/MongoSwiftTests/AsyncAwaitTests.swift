@@ -224,6 +224,11 @@ final class MongoCursorAsyncAwaitTests: MongoSwiftTestCase {
 
     // Test that a tailable cursor that is continually polling the server can be killed by cancelling the parent Task.
     func testTailableCursorHandlesTaskCancellation() throws {
+        guard !MongoSwiftTestCase.serverless else {
+            printSkipMessage(testName: self.name, reason: "Serverless does not support capped collections")
+            return
+        }
+
         testAsync {
             let opts = CreateCollectionOptions(capped: true, size: 5)
             try await self.withTestNamespace(collectionOptions: opts) { _, _, coll in

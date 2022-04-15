@@ -1088,9 +1088,9 @@ axes:
           PYTHON: "/opt/mongodbtoolchain/v3/bin/python3"
           VENV_BIN_DIR: "bin"
 
-      - id: macos-10.15
-        display_name: "macOS 10.15"
-        run_on: macos-1015
+      - id: macos-11
+        display_name: "macOS 11"
+        run_on: macos-1100
         variables:
           PYTHON: "/opt/mongodbtoolchain/v3/bin/python3"
           VENV_BIN_DIR: "bin"
@@ -1133,8 +1133,12 @@ axes:
         display_name: "Swift 5.5"
         variables:
           SWIFT_MINOR_VERSION: "5.5"
-      - id: "5.6-dev"
-        display_name: "Swift 5.6-dev"
+      - id: "5.6"
+        display_name: "Swift 5.6"
+        variables:
+          SWIFT_MINOR_VERSION: "5.6"
+      - id: "5.7-dev"
+        display_name: "Swift 5.7-dev"
         variables:
           SWIFT_MINOR_VERSION: "main-snapshot"
 
@@ -1249,7 +1253,7 @@ buildvariants:
   matrix_spec:
   # Ubuntu 20.04 does not have Swift 5.1 toolchains.
     os-fully-featured:
-      - "macos-10.15"
+      - "macos-11"
       - "ubuntu-18.04"
     swift-version: "5.1"
   display_name: "Compile ${swift-version} ${os-fully-featured}"
@@ -1260,9 +1264,9 @@ buildvariants:
   matrix_spec:
     os-fully-featured: "*"
     swift-version:
-      - "5.4"
       - "5.5"
-      - "5.6-dev"
+      - "5.6"
+      - "5.7-dev"
     ssl-auth: "*"
   display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
   tasks:
@@ -1301,8 +1305,8 @@ buildvariants:
   matrix_spec:
     os-fully-featured: "*"
     swift-version:
-      - "5.4"
       - "5.5"
+      - "5.6"
   display_name: "Atlas Connectivity ${swift-version} ${os-fully-featured}"
   tasks:
     - ".atlas-connect"
@@ -1314,8 +1318,8 @@ buildvariants:
       - "ubuntu-20.04"
     ssl-auth: "*"
     swift-version:
-      - "5.4"
       - "5.5"
+      - "5.6"
   display_name: "Load Balancer ${swift-version} ${os-fully-featured} ${ssl-auth}"
   tasks:
     - ".load-balancer"
@@ -1325,7 +1329,7 @@ buildvariants:
     os-fully-featured:
       - "ubuntu-18.04"
     swift-version:
-      - 5.4
+      - "5.6"
   display_name: "Serverless ${swift-version} ${os-fully-featured}"
   tasks:
     - "serverless_task_group"
@@ -1339,7 +1343,7 @@ buildvariants:
       - latest
       - 5.0
       - 4.4
-    swift-version: "5.5"
+    swift-version: "5.6"
   display_name: "OCSP ${swift-version} ${os-fully-featured} ${versions}"
   batchtime: 20160 # 14 days
   tasks:
@@ -1356,8 +1360,8 @@ buildvariants:
 
 - matrix_name: "ocsp-macos"
   matrix_spec:
-    os-fully-featured: "macos-10.15"
-    swift-version: "5.5"
+    os-fully-featured: "macos-11"
+    swift-version: "5.6"
     versions:
       - latest
       - 5.0
@@ -1372,7 +1376,7 @@ buildvariants:
 - matrix_name: "versioned-api-tests"
   matrix_spec:
     os-fully-featured: ubuntu-18.04
-    swift-version: "5.5"
+    swift-version: "5.6"
     versionedAPI: "*"
   display_name: "Versioned API ${versionedAPI} ${swift-version} ${os-fully-featured}"
   batchtime: 10080  # 7 days
@@ -1384,7 +1388,7 @@ buildvariants:
   display_name: "Format and Lint"
   matrix_spec:
     os-fully-featured: "ubuntu-18.04"
-    swift-version: "5.5"
+    swift-version: "5.6"
   tasks:
     - name: "check-format"
     - name: "check-lint"
@@ -1392,8 +1396,8 @@ buildvariants:
 - matrix_name: "check-sourcery"
   display_name: "Check Sourcery"
   matrix_spec:
-    os-fully-featured: "macos-10.15"
-    swift-version: "5.5"
+    os-fully-featured: "macos-11"
+    swift-version: "5.6"
   tasks:
     - name: "check-sourcery"
 
@@ -1410,8 +1414,8 @@ buildvariants:
 - matrix_name: "leaks"
   display_name: "Leak Checker ${os-fully-featured} ${ssl-auth}"
   matrix_spec:
-    os-fully-featured: "macos-10.15"
-    swift-version: "5.5"
+    os-fully-featured: "macos-11"
+    swift-version: "5.6"
     ssl-auth: "*"
     check-leaks: "leaks"
   tasks:
