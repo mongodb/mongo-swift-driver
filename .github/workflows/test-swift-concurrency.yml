@@ -1,4 +1,4 @@
-name: Test concurrency APIs on macOS
+name: Test concurrency APIs on macOS 12
 
 on:
   push:
@@ -7,11 +7,11 @@ on:
     branches: [ main ]
   
 env:
-  MONGODB_VERSION: 5.0.6
+  MONGODB_VERSION: 5.0.8
 
 jobs:
   test-concurrency:
-    runs-on: macos-latest
+    runs-on: macos-12
 
     steps:
     - name: Check out
