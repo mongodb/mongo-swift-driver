@@ -36,7 +36,7 @@ Core Server (i.e. SERVER) project are **public**.
 Please see [SECURITY.md](SECURITY.md) for details on our security process.
 
 ## Installation
-The driver supports use with Swift 5.1+. The minimum macOS version required to build the driver is 10.14. The driver is tested in continuous integration against macOS 10.14, Ubuntu 16.04, and Ubuntu 18.04.
+The driver supports use with Swift 5.1+. The minimum macOS version required to build the driver is 10.14. The driver is tested in continuous integration against macOS 11 and 12, and Ubuntu 18.04 and 20.04.
 
 Installation is supported via [Swift Package Manager](https://swift.org/package-manager/).
 
