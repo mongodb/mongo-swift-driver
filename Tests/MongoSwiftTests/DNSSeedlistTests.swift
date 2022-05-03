@@ -135,10 +135,6 @@ final class DNSSeedlistTests: MongoSwiftTestCase {
                     _ = try db.runCommand([
                         "createUser": .string(username),
                         "pwd": .string(password),
-                        "mechanisms": [
-                            "SCRAM-SHA-1",
-                            "SCRAM-SHA-256"
-                        ],
                         "roles": []
                     ]).wait()
                 }
