@@ -63,7 +63,7 @@ let package = Package(
         .macOS(.v10_14) // minimum macOS version driver supports
     ],
     dependencies: [
-        .package(url: "https://github.com/mongodb/mongo-swift-driver", .upToNextMajor(from: "1.3.0-alpha.2"))
+        .package(url: "https://github.com/mongodb/mongo-swift-driver", .upToNextMajor(from: "1.3.0"))
     ],
     targets: [
         // Async module
