@@ -20,27 +20,27 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwiftSync 1.3.0-beta.1 Docs
+          MongoSwiftSync 1.3.0 Docs
         </a>
-         (98% documented)
+         (100% documented)
       </p>
     
-      <p class="header-col--secondary">
+      <div class="header-col--secondary">
         <form role="search" action="search.json">
           <input type="text" placeholder="Search documentation" data-typeahead>
         </form>
-      </p>
+      </div>
     
         <p class="header-col header-col--secondary">
           <a class="header-link" href="https://github.com/mongodb/mongo-swift-driver">
-            <img class="header-icon" src="img/gh.png"/>
+            <img class="header-icon" src="img/gh.png" alt="GitHub"/>
             View on GitHub
           </a>
         </p>
     
         <p class="header-col header-col--secondary">
           <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
-            <img class="header-icon" src="img/dash.png"/>
+            <img class="header-icon" src="img/dash.png" alt="Dash"/>
             Install in Dash
           </a>
         </p>
@@ -48,7 +48,7 @@
 
     <p class="breadcrumbs">
       <a class="breadcrumb" href="index.html">MongoSwiftSync Reference</a>
-      <img class="carat" src="img/carat.png" />
+      <img class="carat" src="img/carat.png" alt=""/>
       Change-Streams-Guide  Reference
     </p>
 
@@ -682,7 +682,7 @@ over using a for-in loop.</p>
 
 <span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">,</span> <span class="nv">withType</span><span class="p">:</span> <span class="kt">Item</span><span class="o">.</span><span class="k">self</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">changeStreamTask</span> <span class="o">=</span> <span class="kt">Task</span> <span class="p">{</span>
-    <span class="k">for</span> <span class="k">try</span> <span class="n">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="n">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="k">try</span> <span class="k">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="k">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span> <span class="p">{</span>
         <span class="c1">// process  `ChangeStream&lt;ChangeStreamEvent&lt;Item&gt;&gt;`</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -700,7 +700,7 @@ over using a for-in loop.</p>
 
 <span class="k">let</span> <span class="nv">changeStreamTask</span> <span class="o">=</span> <span class="kt">Task</span> <span class="p">{</span>
     <span class="k">let</span> <span class="nv">pipeline</span><span class="p">:</span> <span class="p">[</span><span class="kt">BSONDocument</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="s">"$unset"</span><span class="p">:</span> <span class="p">[</span><span class="s">"fullDocument.name"</span><span class="p">,</span> <span class="s">"fullDocument.cost"</span><span class="p">]]]</span>
-    <span class="k">for</span> <span class="k">try</span> <span class="n">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="n">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="nv">withFullDocumentType</span><span class="p">:</span> <span class="kt">ItemCount</span><span class="o">.</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="k">try</span> <span class="k">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="k">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="nv">withFullDocumentType</span><span class="p">:</span> <span class="kt">ItemCount</span><span class="o">.</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span>
         <span class="c1">// process  `ChangeStream&lt;ChangeStreamEvent&lt;ItemCount&gt;&gt;`</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -711,7 +711,7 @@ over using a for-in loop.</p>
 
 <p>You can also provide a type to use in place of <code><a href="Structs/ChangeStreamEvent.html">ChangeStreamEvent</a></code> altogether:</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">changeStreamTask</span> <span class="o">=</span> <span class="kt">Task</span> <span class="p">{</span>
-    <span class="k">for</span> <span class="k">try</span> <span class="n">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="n">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="nv">withEventType</span><span class="p">:</span> <span class="kt">InventoryEvent</span><span class="o">.</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="k">try</span> <span class="k">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="k">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="nv">withEventType</span><span class="p">:</span> <span class="kt">InventoryEvent</span><span class="o">.</span><span class="k">self</span><span class="p">)</span> <span class="p">{</span>
         <span class="c1">// process  `ChangeStream&lt;ChangeStreamEvent&lt;InventoryEvent&gt;&gt;`</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -725,7 +725,7 @@ over using a for-in loop.</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">db</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span>
 
 <span class="k">let</span> <span class="nv">changeStreamTask</span> <span class="o">=</span> <span class="kt">Task</span> <span class="p">{</span>
-    <span class="k">for</span> <span class="k">try</span> <span class="n">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="n">await</span> <span class="n">db</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="k">try</span> <span class="k">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span> <span class="p">{</span>
         <span class="c1">// process  `ChangeStream&lt;ChangeStreamEvent&lt;BSONDocument&gt;&gt;`</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -739,7 +739,7 @@ over using a for-in loop.</p>
 
 <p>You can also open a change stream on an entire cluster, which will observe events on all databases and collections:</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">changeStreamTask</span> <span class="o">=</span> <span class="kt">Task</span> <span class="p">{</span>
-    <span class="k">for</span> <span class="k">try</span> <span class="n">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="n">await</span> <span class="n">client</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="k">try</span> <span class="k">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span> <span class="p">{</span>
         <span class="c1">// process  `ChangeStream&lt;ChangeStreamEvent&lt;BSONDocument&gt;&gt;`</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -755,21 +755,21 @@ over using a for-in loop.</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="nf">db</span><span class="p">(</span><span class="s">"example"</span><span class="p">)</span><span class="o">.</span><span class="nf">collection</span><span class="p">(</span><span class="s">"inventory"</span><span class="p">)</span>
 
 <span class="k">let</span> <span class="nv">changeStreamTask1</span> <span class="o">=</span> <span class="kt">Task</span> <span class="p">{</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">ResumeToken</span><span class="p">?</span> <span class="k">in</span>
-    <span class="k">let</span> <span class="nv">changeStream</span> <span class="o">=</span> <span class="k">try</span> <span class="n">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span>
+    <span class="k">let</span> <span class="nv">changeStream</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">()</span>
     <span class="c1">// read the first change event</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="k">try</span> <span class="n">await</span> <span class="n">changeStream</span><span class="o">.</span><span class="nf">next</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="n">changeStream</span><span class="o">.</span><span class="nf">next</span><span class="p">()</span>
     <span class="c1">// resume token to resume stream after the first event</span>
     <span class="k">return</span> <span class="n">changeStream</span><span class="o">.</span><span class="n">resumeToken</span>
 <span class="p">}</span>
 
 <span class="c1">// Get resume token from the first task and change stream.</span>
-<span class="k">guard</span> <span class="k">let</span> <span class="nv">resumeToken</span> <span class="o">=</span> <span class="k">try</span> <span class="n">await</span> <span class="n">changeStreamTask1</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="p">{</span>
+<span class="k">guard</span> <span class="k">let</span> <span class="nv">resumeToken</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="n">changeStreamTask1</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="p">{</span>
     <span class="nf">fatalError</span><span class="p">(</span><span class="s">"Unexpectedly missing resume token after processing event"</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="k">let</span> <span class="nv">changeStreamTask2</span> <span class="o">=</span> <span class="kt">Task</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="nv">changeStream</span> <span class="o">=</span> <span class="k">try</span> <span class="n">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt">ChangeStreamOptions</span><span class="p">(</span><span class="nv">resumeAfter</span><span class="p">:</span> <span class="n">resumeToken</span><span class="p">))</span>
-    <span class="k">for</span> <span class="k">try</span> <span class="n">await</span> <span class="n">event</span> <span class="k">in</span> <span class="n">changeStream</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">changeStream</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="nv">options</span><span class="p">:</span> <span class="kt">ChangeStreamOptions</span><span class="p">(</span><span class="nv">resumeAfter</span><span class="p">:</span> <span class="n">resumeToken</span><span class="p">))</span>
+    <span class="k">for</span> <span class="k">try</span> <span class="k">await</span> <span class="n">event</span> <span class="k">in</span> <span class="n">changeStream</span> <span class="p">{</span>
         <span class="c1">// process ChangeStreamEvent</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -785,7 +785,7 @@ over using a for-in loop.</p>
     <span class="k">let</span> <span class="nv">pipeline</span><span class="p">:</span> <span class="p">[</span><span class="kt">BSONDocument</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">[</span><span class="s">"$match"</span><span class="p">:</span> <span class="p">[</span><span class="s">"fullDocument.count"</span><span class="p">:</span> <span class="mi">0</span><span class="p">]]</span>
     <span class="p">]</span>
-    <span class="k">for</span> <span class="k">try</span> <span class="n">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="n">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="k">try</span> <span class="k">await</span> <span class="n">event</span> <span class="k">in</span> <span class="k">try</span> <span class="k">await</span> <span class="n">inventory</span><span class="o">.</span><span class="nf">watch</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span> <span class="p">{</span>
         <span class="c1">// process  `ChangeStream&lt;ChangeStreamEvent&lt;Item&gt;&gt;`</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -806,9 +806,8 @@ over using a for-in loop.</p>
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2022 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2022-03-16)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2022 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external noopener">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2022-05-03)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.14.1</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
     </section>
   </body>
-</div>
 </html>

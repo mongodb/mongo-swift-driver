@@ -20,27 +20,27 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          MongoSwiftSync 1.3.0-beta.1 Docs
+          MongoSwiftSync 1.3.0 Docs
         </a>
-         (98% documented)
+         (100% documented)
       </p>
     
-      <p class="header-col--secondary">
+      <div class="header-col--secondary">
         <form role="search" action="search.json">
           <input type="text" placeholder="Search documentation" data-typeahead>
         </form>
-      </p>
+      </div>
     
         <p class="header-col header-col--secondary">
           <a class="header-link" href="https://github.com/mongodb/mongo-swift-driver">
-            <img class="header-icon" src="img/gh.png"/>
+            <img class="header-icon" src="img/gh.png" alt="GitHub"/>
             View on GitHub
           </a>
         </p>
     
         <p class="header-col header-col--secondary">
           <a class="header-link" href="dash-feed://https%3A%2F%2Fmongodb.github.io%2Fmongo-swift-driver%2Fdocs%2FMongoSwiftSync%2Fdocsets%2FMongoSwiftSync.xml">
-            <img class="header-icon" src="img/dash.png"/>
+            <img class="header-icon" src="img/dash.png" alt="Dash"/>
             Install in Dash
           </a>
         </p>
@@ -48,7 +48,7 @@
 
     <p class="breadcrumbs">
       <a class="breadcrumb" href="index.html">MongoSwiftSync Reference</a>
-      <img class="carat" src="img/carat.png" />
+      <img class="carat" src="img/carat.png" alt=""/>
       Error-Handling-Guide  Reference
     </p>
 
@@ -823,7 +823,7 @@ BSON Errors can be found in <a href="Sources/MongoSwift/BSON/BSONError.swift">So
 </code></pre>
 <h3 id='handling-a-commanderror' class='heading'>Handling a CommandError</h3>
 <pre class="highlight swift"><code><span class="k">do</span> <span class="p">{</span>
-    <span class="k">try</span> <span class="n">await</span> <span class="n">db</span><span class="o">.</span><span class="nf">runCommand</span><span class="p">([</span><span class="s">"asdfasdf"</span><span class="p">:</span> <span class="s">"sadfsadfasdf"</span><span class="p">])</span>
+    <span class="k">try</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="nf">runCommand</span><span class="p">([</span><span class="s">"asdfasdf"</span><span class="p">:</span> <span class="s">"sadfsadfasdf"</span><span class="p">])</span>
 <span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">commandError</span> <span class="k">as</span> <span class="kt">MongoError</span><span class="o">.</span><span class="kt">CommandError</span> <span class="p">{</span>
     <span class="nf">print</span><span class="p">(</span><span class="s">"Command failed: code: </span><span class="se">\(</span><span class="n">commandError</span><span class="o">.</span><span class="n">code</span><span class="se">)</span><span class="s"> message: </span><span class="se">\(</span><span class="n">commandError</span><span class="o">.</span><span class="n">message</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
 <span class="p">}</span> <span class="k">catch</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
@@ -835,8 +835,8 @@ BSON Errors can be found in <a href="Sources/MongoSwift/BSON/BSONError.swift">So
 <h3 id='handling-a-writeerror' class='heading'>Handling a WriteError</h3>
 <pre class="highlight swift"><code><span class="c1">// if you want to ignore duplicate key errors</span>
 <span class="k">do</span> <span class="p">{</span>
-    <span class="k">try</span> <span class="n">await</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
-    <span class="k">try</span> <span class="n">await</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">try</span> <span class="k">await</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">try</span> <span class="k">await</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
 <span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">writeError</span> <span class="k">as</span> <span class="kt">MongoError</span><span class="o">.</span><span class="kt">WriteError</span> <span class="k">where</span> <span class="n">writeError</span><span class="o">.</span><span class="n">writeFailure</span><span class="p">?</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="mi">11000</span> <span class="p">{</span>
     <span class="nf">print</span><span class="p">(</span><span class="s">"duplicate key error: </span><span class="se">\(</span><span class="mi">1</span><span class="se">)</span><span class="s"> </span><span class="se">\(</span><span class="n">writeError</span><span class="o">.</span><span class="n">writeFailure</span><span class="p">?</span><span class="o">.</span><span class="n">message</span> <span class="p">??</span> <span class="s">""</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
 <span class="p">}</span>
@@ -848,8 +848,8 @@ BSON Errors can be found in <a href="Sources/MongoSwift/BSON/BSONError.swift">So
 <h3 id='handling-a-bulkwriteerror' class='heading'>Handling a BulkWriteError</h3>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">docs</span><span class="p">:</span> <span class="p">[</span><span class="kt">BSONDocument</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">]]</span>
 <span class="k">do</span> <span class="p">{</span>
-    <span class="k">try</span> <span class="n">await</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
-    <span class="k">try</span> <span class="n">await</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertMany</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span>
+    <span class="k">try</span> <span class="k">await</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertOne</span><span class="p">([</span><span class="s">"_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">try</span> <span class="k">await</span> <span class="n">coll</span><span class="o">.</span><span class="nf">insertMany</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span>
 <span class="p">}</span> <span class="k">catch</span> <span class="k">let</span> <span class="nv">bwe</span> <span class="k">as</span> <span class="kt">MongoError</span><span class="o">.</span><span class="kt">BulkWriteError</span> <span class="p">{</span>
     <span class="k">if</span> <span class="k">let</span> <span class="nv">writeErrors</span> <span class="o">=</span> <span class="n">bwe</span><span class="o">.</span><span class="n">writeFailures</span> <span class="p">{</span>
         <span class="n">writeErrors</span><span class="o">.</span><span class="n">forEach</span> <span class="p">{</span> <span class="n">err</span> <span class="k">in</span> <span class="nf">print</span><span class="p">(</span><span class="s">"Write Error inserting </span><span class="se">\(</span><span class="n">docs</span><span class="p">[</span><span class="n">err</span><span class="o">.</span><span class="n">index</span><span class="p">]</span><span class="se">)</span><span class="s">, code: </span><span class="se">\(</span><span class="n">err</span><span class="o">.</span><span class="n">code</span><span class="se">)</span><span class="s">, message: </span><span class="se">\(</span><span class="n">err</span><span class="o">.</span><span class="n">message</span><span class="se">)</span><span class="s">"</span><span class="p">)</span> <span class="p">}</span>
@@ -897,9 +897,8 @@ InsertedIds: [0: 2]
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2022 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2022-03-16)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2022 <a class="link" href="https://github.com/mongodb/mongo-swift-driver" target="_blank" rel="external noopener">Matt Broadstone, Kaitlin Mahar, and Patrick Freed</a>. All rights reserved. (Last updated: 2022-05-03)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.14.1</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
     </section>
   </body>
-</div>
 </html>
