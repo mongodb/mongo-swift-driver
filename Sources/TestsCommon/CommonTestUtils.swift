@@ -40,8 +40,8 @@ open class MongoSwiftTestCase: XCTestCase {
             connString.hosts.removeSubrange(1..<connString.hosts.count)
             return connString
         case (.loadBalanced, true),
-            // we need to always use the single mongos URI for serverless
-            (.loadBalanced, false) where MongoSwiftTestCase.serverless:
+             // we need to always use the single mongos URI for serverless
+             (.loadBalanced, false) where MongoSwiftTestCase.serverless:
             guard let uri = Self.singleMongosLoadBalancedURI else {
                 fatalError("Missing SINGLE_MONGOS_LB_URI environment variable")
             }
