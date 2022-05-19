@@ -24,11 +24,10 @@ swift build
 MONGODB_TOPOLOGY="load_balanced" \
   MONGODB_URI=${MONGODB_URI} \
   SINGLE_MONGOS_LB_URI=${SINGLE_MONGOS_LB_URI} \
-  MULTI_MONGOS_LB_URI=${MULTI_MONGOS_LB_URI} \
   SERVERLESS="serverless" \
   MONGODB_API_VERSION=${MONGODB_API_VERSION} \
   MONGODB_SCRAM_USER=${SERVERLESS_ATLAS_USER} \
   MONGODB_SCRAM_PASSWORD=${SERVERLESS_ATLAS_PASSWORD} \
   AUTH="auth" \
   SSL="ssl" \
-    swift test --enable-test-discovery --filter="(Crud|Retryable|Transactions|Versioned|Session|LoadBalancer|MongoCursor)"
+    swift test --enable-test-discovery --filter="(Crud|Retryable|Transactions|Versioned|Session|LoadBalancer|MongoCursor|Unified)"
