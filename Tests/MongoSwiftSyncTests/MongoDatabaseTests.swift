@@ -221,7 +221,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     func testListCollectionNamesAuthorizedCollections() throws {
-        // check if collection authorization is passed and received correctly
+        // check if `authorizedCollections` is passed and received correctly
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
         let db = client.db(Self.testDatabase)
