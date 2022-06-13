@@ -73,19 +73,20 @@ public struct CollectionSpecification: Codable {
 
 /// Options to use when executing a `listCollections` command on a `MongoDatabase`.
 public struct ListCollectionsOptions: Codable {
-    /// The batchSize for the returned cursor.
-    public var batchSize: Int?
 
     /// Specifies whether to only return collections for which the user has privileges. Only has
     /// an effect when used with `listCollectionNames`. See
     /// [here](https://www.mongodb.com/docs/manual/reference/command/listCollections/)
     /// for details
     public var authorizedCollections: Bool?
+    
+    /// The batchSize for the returned cursor.
+    public var batchSize: Int?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(batchSize: Int? = nil, authorizedCollections: Bool? = nil) {
-        self.batchSize = batchSize
+    public init(authorizedCollections: Bool? = nil, batchSize: Int? = nil) {
         self.authorizedCollections = authorizedCollections
+        self.batchSize = batchSize
     }
 }
 
