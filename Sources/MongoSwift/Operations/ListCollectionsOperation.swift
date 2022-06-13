@@ -73,11 +73,17 @@ public struct CollectionSpecification: Codable {
 
 /// Options to use when executing a `listCollections` command on a `MongoDatabase`.
 public struct ListCollectionsOptions: Codable {
+    /// Specifies whether to only return collections for which the user has privileges. Only has
+    /// an effect when used with `listCollectionNames`.
+    ///  - SeeAlso: https://www.mongodb.com/docs/manual/reference/command/listCollections/
+    public var authorizedCollections: Bool?
+
     /// The batchSize for the returned cursor.
     public var batchSize: Int?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(batchSize: Int? = nil) {
+    public init(authorizedCollections: Bool? = nil, batchSize: Int? = nil) {
+        self.authorizedCollections = authorizedCollections
         self.batchSize = batchSize
     }
 }
@@ -119,6 +125,9 @@ internal struct ListCollectionsOperation: Operation {
             if self.nameOnly && filterDoc.keys.contains(where: { $0 != "name" }) {
                 cmd["nameOnly"] = false
             }
+        }
+        if let authorizedCollections = self.options?.authorizedCollections {
+            cmd["authorizedCollections"] = .bool(authorizedCollections)
         }
 
         var cursorOpts: BSONDocument = [:]
