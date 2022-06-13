@@ -75,10 +75,13 @@ public struct CollectionSpecification: Codable {
 public struct ListCollectionsOptions: Codable {
     /// The batchSize for the returned cursor.
     public var batchSize: Int?
+    
+    public var authorizedCollections: Bool?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(batchSize: Int? = nil) {
+    public init(batchSize: Int? = nil, authorizedCollections: Bool? = nil) {
         self.batchSize = batchSize
+        self.authorizedCollections = authorizedCollections
     }
 }
 
@@ -119,6 +122,9 @@ internal struct ListCollectionsOperation: Operation {
             if self.nameOnly && filterDoc.keys.contains(where: { $0 != "name" }) {
                 cmd["nameOnly"] = false
             }
+        }
+        if let authorizedCollections = self.options?.authorizedCollections {
+            cmd["authorizedCollections"] = .bool(authorizedCollections)
         }
 
         var cursorOpts: BSONDocument = [:]
