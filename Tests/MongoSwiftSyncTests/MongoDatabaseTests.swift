@@ -221,7 +221,7 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
     }
 
     func testListCollectionNamesAuthorizedCollections() throws {
-        // check if collection authorization is passed and received correctly
+        // check if `authorizedCollections` is passed and received correctly
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
         let db = client.db(Self.testDatabase)
@@ -233,10 +233,10 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
 
         try monitor.captureEvents {
             var opts = ListCollectionsOptions(authorizedCollections: true)
-            _ = try db.listCollectionNames(nil, options: opts, session: nil)
-            _ = try db.listCollections(nil, options: opts, session: nil)
+            _ = try db.listCollectionNames(options: opts)
+            _ = try db.listCollections(options: opts)
             opts.authorizedCollections = false
-            _ = try db.listCollectionNames(nil, options: opts, session: nil)
+            _ = try db.listCollectionNames(options: opts)
             _ = try db.listCollectionNames()
         }
 
