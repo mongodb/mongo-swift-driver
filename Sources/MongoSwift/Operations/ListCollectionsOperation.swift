@@ -75,7 +75,7 @@ public struct CollectionSpecification: Codable {
 public struct ListCollectionsOptions: Codable {
     /// The batchSize for the returned cursor.
     public var batchSize: Int?
-    
+
     public var authorizedCollections: Bool?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
