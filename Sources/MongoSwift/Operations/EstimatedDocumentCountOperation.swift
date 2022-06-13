@@ -2,6 +2,10 @@ import CLibMongoC
 
 /// Options to use when executing an `estimatedDocumentCount` command on a `MongoCollection`.
 public struct EstimatedDocumentCountOptions: Codable {
+    
+    /// Attaches a comment to the query.
+    public var comment: String?
+    
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
 
@@ -15,10 +19,12 @@ public struct EstimatedDocumentCountOptions: Codable {
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
+        comment: String? = nil,
         maxTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil
     ) {
+        self.comment = comment
         self.maxTimeMS = maxTimeMS
         self.readConcern = readConcern
         self.readPreference = readPreference
