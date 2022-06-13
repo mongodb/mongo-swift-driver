@@ -220,6 +220,43 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         }
     }
 
+    func testListCollectionNamesAuthorizedCollections() throws {
+        // check if collection authorization is passed and received correctly
+        let client = try MongoClient.makeTestClient()
+        let monitor = client.addCommandMonitor()
+        let db = client.db(Self.testDatabase)
+        try db.drop()
+
+        _ = try db.createCollection("foo")
+        _ = try db.createCollection("bar")
+        _ = try db.createCollection("baz")
+
+        try monitor.captureEvents {
+            var opts = ListCollectionsOptions(authorizedCollections: true)
+            _ = try db.listCollectionNames(nil, options: opts, session: nil)
+            _ = try db.listCollections(nil, options: opts, session: nil)
+            opts.authorizedCollections = false
+            _ = try db.listCollectionNames(nil, options: opts, session: nil)
+            _ = try db.listCollectionNames()
+        }
+
+        let events = monitor.commandStartedEvents()
+        expect(events).to(haveCount(4))
+
+        let listCollsAuthTrue = events[0]
+        expect(listCollsAuthTrue.command["listCollections"]).toNot(beNil())
+        expect(listCollsAuthTrue.command["authorizedCollections"]?.boolValue).to(beTrue())
+        let listCollsTrueNoNames = events[1]
+        expect(listCollsTrueNoNames.command["listCollections"]).toNot(beNil())
+        expect(listCollsTrueNoNames.command["authorizedCollections"]?.boolValue).to(beTrue())
+        let listCollsAuthFalse = events[2]
+        expect(listCollsAuthFalse.command["listCollections"]).toNot(beNil())
+        expect(listCollsAuthFalse.command["authorizedCollections"]?.boolValue).to(beFalse())
+        let listCollsAuthNil = events[3]
+        expect(listCollsAuthNil.command["listCollections"]).toNot(beNil())
+        expect(listCollsAuthNil.command["authorizedCollections"]).to(beNil())
+    }
+
     func testAggregate() throws {
         let client = try MongoClient.makeTestClient()
         // $currentOp must be run on the admin database
