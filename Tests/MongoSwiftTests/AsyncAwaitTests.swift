@@ -91,7 +91,10 @@ final class AsyncAwaitTests: MongoSwiftTestCase {
         testAsync {
             try await self.withTestNamespace { _, db, _ in
                 try await db.drop()
-                _ = try await db.createCollection("foo")
+                let coll = try await db.createCollection("foo")
+                defer {
+                    coll.syncDropOrFail()
+                }
                 let collections = try await db.listCollectionNames()
                 expect(collections).to(contain("foo"))
             }
