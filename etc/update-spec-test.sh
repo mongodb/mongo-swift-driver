@@ -25,6 +25,6 @@ curl -sL https://github.com/mongodb/specifications/archive/master.zip -o "$tmpdi
 unzip -d "$tmpdir" "$tmpdir/specs.zip" > /dev/null
 
 touch "$spec_root/$1"
-rsync -ah "$tmpdir/specifications-master/source/$1" "$spec_root/$1" --delete
+rsync -ah "$tmpdir/specifications-master/source/$1" "$spec_root" --delete
 
 rm -rf "$tmpdir"
