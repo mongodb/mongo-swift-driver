@@ -565,17 +565,32 @@ struct UnifiedCountDocuments: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
 
+    /// Options for the query.
+    let options: CountDocumentsOptions?
+
     /// Optional identifier for a session entity to use.
     let session: String?
 
     static var knownArguments: Set<String> {
-        ["filter", "session"]
+        Set(Self.CodingKeys.allCases.map { $0.stringValue })
+            .union(Set(CountDocumentsOptions.CodingKeys.allCases.map { $0.stringValue }))
+    }
+
+    private enum CodingKeys: String, CodingKey, CaseIterable {
+        case filter, session
+    }
+
+    init(from decoder: Decoder) throws {
+        self.options = try decoder.singleValueContainer().decode(CountDocumentsOptions.self)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        let result = try collection.countDocuments(filter, session: session)
+        let result = try collection.countDocuments(filter, options: self.options, session: session)
         return .bson(BSON(result))
     }
 }

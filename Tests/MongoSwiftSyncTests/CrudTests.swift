@@ -81,7 +81,9 @@ final class CrudTests: MongoSwiftTestCase {
             "deleteOne-let.json",
             "deleteMany-let.json",
             "updateOne-let.json",
-            "updateMany-let.json"
+            "updateMany-let.json",
+            // TODO: SWIFT-1515 unskip
+            "estimatedDocumentCount-comment.json"
         ]
         let files = try retrieveSpecTestFiles(
             specName: "crud",
