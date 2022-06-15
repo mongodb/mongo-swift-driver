@@ -55,11 +55,6 @@ final class ReadWriteConcernOperationTests: MongoSwiftTestCase {
             EstimatedDocumentCountOptions(readConcern: .majority)
         )).toNot(throwError())
 
-        expect(try coll.estimatedDocumentCount(
-            options:
-            EstimatedDocumentCountOptions(comment: "hello world", readConcern: .majority)
-        )).toNot(throwError())
-
         expect(try coll.distinct(
             fieldName: "a",
             options: DistinctOptions(readConcern: .local)

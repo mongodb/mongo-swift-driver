@@ -5,7 +5,8 @@ public struct CountDocumentsOptions: Codable {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
-    /// Attaches a comment to the query.
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
 
     /// A hint for the index to use.
