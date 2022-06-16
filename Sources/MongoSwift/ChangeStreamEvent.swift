@@ -100,6 +100,9 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     /// A document containing the database and collection names in which this change happened.
     public let ns: MongoNamespace
 
+    /// A document containing
+    public let to: MongoNamespace?
+
     /**
      * Only present for options of type `insert`, `update`, `replace` and `delete`. For unsharded collections this
      * contains a single field, _id, with the value of the _id of the document updated. For sharded collections, this
@@ -126,7 +129,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     public let fullDocument: T?
 
     private enum CodingKeys: String, CodingKey {
-        case operationType, _id, ns, documentKey, updateDescription, fullDocument
+        case operationType, _id, ns, to, documentKey, updateDescription, fullDocument
     }
 
     // Custom decode method to work around the fact that `invalidate` events do not have an `ns` field in the raw
@@ -143,6 +146,16 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
                 throw error
             }
             self.ns = ns
+        }
+
+        // To only exists in `rename` events so similar implementation as `ns`
+        do {
+            self.to = try container.decodeIfPresent(MongoNamespace.self, forKey: .to)
+        } catch {
+            guard let to = decoder.userInfo[changeStreamNamespaceKey] as? MongoNamespace else {
+                throw error
+            }
+            self.to = to
         }
 
         self.documentKey = try container.decodeIfPresent(BSONDocument.self, forKey: .documentKey)

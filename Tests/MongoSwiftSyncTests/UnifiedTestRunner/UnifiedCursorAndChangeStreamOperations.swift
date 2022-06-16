@@ -3,6 +3,10 @@ import MongoSwiftSync
 import TestsCommon
 
 struct CreateChangeStream: UnifiedOperationProtocol {
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    let comment: BSON?
+
     /// Pipeline for the change stream.
     let pipeline: [BSONDocument]
 
@@ -13,18 +17,17 @@ struct CreateChangeStream: UnifiedOperationProtocol {
     let session: String?
 
     enum CodingKeys: String, CodingKey, CaseIterable {
-        case pipeline, session
+        case comment, pipeline, session
     }
 
     static var knownArguments: Set<String> {
-        Set(
-            CodingKeys.allCases.map { $0.rawValue } +
-                ChangeStreamOptions().propertyNames
-        )
+        Set(CodingKeys.allCases.map { $0.rawValue }).union(
+            Set(ChangeStreamOptions().propertyNames))
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.comment = try container.decodeIfPresent(BSON.self, forKey: .comment)
         self.pipeline = try container.decode([BSONDocument].self, forKey: .pipeline)
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
         self.options = try decoder.singleValueContainer().decode(ChangeStreamOptions.self)

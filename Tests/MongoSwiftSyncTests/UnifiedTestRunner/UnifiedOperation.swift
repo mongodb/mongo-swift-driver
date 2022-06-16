@@ -226,6 +226,8 @@ struct UnifiedOperation: Decodable {
             }
         case "listIndexes":
             self.operation = try container.decode(UnifiedListIndexes.self, forKey: .arguments)
+        case "rename":
+            self.operation = try container.decode(UnifiedRename.self, forKey: .arguments)
         case "replaceOne":
             self.operation = try container.decode(UnifiedReplaceOne.self, forKey: .arguments)
         case "runCommand":
