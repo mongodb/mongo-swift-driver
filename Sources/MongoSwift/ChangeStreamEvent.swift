@@ -100,7 +100,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     /// A document containing the database and collection names in which this change happened.
     public let ns: MongoNamespace
 
-    /// A document containing
+    /// A document containing the new database and collection names for which the `rename` happened.
     public let to: MongoNamespace?
 
     /**
@@ -133,7 +133,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     }
 
     // Custom decode method to work around the fact that `invalidate` events do not have an `ns` field in the raw
-    // document. TODO SWIFT-981: Remove this.
+    // document. TODO: SWIFT-981: Remove this.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.operationType = try container.decode(OperationType.self, forKey: .operationType)
@@ -148,7 +148,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
             self.ns = ns
         }
 
-        // To only exists in `rename` events so similar implementation as `ns`
+        // `to` only exists in `rename` events so similar implementation as `ns`
         do {
             self.to = try container.decodeIfPresent(MongoNamespace.self, forKey: .to)
         } catch {

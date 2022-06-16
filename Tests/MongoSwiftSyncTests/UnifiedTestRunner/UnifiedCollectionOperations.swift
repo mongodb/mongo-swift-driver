@@ -607,13 +607,12 @@ struct UnifiedRename: UnifiedOperationProtocol {
     let to: String
 
     static var knownArguments: Set<String> {
-        ["to"] // explicit in renameCollectionOperation
+        ["to"] // explicit argument in renameCollectionOperation
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         _ = try collection.renamed(to: self.to)
-        // print(type(of: result)) --> MongoCollection<BSONDocument>
 
         return .none
     }
