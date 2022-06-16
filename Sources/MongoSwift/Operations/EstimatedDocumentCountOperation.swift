@@ -2,6 +2,10 @@ import CLibMongoC
 
 /// Options to use when executing an `estimatedDocumentCount` command on a `MongoCollection`.
 public struct EstimatedDocumentCountOptions: Codable {
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
+
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
 
@@ -15,17 +19,19 @@ public struct EstimatedDocumentCountOptions: Codable {
 
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
+        comment: BSON? = nil,
         maxTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil
     ) {
+        self.comment = comment
         self.maxTimeMS = maxTimeMS
         self.readConcern = readConcern
         self.readPreference = readPreference
     }
 
     internal enum CodingKeys: String, CodingKey, CaseIterable {
-        case maxTimeMS, readConcern
+        case maxTimeMS, readConcern, comment
     }
 }
 

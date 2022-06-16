@@ -5,6 +5,10 @@ public struct CountDocumentsOptions: Codable {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
+
     /// A hint for the index to use.
     public var hint: IndexHint?
 
@@ -28,6 +32,7 @@ public struct CountDocumentsOptions: Codable {
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         limit: Int? = nil,
         maxTimeMS: Int? = nil,
@@ -36,6 +41,7 @@ public struct CountDocumentsOptions: Codable {
         skip: Int? = nil
     ) {
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.limit = limit
         self.maxTimeMS = maxTimeMS
@@ -44,8 +50,8 @@ public struct CountDocumentsOptions: Codable {
         self.skip = skip
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case collation, hint, limit, maxTimeMS, readConcern, skip
+    internal enum CodingKeys: String, CaseIterable, CodingKey {
+        case collation, comment, hint, limit, maxTimeMS, readConcern, skip
     }
 }
 
