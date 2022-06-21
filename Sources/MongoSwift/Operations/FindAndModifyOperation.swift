@@ -24,6 +24,7 @@ internal class FindAndModifyOptions {
         arrayFilters: [BSONDocument]? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument?,
+        comment _: BSON? = nil,
         hint: IndexHint? = nil,
         letValue: BSONDocument? = nil,
         maxTimeMS: Int?,

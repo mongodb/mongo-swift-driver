@@ -161,12 +161,21 @@ public struct DeleteModelOptions: Codable {
     /// The collation to use.
     public var collation: BSONDocument?
 
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
+
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
 
     /// Initializer allowing any/all options to be omitted or optional.
-    public init(collation: BSONDocument? = nil, hint: IndexHint? = nil) {
+    public init(
+        collation: BSONDocument? = nil,
+        comment: BSON? = nil,
+        hint: IndexHint? = nil
+    ) {
         self.collation = collation
+        self.comment = comment
         self.hint = hint
     }
 }
@@ -175,14 +184,25 @@ public struct DeleteModelOptions: Codable {
 public struct ReplaceOneModelOptions: Codable {
     /// The collation to use.
     public var collation: BSONDocument?
+
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
+
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
     /// When `true`, creates a new document if no document matches the query.
     public var upsert: Bool?
 
     /// Initializer allowing any/all options to be omitted or optional.
-    public init(collation: BSONDocument? = nil, hint: IndexHint? = nil, upsert: Bool? = nil) {
+    public init(
+        collation: BSONDocument? = nil,
+        comment: BSON? = nil,
+        hint: IndexHint? = nil,
+        upsert: Bool? = nil
+    ) {
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.upsert = upsert
     }
@@ -194,6 +214,11 @@ public struct UpdateModelOptions: Codable {
     public var arrayFilters: [BSONDocument]?
     /// The collation to use.
     public var collation: BSONDocument?
+
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
+
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
     /// When `true`, creates a new document if no document matches the query.
@@ -203,11 +228,13 @@ public struct UpdateModelOptions: Codable {
     public init(
         arrayFilters: [BSONDocument]? = nil,
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         upsert: Bool? = nil
     ) {
         self.arrayFilters = arrayFilters
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.upsert = upsert
     }
@@ -307,6 +334,10 @@ public struct BulkWriteOptions: Codable {
     /// If `true`, allows the write to opt-out of document level validation.
     public var bypassDocumentValidation: Bool?
 
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
+
     /**
      * If `true` (the default), operations will be executed serially in order
      * and a write error will abort execution of the entire bulk write. If
@@ -320,7 +351,12 @@ public struct BulkWriteOptions: Codable {
     public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(bypassDocumentValidation: Bool? = nil, ordered: Bool? = nil, writeConcern: WriteConcern? = nil) {
+    public init(
+        bypassDocumentValidation: Bool? = nil,
+        comment _: BSON? = nil,
+        ordered: Bool? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.ordered = ordered ?? true
         self.writeConcern = writeConcern
@@ -333,12 +369,13 @@ public struct BulkWriteOptions: Codable {
         }
 
         self.bypassDocumentValidation = options.bypassDocumentValidation
+        self.comment = options.comment
         self.ordered = options.ordered
         self.writeConcern = options.writeConcern
     }
 
     private enum CodingKeys: String, CodingKey {
-        case bypassDocumentValidation, ordered, writeConcern
+        case bypassDocumentValidation, comment, ordered, writeConcern
     }
 
     // A manual implementation is required to enforce a default value for ordered without making it optional.

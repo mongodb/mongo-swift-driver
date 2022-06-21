@@ -335,12 +335,21 @@ public struct InsertOneOptions: Codable, BulkWriteOptionsConvertible {
     /// If true, allows the write to opt-out of document level validation.
     public var bypassDocumentValidation: Bool?
 
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
+
     /// An optional WriteConcern to use for the command.
     public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing bypassDocumentValidation to be omitted or optional
-    public init(bypassDocumentValidation: Bool? = nil, writeConcern: WriteConcern? = nil) {
+    public init(
+        bypassDocumentValidation: Bool? = nil,
+        comment: BSON? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.bypassDocumentValidation = bypassDocumentValidation
+        self.comment = comment
         self.writeConcern = writeConcern
     }
 }

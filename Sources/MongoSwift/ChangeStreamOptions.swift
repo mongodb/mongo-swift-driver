@@ -26,6 +26,10 @@ public struct ChangeStreamOptions: Codable {
     /// - SeeAlso: https://docs.mongodb.com/manual/reference/command/aggregate
     public var collation: BSONDocument?
 
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
+
     /**
      * Indicates how the `fullDocument` field of a change stream document should be filled out by the server.
      * By default (indicated by a nil value for this option), the `fullDocument` field in the change stream document
@@ -66,6 +70,7 @@ public struct ChangeStreamOptions: Codable {
     public init(
         batchSize: Int? = nil,
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         fullDocument: FullDocument? = nil,
         maxAwaitTimeMS: Int? = nil,
         resumeAfter: ResumeToken? = nil,
@@ -74,6 +79,7 @@ public struct ChangeStreamOptions: Codable {
     ) {
         self.batchSize = batchSize
         self.collation = collation
+        self.comment = comment
         self.fullDocument = fullDocument
         self.maxAwaitTimeMS = maxAwaitTimeMS
         self.resumeAfter = resumeAfter

@@ -2,6 +2,10 @@ import CLibMongoC
 
 /// Options to use when creating a new index on a `MongoCollection`.
 public struct CreateIndexOptions: Encodable {
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
+
     /// The maximum amount of time to allow the query to run - enforced server-side.
     public var maxTimeMS: Int?
 
@@ -9,7 +13,12 @@ public struct CreateIndexOptions: Encodable {
     public var writeConcern: WriteConcern?
 
     /// Initializer allowing any/all parameters to be omitted.
-    public init(maxTimeMS: Int? = nil, writeConcern: WriteConcern? = nil) {
+    public init(
+        comment: BSON? = nil,
+        maxTimeMS: Int? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
+        self.comment = comment
         self.maxTimeMS = maxTimeMS
         self.writeConcern = writeConcern
     }

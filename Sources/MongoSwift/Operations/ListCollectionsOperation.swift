@@ -81,10 +81,19 @@ public struct ListCollectionsOptions: Codable {
     /// The batchSize for the returned cursor.
     public var batchSize: Int?
 
+    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
+
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(authorizedCollections: Bool? = nil, batchSize: Int? = nil) {
+    public init(
+        authorizedCollections: Bool? = nil,
+        batchSize: Int? = nil,
+        comment: BSON? = nil
+    ) {
         self.authorizedCollections = authorizedCollections
         self.batchSize = batchSize
+        self.comment = comment
     }
 }
 
