@@ -53,7 +53,7 @@ public struct FindOptions: Codable {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
-    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
 
@@ -225,7 +225,7 @@ public struct FindOneOptions: Codable {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
-    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
 

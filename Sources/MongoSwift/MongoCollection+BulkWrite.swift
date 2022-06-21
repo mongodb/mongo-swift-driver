@@ -161,7 +161,7 @@ public struct DeleteModelOptions: Codable {
     /// The collation to use.
     public var collation: BSONDocument?
 
-    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
 
@@ -185,7 +185,7 @@ public struct ReplaceOneModelOptions: Codable {
     /// The collation to use.
     public var collation: BSONDocument?
 
-    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
 
@@ -215,7 +215,7 @@ public struct UpdateModelOptions: Codable {
     /// The collation to use.
     public var collation: BSONDocument?
 
-    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
 
@@ -334,7 +334,7 @@ public struct BulkWriteOptions: Codable {
     /// If `true`, allows the write to opt-out of document level validation.
     public var bypassDocumentValidation: Bool?
 
-    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
 

@@ -187,7 +187,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     /// Specifies a collation to use.
     public var collation: BSONDocument?
 
-    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
 
@@ -254,7 +254,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     /// Specifies a collation to use.
     public var collation: BSONDocument?
 
-    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
 
@@ -338,7 +338,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
     /// Specifies a collation to use.
     public var collation: BSONDocument?
 
-    /// Enables users to specify an arbitrary BSON type to help trace the operation through
+    /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
 

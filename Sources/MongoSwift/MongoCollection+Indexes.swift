@@ -60,7 +60,7 @@ public struct IndexOptions: Codable {
     /// is sent and the default collation of the collection server-side is used.
     public var collation: BSONDocument?
 
-    /// Enables users to specify an arbitrary BSON type to help trace the index through
+    /// An arbitrary BSON type to help trace the index through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
 
