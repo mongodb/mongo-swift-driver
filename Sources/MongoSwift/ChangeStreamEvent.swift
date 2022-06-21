@@ -97,7 +97,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     public let _id: ResumeToken
 
     // TODO: SWIFT-981: Make this field optional.
-    /// A   `MongoNamespace` containing the database and collection names in which this change happened.
+    /// A  `MongoNamespace` containing the database and collection names in which this change happened.
     public let ns: MongoNamespace
 
     /// A `MongoNamespace` containing the new database and collection names for which the `rename` event happened.
