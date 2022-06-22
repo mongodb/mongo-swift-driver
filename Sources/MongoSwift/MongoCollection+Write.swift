@@ -274,9 +274,11 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
-        let modelOptions = DeleteModelOptions(collation: options?.collation,
-                                              comment: options?.comment,
-                                              hint: options?.hint)
+        let modelOptions = DeleteModelOptions(
+            collation: options?.collation,
+            comment: options?.comment,
+            hint: options?.hint
+        )
         let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }
@@ -308,9 +310,11 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
-        let modelOptions = DeleteModelOptions(collation: options?.collation,
-                                              comment: options?.comment,
-                                              hint: options?.hint)
+        let modelOptions = DeleteModelOptions(
+            collation: options?.collation,
+            comment: options?.comment,
+            hint: options?.hint
+        )
         let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }
@@ -374,7 +378,7 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
 
     /// Specifies a collation.
     public var collation: BSONDocument?
-    
+
     /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
@@ -415,7 +419,7 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
 
     /// Specifies a collation.
     public var collation: BSONDocument?
-    
+
     /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
@@ -451,7 +455,7 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
 public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: BSONDocument?
-    
+
     /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
     public var comment: BSON?
