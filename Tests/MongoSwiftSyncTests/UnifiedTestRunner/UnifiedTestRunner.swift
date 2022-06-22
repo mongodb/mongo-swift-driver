@@ -38,7 +38,7 @@ struct UnifiedTestRunner {
     let serverParameters: BSONDocument
 
     static let minSchemaVersion = SchemaVersion(rawValue: "1.0.0")!
-    static let maxSchemaVersion = SchemaVersion(rawValue: "1.5.0")!
+    static let maxSchemaVersion = SchemaVersion(rawValue: "1.7.0")!
 
     init() throws {
         switch MongoSwiftTestCase.topologyType {

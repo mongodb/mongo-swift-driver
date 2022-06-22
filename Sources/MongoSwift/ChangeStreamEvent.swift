@@ -1,3 +1,5 @@
+import Foundation
+import SwiftBSON
 /// An `UpdateDescription` containing fields that will be present in the change stream document for
 /// operations of type `update`.
 public struct UpdateDescription: Codable {
@@ -115,6 +117,10 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     /// type`update`.
     public let updateDescription: UpdateDescription?
 
+    /// The wall time from the `mongod` that the change event originated from.
+    /// Only present for server versions 6.0 and above
+    public let wallTime: Date?
+
     /**
      * Always present for operations of type `insert` and `replace`. Also present for operations of type `update` if
      * the user has specified `.updateLookup` for the `fullDocument` option in the `ChangeStreamOptions` used to create
@@ -129,7 +135,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     public let fullDocument: T?
 
     private enum CodingKeys: String, CodingKey {
-        case operationType, _id, ns, to, documentKey, updateDescription, fullDocument
+        case operationType, _id, ns, to, documentKey, updateDescription, wallTime, fullDocument
     }
 
     // Custom decode method to work around the fact that `invalidate` events do not have an `ns` field in the raw
@@ -156,6 +162,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
         }
 
         self.documentKey = try container.decodeIfPresent(BSONDocument.self, forKey: .documentKey)
+        self.wallTime = try container.decodeIfPresent(Date.self, forKey: .wallTime)
         self.updateDescription = try container.decodeIfPresent(UpdateDescription.self, forKey: .updateDescription)
         self.fullDocument = try container.decodeIfPresent(T.self, forKey: .fullDocument)
     }

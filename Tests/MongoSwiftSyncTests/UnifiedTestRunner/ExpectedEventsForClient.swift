@@ -18,8 +18,13 @@ struct ExpectedEventsForClient: Decodable {
     /// (excluding ignored events).
     let events: [ExpectedEvent]
 
+    /// Specifies how the `events` array is matched against observed events.  If false, observed events after all
+    /// specified events have matched MUST cause a test failure; if true, observed events after all specified events
+    /// have been matched MUST NOT cause a test failure. Defaults to false.
+    let ignoreExtraEvents: Bool?
+
     enum CodingKeys: String, CodingKey {
-        case client, eventType, events
+        case client, eventType, events, ignoreExtraEvents
     }
 
     init(from decoder: Decoder) throws {
@@ -34,6 +39,7 @@ struct ExpectedEventsForClient: Decodable {
             // TODO: SWIFT-1321 actually parse these out.
             self.events = []
         }
+        self.ignoreExtraEvents = try container.decodeIfPresent(Bool.self, forKey: .ignoreExtraEvents) ?? false
     }
 }
 
@@ -77,8 +83,11 @@ enum ExpectedEvent: Decodable {
         /// Name of the database the command is run against.
         let databaseName: String?
 
-        /// Specifies whether the serviceId field of the event is set.
+        /// Specifies whether the `serviceId` field of the event is set.
         let hasServiceId: Bool?
+
+        /// Specifies whether the `serviceConnectionId` field of an event is set.
+        let hasServerConnectionId: Bool?
     }
 
     /// Represents expectations for a CommandSucceededEvent.
@@ -91,6 +100,9 @@ enum ExpectedEvent: Decodable {
 
         /// Specifies whether the serviceId field of the event is set.
         let hasServiceId: Bool?
+
+        /// Specifies whether the `serviceConnectionId` field of an event is set.
+        let hasServerConnectionId: Bool?
     }
 
     /// Represents expectations for a CommandStartedEvent.
@@ -100,5 +112,8 @@ enum ExpectedEvent: Decodable {
 
         /// Specifies whether the serviceId field of the event is set.
         let hasServiceId: Bool?
+
+        /// Specifies whether the `serviceConnectionId` field of an event is set.
+        let hasServerConnectionId: Bool?
     }
 }
