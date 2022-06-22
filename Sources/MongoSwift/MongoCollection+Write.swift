@@ -94,6 +94,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<UpdateResult?> {
         let modelOptions = ReplaceOneModelOptions(
             collation: options?.collation,
+            comment: options?.comment,
             hint: options?.hint,
             upsert: options?.upsert
         )
@@ -133,6 +134,7 @@ extension MongoCollection {
         let modelOptions = UpdateModelOptions(
             arrayFilters: options?.arrayFilters,
             collation: options?.collation,
+            comment: options?.comment,
             hint: options?.hint,
             upsert: options?.upsert
         )
@@ -205,6 +207,7 @@ extension MongoCollection {
         let modelOptions = UpdateModelOptions(
             arrayFilters: options?.arrayFilters,
             collation: options?.collation,
+            comment: options?.comment,
             hint: options?.hint,
             upsert: options?.upsert
         )
@@ -271,7 +274,9 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
-        let modelOptions = DeleteModelOptions(collation: options?.collation, hint: options?.hint)
+        let modelOptions = DeleteModelOptions(collation: options?.collation,
+                                              comment: options?.comment,
+                                              hint: options?.hint)
         let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }
@@ -303,7 +308,9 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
-        let modelOptions = DeleteModelOptions(collation: options?.collation, hint: options?.hint)
+        let modelOptions = DeleteModelOptions(collation: options?.collation,
+                                              comment: options?.comment,
+                                              hint: options?.hint)
         let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }
@@ -367,6 +374,10 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
 
     /// Specifies a collation.
     public var collation: BSONDocument?
+    
+    /// An arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
@@ -382,6 +393,7 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
         arrayFilters: [BSONDocument]? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         upsert: Bool? = nil,
         writeConcern: WriteConcern? = nil
@@ -389,6 +401,7 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
         self.arrayFilters = arrayFilters
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.upsert = upsert
         self.writeConcern = writeConcern
@@ -402,6 +415,10 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
 
     /// Specifies a collation.
     public var collation: BSONDocument?
+    
+    /// An arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
@@ -416,12 +433,14 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     public init(
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         upsert: Bool? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.upsert = upsert
         self.writeConcern = writeConcern
@@ -432,6 +451,10 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
 public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: BSONDocument?
+    
+    /// An arbitrary BSON type to help trace the operation through
+    /// the database profiler, currentOp and logs. The default is to not send a value.
+    public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
@@ -442,10 +465,12 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// Convenience initializer allowing collation to be omitted or optional
     public init(
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.writeConcern = writeConcern
     }
