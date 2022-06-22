@@ -83,7 +83,12 @@ final class CrudTests: MongoSwiftTestCase {
             "updateOne-let.json",
             "updateMany-let.json",
             // TODO: SWIFT-1515 unskip
-            "estimatedDocumentCount-comment.json"
+            "estimatedDocumentCount-comment.json",
+            // Skipping because comment is only supported in later versions of `libmongoc`
+            "bulkWrite-comment.json",
+            "replaceOne-comment.json",
+            "updateOne-comment.json",
+            "insertMany-comment.json"
         ]
         let files = try retrieveSpecTestFiles(
             specName: "crud",
@@ -358,10 +363,12 @@ private class CountTest: CrudTest {
 private class CountDocumentsTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
         let filter = self.args["filter"]!.documentValue!
-        let options = CountDocumentsOptions(collation: self.collation,
-                                            comment: self.comment,
-                                            limit: self.limit,
-                                            skip: self.skip)
+        let options = CountDocumentsOptions(
+            collation: self.collation,
+            comment: self.comment,
+            limit: self.limit,
+            skip: self.skip
+        )
         let result = try coll.countDocuments(filter, options: options)
         expect(result).to(equal(self.result?.toInt()))
     }
@@ -430,10 +437,12 @@ private class FindTest: CrudTest {
 private class FindOneAndDeleteTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
         let filter = self.args["filter"]!.documentValue!
-        let opts = FindOneAndDeleteOptions(collation: self.collation,
-                                           comment: self.comment,
-                                           projection: self.projection,
-                                           sort: self.sort)
+        let opts = FindOneAndDeleteOptions(
+            collation: self.collation,
+            comment: self.comment,
+            projection: self.projection,
+            sort: self.sort
+        )
 
         let result = try coll.findOneAndDelete(filter, options: opts)
         self.verifyFindAndModifyResult(result)
@@ -561,10 +570,12 @@ private class UpdateTest: CrudTest {
     override func execute(usingCollection coll: MongoCollection<BSONDocument>) throws {
         let filter = self.args["filter"]!.documentValue!
         let update = self.args["update"]!.documentValue!
-        let options = UpdateOptions(arrayFilters: self.arrayFilters,
-                                    collation: self.collation,
-                                    comment: self.comment,
-                                    upsert: self.upsert)
+        let options = UpdateOptions(
+            arrayFilters: self.arrayFilters,
+            collation: self.collation,
+            comment: self.comment,
+            upsert: self.upsert
+        )
         let result: UpdateResult?
         if self.operationName == "updateOne" {
             result = try coll.updateOne(filter: filter, update: update, options: options)
