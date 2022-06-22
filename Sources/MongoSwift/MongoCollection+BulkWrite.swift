@@ -353,11 +353,12 @@ public struct BulkWriteOptions: Codable {
     /// Convenience initializer allowing any/all parameters to be omitted or optional
     public init(
         bypassDocumentValidation: Bool? = nil,
-        comment _: BSON? = nil,
+        comment: BSON? = nil,
         ordered: Bool? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.bypassDocumentValidation = bypassDocumentValidation
+        self.comment = comment
         self.ordered = ordered ?? true
         self.writeConcern = writeConcern
     }
@@ -382,6 +383,7 @@ public struct BulkWriteOptions: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.bypassDocumentValidation = try container.decodeIfPresent(Bool.self, forKey: .bypassDocumentValidation)
+        self.comment = try container.decodeIfPresent(BSON.self, forKey: .comment)
         self.ordered = try container.decodeIfPresent(Bool.self, forKey: .ordered) ?? true
         self.writeConcern = try container.decodeIfPresent(WriteConcern.self, forKey: .writeConcern)
     }
