@@ -70,10 +70,10 @@ _mongoc_hex_md5 (const char *input)
    char digest_str[33];
    int i;
 
-   COMMON_PREFIX (_bson_md5_init (&md5));
-   COMMON_PREFIX (_bson_md5_append (
-      &md5, (const uint8_t *) input, (uint32_t) strlen (input)));
-   COMMON_PREFIX (_bson_md5_finish (&md5, digest));
+   mcommon_md5_init (&md5);
+   mcommon_md5_append (
+      &md5, (const uint8_t *) input, (uint32_t) strlen (input));
+   mcommon_md5_finish (&md5, digest);
 
    for (i = 0; i < sizeof digest; i++) {
       bson_snprintf (&digest_str[i * 2], 3, "%02x", digest[i]);
@@ -306,6 +306,10 @@ _mongoc_wire_version_to_server_version (int32_t version)
       return "5.1";
    case 15:
       return "5.2";
+   case 16:
+      return "5.3";
+   case 17:
+      return "6.0";
    default:
       return "Unknown";
    }
@@ -863,3 +867,33 @@ _mongoc_rand_size_t (size_t min, size_t max, size_t (*rand) (void))
    "Implementation of _mongoc_simple_rand_size_t() requires size_t be exactly 32-bit or 64-bit"
 
 #endif
+
+bool
+_mongoc_iter_document_as_bson (const bson_iter_t *iter,
+                               bson_t *bson,
+                               bson_error_t *error)
+{
+   uint32_t len;
+   const uint8_t *data;
+
+   if (!BSON_ITER_HOLDS_DOCUMENT (iter)) {
+      bson_set_error (error,
+                      MONGOC_ERROR_COMMAND,
+                      MONGOC_ERROR_COMMAND_INVALID_ARG,
+                      "expected BSON document for field: %s",
+                      bson_iter_key (iter));
+      return false;
+   }
+
+   bson_iter_document (iter, &len, &data);
+   if (!bson_init_static (bson, data, len)) {
+      bson_set_error (error,
+                      MONGOC_ERROR_COMMAND,
+                      MONGOC_ERROR_COMMAND_INVALID_ARG,
+                      "unable to initialize BSON document from field: %s",
+                      bson_iter_key (iter));
+      return false;
+   }
+
+   return true;
+}

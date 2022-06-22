@@ -27,6 +27,7 @@ _mongoc_insert_one_opts_parse (
    mongoc_insert_one_opts->crud.write_concern_owned = false;
    mongoc_insert_one_opts->crud.client_session = NULL;
    mongoc_insert_one_opts->crud.validate = _mongoc_default_insert_vflags;
+   memset (&mongoc_insert_one_opts->crud.comment, 0, sizeof (bson_value_t));
    mongoc_insert_one_opts->bypass = false;
    bson_init (&mongoc_insert_one_opts->extra);
 
@@ -72,6 +73,15 @@ _mongoc_insert_one_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "comment")) {
+         if (!_mongoc_convert_bson_value_t (
+               client,
+               &iter,
+               &mongoc_insert_one_opts->crud.comment,
+               error)) {
+            return false;
+         }
+      }
       else if (!strcmp (bson_iter_key (&iter), "bypassDocumentValidation")) {
          if (!_mongoc_convert_bool (
                client,
@@ -105,6 +115,7 @@ _mongoc_insert_one_opts_cleanup (mongoc_insert_one_opts_t *mongoc_insert_one_opt
    if (mongoc_insert_one_opts->crud.write_concern_owned) {
       mongoc_write_concern_destroy (mongoc_insert_one_opts->crud.writeConcern);
    }
+   bson_value_destroy (&mongoc_insert_one_opts->crud.comment);
    bson_destroy (&mongoc_insert_one_opts->extra);
 }
 
@@ -121,6 +132,7 @@ _mongoc_insert_many_opts_parse (
    mongoc_insert_many_opts->crud.write_concern_owned = false;
    mongoc_insert_many_opts->crud.client_session = NULL;
    mongoc_insert_many_opts->crud.validate = _mongoc_default_insert_vflags;
+   memset (&mongoc_insert_many_opts->crud.comment, 0, sizeof (bson_value_t));
    mongoc_insert_many_opts->ordered = true;
    mongoc_insert_many_opts->bypass = false;
    bson_init (&mongoc_insert_many_opts->extra);
@@ -167,6 +179,15 @@ _mongoc_insert_many_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "comment")) {
+         if (!_mongoc_convert_bson_value_t (
+               client,
+               &iter,
+               &mongoc_insert_many_opts->crud.comment,
+               error)) {
+            return false;
+         }
+      }
       else if (!strcmp (bson_iter_key (&iter), "ordered")) {
          if (!_mongoc_convert_bool (
                client,
@@ -209,6 +230,7 @@ _mongoc_insert_many_opts_cleanup (mongoc_insert_many_opts_t *mongoc_insert_many_
    if (mongoc_insert_many_opts->crud.write_concern_owned) {
       mongoc_write_concern_destroy (mongoc_insert_many_opts->crud.writeConcern);
    }
+   bson_value_destroy (&mongoc_insert_many_opts->crud.comment);
    bson_destroy (&mongoc_insert_many_opts->extra);
 }
 
@@ -225,8 +247,10 @@ _mongoc_delete_one_opts_parse (
    mongoc_delete_one_opts->delete.crud.write_concern_owned = false;
    mongoc_delete_one_opts->delete.crud.client_session = NULL;
    mongoc_delete_one_opts->delete.crud.validate = BSON_VALIDATE_NONE;
+   memset (&mongoc_delete_one_opts->delete.crud.comment, 0, sizeof (bson_value_t));
    bson_init (&mongoc_delete_one_opts->delete.collation);
    memset (&mongoc_delete_one_opts->delete.hint, 0, sizeof (bson_value_t));
+   bson_init (&mongoc_delete_one_opts->delete.let);
    bson_init (&mongoc_delete_one_opts->extra);
 
    if (!opts) {
@@ -271,6 +295,15 @@ _mongoc_delete_one_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "comment")) {
+         if (!_mongoc_convert_bson_value_t (
+               client,
+               &iter,
+               &mongoc_delete_one_opts->delete.crud.comment,
+               error)) {
+            return false;
+         }
+      }
       else if (!strcmp (bson_iter_key (&iter), "collation")) {
          if (!_mongoc_convert_document (
                client,
@@ -285,6 +318,15 @@ _mongoc_delete_one_opts_parse (
                client,
                &iter,
                &mongoc_delete_one_opts->delete.hint,
+               error)) {
+            return false;
+         }
+      }
+      else if (!strcmp (bson_iter_key (&iter), "let")) {
+         if (!_mongoc_convert_document (
+               client,
+               &iter,
+               &mongoc_delete_one_opts->delete.let,
                error)) {
             return false;
          }
@@ -313,8 +355,10 @@ _mongoc_delete_one_opts_cleanup (mongoc_delete_one_opts_t *mongoc_delete_one_opt
    if (mongoc_delete_one_opts->delete.crud.write_concern_owned) {
       mongoc_write_concern_destroy (mongoc_delete_one_opts->delete.crud.writeConcern);
    }
+   bson_value_destroy (&mongoc_delete_one_opts->delete.crud.comment);
    bson_destroy (&mongoc_delete_one_opts->delete.collation);
    bson_value_destroy (&mongoc_delete_one_opts->delete.hint);
+   bson_destroy (&mongoc_delete_one_opts->delete.let);
    bson_destroy (&mongoc_delete_one_opts->extra);
 }
 
@@ -331,8 +375,10 @@ _mongoc_delete_many_opts_parse (
    mongoc_delete_many_opts->delete.crud.write_concern_owned = false;
    mongoc_delete_many_opts->delete.crud.client_session = NULL;
    mongoc_delete_many_opts->delete.crud.validate = BSON_VALIDATE_NONE;
+   memset (&mongoc_delete_many_opts->delete.crud.comment, 0, sizeof (bson_value_t));
    bson_init (&mongoc_delete_many_opts->delete.collation);
    memset (&mongoc_delete_many_opts->delete.hint, 0, sizeof (bson_value_t));
+   bson_init (&mongoc_delete_many_opts->delete.let);
    bson_init (&mongoc_delete_many_opts->extra);
 
    if (!opts) {
@@ -377,6 +423,15 @@ _mongoc_delete_many_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "comment")) {
+         if (!_mongoc_convert_bson_value_t (
+               client,
+               &iter,
+               &mongoc_delete_many_opts->delete.crud.comment,
+               error)) {
+            return false;
+         }
+      }
       else if (!strcmp (bson_iter_key (&iter), "collation")) {
          if (!_mongoc_convert_document (
                client,
@@ -391,6 +446,15 @@ _mongoc_delete_many_opts_parse (
                client,
                &iter,
                &mongoc_delete_many_opts->delete.hint,
+               error)) {
+            return false;
+         }
+      }
+      else if (!strcmp (bson_iter_key (&iter), "let")) {
+         if (!_mongoc_convert_document (
+               client,
+               &iter,
+               &mongoc_delete_many_opts->delete.let,
                error)) {
             return false;
          }
@@ -419,8 +483,10 @@ _mongoc_delete_many_opts_cleanup (mongoc_delete_many_opts_t *mongoc_delete_many_
    if (mongoc_delete_many_opts->delete.crud.write_concern_owned) {
       mongoc_write_concern_destroy (mongoc_delete_many_opts->delete.crud.writeConcern);
    }
+   bson_value_destroy (&mongoc_delete_many_opts->delete.crud.comment);
    bson_destroy (&mongoc_delete_many_opts->delete.collation);
    bson_value_destroy (&mongoc_delete_many_opts->delete.hint);
+   bson_destroy (&mongoc_delete_many_opts->delete.let);
    bson_destroy (&mongoc_delete_many_opts->extra);
 }
 
@@ -437,10 +503,12 @@ _mongoc_update_one_opts_parse (
    mongoc_update_one_opts->update.crud.write_concern_owned = false;
    mongoc_update_one_opts->update.crud.client_session = NULL;
    mongoc_update_one_opts->update.crud.validate = _mongoc_default_update_vflags;
+   memset (&mongoc_update_one_opts->update.crud.comment, 0, sizeof (bson_value_t));
    mongoc_update_one_opts->update.bypass = false;
    bson_init (&mongoc_update_one_opts->update.collation);
    memset (&mongoc_update_one_opts->update.hint, 0, sizeof (bson_value_t));
    mongoc_update_one_opts->update.upsert = false;
+   bson_init (&mongoc_update_one_opts->update.let);
    bson_init (&mongoc_update_one_opts->arrayFilters);
    bson_init (&mongoc_update_one_opts->extra);
 
@@ -486,6 +554,15 @@ _mongoc_update_one_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "comment")) {
+         if (!_mongoc_convert_bson_value_t (
+               client,
+               &iter,
+               &mongoc_update_one_opts->update.crud.comment,
+               error)) {
+            return false;
+         }
+      }
       else if (!strcmp (bson_iter_key (&iter), "bypassDocumentValidation")) {
          if (!_mongoc_convert_bool (
                client,
@@ -518,6 +595,15 @@ _mongoc_update_one_opts_parse (
                client,
                &iter,
                &mongoc_update_one_opts->update.upsert,
+               error)) {
+            return false;
+         }
+      }
+      else if (!strcmp (bson_iter_key (&iter), "let")) {
+         if (!_mongoc_convert_document (
+               client,
+               &iter,
+               &mongoc_update_one_opts->update.let,
                error)) {
             return false;
          }
@@ -555,8 +641,10 @@ _mongoc_update_one_opts_cleanup (mongoc_update_one_opts_t *mongoc_update_one_opt
    if (mongoc_update_one_opts->update.crud.write_concern_owned) {
       mongoc_write_concern_destroy (mongoc_update_one_opts->update.crud.writeConcern);
    }
+   bson_value_destroy (&mongoc_update_one_opts->update.crud.comment);
    bson_destroy (&mongoc_update_one_opts->update.collation);
    bson_value_destroy (&mongoc_update_one_opts->update.hint);
+   bson_destroy (&mongoc_update_one_opts->update.let);
    bson_destroy (&mongoc_update_one_opts->arrayFilters);
    bson_destroy (&mongoc_update_one_opts->extra);
 }
@@ -574,10 +662,12 @@ _mongoc_update_many_opts_parse (
    mongoc_update_many_opts->update.crud.write_concern_owned = false;
    mongoc_update_many_opts->update.crud.client_session = NULL;
    mongoc_update_many_opts->update.crud.validate = _mongoc_default_update_vflags;
+   memset (&mongoc_update_many_opts->update.crud.comment, 0, sizeof (bson_value_t));
    mongoc_update_many_opts->update.bypass = false;
    bson_init (&mongoc_update_many_opts->update.collation);
    memset (&mongoc_update_many_opts->update.hint, 0, sizeof (bson_value_t));
    mongoc_update_many_opts->update.upsert = false;
+   bson_init (&mongoc_update_many_opts->update.let);
    bson_init (&mongoc_update_many_opts->arrayFilters);
    bson_init (&mongoc_update_many_opts->extra);
 
@@ -623,6 +713,15 @@ _mongoc_update_many_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "comment")) {
+         if (!_mongoc_convert_bson_value_t (
+               client,
+               &iter,
+               &mongoc_update_many_opts->update.crud.comment,
+               error)) {
+            return false;
+         }
+      }
       else if (!strcmp (bson_iter_key (&iter), "bypassDocumentValidation")) {
          if (!_mongoc_convert_bool (
                client,
@@ -655,6 +754,15 @@ _mongoc_update_many_opts_parse (
                client,
                &iter,
                &mongoc_update_many_opts->update.upsert,
+               error)) {
+            return false;
+         }
+      }
+      else if (!strcmp (bson_iter_key (&iter), "let")) {
+         if (!_mongoc_convert_document (
+               client,
+               &iter,
+               &mongoc_update_many_opts->update.let,
                error)) {
             return false;
          }
@@ -692,8 +800,10 @@ _mongoc_update_many_opts_cleanup (mongoc_update_many_opts_t *mongoc_update_many_
    if (mongoc_update_many_opts->update.crud.write_concern_owned) {
       mongoc_write_concern_destroy (mongoc_update_many_opts->update.crud.writeConcern);
    }
+   bson_value_destroy (&mongoc_update_many_opts->update.crud.comment);
    bson_destroy (&mongoc_update_many_opts->update.collation);
    bson_value_destroy (&mongoc_update_many_opts->update.hint);
+   bson_destroy (&mongoc_update_many_opts->update.let);
    bson_destroy (&mongoc_update_many_opts->arrayFilters);
    bson_destroy (&mongoc_update_many_opts->extra);
 }
@@ -711,10 +821,12 @@ _mongoc_replace_one_opts_parse (
    mongoc_replace_one_opts->update.crud.write_concern_owned = false;
    mongoc_replace_one_opts->update.crud.client_session = NULL;
    mongoc_replace_one_opts->update.crud.validate = _mongoc_default_replace_vflags;
+   memset (&mongoc_replace_one_opts->update.crud.comment, 0, sizeof (bson_value_t));
    mongoc_replace_one_opts->update.bypass = false;
    bson_init (&mongoc_replace_one_opts->update.collation);
    memset (&mongoc_replace_one_opts->update.hint, 0, sizeof (bson_value_t));
    mongoc_replace_one_opts->update.upsert = false;
+   bson_init (&mongoc_replace_one_opts->update.let);
    bson_init (&mongoc_replace_one_opts->extra);
 
    if (!opts) {
@@ -759,6 +871,15 @@ _mongoc_replace_one_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "comment")) {
+         if (!_mongoc_convert_bson_value_t (
+               client,
+               &iter,
+               &mongoc_replace_one_opts->update.crud.comment,
+               error)) {
+            return false;
+         }
+      }
       else if (!strcmp (bson_iter_key (&iter), "bypassDocumentValidation")) {
          if (!_mongoc_convert_bool (
                client,
@@ -795,6 +916,15 @@ _mongoc_replace_one_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "let")) {
+         if (!_mongoc_convert_document (
+               client,
+               &iter,
+               &mongoc_replace_one_opts->update.let,
+               error)) {
+            return false;
+         }
+      }
       else {
          /* unrecognized values are copied to "extra" */
          if (!BSON_APPEND_VALUE (
@@ -819,8 +949,10 @@ _mongoc_replace_one_opts_cleanup (mongoc_replace_one_opts_t *mongoc_replace_one_
    if (mongoc_replace_one_opts->update.crud.write_concern_owned) {
       mongoc_write_concern_destroy (mongoc_replace_one_opts->update.crud.writeConcern);
    }
+   bson_value_destroy (&mongoc_replace_one_opts->update.crud.comment);
    bson_destroy (&mongoc_replace_one_opts->update.collation);
    bson_value_destroy (&mongoc_replace_one_opts->update.hint);
+   bson_destroy (&mongoc_replace_one_opts->update.let);
    bson_destroy (&mongoc_replace_one_opts->extra);
 }
 
@@ -837,6 +969,8 @@ _mongoc_bulk_opts_parse (
    mongoc_bulk_opts->write_concern_owned = false;
    mongoc_bulk_opts->ordered = true;
    mongoc_bulk_opts->client_session = NULL;
+   bson_init (&mongoc_bulk_opts->let);
+   memset (&mongoc_bulk_opts->comment, 0, sizeof (bson_value_t));
    bson_init (&mongoc_bulk_opts->extra);
 
    if (!opts) {
@@ -881,6 +1015,24 @@ _mongoc_bulk_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "let")) {
+         if (!_mongoc_convert_document (
+               client,
+               &iter,
+               &mongoc_bulk_opts->let,
+               error)) {
+            return false;
+         }
+      }
+      else if (!strcmp (bson_iter_key (&iter), "comment")) {
+         if (!_mongoc_convert_bson_value_t (
+               client,
+               &iter,
+               &mongoc_bulk_opts->comment,
+               error)) {
+            return false;
+         }
+      }
       else {
          bson_set_error (error,
                          MONGOC_ERROR_COMMAND,
@@ -900,6 +1052,8 @@ _mongoc_bulk_opts_cleanup (mongoc_bulk_opts_t *mongoc_bulk_opts)
    if (mongoc_bulk_opts->write_concern_owned) {
       mongoc_write_concern_destroy (mongoc_bulk_opts->writeConcern);
    }
+   bson_destroy (&mongoc_bulk_opts->let);
+   bson_value_destroy (&mongoc_bulk_opts->comment);
    bson_destroy (&mongoc_bulk_opts->extra);
 }
 
@@ -1427,7 +1581,9 @@ _mongoc_change_stream_opts_parse (
    bson_init (&mongoc_change_stream_opts->startAfter);
    memset (&mongoc_change_stream_opts->startAtOperationTime, 0, sizeof (mongoc_timestamp_t));
    mongoc_change_stream_opts->maxAwaitTimeMS = 0;
-   mongoc_change_stream_opts->fullDocument = "default";
+   mongoc_change_stream_opts->fullDocument = NULL;
+   mongoc_change_stream_opts->fullDocumentBeforeChange = NULL;
+   memset (&mongoc_change_stream_opts->comment, 0, sizeof (bson_value_t));
    bson_init (&mongoc_change_stream_opts->extra);
 
    if (!opts) {
@@ -1497,6 +1653,24 @@ _mongoc_change_stream_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "fullDocumentBeforeChange")) {
+         if (!_mongoc_convert_utf8 (
+               client,
+               &iter,
+               &mongoc_change_stream_opts->fullDocumentBeforeChange,
+               error)) {
+            return false;
+         }
+      }
+      else if (!strcmp (bson_iter_key (&iter), "comment")) {
+         if (!_mongoc_convert_bson_value_t (
+               client,
+               &iter,
+               &mongoc_change_stream_opts->comment,
+               error)) {
+            return false;
+         }
+      }
       else {
          /* unrecognized values are copied to "extra" */
          if (!BSON_APPEND_VALUE (
@@ -1520,6 +1694,7 @@ _mongoc_change_stream_opts_cleanup (mongoc_change_stream_opts_t *mongoc_change_s
 {
    bson_destroy (&mongoc_change_stream_opts->resumeAfter);
    bson_destroy (&mongoc_change_stream_opts->startAfter);
+   bson_value_destroy (&mongoc_change_stream_opts->comment);
    bson_destroy (&mongoc_change_stream_opts->extra);
 }
 
@@ -1886,6 +2061,7 @@ _mongoc_aggregate_opts_parse (
    mongoc_aggregate_opts->batchSize = 0;
    mongoc_aggregate_opts->batchSize_is_set = false;
    bson_init (&mongoc_aggregate_opts->let);
+   memset (&mongoc_aggregate_opts->comment, 0, sizeof (bson_value_t));
    bson_init (&mongoc_aggregate_opts->extra);
 
    if (!opts) {
@@ -1977,6 +2153,15 @@ _mongoc_aggregate_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "comment")) {
+         if (!_mongoc_convert_bson_value_t (
+               client,
+               &iter,
+               &mongoc_aggregate_opts->comment,
+               error)) {
+            return false;
+         }
+      }
       else {
          /* unrecognized values are copied to "extra" */
          if (!BSON_APPEND_VALUE (
@@ -2004,6 +2189,7 @@ _mongoc_aggregate_opts_cleanup (mongoc_aggregate_opts_t *mongoc_aggregate_opts)
    }
    bson_destroy (&mongoc_aggregate_opts->collation);
    bson_destroy (&mongoc_aggregate_opts->let);
+   bson_value_destroy (&mongoc_aggregate_opts->comment);
    bson_destroy (&mongoc_aggregate_opts->extra);
 }
 
@@ -2020,6 +2206,8 @@ _mongoc_find_and_modify_appended_opts_parse (
    mongoc_find_and_modify_appended_opts->write_concern_owned = false;
    mongoc_find_and_modify_appended_opts->client_session = NULL;
    memset (&mongoc_find_and_modify_appended_opts->hint, 0, sizeof (bson_value_t));
+   bson_init (&mongoc_find_and_modify_appended_opts->let);
+   memset (&mongoc_find_and_modify_appended_opts->comment, 0, sizeof (bson_value_t));
    bson_init (&mongoc_find_and_modify_appended_opts->extra);
 
    if (!opts) {
@@ -2064,6 +2252,24 @@ _mongoc_find_and_modify_appended_opts_parse (
             return false;
          }
       }
+      else if (!strcmp (bson_iter_key (&iter), "let")) {
+         if (!_mongoc_convert_document (
+               client,
+               &iter,
+               &mongoc_find_and_modify_appended_opts->let,
+               error)) {
+            return false;
+         }
+      }
+      else if (!strcmp (bson_iter_key (&iter), "comment")) {
+         if (!_mongoc_convert_bson_value_t (
+               client,
+               &iter,
+               &mongoc_find_and_modify_appended_opts->comment,
+               error)) {
+            return false;
+         }
+      }
       else {
          /* unrecognized values are copied to "extra" */
          if (!BSON_APPEND_VALUE (
@@ -2089,5 +2295,7 @@ _mongoc_find_and_modify_appended_opts_cleanup (mongoc_find_and_modify_appended_o
       mongoc_write_concern_destroy (mongoc_find_and_modify_appended_opts->writeConcern);
    }
    bson_value_destroy (&mongoc_find_and_modify_appended_opts->hint);
+   bson_destroy (&mongoc_find_and_modify_appended_opts->let);
+   bson_value_destroy (&mongoc_find_and_modify_appended_opts->comment);
    bson_destroy (&mongoc_find_and_modify_appended_opts->extra);
 }

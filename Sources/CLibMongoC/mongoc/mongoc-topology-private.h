@@ -185,7 +185,20 @@ typedef struct _mongoc_topology_t {
    bool mongocryptd_bypass_spawn;
    char *mongocryptd_spawn_path;
    bson_t *mongocryptd_spawn_args;
+   bool bypass_query_analysis;
 #endif
+
+   struct {
+      struct {
+         struct {
+            char *cryptSharedLibPath;
+            bool cryptSharedLibRequired;
+         } extraOptions;
+      } autoOptions;
+   } clientSideEncryption;
+
+   // Corresponds to AutoEncryptionOpts.encryptedFieldsMap.
+   bson_t *encrypted_fields_map;
 
    /* For background monitoring. */
    mongoc_set_t *server_monitors;
@@ -607,5 +620,11 @@ const mongoc_host_list_t **
 _mongoc_apply_srv_max_hosts (const mongoc_host_list_t *hl,
                              int32_t max_hosts,
                              size_t *hl_array_size);
+
+
+/* Returns true if a versioned server API has been selected, otherwise returns
+ * false. */
+bool
+mongoc_topology_uses_server_api (const mongoc_topology_t *topology);
 
 #endif

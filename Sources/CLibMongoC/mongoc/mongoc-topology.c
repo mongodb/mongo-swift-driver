@@ -696,9 +696,13 @@ mongoc_topology_destroy (mongoc_topology_t *topology)
    mongoc_shared_ptr_reset_null (&topology->_shared_descr_._sptr_);
    mongoc_topology_scanner_destroy (topology->scanner);
    mongoc_server_session_pool_free (topology->session_pool);
+   bson_free (topology->clientSideEncryption.autoOptions.extraOptions
+                 .cryptSharedLibPath);
 
    mongoc_cond_destroy (&topology->cond_client);
    bson_mutex_destroy (&topology->tpld_modification_mtx);
+
+   bson_destroy (topology->encrypted_fields_map);
 
    bson_free (topology);
 }
@@ -2030,4 +2034,10 @@ mc_tpld_modify_drop (mc_tpld_modification mod)
 {
    bson_mutex_unlock (&mod.topology->tpld_modification_mtx);
    mongoc_topology_description_destroy (mod.new_td);
+}
+
+bool
+mongoc_topology_uses_server_api (const mongoc_topology_t *topology)
+{
+   return mongoc_topology_scanner_uses_server_api (topology->scanner);
 }

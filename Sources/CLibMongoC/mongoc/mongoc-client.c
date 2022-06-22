@@ -2363,6 +2363,7 @@ _mongoc_client_monitor_op_killcursors (mongoc_cluster_t *cluster,
                                     &server_stream->sd->host,
                                     server_stream->sd->id,
                                     &server_stream->sd->service_id,
+                                    server_stream->sd->server_connection_id,
                                     NULL,
                                     client->apm_context);
 
@@ -2411,6 +2412,7 @@ _mongoc_client_monitor_op_killcursors_succeeded (
                                       &server_stream->sd->host,
                                       server_stream->sd->id,
                                       &server_stream->sd->service_id,
+                                      server_stream->sd->server_connection_id,
                                       false,
                                       client->apm_context);
 
@@ -2455,6 +2457,7 @@ _mongoc_client_monitor_op_killcursors_failed (
                                    &server_stream->sd->host,
                                    server_stream->sd->id,
                                    &server_stream->sd->service_id,
+                                   server_stream->sd->server_connection_id,
                                    false,
                                    client->apm_context);
 
@@ -3133,7 +3136,7 @@ mongoc_client_set_server_api (mongoc_client_t *client,
       return false;
    }
 
-   if (client->api) {
+   if (mongoc_client_uses_server_api (client)) {
       bson_set_error (error,
                       MONGOC_ERROR_CLIENT,
                       MONGOC_ERROR_CLIENT_API_ALREADY_SET,
@@ -3168,4 +3171,10 @@ mongoc_client_get_handshake_description (mongoc_client_t *client,
    sd = mongoc_server_description_new_copy (server_stream->sd);
    mongoc_server_stream_cleanup (server_stream);
    return sd;
+}
+
+bool
+mongoc_client_uses_server_api (const mongoc_client_t *client)
+{
+   return mongoc_topology_uses_server_api (client->topology);
 }
