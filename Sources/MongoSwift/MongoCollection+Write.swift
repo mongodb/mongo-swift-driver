@@ -325,6 +325,7 @@ extension MongoCollection {
 /// Protocol indicating that an options type can be converted to a BulkWriteOptions.
 private protocol BulkWriteOptionsConvertible {
     var bypassDocumentValidation: Bool? { get }
+    var comment: BSON? { get }
     var writeConcern: WriteConcern? { get }
     func toBulkWriteOptions() -> BulkWriteOptions
 }
@@ -334,6 +335,7 @@ private extension BulkWriteOptionsConvertible {
     func toBulkWriteOptions() -> BulkWriteOptions {
         BulkWriteOptions(
             bypassDocumentValidation: self.bypassDocumentValidation,
+            comment: self.comment,
             writeConcern: self.writeConcern
         )
     }
