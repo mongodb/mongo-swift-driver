@@ -17,10 +17,9 @@ struct CreateChangeStream: UnifiedOperationProtocol {
     }
 
     static var knownArguments: Set<String> {
-        Set(
-            CodingKeys.allCases.map { $0.rawValue } +
-                ChangeStreamOptions().propertyNames
-        )
+        // TODO: SWIFT-1385 Remove `comment` and integrate into ChangeStreamOptions
+        Set(CodingKeys.allCases.map { $0.rawValue }).union(
+            Set(ChangeStreamOptions().propertyNames)).union(["comment"])
     }
 
     init(from decoder: Decoder) throws {

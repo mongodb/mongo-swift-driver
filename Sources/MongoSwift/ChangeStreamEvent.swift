@@ -97,8 +97,11 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     public let _id: ResumeToken
 
     // TODO: SWIFT-981: Make this field optional.
-    /// A document containing the database and collection names in which this change happened.
+    /// A  `MongoNamespace` containing the database and collection names in which this change happened.
     public let ns: MongoNamespace
+
+    /// A `MongoNamespace` containing the new database and collection names for which the `rename` event happened.
+    public let to: MongoNamespace?
 
     /**
      * Only present for options of type `insert`, `update`, `replace` and `delete`. For unsharded collections this
@@ -126,11 +129,11 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     public let fullDocument: T?
 
     private enum CodingKeys: String, CodingKey {
-        case operationType, _id, ns, documentKey, updateDescription, fullDocument
+        case operationType, _id, ns, to, documentKey, updateDescription, fullDocument
     }
 
     // Custom decode method to work around the fact that `invalidate` events do not have an `ns` field in the raw
-    // document. TODO SWIFT-981: Remove this.
+    // document. TODO: SWIFT-981: Remove this.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.operationType = try container.decode(OperationType.self, forKey: .operationType)
@@ -143,6 +146,13 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
                 throw error
             }
             self.ns = ns
+        }
+
+        // `to` only exists in `rename` events else `nil` to resolve compiler error
+        if self.operationType == OperationType.rename {
+            self.to = try container.decode(MongoNamespace.self, forKey: .to)
+        } else {
+            self.to = nil
         }
 
         self.documentKey = try container.decodeIfPresent(BSONDocument.self, forKey: .documentKey)

@@ -617,6 +617,22 @@ struct UnifiedEstimatedDocumentCount: UnifiedOperationProtocol {
     }
 }
 
+struct UnifiedRename: UnifiedOperationProtocol {
+    /// Field that defines what the collection is renamed to.
+    let to: String
+
+    static var knownArguments: Set<String> {
+        ["to"] // explicit argument in renameCollectionOperation
+    }
+
+    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+        let collection = try context.entities.getEntity(from: object).asCollection()
+        _ = try collection.renamed(to: self.to)
+
+        return .none
+    }
+}
+
 struct UnifiedDistinct: UnifiedOperationProtocol {
     /// Field to retrieve distinct values for.
     let fieldName: String
