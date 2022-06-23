@@ -54,8 +54,12 @@ final class RetryableReadsTests: MongoSwiftTestCase {
         self.continueAfterFailure = false
     }
 
-    func testRetryableReads() throws {
-        let tests = try retrieveSpecTestFiles(specName: "retryable-reads", asType: RetryableReadsTestFile.self)
+    func testRetryableReadsLegacy() throws {
+        let tests = try retrieveSpecTestFiles(
+            specName: "retryable-reads",
+            subdirectory: "legacy",
+            asType: RetryableReadsTestFile.self
+        )
         for (_, testFile) in tests {
             try testFile.runTests()
         }

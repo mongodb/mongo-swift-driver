@@ -45,7 +45,7 @@ BSON_BEGIN_DECLS
  * WIRE_VERSION_MAX must be accompanied by an update to
  * `_mongoc_wire_version_to_server_version`. */
 #define WIRE_VERSION_MIN 6  /* a.k.a. minWireVersion */
-#define WIRE_VERSION_MAX 15 /* a.k.a. maxWireVersion */
+#define WIRE_VERSION_MAX 17 /* a.k.a. maxWireVersion */
 
 /* first version that supported "find" and "getMore" commands */
 #define WIRE_VERSION_FIND_CMD 4
@@ -244,6 +244,13 @@ mongoc_client_connect (bool buffered,
                        const mongoc_uri_t *uri,
                        const mongoc_host_list_t *host,
                        bson_error_t *error);
+
+
+/* Returns true if a versioned server API has been selected,
+ * otherwise returns false. */
+bool
+mongoc_client_uses_server_api (const mongoc_client_t *client);
+
 BSON_END_DECLS
 
 #endif /* MONGOC_CLIENT_PRIVATE_H */

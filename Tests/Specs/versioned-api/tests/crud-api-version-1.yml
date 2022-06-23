@@ -222,7 +222,12 @@ tests:
                 key: x
                 <<: *expectedApiVersion
 
-  - description: "estimatedDocumentCount appends declared API version on 4.9.0 or greater"
+  - description: "estimatedDocumentCount appends declared API version"
+    # See: https://jira.mongodb.org/browse/SERVER-63850
+    runOnRequirements:
+      - minServerVersion: "5.0.9"
+        maxServerVersion: "5.0.99"
+      - minServerVersion: "5.3.2"
     operations:
       - name: estimatedDocumentCount
         object: *collection
@@ -232,13 +237,10 @@ tests:
         events:
           - commandStartedEvent:
               command:
-                aggregate: *collectionName
-                pipeline: &pipeline
-                  - $collStats: { count: {} }
-                  - $group: { _id: 1, n: { $sum: $count }}
+                count: *collectionName
                 <<: *expectedApiVersion
 
-  - description: "find command with declared API version appends to the command, but getMore does not"
+  - description: "find and getMore append API version"
     operations:
       - name: find
         object: *collection
@@ -262,9 +264,7 @@ tests:
           - commandStartedEvent:
               command:
                 getMore: { $$type: [ int, long ] }
-                apiVersion: { $$exists: false }
-                apiStrict: { $$exists: false }
-                apiDeprecationErrors: { $$exists: false }
+                <<: *expectedApiVersion
 
   - description: "findOneAndDelete appends declared API version"
     operations:

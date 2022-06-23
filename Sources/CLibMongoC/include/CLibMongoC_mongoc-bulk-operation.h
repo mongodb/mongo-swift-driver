@@ -115,6 +115,12 @@ mongoc_bulk_operation_update_one_with_opts (mongoc_bulk_operation_t *bulk,
 MONGOC_EXPORT (void)
 mongoc_bulk_operation_set_bypass_document_validation (
    mongoc_bulk_operation_t *bulk, bool bypass);
+MONGOC_EXPORT (void)
+mongoc_bulk_operation_set_comment (mongoc_bulk_operation_t *bulk,
+                                   const bson_value_t *comment);
+MONGOC_EXPORT (void)
+mongoc_bulk_operation_set_let (mongoc_bulk_operation_t *bulk,
+                               const bson_t *let);
 
 
 /*

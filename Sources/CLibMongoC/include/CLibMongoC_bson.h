@@ -28,6 +28,7 @@
 #include "CLibMongoC_bson-macros.h"
 #include "CLibMongoC_bson-config.h"
 #include "CLibMongoC_bson-atomic.h"
+#include "CLibMongoC_bson-cmp.h"
 #include "CLibMongoC_bson-context.h"
 #include "CLibMongoC_bson-clock.h"
 #include "CLibMongoC_bson-decimal128.h"
