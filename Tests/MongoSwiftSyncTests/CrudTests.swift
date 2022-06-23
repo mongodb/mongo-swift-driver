@@ -88,9 +88,16 @@ final class CrudTests: MongoSwiftTestCase {
             "bulkWrite-comment.json",
             "replaceOne-comment.json",
             "updateOne-comment.json",
+            "updateMany-comment.json",
             "insertMany-comment.json",
             "deleteMany-comment.json",
-            "deleteOne-comment.json"
+            "deleteOne-comment.json",
+            "findOneAndReplace-comment.json",
+            "find-comment.json",
+            "findOneAndUpdate-comment.json",
+            "findOneAndDelete-comment.json",
+            "insertOne-comment.json",
+            "aggregate.json"
         ]
         let files = try retrieveSpecTestFiles(
             specName: "crud",
