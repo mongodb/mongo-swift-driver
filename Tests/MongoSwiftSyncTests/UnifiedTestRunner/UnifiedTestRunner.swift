@@ -219,7 +219,8 @@ struct UnifiedTestRunner {
                                 try matchesEvents(
                                     expected: expectedEventList.events,
                                     actual: actualEvents,
-                                    context: context
+                                    context: context,
+                                    ignoreExtraEvents: expectedEventList.ignoreExtraEvents ?? false
                                 )
                             }
                         }

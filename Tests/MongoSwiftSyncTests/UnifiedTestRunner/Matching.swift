@@ -309,12 +309,18 @@ enum SpecialOperator {
 }
 
 /// Determines if the events in `actual` match the events in `expected`.
-func matchesEvents(expected: [ExpectedEvent], actual: [CommandEvent], context: Context) throws {
-    guard actual.count == expected.count else {
+func matchesEvents(
+    expected: [ExpectedEvent],
+    actual: [CommandEvent],
+    context: Context,
+    ignoreExtraEvents: Bool
+) throws {
+    // (Actual = expected AND the two must match) or (the two don't have to match)
+    guard (actual.count == expected.count && !ignoreExtraEvents) || ignoreExtraEvents else {
         throw NonMatchingError(expected: expected, actual: actual, context: context)
     }
 
-    for i in 0..<actual.count {
+    for i in 0..<expected.count {
         try context.withPushedElt(String(i)) {
             let expectedEvent = expected[i]
             let actualEvent = actual[i]
