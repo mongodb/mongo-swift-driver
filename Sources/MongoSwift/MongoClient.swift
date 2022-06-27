@@ -282,6 +282,13 @@ public class MongoClient {
 
     /// Handlers for SDAM monitoring events.
     internal var sdamEventHandlers: [SDAMEventHandler]
+    
+        /// Async way to monitor command events.
+    internal var commandEvents: Any?
+        
+        /// Async way to monitor SDAM events.
+    internal var sdamEvents: Any?
+    
 
     /// Counter for generating client _ids.
     internal static var clientIDGenerator = NIOAtomic<Int>.makeAtomic(value: 0)
@@ -365,7 +372,16 @@ public class MongoClient {
         self.decoder = BSONDecoder(options: options)
         self.sdamEventHandlers = []
         self.commandEventHandlers = []
+        if #available(macOS 10.15, *){
+            self.commandEvents = CommandEventStream()
+            self.sdamEvents = SDAMEventStream()
+        } else {
+            self.commandEvents = nil
+            self.sdamEvents = nil
+        }
         self.connectionPool.initializeMonitoring(client: self)
+        
+        
     }
 
     /**
@@ -855,6 +871,11 @@ extension MongoClient: Equatable {
         lhs._id == rhs._id
     }
 }
+
+//@available(macOS 10.15, *)
+//extension MongoClient {
+//
+//}
 
 /// Event handler constructed from a callback.
 /// Stores a strong reference to the provided callback.

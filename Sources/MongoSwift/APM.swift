@@ -117,6 +117,45 @@ private protocol CommandEventProtocol {
     var serviceID: BSONObjectID? { get }
 }
 
+/// An asynchronous way to monitor events that wraps `AsyncStream`
+@available(macOS 10.15, *) //Only available in 10.15+
+public struct EventStream<T> {
+    
+    var eventHandler: ((T) -> Void)?
+    
+    func startMonitoringPrinter(){
+        print("starting")
+    }
+    
+    func stopMonitoring(){
+        print("dead")
+    }
+
+    
+}
+@available(macOS 10.15, *) //Only available in 10.15+
+extension EventStream {
+    
+    public static var startMonitoring : AsyncStream<T> {
+        AsyncStream { continuation in
+            var eventStream = EventStream<T>()
+            eventStream.eventHandler = {
+                T in continuation.yield(T)
+            }
+            continuation.onTermination = {@Sendable _ in
+                //eventStream.stopMonitoring()
+            }
+            eventStream.startMonitoringPrinter()
+            
+        }
+    }
+}
+@available(macOS 10.15, *) //Only available in 10.15+
+public typealias CommandEventStream = EventStream<CommandEvent>
+
+@available(macOS 10.15, *) //Only available in 10.15+
+public typealias SDAMEventStream = EventStream<SDAMEvent>
+
 /// An event published when a command starts.
 public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
     /// Wrapper around a `mongoc_apm_command_started_t`.
