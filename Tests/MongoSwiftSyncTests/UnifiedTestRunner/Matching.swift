@@ -319,6 +319,10 @@ func matchesEvents(
     guard (actual.count == expected.count && !ignoreExtraEvents) || ignoreExtraEvents else {
         throw NonMatchingError(expected: expected, actual: actual, context: context)
     }
+    // Additional check to ensure no indexing errors
+    guard actual.count >= expected.count else {
+        throw NonMatchingError(expected: expected, actual: actual, context: context)
+    }
 
     for i in 0..<expected.count {
         try context.withPushedElt(String(i)) {

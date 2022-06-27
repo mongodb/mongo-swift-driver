@@ -118,7 +118,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     public let updateDescription: UpdateDescription?
 
     /// The wall time from the `mongod` that the change event originated from.
-    /// Only present for server versions 6.0 and above
+    /// Only present for server versions 6.0 and above.
     public let wallTime: Date?
 
     /**
