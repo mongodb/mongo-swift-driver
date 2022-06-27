@@ -117,10 +117,10 @@ private protocol CommandEventProtocol {
     var serviceID: BSONObjectID? { get }
 }
 
-/// An asynchronous way to monitor events that wraps `AsyncStream`
-@available(macOS 10.15, *) //Only available in 10.15+
+/// An asynchronous way to monitor events.
 public struct EventStream<T> {
     
+    //AsyncSequence example given in docs...
     var eventHandler: ((T) -> Void)?
     
     func startMonitoringPrinter(){
@@ -130,30 +130,52 @@ public struct EventStream<T> {
     func stopMonitoring(){
         print("dead")
     }
+    
+}
 
+/// If concurrency can be used, `EventStream` implements `AsyncSequence` to allow for
+/// asynchronous event monitoring
+#if compiler(>=5.5) && canImport(_Concurrency)
+@available(iOS 13.0.0, *)
+@available(macOS 10.15, *)
+extension EventStream : AsyncSequence, AsyncIteratorProtocol {
     
-}
-@available(macOS 10.15, *) //Only available in 10.15+
-extension EventStream {
+    //Necessary parts of impl the protocols
+    public typealias Element = T
     
-    public static var startMonitoring : AsyncStream<T> {
-        AsyncStream { continuation in
-            var eventStream = EventStream<T>()
-            eventStream.eventHandler = {
-                T in continuation.yield(T)
-            }
-            continuation.onTermination = {@Sendable _ in
-                //eventStream.stopMonitoring()
-            }
-            eventStream.startMonitoringPrinter()
-            
-        }
+    mutating public func next() async -> T? {
+        //what actually goes here?
+        print("i am a mutant")
+        return nil
     }
+    
+    public func makeAsyncIterator() -> EventStream {
+        self
+    }
+
 }
-@available(macOS 10.15, *) //Only available in 10.15+
+#endif
+//@available(macOS 10.15, *) //Only available in 10.15+
+//extension EventStream {
+//
+//    public static var startMonitoring : AsyncStream<T> {
+//        AsyncStream { continuation in
+//            var eventStream = EventStream<T>()
+//            eventStream.eventHandler = {
+//                T in continuation.yield(T)
+//            }
+//            continuation.onTermination = {@Sendable _ in
+//                //eventStream.stopMonitoring()
+//            }
+//            eventStream.startMonitoringPrinter()
+//
+//        }
+//    }
+//}
+
 public typealias CommandEventStream = EventStream<CommandEvent>
 
-@available(macOS 10.15, *) //Only available in 10.15+
+
 public typealias SDAMEventStream = EventStream<SDAMEvent>
 
 /// An event published when a command starts.
