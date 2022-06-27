@@ -85,7 +85,7 @@ final class CrudTests: MongoSwiftTestCase {
             // TODO: SWIFT-1515 unskip
             "estimatedDocumentCount-comment.json",
             // Skipping because comment is only supported in later versions of `libmongoc`
-            "bulkWrite-comment.json",
+            //"bulkWrite-comment.json",
             "replaceOne-comment.json",
             "updateOne-comment.json",
             "updateMany-comment.json",
@@ -308,6 +308,7 @@ private class BulkWriteTest: CrudTest {
         let requestDocuments: [BSONDocument] = self.args["requests"]!.arrayValue!.compactMap { $0.documentValue }
         let requests = try requestDocuments.map { try BSONDecoder().decode(WriteModel<BSONDocument>.self, from: $0) }
         let options = try BSONDecoder().decode(BulkWriteOptions.self, from: self.args["options"]?.documentValue ?? [:])
+        print("here!")
         let expectError = self.error ?? false
 
         do {

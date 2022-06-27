@@ -128,6 +128,9 @@ public enum WriteModel<CollectionType: Codable> {
             }
 
         case let .updateOne(filter, update, options):
+            //print("updater")
+            //print(update)
+            //print(options as Any)
             let opts = try encoder.encode(options)
             success = filter.withBSONPointer { filterPtr in
                 update.withBSONPointer { updatePtr in
@@ -237,6 +240,7 @@ public struct UpdateModelOptions: Codable {
         self.comment = comment
         self.hint = hint
         self.upsert = upsert
+        //print("here!")
     }
 }
 
