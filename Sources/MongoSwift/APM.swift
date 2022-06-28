@@ -119,6 +119,18 @@ private protocol CommandEventProtocol {
 
 /// An asynchronous way to monitor events.
 public struct EventStream<T> {
+    //T is command or sdam
+    
+    //which event we are at
+    private var index = 0
+    
+    //events
+    let events : [T]
+    
+    init(events : [T]){
+        self.events = events
+    }
+    init(){}
     
     //AsyncSequence example given in docs...
     var eventHandler: ((T) -> Void)?
@@ -139,20 +151,48 @@ public struct EventStream<T> {
 @available(iOS 13.0.0, *)
 @available(macOS 10.15, *)
 extension EventStream : AsyncSequence, AsyncIteratorProtocol {
+
     
-    //Necessary parts of impl the protocols
+    //for both protocols
     public typealias Element = T
     
-    mutating public func next() async -> T? {
+    
+    
+    //for iter protocols
+    public mutating func next() async -> T? {
         //what actually goes here?
+        
+        //check bounds
+        guard index < events.count else {
+            return nil
+        }
+        //incr index
+        let event = events[index] //as MongoSwiftEvent //events is of type MongoSwiftEvent
+        index += 1
+        //api call
+        //Event adheres to MongoSwiftEvent and has access to its type and pointers
+        //publishEvent just iterates through eventlisteners tho...
+        //T is an enum where each event is of type `MongoSwiftClient`
+        
+        let output: MongoSwiftEvent = publishEvent(type: event.Type, eventPtr: nil)
+        //let (data, _) = try await urlSession.data(from: url)
+        
+        //return data
         print("i am a mutant")
         return nil
     }
     
+    
     public func makeAsyncIterator() -> EventStream {
         self
     }
+    
+    //startMonitoring?
 
+}
+
+extension EventStream : AsyncStream<T> {
+    
 }
 #endif
 //@available(macOS 10.15, *) //Only available in 10.15+
