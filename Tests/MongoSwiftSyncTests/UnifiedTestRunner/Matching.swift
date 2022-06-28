@@ -315,12 +315,8 @@ func matchesEvents(
     context: Context,
     ignoreExtraEvents: Bool
 ) throws {
-    // (Actual = expected AND the two must match) or (the two don't have to match)
-    guard (actual.count == expected.count && !ignoreExtraEvents) || ignoreExtraEvents else {
-        throw NonMatchingError(expected: expected, actual: actual, context: context)
-    }
-    // Additional check to ensure no indexing errors
-    guard actual.count >= expected.count else {
+    // Ensure correct amount of events present (or more than enough if ignorable)
+    guard (actual.count == expected.count) || (ignoreExtraEvents && actual.count >= expected.count) else {
         throw NonMatchingError(expected: expected, actual: actual, context: context)
     }
 
