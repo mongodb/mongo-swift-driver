@@ -48,7 +48,7 @@ tests:
             - updateOne:
                 filter: &updateOne_filter
                   _id: 2
-                update: &update { x: "updated" }
+                update: &update { $set: {x: "updated"} }
             - deleteOne:
                 filter: &deleteOne_filter
                   _id: 3
@@ -56,7 +56,7 @@ tests:
         expectResult: &expect_results
           deletedCount: 1
           insertedCount: 1
-          insertedIds: { 0: 5 }
+          insertedIds: { $$unsetOrMatches: { 0: 5} }
           matchedCount: 2
           modifiedCount: 2
           upsertedCount: 0
@@ -77,14 +77,12 @@ tests:
                 updates:
                   - q: *replaceOne_filter
                     u: *replacement
-                ordered: true
-                comment: *string_comment
-          - commandStartedEvent:
-              command:
-                update: *collection_name
-                updates:
+                    multi: { $$unsetOrMatches: false }
+                    upsert: { $$unsetOrMatches: false }
                   - q: *updateOne_filter
                     u: *update
+                    multi: { $$unsetOrMatches: false }
+                    upsert: { $$unsetOrMatches: false }
                 ordered: true
                 comment: *string_comment
           - commandStartedEvent:
@@ -92,6 +90,7 @@ tests:
                 delete: *collection_name
                 deletes:
                   - q: *deleteOne_filter
+                    limit: 1
                 ordered: true
                 comment: *string_comment
     outcome: &outcome
@@ -133,14 +132,12 @@ tests:
                 updates:
                   - q: *replaceOne_filter
                     u: *replacement
-                ordered: true
-                comment: *document_comment
-          - commandStartedEvent:
-              command:
-                update: *collection_name
-                updates:
+                    multi: { $$unsetOrMatches: false }
+                    upsert: { $$unsetOrMatches: false }
                   - q: *updateOne_filter
                     u: *update
+                    multi: { $$unsetOrMatches: false }
+                    upsert: { $$unsetOrMatches: false }
                 ordered: true
                 comment: *document_comment
           - commandStartedEvent:
@@ -148,13 +145,15 @@ tests:
                 delete: *collection_name
                 deletes:
                   - q: *deleteOne_filter
+                    limit: 1
                 ordered: true
                 comment: *document_comment
     outcome: *outcome
 
   - description: 'BulkWrite with comment - pre 4.4'
     runOnRequirements:
-      - maxServerVersion: "4.2.99"
+      - minServerVersion: "3.4.0"
+        maxServerVersion: "4.2.99"
     operations:
       - object: *collection0
         name: bulkWrite

@@ -128,9 +128,6 @@ public enum WriteModel<CollectionType: Codable> {
             }
 
         case let .updateOne(filter, update, options):
-            //print("updater")
-            //print(update)
-            //print(options as Any)
             let opts = try encoder.encode(options)
             success = filter.withBSONPointer { filterPtr in
                 update.withBSONPointer { updatePtr in
@@ -166,7 +163,7 @@ public struct DeleteModelOptions: Codable {
 
     /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
-    public var comment: BSON?
+    // public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
@@ -174,11 +171,11 @@ public struct DeleteModelOptions: Codable {
     /// Initializer allowing any/all options to be omitted or optional.
     public init(
         collation: BSONDocument? = nil,
-        comment: BSON? = nil,
+        // comment: BSON? = nil,
         hint: IndexHint? = nil
     ) {
         self.collation = collation
-        self.comment = comment
+        // self.comment = comment
         self.hint = hint
     }
 }
@@ -220,7 +217,7 @@ public struct UpdateModelOptions: Codable {
 
     /// An arbitrary BSON type to help trace the operation through
     /// the database profiler, currentOp and logs. The default is to not send a value.
-    public var comment: BSON?
+    // public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
@@ -231,16 +228,15 @@ public struct UpdateModelOptions: Codable {
     public init(
         arrayFilters: [BSONDocument]? = nil,
         collation: BSONDocument? = nil,
-        comment: BSON? = nil,
+        // comment: BSON? = nil,
         hint: IndexHint? = nil,
         upsert: Bool? = nil
     ) {
         self.arrayFilters = arrayFilters
         self.collation = collation
-        self.comment = comment
+        // self.comment = comment
         self.hint = hint
         self.upsert = upsert
-        //print("here!")
     }
 }
 

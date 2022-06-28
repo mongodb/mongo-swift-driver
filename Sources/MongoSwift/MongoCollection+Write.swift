@@ -94,7 +94,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<UpdateResult?> {
         let modelOptions = ReplaceOneModelOptions(
             collation: options?.collation,
-            comment: options?.comment,
+            // comment: options?.comment,
             hint: options?.hint,
             upsert: options?.upsert
         )
@@ -134,7 +134,7 @@ extension MongoCollection {
         let modelOptions = UpdateModelOptions(
             arrayFilters: options?.arrayFilters,
             collation: options?.collation,
-            comment: options?.comment,
+            // comment: options?.comment,
             hint: options?.hint,
             upsert: options?.upsert
         )
@@ -207,7 +207,7 @@ extension MongoCollection {
         let modelOptions = UpdateModelOptions(
             arrayFilters: options?.arrayFilters,
             collation: options?.collation,
-            comment: options?.comment,
+            // comment: options?.comment,
             hint: options?.hint,
             upsert: options?.upsert
         )
@@ -276,7 +276,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<DeleteResult?> {
         let modelOptions = DeleteModelOptions(
             collation: options?.collation,
-            comment: options?.comment,
+            // comment: options?.comment,
             hint: options?.hint
         )
         let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
@@ -312,7 +312,7 @@ extension MongoCollection {
     ) -> EventLoopFuture<DeleteResult?> {
         let modelOptions = DeleteModelOptions(
             collation: options?.collation,
-            comment: options?.comment,
+            // comment: options?.comment,
             hint: options?.hint
         )
         let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)

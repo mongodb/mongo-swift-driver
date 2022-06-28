@@ -53,13 +53,11 @@
             "filter": {
               "_id": 1
             },
-            "update": [
-              {
-                "$set": {
-                  "x": 22
-                }
+            "update": {
+              "$set": {
+                "x": 22
               }
-            ],
+            },
             "comment": "comment"
           }
         }
@@ -77,13 +75,15 @@
                       "q": {
                         "_id": 1
                       },
-                      "u": [
-                        {
-                          "$set": {
-                            "x": 22
-                          }
+                      "u": {
+                        "$set": {
+                          "x": 22
                         }
-                      ]
+                      },
+                      "multi": true,
+                      "upsert": {
+                        "$$unsetOrMatches": false
+                      }
                     }
                   ],
                   "comment": "comment"
@@ -121,13 +121,11 @@
             "filter": {
               "_id": 1
             },
-            "update": [
-              {
-                "$set": {
-                  "x": 22
-                }
+            "update": {
+              "$set": {
+                "x": 22
               }
-            ],
+            },
             "comment": {
               "key": "value"
             }
@@ -147,13 +145,15 @@
                       "q": {
                         "_id": 1
                       },
-                      "u": [
-                        {
-                          "$set": {
-                            "x": 22
-                          }
+                      "u": {
+                        "$set": {
+                          "x": 22
                         }
-                      ]
+                      },
+                      "multi": true,
+                      "upsert": {
+                        "$$unsetOrMatches": false
+                      }
                     }
                   ],
                   "comment": {
@@ -182,6 +182,7 @@
       "description": "UpdateMany with comment - pre 4.4",
       "runOnRequirements": [
         {
+          "minServerVersion": "3.4.0",
           "maxServerVersion": "4.2.99"
         }
       ],
@@ -193,13 +194,11 @@
             "filter": {
               "_id": 1
             },
-            "update": [
-              {
-                "$set": {
-                  "x": 22
-                }
+            "update": {
+              "$set": {
+                "x": 22
               }
-            ],
+            },
             "comment": "comment"
           },
           "expectError": {
@@ -220,13 +219,15 @@
                       "q": {
                         "_id": 1
                       },
-                      "u": [
-                        {
-                          "$set": {
-                            "x": 22
-                          }
+                      "u": {
+                        "$set": {
+                          "x": 22
                         }
-                      ]
+                      },
+                      "multi": true,
+                      "upsert": {
+                        "$$unsetOrMatches": false
+                      }
                     }
                   ],
                   "comment": "comment"

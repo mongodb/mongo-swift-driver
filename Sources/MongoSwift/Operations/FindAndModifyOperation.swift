@@ -24,7 +24,7 @@ internal class FindAndModifyOptions {
         arrayFilters: [BSONDocument]? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument?,
-        comment _: BSON? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         letValue: BSONDocument? = nil,
         maxTimeMS: Int?,
@@ -94,6 +94,9 @@ internal class FindAndModifyOptions {
         }
         if let lt = letValue {
             extra["let"] = .document(lt)
+        }
+        if let comment = comment {
+            extra["comment"] = comment
         }
 
         // note: mongoc_find_and_modify_opts_set_max_time_ms() takes in a
