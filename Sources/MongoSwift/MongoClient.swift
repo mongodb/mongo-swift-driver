@@ -283,11 +283,42 @@ public class MongoClient {
     /// Handlers for SDAM monitoring events.
     internal var sdamEventHandlers: [SDAMEventHandler]
     
+    private var _commandEvents: Any? = nil
+    private var _sdamEvents: Any? = nil
     /// Async way to monitor command events. Need macOS above 10.15 to use practically.
-    public var commandEvents: CommandEventStream
+    #if compiler(>=5.5) && canImport(_Concurrency)
+    @available(macOS 10.15, *)
+    public var commandEvents: CommandEventStream {
+        if _commandEvents == nil {
+            _commandEvents = CommandEventStream(
+                                                    stream: AsyncStream { con in
+                    self.addCommandEventHandler{ event in
+                        con.yield(event)
+                    }
+                }
+            )
+        }
+        return _commandEvents as! CommandEventStream
         
+    }
+    
+    @available(macOS 10.15, *)
     /// Async way to monitor SDAM events. Need macOS above 10.15 to use practically.
-    public var sdamEvents: SDAMEventStream
+    public var sdamEvents: SDAMEventStream {
+        if _sdamEvents == nil {
+            _sdamEvents = SDAMEventStream(
+                stream : AsyncStream { con in
+                    self.addSDAMEventHandler{ event in
+                        con.yield(event)
+                    }
+                }
+            )
+        }
+        return _sdamEvents as! SDAMEventStream
+    }
+    #endif
+        
+    
     
     /// Counter for generating client _ids.
     internal static var clientIDGenerator = NIOAtomic<Int>.makeAtomic(value: 0)
@@ -371,8 +402,8 @@ public class MongoClient {
         self.decoder = BSONDecoder(options: options)
         self.sdamEventHandlers = []
         self.commandEventHandlers = []
-        self.commandEvents = CommandEventStream()
-        self.sdamEvents = SDAMEventStream()
+        //self.commandEvents = CommandEventStream()
+        //self.sdamEvents = SDAMEventStream()
         
 //        if #available(macOS 10.15, *) {
 //            setUpStream()

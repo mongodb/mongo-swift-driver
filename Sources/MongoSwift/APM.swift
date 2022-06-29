@@ -45,8 +45,8 @@ private protocol MongocEvent {
 
 /// Enum to wrap `CommandEvent` and `SDAMEvent`
 public enum StreamEvents {
-    case CommandEvent
-    case SDAMEvent
+    case CommandEvent(CommandEvent)
+    case SDAMEvent(SDAMEvent)
 }
 
 /// A command monitoring event.
@@ -130,105 +130,78 @@ private protocol CommandEventProtocol {
 #if compiler(>=5.5) && canImport(_Concurrency) // && available(macOS 10.15, *)
 @available(macOS 10.15, *)
 public struct EventStream<StreamEvents> {
-    //T is command or sdam
+    
+    //StreamEvents
     
     //which event we are at
     private var index = 0
-    var stream : AsyncStream<StreamEvents>
-    var iterator: EventStreamIterator<StreamEvents>
-    init(){
+    private var stream : AsyncStream<StreamEvents>
+    //var iterator: EventStreamIterator<StreamEvents>
+    init(stream: AsyncStream<StreamEvents> ){
+        self.stream = stream
         
     }
+    
 }
-
+#endif
+//
 @available(macOS 10.15, *)
-extension EventStream : AsyncIteratorProtocol {
+extension EventStream : AsyncSequence {
     
-    //let stream : AsyncStream<T>
-    
-    mutating func startMonitoring(client: MongoClient){
-        //how to access client? cant init with it bc cant reference a non-fully init client
-        switch StreamEvents.self {
-        case is CommandEvent:
-            stream = AsyncStream { con in
-                client.addCommandEventHandler{ event in
-                    con.yield(event)
-                }
-            }
-            iterator = EventStreamIterator<StreamEvents>(asyncStream: stream)
-        case is SDAMEvent:
-            stream = AsyncStream { con in
-                client.addSDAMEventHandler{ event in
-                    con.yield(event)
-                }
-            }
-            iterator = EventStreamIterator<StreamEvents>(asyncStream: stream)
-        default:
-            print("wrong event type")
-        }
-    }
-    
-    //for both protocols
     public typealias Element = StreamEvents
+ 
+    public typealias AsyncIterator = EventStreamIterator<StreamEvents>
     
-    
-    
-    //for iter protocols
-    public mutating func next() async throws -> StreamEvents? {
-        try await iterator.next()
-        //what actually goes here?
-        
 
-    }
-    
-    
+    //let stream : AsyncStream<T>
+
+//    mutating func startMonitoring(client: MongoClient){
+//        //how to access client? cant init with it bc cant reference a non-fully init client
+//        switch StreamEvents.self {
+//        case is CommandEvent:
+//            stream =
+//            //iterator = EventStreamIterator<StreamEvents>(asyncStream: stream)
+//        case is SDAMEvent:
+//            stream = AsyncStream { con in
+//                client.addSDAMEventHandler{ event in
+//                    con.yield(event)
+//                }
+//            }
+//            //iterator = EventStreamIterator<StreamEvents>(asyncStream: stream)
+//        default:
+//            print("wrong event type")
+//        }
+//    }
+
     public func makeAsyncIterator() -> EventStreamIterator<StreamEvents> {
-        iterator
+        return EventStreamIterator<StreamEvents>.init(asyncStream: stream)
     }
-    
+
     //startMonitoring?
 
 }
-
+//
 @available(macOS 10.15, *)
 public struct EventStreamIterator<StreamEvents> : AsyncIteratorProtocol {
     var iterator : AsyncStream<StreamEvents>.AsyncIterator?
-    
+
     init(asyncStream: AsyncStream<StreamEvents> ) {
         iterator = asyncStream.makeAsyncIterator()
     }
     public mutating func next() async throws -> StreamEvents? {
         await iterator?.next()
     }
-    
+
     public typealias Element = StreamEvents
-    
-     
-}
-@available(macOS 10.15, *)
-public typealias CommandEventStream = EventStream<CommandEvent>
 
-@available(macOS 10.15, *)
-public typealias SDAMEventStream = EventStream<SDAMEvent>
 
-#else
-/// An asynchronous way to monitor events.
-public struct EventStream<StreamEvents> {
-    //T is command or sdam
-    
-    @available(macOS 10.15, *)
-    var stream : Int
-    var iterator: Int
-    init(){
-        stream = 0
-        iterator = 0
-    }
 }
 
+@available (macOS 10.15, *)
 public typealias CommandEventStream = EventStream<CommandEvent>
 
+@available (macOS 10.15, *)
 public typealias SDAMEventStream = EventStream<SDAMEvent>
-#endif
 
 
 
