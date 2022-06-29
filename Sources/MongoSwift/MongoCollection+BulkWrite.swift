@@ -161,21 +161,15 @@ public struct DeleteModelOptions: Codable {
     /// The collation to use.
     public var collation: BSONDocument?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
-    // public var comment: BSON?
-
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
 
     /// Initializer allowing any/all options to be omitted or optional.
     public init(
         collation: BSONDocument? = nil,
-        // comment: BSON? = nil,
         hint: IndexHint? = nil
     ) {
         self.collation = collation
-        // self.comment = comment
         self.hint = hint
     }
 }
@@ -185,24 +179,19 @@ public struct ReplaceOneModelOptions: Codable {
     /// The collation to use.
     public var collation: BSONDocument?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
-    public var comment: BSON?
-
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
+
     /// When `true`, creates a new document if no document matches the query.
     public var upsert: Bool?
 
     /// Initializer allowing any/all options to be omitted or optional.
     public init(
         collation: BSONDocument? = nil,
-        comment: BSON? = nil,
         hint: IndexHint? = nil,
         upsert: Bool? = nil
     ) {
         self.collation = collation
-        self.comment = comment
         self.hint = hint
         self.upsert = upsert
     }
@@ -215,10 +204,6 @@ public struct UpdateModelOptions: Codable {
     /// The collation to use.
     public var collation: BSONDocument?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
-    // public var comment: BSON?
-
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
     /// When `true`, creates a new document if no document matches the query.
@@ -228,13 +213,11 @@ public struct UpdateModelOptions: Codable {
     public init(
         arrayFilters: [BSONDocument]? = nil,
         collation: BSONDocument? = nil,
-        // comment: BSON? = nil,
         hint: IndexHint? = nil,
         upsert: Bool? = nil
     ) {
         self.arrayFilters = arrayFilters
         self.collation = collation
-        // self.comment = comment
         self.hint = hint
         self.upsert = upsert
     }
@@ -334,8 +317,10 @@ public struct BulkWriteOptions: Codable {
     /// If `true`, allows the write to opt-out of document level validation.
     public var bypassDocumentValidation: Bool?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
     public var comment: BSON?
 
     /**

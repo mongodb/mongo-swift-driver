@@ -187,8 +187,10 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     /// Specifies a collation to use.
     public var collation: BSONDocument?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
     public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
@@ -254,8 +256,10 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     /// Specifies a collation to use.
     public var collation: BSONDocument?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
     public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
@@ -338,8 +342,10 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
     /// Specifies a collation to use.
     public var collation: BSONDocument?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
     public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.

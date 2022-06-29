@@ -30,8 +30,10 @@ public struct ListDatabasesOptions {
     /// Specifies whether to only return databases for which the user has privileges.
     public var authorizedDatabases: Bool?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
     public var comment: BSON?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional.

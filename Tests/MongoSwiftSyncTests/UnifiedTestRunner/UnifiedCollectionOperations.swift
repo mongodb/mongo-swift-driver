@@ -651,7 +651,7 @@ struct UnifiedDistinct: UnifiedOperationProtocol {
     }
 
     enum CodingKeys: String, CodingKey, CaseIterable {
-        case fieldName, filter, options, session
+        case fieldName, filter, session
     }
 
     init(from decoder: Decoder) throws {

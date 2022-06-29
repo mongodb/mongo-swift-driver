@@ -60,10 +60,6 @@ public struct IndexOptions: Codable {
     /// is sent and the default collation of the collection server-side is used.
     public var collation: BSONDocument?
 
-    /// An arbitrary BSON type to help trace the index through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
-    public var comment: BSON?
-
     /// Optionally specifies the default language for text indexes. Is 'english' if none is provided.
     public var defaultLanguage: String?
 
@@ -133,7 +129,6 @@ public struct IndexOptions: Codable {
         bits: Int? = nil,
         bucketSize: Int? = nil,
         collation: BSONDocument? = nil,
-        comment: BSON? = nil,
         defaultLanguage: String? = nil,
         hidden: Bool? = nil,
         expireAfterSeconds: Int? = nil,
@@ -155,7 +150,6 @@ public struct IndexOptions: Codable {
         self.bits = bits
         self.bucketSize = bucketSize
         self.collation = collation
-        self.comment = comment
         self.defaultLanguage = defaultLanguage
         self.expireAfterSeconds = expireAfterSeconds
         self.hidden = hidden
@@ -178,7 +172,7 @@ public struct IndexOptions: Codable {
         case background, expireAfterSeconds, hidden, name, sparse, storageEngine, unique, version = "v",
              defaultLanguage = "default_language", languageOverride = "language_override", textIndexVersion, weights,
              wildcardProjection, sphereIndexVersion = "2dsphereIndexVersion", bits, max, min, bucketSize,
-             partialFilterExpression, collation, comment
+             partialFilterExpression, collation
     }
 }
 

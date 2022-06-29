@@ -94,7 +94,6 @@ extension MongoCollection {
     ) -> EventLoopFuture<UpdateResult?> {
         let modelOptions = ReplaceOneModelOptions(
             collation: options?.collation,
-            // comment: options?.comment,
             hint: options?.hint,
             upsert: options?.upsert
         )
@@ -134,7 +133,6 @@ extension MongoCollection {
         let modelOptions = UpdateModelOptions(
             arrayFilters: options?.arrayFilters,
             collation: options?.collation,
-            // comment: options?.comment,
             hint: options?.hint,
             upsert: options?.upsert
         )
@@ -207,7 +205,6 @@ extension MongoCollection {
         let modelOptions = UpdateModelOptions(
             arrayFilters: options?.arrayFilters,
             collation: options?.collation,
-            // comment: options?.comment,
             hint: options?.hint,
             upsert: options?.upsert
         )
@@ -276,7 +273,6 @@ extension MongoCollection {
     ) -> EventLoopFuture<DeleteResult?> {
         let modelOptions = DeleteModelOptions(
             collation: options?.collation,
-            // comment: options?.comment,
             hint: options?.hint
         )
         let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
@@ -312,7 +308,6 @@ extension MongoCollection {
     ) -> EventLoopFuture<DeleteResult?> {
         let modelOptions = DeleteModelOptions(
             collation: options?.collation,
-            // comment: options?.comment,
             hint: options?.hint
         )
         let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
@@ -348,8 +343,10 @@ public struct InsertOneOptions: Codable, BulkWriteOptionsConvertible {
     /// If true, allows the write to opt-out of document level validation.
     public var bypassDocumentValidation: Bool?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
     public var comment: BSON?
 
     /// An optional WriteConcern to use for the command.
@@ -381,8 +378,10 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
     public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
@@ -422,8 +421,10 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
     public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
@@ -458,8 +459,10 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
-    /// An arbitrary BSON type to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
     public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.

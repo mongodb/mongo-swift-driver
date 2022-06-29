@@ -2,8 +2,10 @@ import CLibMongoC
 
 /// Options to use when dropping an index from a `MongoCollection`.
 public struct DropIndexOptions: Encodable {
-    /// An arbitrary BSON type to help trace the index through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
+    /// A comment to help trace the index through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
     public var comment: BSON?
 
     /// The maximum amount of time to allow the query to run - enforced server-side.
