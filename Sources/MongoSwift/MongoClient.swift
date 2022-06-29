@@ -373,6 +373,14 @@ public class MongoClient {
         self.commandEventHandlers = []
         self.commandEvents = CommandEventStream()
         self.sdamEvents = SDAMEventStream()
+        
+//        if #available(macOS 10.15, *) {
+//            setUpStream()
+//        } else {
+//            self.commandEvents = CommandEventStream(
+//            )
+//            self.sdamEvents = SDAMEventStream()
+//        }
         self.connectionPool.initializeMonitoring(client: self)
         
         
@@ -868,6 +876,27 @@ extension MongoClient: Equatable {
 
 //@available(macOS 10.15, *)
 //extension MongoClient {
+//
+//    func setUpStream() {
+//        self.commandEvents = CommandEventStream(client: self, stream:
+//        AsyncStream { con in
+//                        addCommandEventHandler{ event in
+//                            con.yield(event)
+//                        }
+//                    }
+//
+//        )
+//        self.sdamEvents = SDAMEventStream(client: self, stream:
+//        AsyncStream { con in
+//                        addSDAMEventHandler{ event in
+//                            con.yield(event)
+//                        }
+//                    }
+//        )
+//
+//    }
+//
+//
 //
 //}
 
