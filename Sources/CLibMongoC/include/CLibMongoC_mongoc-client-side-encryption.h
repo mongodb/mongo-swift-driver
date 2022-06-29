@@ -33,6 +33,9 @@ struct _mongoc_cursor_t;
 #define MONGOC_ENCRYPT_ALGORITHM_INDEXED "Indexed"
 #define MONGOC_ENCRYPT_ALGORITHM_UNINDEXED "Unindexed"
 
+#define MONGOC_ENCRYPT_QUERY_TYPE_EQUALITY "equality"
+
+
 BSON_BEGIN_DECLS
 
 typedef struct _mongoc_auto_encryption_opts_t mongoc_auto_encryption_opts_t;
@@ -145,14 +148,6 @@ mongoc_client_encryption_create_datakey (
    bson_error_t *error);
 
 MONGOC_EXPORT (bool)
-mongoc_client_encryption_create_key (
-   mongoc_client_encryption_t *client_encryption,
-   const char *kms_provider,
-   mongoc_client_encryption_datakey_opts_t *opts,
-   bson_value_t *keyid,
-   bson_error_t *error);
-
-MONGOC_EXPORT (bool)
 mongoc_client_encryption_rewrap_many_datakey (
    mongoc_client_encryption_t *client_encryption,
    const bson_t *filter,
@@ -237,12 +232,9 @@ MONGOC_EXPORT (void)
 mongoc_client_encryption_encrypt_opts_set_contention_factor (
    mongoc_client_encryption_encrypt_opts_t *opts, int64_t contention_factor);
 
-typedef enum { MONGOC_ENCRYPT_QUERY_TYPE_EQUALITY } mongoc_encrypt_query_type_t;
-
 MONGOC_EXPORT (void)
 mongoc_client_encryption_encrypt_opts_set_query_type (
-   mongoc_client_encryption_encrypt_opts_t *opts,
-   mongoc_encrypt_query_type_t query_type);
+   mongoc_client_encryption_encrypt_opts_t *opts, const char *query_type);
 
 MONGOC_EXPORT (mongoc_client_encryption_datakey_opts_t *)
 mongoc_client_encryption_datakey_opts_new (void) BSON_GNUC_WARN_UNUSED_RESULT;

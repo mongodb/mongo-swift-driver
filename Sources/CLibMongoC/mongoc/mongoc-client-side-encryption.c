@@ -405,10 +405,7 @@ struct _mongoc_client_encryption_encrypt_opts_t {
       int64_t value;
       bool set;
    } contention_factor;
-   struct {
-      mongoc_encrypt_query_type_t value;
-      bool set;
-   } query_type;
+   char *query_type;
 };
 
 mongoc_client_encryption_encrypt_opts_t *
@@ -427,6 +424,7 @@ mongoc_client_encryption_encrypt_opts_destroy (
    bson_value_destroy (&opts->keyid);
    bson_free (opts->algorithm);
    bson_free (opts->keyaltname);
+   bson_free (opts->query_type);
    bson_free (opts);
 }
 
@@ -481,14 +479,13 @@ mongoc_client_encryption_encrypt_opts_set_contention_factor (
 
 void
 mongoc_client_encryption_encrypt_opts_set_query_type (
-   mongoc_client_encryption_encrypt_opts_t *opts,
-   mongoc_encrypt_query_type_t query_type)
+   mongoc_client_encryption_encrypt_opts_t *opts, const char *query_type)
 {
    if (!opts) {
       return;
    }
-   opts->query_type.value = query_type;
-   opts->query_type.set = true;
+   bson_free (opts->query_type);
+   opts->query_type = query_type ? bson_strdup (query_type) : NULL;
 }
 
 /*--------------------------------------------------------------------------
@@ -528,6 +525,12 @@ mongoc_client_encryption_rewrap_many_datakey_result_get_bulk_write_result (
    mongoc_client_encryption_rewrap_many_datakey_result_t *result)
 {
    if (!result) {
+      return NULL;
+   }
+
+   /* bulkWriteResult may be empty if no result of a bulk write operation has
+    * been assigned to it. Treat as equivalent to an unset optional state. */
+   if (bson_empty (&result->bulk_write_result)) {
       return NULL;
    }
 
@@ -591,7 +594,7 @@ _mongoc_cse_client_pool_enable_auto_encryption (
 
 
 bool
-mongoc_client_encryption_create_key (
+mongoc_client_encryption_create_datakey (
    mongoc_client_encryption_t *client_encryption,
    const char *kms_provider,
    mongoc_client_encryption_datakey_opts_t *opts,
@@ -602,19 +605,6 @@ mongoc_client_encryption_create_key (
       memset (keyid, 0, sizeof (*keyid));
    }
    return _disabled_error (error);
-}
-
-
-bool
-mongoc_client_encryption_create_datakey (
-   mongoc_client_encryption_t *client_encryption,
-   const char *kms_provider,
-   mongoc_client_encryption_datakey_opts_t *opts,
-   bson_value_t *keyid,
-   bson_error_t *error)
-{
-   return mongoc_client_encryption_create_key (
-      client_encryption, kms_provider, opts, keyid, error);
 }
 
 
@@ -1874,7 +1864,7 @@ _coll_has_read_concern_majority (const mongoc_collection_t *coll)
 }
 
 bool
-mongoc_client_encryption_create_key (
+mongoc_client_encryption_create_datakey (
    mongoc_client_encryption_t *client_encryption,
    const char *kms_provider,
    mongoc_client_encryption_datakey_opts_t *opts,
@@ -1956,18 +1946,6 @@ fail:
    bson_destroy (&datakey);
 
    RETURN (ret);
-}
-
-bool
-mongoc_client_encryption_create_datakey (
-   mongoc_client_encryption_t *client_encryption,
-   const char *kms_provider,
-   mongoc_client_encryption_datakey_opts_t *opts,
-   bson_value_t *keyid,
-   bson_error_t *error)
-{
-   return mongoc_client_encryption_create_key (
-      client_encryption, kms_provider, opts, keyid, error);
 }
 
 bool
@@ -2358,11 +2336,34 @@ mongoc_client_encryption_remove_key_alt_name (
 
    _mongoc_bson_init_if_set (key_doc);
 
+
    {
       mongoc_find_and_modify_opts_t *const opts =
          mongoc_find_and_modify_opts_new ();
-      bson_t *const update =
-         BCON_NEW ("$pull", "{", "keyAltNames", BCON_UTF8 (keyaltname), "}");
+
+      /* clang-format off */
+      bson_t *const update = BCON_NEW (
+         "0", "{",
+            "$set", "{",
+               "keyAltNames", "{",
+                  "$cond", "[",
+                     "{",
+                        "$eq", "[", "$keyAltNames", "[", keyaltname, "]", "]",
+                     "}",
+                     "$$REMOVE",
+                     "{",
+                        "$filter", "{",
+                           "input", "$keyAltNames",
+                           "cond", "{",
+                              "$ne", "[", "$$this", keyaltname, "]",
+                           "}",
+                        "}",
+                     "}",
+                  "]",
+               "}",
+            "}",
+         "}");
+      /* clang-format on */
 
       BSON_ASSERT (mongoc_find_and_modify_opts_set_update (opts, update));
 
@@ -2373,90 +2374,32 @@ mongoc_client_encryption_remove_key_alt_name (
       mongoc_find_and_modify_opts_destroy (opts);
    }
 
-   /* Ensure keyAltNames field is removed if it would otherwise be empty. */
-   if (ret) {
+   if (ret && key_doc) {
       bson_iter_t iter;
-      bool should_remove = true;
 
-      BSON_ASSERT (bson_iter_init (&iter, &local_reply));
+      if (bson_iter_init_find (&iter, &local_reply, "value")) {
+         const bson_value_t *const value = bson_iter_value (&iter);
 
-      if (bson_iter_find_descendant (&iter, "value.keyAltNames", &iter)) {
-         if (!BSON_ITER_HOLDS_ARRAY (&iter)) {
+         if (value->value_type == BSON_TYPE_DOCUMENT) {
+            bson_t bson;
+            BSON_ASSERT (bson_init_static (
+               &bson, value->value.v_doc.data, value->value.v_doc.data_len));
+            bson_copy_to (&bson, key_doc);
+            bson_destroy (&bson);
+         } else if (value->value_type == BSON_TYPE_NULL) {
+            bson_t bson = BSON_INITIALIZER;
+            bson_copy_to (&bson, key_doc);
+            bson_destroy (&bson);
+         } else {
             bson_set_error (error,
                             MONGOC_ERROR_CLIENT,
                             MONGOC_ERROR_CLIENT_INVALID_ENCRYPTION_STATE,
-                            "expected keyAltNames to be an array of strings");
+                            "expected field value to be a document or null");
             ret = false;
-            GOTO (fail);
-         }
-
-         if (bson_iter_recurse (&iter, &iter)) {
-            while (bson_iter_next (&iter)) {
-               if (!BSON_ITER_HOLDS_UTF8 (&iter)) {
-                  bson_set_error (
-                     error,
-                     MONGOC_ERROR_CLIENT,
-                     MONGOC_ERROR_CLIENT_INVALID_ENCRYPTION_STATE,
-                     "expected keyAltNames to be an array of strings");
-                  ret = false;
-                  GOTO (fail);
-               }
-
-               if (strcmp (bson_iter_utf8 (&iter, NULL), keyaltname) != 0) {
-                  should_remove = false;
-                  break;
-               }
-            }
-         }
-      } else {
-         /* If keyAltNames does not exist, do not try to remove it. */
-         should_remove = false;
-      }
-
-      if (should_remove) {
-         bson_t *update =
-            BCON_NEW ("$unset", "{", "keyAltNames", BCON_BOOL (true), "}");
-         bson_t reply;
-
-         ret = mongoc_collection_update_one (client_encryption->keyvault_coll,
-                                             &query,
-                                             update,
-                                             NULL,
-                                             &reply,
-                                             error);
-
-         bson_destroy (update);
-         bson_destroy (&reply);
-      }
-
-      if (ret && key_doc) {
-         bson_iter_t iter;
-
-         if (bson_iter_init_find (&iter, &local_reply, "value")) {
-            const bson_value_t *const value = bson_iter_value (&iter);
-
-            if (value->value_type == BSON_TYPE_DOCUMENT) {
-               bson_t bson;
-               BSON_ASSERT (bson_init_static (
-                  &bson, value->value.v_doc.data, value->value.v_doc.data_len));
-               bson_copy_to (&bson, key_doc);
-               bson_destroy (&bson);
-            } else if (value->value_type == BSON_TYPE_NULL) {
-               bson_t bson = BSON_INITIALIZER;
-               bson_copy_to (&bson, key_doc);
-               bson_destroy (&bson);
-            } else {
-               bson_set_error (error,
-                               MONGOC_ERROR_CLIENT,
-                               MONGOC_ERROR_CLIENT_INVALID_ENCRYPTION_STATE,
-                               "expected field value to be a document or null");
-               ret = false;
-            }
          }
       }
    }
 
-fail:
    bson_destroy (&query);
    bson_destroy (&local_reply);
 
@@ -2545,7 +2488,7 @@ mongoc_client_encryption_encrypt (mongoc_client_encryption_t *client_encryption,
           opts->algorithm,
           &opts->keyid,
           opts->keyaltname,
-          opts->query_type.set ? &opts->query_type.value : NULL,
+          opts->query_type,
           opts->contention_factor.set ? &opts->contention_factor.value : NULL,
           value,
           ciphertext,
