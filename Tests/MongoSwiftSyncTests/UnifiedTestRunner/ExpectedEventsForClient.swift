@@ -87,6 +87,7 @@ enum ExpectedEvent: Decodable {
         let hasServiceId: Bool?
 
         /// Specifies whether the `serviceConnectionId` field of an event is set.
+        // TODO: SWIFT-1262: update unified test runner to use this value.
         let hasServerConnectionId: Bool?
     }
 
@@ -102,6 +103,7 @@ enum ExpectedEvent: Decodable {
         let hasServiceId: Bool?
 
         /// Specifies whether the `serviceConnectionId` field of an event is set.
+        // TODO: SWIFT-1262: update unified test runner to use this value.
         let hasServerConnectionId: Bool?
     }
 
@@ -114,7 +116,7 @@ enum ExpectedEvent: Decodable {
         let hasServiceId: Bool?
 
         /// Specifies whether the `serviceConnectionId` field of an event is set.
-        // TODO: SWIFT-1262: update unified test runner to use this value
+        // TODO: SWIFT-1262: update unified test runner to use this value.
         let hasServerConnectionId: Bool?
     }
 }
