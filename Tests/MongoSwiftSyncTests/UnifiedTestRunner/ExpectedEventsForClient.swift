@@ -21,7 +21,7 @@ struct ExpectedEventsForClient: Decodable {
     /// Specifies how the `events` array is matched against observed events.  If false, observed events after all
     /// specified events have matched MUST cause a test failure; if true, observed events after all specified events
     /// have been matched MUST NOT cause a test failure. Defaults to false.
-    let ignoreExtraEvents: Bool?
+    let ignoreExtraEvents = false
 
     enum CodingKeys: String, CodingKey {
         case client, eventType, events, ignoreExtraEvents
@@ -39,7 +39,7 @@ struct ExpectedEventsForClient: Decodable {
             // TODO: SWIFT-1321 actually parse these out.
             self.events = []
         }
-        self.ignoreExtraEvents = try container.decodeIfPresent(Bool.self, forKey: .ignoreExtraEvents) ?? false
+        self.ignoreExtraEvents = try container.decodeIfPresent(Bool.self, forKey: .ignoreExtraEvents)
     }
 }
 
