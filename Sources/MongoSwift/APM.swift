@@ -174,7 +174,7 @@ extension EventStream : AsyncSequence, AsyncIteratorProtocol {
         //publishEvent just iterates through eventlisteners tho...
         //T is an enum where each event is of type `MongoSwiftClient`
         
-        let output: MongoSwiftEvent = publishEvent(type: event.Type, eventPtr: nil)
+        //let output: MongoSwiftEvent = publishEvent(type: event.Type, eventPtr: nil)
         //let (data, _) = try await urlSession.data(from: url)
         
         //return data
@@ -191,9 +191,6 @@ extension EventStream : AsyncSequence, AsyncIteratorProtocol {
 
 }
 
-extension EventStream : AsyncStream<T> {
-    
-}
 #endif
 //@available(macOS 10.15, *) //Only available in 10.15+
 //extension EventStream {
