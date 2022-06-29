@@ -1,6 +1,7 @@
 import Foundation
 import MongoSwift
-import NIO
+import NIOCore
+import NIOPosix
 import TestsCommon
 import XCTest
 

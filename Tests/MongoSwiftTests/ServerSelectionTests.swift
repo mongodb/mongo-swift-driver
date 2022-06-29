@@ -2,7 +2,6 @@
 import Foundation
 @testable import MongoSwift
 import Nimble
-import NIO
 import TestsCommon
 import XCTest
 

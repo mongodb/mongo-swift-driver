@@ -1,7 +1,6 @@
 import Foundation
 import MongoSwift
 import Nimble
-import NIO
 import NIOConcurrencyHelpers
 import TestsCommon
 

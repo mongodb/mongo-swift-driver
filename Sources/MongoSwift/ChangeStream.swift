@@ -1,6 +1,6 @@
 import CLibMongoC
 import Foundation
-import NIO
+import NIOCore
 
 /// Direct wrapper of a `mongoc_change_stream_t`.
 private struct MongocChangeStream: MongocCursorWrapper {

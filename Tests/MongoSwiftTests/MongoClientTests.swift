@@ -1,7 +1,7 @@
 import Foundation
 @testable import MongoSwift
 import Nimble
-import NIO
+import NIOPosix
 import TestsCommon
 
 final class MongoClientTests: MongoSwiftTestCase {

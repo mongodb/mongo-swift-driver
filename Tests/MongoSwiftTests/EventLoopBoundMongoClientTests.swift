@@ -1,6 +1,6 @@
 @testable import MongoSwift
 import Nimble
-import NIO
+import NIOPosix
 import TestsCommon
 
 final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
@@ -320,7 +320,7 @@ final class EventLoopBoundMongoClientTests: MongoSwiftTestCase {
             defer { try? db.drop().wait() }
 
             let wrongEventLoop = MultiThreadedEventLoopGroup(numberOfThreads: 4).next()
-            let withSessionFuture: EventLoopFuture<[String]> = elBoundClient.withSession { session in
+            let withSessionFuture = elBoundClient.withSession { session in
                 db.listCollectionNames(session: session).hop(to: wrongEventLoop)
             }
             expect(withSessionFuture.eventLoop) === expectedEventLoop

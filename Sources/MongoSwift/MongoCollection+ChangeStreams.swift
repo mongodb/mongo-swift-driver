@@ -1,5 +1,5 @@
 import CLibMongoC
-import NIO
+import NIOCore
 
 extension MongoCollection {
     /**

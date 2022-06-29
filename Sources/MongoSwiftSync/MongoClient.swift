@@ -1,5 +1,5 @@
 import MongoSwift
-import NIO
+import NIOPosix
 
 /// A MongoDB Client providing a synchronous API.
 public class MongoClient {

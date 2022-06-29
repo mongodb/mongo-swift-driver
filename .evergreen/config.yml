@@ -1112,10 +1112,6 @@ axes:
   - id: swift-version
     display_name: "Swift"
     values:
-      - id: "5.1"
-        display_name: "Swift 5.1"
-        variables:
-           SWIFT_MINOR_VERSION: "5.1"
       - id: "5.2"
         display_name: "Swift 5.2"
         variables:
@@ -1250,11 +1246,8 @@ buildvariants:
 
 - matrix_name: "min-version-compile"
   matrix_spec:
-  # Ubuntu 20.04 does not have Swift 5.1 toolchains.
-    os-fully-featured:
-      - "macos-11"
-      - "ubuntu-18.04"
-    swift-version: "5.1"
+    os-fully-featured: "*"
+    swift-version: "5.2"
   display_name: "Compile ${swift-version} ${os-fully-featured}"
   tasks:
     - "compile"

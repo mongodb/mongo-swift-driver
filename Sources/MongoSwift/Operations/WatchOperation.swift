@@ -1,5 +1,5 @@
 import CLibMongoC
-import NIO
+import NIOCore
 
 /// The entity on which to start a change stream.
 internal enum ChangeStreamTarget<CollectionType: Codable> {
