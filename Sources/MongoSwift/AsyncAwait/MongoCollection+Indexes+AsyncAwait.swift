@@ -181,28 +181,36 @@ extension MongoCollection {
      * Retrieves a list of the indexes currently on this collection.
      *
      * - Parameters:
+     *   - options: Optional `ListIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command.
      *
      * - Returns: A `MongoCursor` over the `IndexModel`s.
      *
      * - Throws: `MongoError.LogicError` if the provided session is inactive.
      */
-    public func listIndexes(session: ClientSession? = nil) async throws -> MongoCursor<IndexModel> {
-        try await self.listIndexes(session: session).get()
+    public func listIndexes(
+        session: ClientSession? = nil,
+        options: ListIndexOptions? = nil
+    ) async throws -> MongoCursor<IndexModel> {
+        try await self.listIndexes(options: options, session: session).get()
     }
 
     /**
      * Retrieves a list of names of the indexes currently on this collection.
      *
      * - Parameters:
+     *   - options: Optional `ListIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command.
      *
      * - Returns: A `MongoCursor` over the index names.
      *
      * - Throws: `MongoError.LogicError` if the provided session is inactive.
      */
-    public func listIndexNames(session: ClientSession? = nil) async throws -> [String] {
-        try await self.listIndexNames(session: session).get()
+    public func listIndexNames(
+        session: ClientSession? = nil,
+        options: ListIndexOptions? = nil
+    ) async throws -> [String] {
+        try await self.listIndexNames(options: options, session: session).get()
     }
 }
 #endif

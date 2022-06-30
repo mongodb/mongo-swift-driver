@@ -415,6 +415,7 @@ extension MongoCollection {
      * Retrieves a list of the indexes currently on this collection.
      *
      * - Parameters:
+     *   - options: Optional `ListIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Warning:
@@ -451,6 +452,7 @@ extension MongoCollection {
      * Retrieves a list of names of the indexes currently on this collection.
      *
      * - Parameters:
+     *   - options: Optional `ListIndexOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns:

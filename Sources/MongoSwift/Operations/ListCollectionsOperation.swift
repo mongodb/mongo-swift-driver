@@ -141,6 +141,10 @@ internal struct ListCollectionsOperation: Operation {
             cmd["authorizedCollections"] = .bool(authorizedCollections)
         }
 
+        if let comment = self.options?.comment {
+            cmd["comment"] = comment
+        }
+
         var cursorOpts: BSONDocument = [:]
 
         if let batchSize = options?.batchSize {

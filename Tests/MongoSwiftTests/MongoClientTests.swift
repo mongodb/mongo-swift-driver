@@ -74,6 +74,27 @@ final class MongoClientTests: MongoSwiftTestCase {
         }
     }
 
+    func testListDatabasesComment() throws {
+        try self.withTestClient { client in
+            let comment = BSON("hello world")
+            let monitor = client.addCommandMonitor()
+
+            try monitor.captureEvents {
+                let dbOptions = ListDatabasesOptions(comment: comment)
+                _ = try client.listDatabases(options: dbOptions).wait()
+                _ = try client.listDatabases().wait()
+            }
+
+            let receivedEvents = monitor.commandStartedEvents()
+            expect(receivedEvents.count).to(equal(2))
+            expect(receivedEvents[0].command["listDatabases"]).toNot(beNil())
+            expect(receivedEvents[0].command["comment"]).toNot(beNil())
+            expect(receivedEvents[0].command["comment"]).to(equal(comment))
+            expect(receivedEvents[1].command["listDatabases"]).toNot(beNil())
+            expect(receivedEvents[1].command["comment"]).to(beNil())
+        }
+    }
+
     func testClientIdGeneration() throws {
         let ids = try (0...2).map { _ in
             try self.withTestClient { $0._id }

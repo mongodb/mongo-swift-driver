@@ -79,6 +79,10 @@ internal struct ListDatabasesOperation: Operation {
             cmd["authorizedDatabases"] = .bool(authorizedDatabases)
         }
 
+        if let comment = self.options?.comment {
+            cmd["comment"] = comment
+        }
+
         let opts = try encodeOptions(options: nil as BSONDocument?, session: session)
 
         let reply = try connection.withMongocConnection { connPtr in
