@@ -44,10 +44,10 @@ private protocol MongocEvent {
 }
 
 /// Enum to wrap `CommandEvent` and `SDAMEvent`
-public enum StreamEvents {
-    case CommandEvent(CommandEvent)
-    case SDAMEvent(SDAMEvent)
-}
+// public enum StreamEvents {
+//    case CommandEvent(CommandEvent)
+//    case SDAMEvent(SDAMEvent)
+// }
 
 /// A command monitoring event.
 public enum CommandEvent: Publishable {
@@ -123,87 +123,79 @@ private protocol CommandEventProtocol {
     var serviceID: BSONObjectID? { get }
 }
 
-/// If concurrency can be used, `EventStream` implements `AsyncSequence` to allow for
-/// asynchronous event monitoring
-
-/// An asynchronous way to monitor events.
 #if compiler(>=5.5) && canImport(_Concurrency) // && available(macOS 10.15, *)
+/// An asynchronous way to monitor events that uses `AsyncSequence`.
+/// Only available for Swift 5.5 and higher.
 @available(macOS 10.15, *)
-public struct EventStream<StreamEvents> {
-    
-    //StreamEvents
-    
-    //which event we are at
-    private var index = 0
-    private var stream : AsyncStream<StreamEvents>
-    //var iterator: EventStreamIterator<StreamEvents>
-    init(stream: AsyncStream<StreamEvents> ){
+public struct EventStream<T> {
+    private var stream: AsyncStream<T>
+    /// Initialize the stream
+    public init(stream: AsyncStream<T>) {
         self.stream = stream
-        
     }
-    
 }
-#endif
-//
-@available(macOS 10.15, *)
-extension EventStream : AsyncSequence {
-    
-    public typealias Element = StreamEvents
- 
-    public typealias AsyncIterator = EventStreamIterator<StreamEvents>
-    
 
-    //let stream : AsyncStream<T>
+@available(macOS 10.15, *)
+extension EventStream: AsyncSequence {
+    /// The type of element produced by this `EventStream`.
+    public typealias Element = T
+
+    /// The asynchronous iterator of type `EventStreamIterator<T>`
+    /// that produces elements of this asynchronous sequence.
+    public typealias AsyncIterator = EventStreamIterator<T>
 
 //    mutating func startMonitoring(client: MongoClient){
 //        //how to access client? cant init with it bc cant reference a non-fully init client
-//        switch StreamEvents.self {
+//        switch T.self {
 //        case is CommandEvent:
 //            stream =
-//            //iterator = EventStreamIterator<StreamEvents>(asyncStream: stream)
+//            //iterator = EventStreamIterator<T>(asyncStream: stream)
 //        case is SDAMEvent:
 //            stream = AsyncStream { con in
 //                client.addSDAMEventHandler{ event in
 //                    con.yield(event)
 //                }
 //            }
-//            //iterator = EventStreamIterator<StreamEvents>(asyncStream: stream)
+//            //iterator = EventStreamIterator<T>(asyncStream: stream)
 //        default:
 //            print("wrong event type")
 //        }
 //    }
 
-    public func makeAsyncIterator() -> EventStreamIterator<StreamEvents> {
-        return EventStreamIterator<StreamEvents>.init(asyncStream: stream)
+    /// Creates the asynchronous iterator that produces elements of this `EventStream`.
+    public func makeAsyncIterator() -> EventStreamIterator<T> {
+        EventStreamIterator<T>(asyncStream: self.stream)
     }
 
-    //startMonitoring?
-
+    // startMonitoring?
 }
-//
+
 @available(macOS 10.15, *)
-public struct EventStreamIterator<StreamEvents> : AsyncIteratorProtocol {
-    var iterator : AsyncStream<StreamEvents>.AsyncIterator?
+public struct EventStreamIterator<T>: AsyncIteratorProtocol {
+    private var iterator: AsyncStream<T>.AsyncIterator?
 
-    init(asyncStream: AsyncStream<StreamEvents> ) {
-        iterator = asyncStream.makeAsyncIterator()
-    }
-    public mutating func next() async throws -> StreamEvents? {
-        await iterator?.next()
+    /// Initialize the iterator
+    public init(asyncStream: AsyncStream<T>) {
+        self.iterator = asyncStream.makeAsyncIterator()
     }
 
-    public typealias Element = StreamEvents
+    /// Asynchronously advances to the next element and returns it, or ends the sequence if there is no next element.
+    public mutating func next() async throws -> T? {
+        await self.iterator?.next()
+    }
 
-
+    /// The type of element iterated over by this `EventStreamIterator`.
+    public typealias Element = T
 }
 
-@available (macOS 10.15, *)
+/// An asynchronous way to monitor command events using `EventStream`
+@available(macOS 10.15, *)
 public typealias CommandEventStream = EventStream<CommandEvent>
 
-@available (macOS 10.15, *)
+/// An asynchronous way to monitor SDAM events using `EventStream`
+@available(macOS 10.15, *)
 public typealias SDAMEventStream = EventStream<SDAMEvent>
-
-
+#endif
 
 /// An event published when a command starts.
 public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
