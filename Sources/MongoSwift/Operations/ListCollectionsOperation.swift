@@ -83,8 +83,8 @@ public struct ListCollectionsOptions: Codable {
 
     /// A comment to help trace the operation through the database profiler,
     /// currentOp and logs. Can be any valid BSON type for server versions
-    /// 4.4 and above but older server versions only support string comments
-    /// (non-string types cause server-side errors). The default is to not send a value.
+    /// 4.4 and above but older server versions do not support.
+    /// The default is to not send a value.
     public var comment: BSON?
 
     /// Convenience initializer allowing any/all parameters to be omitted or optional

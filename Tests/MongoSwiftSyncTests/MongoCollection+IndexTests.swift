@@ -294,7 +294,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let monitor = client.addCommandMonitor()
 
         guard try client.serverVersionIsInRange("4.4", nil) else {
-            print("Skipping create/list/drop indexes test due to unsupported server version")
+            print("Skipping create/list/drop indexes comments test due to unsupported server version")
             return
         }
 
