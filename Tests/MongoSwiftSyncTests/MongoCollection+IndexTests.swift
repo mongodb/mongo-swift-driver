@@ -293,6 +293,11 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
 
+        guard try client.serverVersionIsInRange("4.4", nil) else {
+            print("Skipping create/list/drop indexes test due to unsupported server version")
+            return
+        }
+
         let db = client.db(Self.testDatabase)
         let collection = db.collection("collection")
         try collection.insertOne(["test": "blahblah"])
