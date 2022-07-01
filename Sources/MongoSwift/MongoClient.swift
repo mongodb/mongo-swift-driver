@@ -299,6 +299,7 @@ public class MongoClient {
                 }
             )
         }
+        //Ok to force cast since we are explictly setting up the CommandEventStream
         // swiftlint:disable:next force_cast
         return self._commandEvents as! CommandEventStream
     }
@@ -315,6 +316,7 @@ public class MongoClient {
                 }
             )
         }
+        //Ok to force cast since we are explictly setting up the SDAMEventStream
         // swiftlint:disable:next force_cast
         return self._sdamEvents as! SDAMEventStream
     }
@@ -402,16 +404,7 @@ public class MongoClient {
         self.decoder = BSONDecoder(options: options)
         self.sdamEventHandlers = []
         self.commandEventHandlers = []
-        // self.commandEvents = CommandEventStream()
-        // self.sdamEvents = SDAMEventStream()
-
-//        if #available(macOS 10.15, *) {
-//            setUpStream()
-//        } else {
-//            self.commandEvents = CommandEventStream(
-//            )
-//            self.sdamEvents = SDAMEventStream()
-//        }
+        //commandEvents/sdamEvents are initialized when called
         self.connectionPool.initializeMonitoring(client: self)
     }
 
