@@ -144,24 +144,6 @@ extension EventStream: AsyncSequence {
     /// that produces elements of this asynchronous sequence.
     public typealias AsyncIterator = EventStreamIterator<T>
 
-//    mutating func startMonitoring(client: MongoClient){
-//        //how to access client? cant init with it bc cant reference a non-fully init client
-//        switch T.self {
-//        case is CommandEvent:
-//            stream =
-//            //iterator = EventStreamIterator<T>(asyncStream: stream)
-//        case is SDAMEvent:
-//            stream = AsyncStream { con in
-//                client.addSDAMEventHandler{ event in
-//                    con.yield(event)
-//                }
-//            }
-//            //iterator = EventStreamIterator<T>(asyncStream: stream)
-//        default:
-//            print("wrong event type")
-//        }
-//    }
-
     /// Creates the asynchronous iterator that produces elements of this `EventStream`.
     public func makeAsyncIterator() -> EventStreamIterator<T> {
         EventStreamIterator<T>(asyncStream: self.stream)

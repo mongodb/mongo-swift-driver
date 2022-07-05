@@ -73,15 +73,49 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
     func testSDAMEventStreamClient() async throws {
         try await self.withTestClient { client in
+            // Standard SDAM pattern
+            let eventTypes: [EventType] = [
+                .topologyOpening,
+                .topologyDescriptionChanged,
+                .serverOpening,
+                .serverHeartbeatStarted,
+                .serverHeartbeatSucceeded,
+                .serverDescriptionChanged,
+                .serverOpening,
+                .serverOpening,
+                .serverOpening,
+                .serverClosed,
+                .topologyDescriptionChanged,
+                .serverHeartbeatStarted,
+                .serverHeartbeatStarted,
+                .serverHeartbeatStarted,
+                .serverHeartbeatSucceeded,
+                .serverHeartbeatSucceeded,
+                .serverHeartbeatSucceeded,
+                .serverDescriptionChanged,
+                .topologyDescriptionChanged,
+                .serverHeartbeatStarted,
+                .serverDescriptionChanged,
+                .topologyDescriptionChanged,
+                .serverHeartbeatStarted,
+                .serverDescriptionChanged,
+                .topologyDescriptionChanged,
+                .serverHeartbeatStarted,
+                .serverHeartbeatFailed,
+                .serverHeartbeatFailed,
+                .serverHeartbeatFailed,
+                .topologyClosed
+            ]
             Task {
                 var i = 0
-                for try await _ in client.sdamEvents {
-                    // pinging should have 30 events (or less)
-                    expect(i).to(beLessThanOrEqualTo(30))
+                for try await event in client.sdamEvents {
+                    print(event.type)
+                    expect(eventTypes[i]).to(equal(event.type))
                     i += 1
                 }
             }
             try await client.db("admin").runCommand(["ping": 1])
+            try await client.db("trialDB").collection("trialColl").insertOne(["hello": "world"])
         }
     }
 }
