@@ -288,7 +288,6 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
     func testCreateListDropIndexesComment() throws {
         let comment = BSON("hello world")
-        let maxTimeMS = 5000
 
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()
@@ -305,9 +304,8 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         try monitor.captureEvents {
             let model = IndexModel(keys: ["dog": 1])
             let modelNoComm = IndexModel(keys: ["cat": 1])
-            let wc = try WriteConcern(w: .number(1))
-            let createIndexOpts = CreateIndexOptions(comment: comment, maxTimeMS: maxTimeMS, writeConcern: wc)
-            let createIndexOptsNoComm = CreateIndexOptions(maxTimeMS: maxTimeMS, writeConcern: wc)
+            let createIndexOpts = CreateIndexOptions(comment: comment)
+            let createIndexOptsNoComm = CreateIndexOptions()
             expect(try collection.createIndex(model, options: createIndexOpts)).to(equal("dog_1"))
             expect(try collection.createIndex(modelNoComm, options: createIndexOptsNoComm))
                 .to(equal("cat_1"))
@@ -315,7 +313,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
             let listIndexOpts = ListIndexOptions(comment: comment)
             expect(try collection.listIndexNames(options: listIndexOpts)).to(equal(["_id_", "dog_1", "cat_1"]))
 
-            let dropIndexOpts = DropIndexOptions(comment: comment, maxTimeMS: maxTimeMS, writeConcern: wc)
+            let dropIndexOpts = DropIndexOptions(comment: comment)
             expect(try collection.dropIndex(model, options: dropIndexOpts)).toNot(throwError())
 
             // now there should only be _id_ left

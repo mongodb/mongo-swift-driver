@@ -74,15 +74,11 @@ final class MongoClientTests: MongoSwiftTestCase {
         }
     }
 
-    func testListDatabasesComment() throws {
-        try self.withTestClient { client in
-            // cant call `.serverVersionIsInRange()` when testing client
-            var version: ServerVersion = .init(major: 0, minor: 0)
-            let minVersion: ServerVersion = .init(major: 4, minor: 4)
-            _ = client.serverVersion().map { serverVersion in version = serverVersion }
-
+    func testListDatabasesComment() async throws {
+        try await self.withTestClient { client in
             // comment only supported here for 4.4+
-            guard version >= minVersion else {
+
+            guard try await client.serverVersionIsInRange("4.4", nil) else {
                 print("Skipping list databases comment test due to unsupported server version")
                 return
             }

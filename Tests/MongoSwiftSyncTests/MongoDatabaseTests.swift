@@ -191,40 +191,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(listNamesEvents[3].command["nameOnly"]).to(equal(false))
     }
 
-    func testListCollectionsComment() throws {
-        let client = try MongoClient.makeTestClient()
-        let monitor = client.addCommandMonitor()
-        let db = client.db(Self.testDatabase)
-
-        // comment only supported here for 4.4+
-        guard try client.serverVersionIsInRange("4.4", nil) else {
-            print("Skipping list collections comment test due to unsupported server version")
-            return
-        }
-
-        // clear out collections
-        try db.drop()
-        let comment = BSON("commenter")
-
-        _ = try db.createCollection("foo")
-        _ = try db.createCollection("bar")
-        _ = try db.createCollection("baz")
-
-        try monitor.captureEvents {
-            let options = ListCollectionsOptions(comment: comment)
-            _ = Array(try db.listCollections(options: options))
-            _ = Array(try db.listCollectionNames())
-        }
-
-        let events = monitor.commandStartedEvents(withNames: ["listCollections"])
-        expect(events).to(haveCount(2))
-        expect(events[0].commandName).to(equal("listCollections"))
-        expect(events[0].command["comment"]).toNot(beNil())
-        expect(events[0].command["comment"]).to(equal(comment))
-        expect(events[1].commandName).to(equal("listCollections"))
-        expect(events[1].command["comment"]).to(beNil())
-    }
-
     func testListCollectionsBatchSize() throws {
         try self.withTestNamespace { client, db, _ in
             // clear out collections

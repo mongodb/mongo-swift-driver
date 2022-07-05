@@ -109,6 +109,19 @@ extension MongoClient {
         try await self.db("admin").runCommand(["getParameter": "*"])
     }
 
+    internal func serverVersionIsInRange(_ min: String?, _ max: String?) async throws -> Bool {
+        let version = try await self.serverVersion()
+
+        if let min = min, version < (try ServerVersion(min)) {
+            return false
+        }
+        if let max = max, version > (try ServerVersion(max)) {
+            return false
+        }
+
+        return true
+    }
+
     internal func topologyType() async throws -> TestTopologyConfiguration {
         async let helloReply = try self.db("admin").runCommand(["hello": 1])
         async let shards = try self.db("config").collection("shards").find().get().toArray().get()
