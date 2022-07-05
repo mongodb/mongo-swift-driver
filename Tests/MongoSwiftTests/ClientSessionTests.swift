@@ -48,4 +48,40 @@ final class ClientSessionTests: MongoSwiftTestCase {
             expect(escapedSession?.active).to(beFalse())
         }
     }
+
+    func testCommandEventStreamClient() async throws {
+        try await self.withTestClient { client in
+            let commandStr: [String] = ["ping", "ping", "endSessions", "endSessions"]
+            let eventTypes: [EventType] = [
+                .commandStartedEvent,
+                .commandSucceededEvent,
+                .commandStartedEvent,
+                .commandSucceededEvent
+            ]
+            Task {
+                var i = 0
+                for try await event in client.commandEvents {
+                    expect(commandStr[i]).to(equal(event.commandName))
+                    expect(eventTypes[i]).to(equal(event.type))
+
+                    i += 1
+                }
+            }
+            try await client.db("admin").runCommand(["ping": 1])
+        }
+    }
+
+    func testSDAMEventStreamClient() async throws {
+        try await self.withTestClient { client in
+            Task {
+                var i = 0
+                for try await _ in client.sdamEvents {
+                    // pinging should have 30 events (or less)
+                    expect(i).to(beLessThanOrEqualTo(30))
+                    i += 1
+                }
+            }
+            try await client.db("admin").runCommand(["ping": 1])
+        }
+    }
 }

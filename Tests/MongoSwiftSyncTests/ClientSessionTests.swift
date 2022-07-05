@@ -516,24 +516,6 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
         }
     }
 
-    func testEventStreamClient() async throws {
-        let client = try MongoClient.makeTestClient()
-
-        let commandStr : [String] = ["ping", "ping"]
-        var i = 0
-        print("here")
-        for try await event in client.asyncClient.commandEvents{
-            print("help")
-            expect(commandStr[i]).to(equal(event.commandName))
-            i += 1
-        }
-
-        try await client.asyncClient.db("admin").runCommand(["ping": 1])
-        print("p")//never prints
-        //let db = client.db(Self.testDatabase)
-        //let collection = db.collection(self.getCollectionName())
-    }
-
     func testSessionsUnified() throws {
         let tests = try retrieveSpecTestFiles(
             specName: "sessions",
