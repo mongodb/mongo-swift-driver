@@ -32,7 +32,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
                 let listIndexOpts = ListIndexOptions(comment: comment)
                 let listNames = try await collection.listIndexNames(options: listIndexOpts)
-                expect(listNames).to(equal(["_id_", "cat_1", "dog_1"]))
+                expect(Set(listNames)).to(equal(Set(["_id_", "cat_1", "dog_1"])))
 
                 let dropIndexOpts = DropIndexOptions(comment: comment)
                 let dropIndOperation: () = try await collection.dropIndex(model, options: dropIndexOpts)
