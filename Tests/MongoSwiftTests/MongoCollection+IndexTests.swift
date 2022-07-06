@@ -32,24 +32,24 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
 
                 let listIndexOpts = ListIndexOptions(comment: comment)
                 let listNames = try await collection.listIndexNames(options: listIndexOpts)
-                expect(listNames).to(equal(["_id_", "dog_1", "cat_1"]))
+                expect(listNames).to(equal(["_id_", "cat_1", "dog_1"]))
 
                 let dropIndexOpts = DropIndexOptions(comment: comment)
                 let dropIndOperation: () = try await collection.dropIndex(model, options: dropIndexOpts)
                 expect(dropIndOperation).toNot(throwError())
 
-                // now there should only be _id_ left
+                // now there should only be _id_ and cat_1 left
                 let indexes = try await collection.listIndexes()
                 expect(indexes).toNot(beNil())
                 let nextOptionsId = try await indexes.next().get()?.options?.name
                 expect(nextOptionsId).to(equal("_id_"))
-                let nextOptionsNil = try await indexes.next().get()
-                expect(nextOptionsNil).to(beNil())
+                let nextOptionsNil = try await indexes.next().get()?.options?.name
+                expect(nextOptionsNil).to(equal("cat_1"))
             }
 
             // Check comment exists and is the correct value
             let receivedEvents = monitor.commandStartedEvents()
-            expect(receivedEvents.count).to(equal(4))
+            expect(receivedEvents.count).to(equal(5))
             expect(receivedEvents[0].command["createIndexes"]).toNot(beNil())
             expect(receivedEvents[0].command["comment"]).toNot(beNil())
             expect(receivedEvents[0].command["comment"]).to(equal(comment))
