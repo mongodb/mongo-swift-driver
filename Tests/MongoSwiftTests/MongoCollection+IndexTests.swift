@@ -26,8 +26,11 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
                 let createIndexOptsNoComm = CreateIndexOptions()
                 let createIndOperation = try await collection.createIndex(model, options: createIndexOpts)
                 expect(createIndOperation).to(equal("dog_1"))
-                let createIndOperationNoComm = try await collection.createIndex(modelNoComm, options:
-                                                createIndexOptsNoComm)
+                let createIndOperationNoComm = try await collection.createIndex(
+                    modelNoComm,
+                    options:
+                    createIndexOptsNoComm
+                )
                 expect(createIndOperationNoComm).to(equal("cat_1"))
 
                 let listIndexOpts = ListIndexOptions(comment: comment)
