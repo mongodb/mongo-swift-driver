@@ -404,7 +404,7 @@ public class MongoClient {
         self.decoder = BSONDecoder(options: options)
         self.sdamEventHandlers = []
         self.commandEventHandlers = []
-        // commandEvents/sdamEvents are initialized when called
+        // commandEvents and sdamEvents are initialized when called
         self.connectionPool.initializeMonitoring(client: self)
     }
 

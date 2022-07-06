@@ -43,12 +43,6 @@ private protocol MongocEvent {
     var context: UnsafeMutableRawPointer? { get }
 }
 
-/// Enum to wrap `CommandEvent` and `SDAMEvent`
-// public enum StreamEvents {
-//    case CommandEvent(CommandEvent)
-//    case SDAMEvent(SDAMEvent)
-// }
-
 /// A command monitoring event.
 public enum CommandEvent: Publishable {
     /// An event published when a command starts.
@@ -123,7 +117,7 @@ private protocol CommandEventProtocol {
     var serviceID: BSONObjectID? { get }
 }
 
-#if compiler(>=5.5) && canImport(_Concurrency) // && available(macOS 10.15, *)
+#if compiler(>=5.5) && canImport(_Concurrency)
 /// An asynchronous way to monitor events that uses `AsyncSequence`.
 /// Only available for Swift 5.5 and higher.
 @available(macOS 10.15, *)

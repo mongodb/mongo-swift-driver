@@ -73,47 +73,30 @@ final class ClientSessionTests: MongoSwiftTestCase {
 
     func testSDAMEventStreamClient() async throws {
         try await self.withTestClient { client in
-            // Standard SDAM pattern
-            let eventTypes: [EventType] = [
-                .topologyOpening,
-                .topologyDescriptionChanged,
-                .serverOpening,
-                .serverHeartbeatStarted,
-                .serverHeartbeatSucceeded,
-                .serverDescriptionChanged,
-                .serverOpening,
-                .serverOpening,
-                .serverOpening,
-                .serverClosed,
-                .topologyDescriptionChanged,
-                .serverHeartbeatStarted,
-                .serverHeartbeatStarted,
-                .serverHeartbeatStarted,
-                .serverHeartbeatSucceeded,
-                .serverHeartbeatSucceeded,
-                .serverHeartbeatSucceeded,
-                .serverDescriptionChanged,
-                .topologyDescriptionChanged,
-                .serverHeartbeatStarted,
-                .serverDescriptionChanged,
-                .topologyDescriptionChanged,
-                .serverHeartbeatStarted,
-                .serverDescriptionChanged,
-                .topologyDescriptionChanged,
-                .serverHeartbeatStarted,
-                .serverHeartbeatFailed,
-                .serverHeartbeatFailed,
-                .serverHeartbeatFailed,
-                .topologyClosed
-            ]
             Task {
+                // var j = 0
                 var i = 0
+                // var streamEvents: [EventType] = []
+                var eventHandler: [EventType] = []
+                client.addSDAMEventHandler { event in
+                    if !event.isHeartbeatEvent {
+                        eventHandler.append(event.type)
+                        // print("J is " + String(j))
+                        // j += 1
+                    }
+                }
+
                 for try await event in client.sdamEvents {
-                    print(event.type)
-                    expect(eventTypes[i]).to(equal(event.type))
-                    i += 1
+                    if !event.isHeartbeatEvent {
+                        expect(event.type).to(equal(eventHandler[i]))
+//                        print(event.type)
+//                        print(eventHandler[i])
+//                        print("I is " + String(i))
+                        i += 1
+                    }
                 }
             }
+
             try await client.db("admin").runCommand(["ping": 1])
             try await client.db("trialDB").collection("trialColl").insertOne(["hello": "world"])
         }
