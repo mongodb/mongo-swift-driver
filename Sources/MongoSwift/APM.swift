@@ -118,6 +118,7 @@ private protocol CommandEventProtocol {
 }
 
 #if compiler(>=5.5) && canImport(_Concurrency)
+// sourcery: skipSyncExport
 /// An asynchronous way to monitor events that uses `AsyncSequence`.
 /// Only available for Swift 5.5 and higher.
 @available(macOS 10.15, *)
@@ -146,6 +147,7 @@ extension EventStream: AsyncSequence {
     // startMonitoring?
 }
 
+// sourcery: skipSyncExport
 @available(macOS 10.15, *)
 public struct EventStreamIterator<T>: AsyncIteratorProtocol {
     private var iterator: AsyncStream<T>.AsyncIterator?
