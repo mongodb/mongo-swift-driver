@@ -285,59 +285,6 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(receivedEvents[1].command["maxTimeMS"]).toNot(beNil())
         expect(receivedEvents[1].command["maxTimeMS"]?.toInt()).to(equal(maxTimeMS))
     }
-
-    func testCreateListDropIndexesComment() throws {
-        let comment = BSON("hello world")
-
-        let client = try MongoClient.makeTestClient()
-        let monitor = client.addCommandMonitor()
-
-        guard try client.serverVersionIsInRange("4.4", nil) else {
-            print("Skipping create/list/drop indexes comments test due to unsupported server version")
-            return
-        }
-
-        let db = client.db(Self.testDatabase)
-        let collection = db.collection("collection")
-        try collection.insertOne(["test": "blahblah"])
-
-        try monitor.captureEvents {
-            let model = IndexModel(keys: ["dog": 1])
-            let modelNoComm = IndexModel(keys: ["cat": 1])
-            let createIndexOpts = CreateIndexOptions(comment: comment)
-            let createIndexOptsNoComm = CreateIndexOptions()
-            expect(try collection.createIndex(model, options: createIndexOpts)).to(equal("dog_1"))
-            expect(try collection.createIndex(modelNoComm, options: createIndexOptsNoComm))
-                .to(equal("cat_1"))
-
-            let listIndexOpts = ListIndexOptions(comment: comment)
-            expect(try collection.listIndexNames(options: listIndexOpts)).to(equal(["_id_", "dog_1", "cat_1"]))
-
-            let dropIndexOpts = DropIndexOptions(comment: comment)
-            expect(try collection.dropIndex(model, options: dropIndexOpts)).toNot(throwError())
-
-            // now there should only be _id_ left
-            let indexes = try coll.listIndexes()
-            expect(indexes).toNot(beNil())
-            expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
-            expect(try indexes.next()?.get()).to(beNil())
-        }
-
-        // Check comment exists and is the correct value
-        let receivedEvents = monitor.commandStartedEvents()
-        expect(receivedEvents.count).to(equal(4))
-        expect(receivedEvents[0].command["createIndexes"]).toNot(beNil())
-        expect(receivedEvents[0].command["comment"]).toNot(beNil())
-        expect(receivedEvents[0].command["comment"]).to(equal(comment))
-        expect(receivedEvents[1].command["createIndexes"]).toNot(beNil())
-        expect(receivedEvents[1].command["comment"]).to(beNil())
-        expect(receivedEvents[2].command["listIndexes"]).toNot(beNil())
-        expect(receivedEvents[2].command["comment"]).toNot(beNil())
-        expect(receivedEvents[2].command["comment"]).to(equal(comment))
-        expect(receivedEvents[3].command["dropIndexes"]).toNot(beNil())
-        expect(receivedEvents[3].command["comment"]).toNot(beNil())
-        expect(receivedEvents[3].command["comment"]).to(equal(comment))
-    }
 }
 
 extension IndexOptions: Equatable {

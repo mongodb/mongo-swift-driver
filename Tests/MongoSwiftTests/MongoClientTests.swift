@@ -86,10 +86,10 @@ final class MongoClientTests: MongoSwiftTestCase {
             let comment = BSON("hello world")
             let monitor = client.addCommandMonitor()
 
-            try monitor.captureEvents {
+            try await monitor.captureEvents {
                 let dbOptions = ListDatabasesOptions(comment: comment)
-                _ = try client.listDatabases(options: dbOptions).wait()
-                _ = try client.listDatabases().wait()
+                _ = try await client.listDatabases(options: dbOptions)
+                _ = try await client.listDatabases()
             }
 
             let receivedEvents = monitor.commandStartedEvents()
