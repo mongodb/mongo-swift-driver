@@ -74,24 +74,17 @@ final class ClientSessionTests: MongoSwiftTestCase {
     func testSDAMEventStreamClient() async throws {
         try await self.withTestClient { client in
             Task {
-                // var j = 0
                 var i = 0
-                // var streamEvents: [EventType] = []
                 var eventHandler: [EventType] = []
                 client.addSDAMEventHandler { event in
                     if !event.isHeartbeatEvent {
                         eventHandler.append(event.type)
-                        // print("J is " + String(j))
-                        // j += 1
                     }
                 }
 
                 for try await event in client.sdamEvents {
                     if !event.isHeartbeatEvent {
                         expect(event.type).to(equal(eventHandler[i]))
-//                        print(event.type)
-//                        print(eventHandler[i])
-//                        print("I is " + String(i))
                         i += 1
                     }
                 }
