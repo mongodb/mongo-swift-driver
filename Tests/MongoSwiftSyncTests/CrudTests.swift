@@ -93,20 +93,10 @@ final class CrudTests: MongoSwiftTestCase {
         )
         let runner = try UnifiedTestRunner()
         var skipList: [String: [String]] = [
-            // libmongoc chose not to implement CDRIVER-3630 in anticipation of DRIVERS-1340,
-            // so we cannot pass these tests for now.
-            // TODO: DRIVERS-1340 unskip
-            "unacknowledged-findOneAndUpdate-hint-clientError": ["*"],
-            "unacknowledged-updateMany-hint-clientError": ["*"],
-            "unacknowledged-updateOne-hint-clientError": ["*"],
-            "unacknowledged-deleteOne-hint-clientError": ["*"],
-            "unacknowledged-deleteMany-hint-clientError": ["*"],
-            "unacknowledged-replaceOne-hint-clientError": ["*"],
-            "unacknowledged-findOneAndReplace-hint-clientError": ["*"],
-            "unacknowledged-findOneAndDelete-hint-clientError": ["*"],
-            "unacknowledged-bulkWrite-delete-hint-clientError": ["*"],
-            "unacknowledged-bulkWrite-update-hint-clientError": ["*"],
-            "unacknowledged-bulkWrite-replace-hint-clientError": ["*"]
+            //Skipped because ignored unacknowledged write concern via SWIFT-1304
+            "findOneAndDelete-hint-unacknowledged" : ["Unacknowledged findOneAndDelete with hint string on 4.4+ server", "Unacknowledged findOneAndDelete with hint document on 4.4+ server"],
+            "findOneAndReplace-hint-unacknowledged" : ["Unacknowledged findOneAndReplace with hint string on 4.4+ server", "Unacknowledged findOneAndReplace with hint document on 4.4+ server"],
+            "findOneAndUpdate-hint-unacknowledged" : ["Unacknowledged findOneAndUpdate with hint string on 4.4+ server", "Unacknowledged findOneAndUpdate with hint document on 4.4+ server"]
         ]
         // Skipping due to a bug in server latest. TODO: SWIFT-1359 unskip
         let client = try MongoClient.makeTestClient()
