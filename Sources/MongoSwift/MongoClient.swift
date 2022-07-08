@@ -291,40 +291,58 @@ public class MongoClient {
     /// Example: printing the command events out would be written as
     /// `for await event in client.commandEvents { print(event) }`.
     /// Wrapping in a `Task { ... }` may be desired for asynchronicity.
+    /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
     public var commandEvents: CommandEventStream {
-        if self._commandEvents == nil {
-            self._commandEvents = CommandEventStream(stream:
-                AsyncStream { con in
-                    self.addCommandEventHandler { event in
-                        con.yield(event)
+        get {
+            if self._commandEvents == nil {
+                self._commandEvents = CommandEventStream(
+                    stream: AsyncStream(
+                        CommandEvent.self,
+                        bufferingPolicy: .bufferingNewest(100)
+                    ) { con in
+                        self.addCommandEventHandler { event in
+                            con.yield(event)
+                            self.commandEvents.setCon(continuation: con)
+                        }
                     }
-                }
-            )
+                )
+            }
+            // Ok to force cast since we are explictly setting up the CommandEventStream
+            // swiftlint:disable:next force_cast
+            return self._commandEvents as! CommandEventStream
         }
-        // Ok to force cast since we are explictly setting up the CommandEventStream
-        // swiftlint:disable:next force_cast
-        return self._commandEvents as! CommandEventStream
+        // swiftlint:disable unused_setter_value
+        set (setter){ }
     }
 
     /// Provides an `AsyncSequence` API for consuming SDAM monitoring events.
     /// Example: printing the SDAM events out would be written as
     /// `for await event in client.sdamEvents { print(event) }`.
     /// Wrapping in a `Task { ... }` may be desired for asynchronicity.
+    /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
     public var sdamEvents: SDAMEventStream {
-        if self._sdamEvents == nil {
-            self._sdamEvents = SDAMEventStream(
-                stream: AsyncStream { con in
-                    self.addSDAMEventHandler { event in
-                        con.yield(event)
+        get {
+            if self._sdamEvents == nil {
+                self._sdamEvents = SDAMEventStream(
+                    stream: AsyncStream(
+                        SDAMEvent.self,
+                        bufferingPolicy: .bufferingNewest(100)
+                    ) { con in
+                        self.addSDAMEventHandler { event in
+                            con.yield(event)
+                            self.sdamEvents.setCon(continuation: con)
+                        }
                     }
-                }
-            )
+                )
+            }
+            // Ok to force cast since we are explictly setting up the SDAMEventStream
+            // swiftlint:disable:next force_cast
+            return self._sdamEvents as! SDAMEventStream
         }
-        // Ok to force cast since we are explictly setting up the SDAMEventStream
-        // swiftlint:disable:next force_cast
-        return self._sdamEvents as! SDAMEventStream
+        // swiftlint:disable unused_setter_value
+        set(setter) {  }
     }
 #endif
 
@@ -469,6 +487,10 @@ public class MongoClient {
         }
         closeResult.whenComplete { _ in
             self.wasClosed = true
+            if #available(macOS 10.15, *){
+                self.sdamEvents.finish()
+                self.commandEvents.finish()
+            }
         }
 
         return closeResult

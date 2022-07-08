@@ -124,9 +124,22 @@ private protocol CommandEventProtocol {
 // sourcery: skipSyncExport
 public struct EventStream<T> {
     private var stream: AsyncStream<T>
+    private var continuation: AsyncStream<T>.Continuation?
+
     /// Initialize the stream
     internal init(stream: AsyncStream<T>) {
         self.stream = stream
+        self.continuation = nil
+    }
+
+    ///Set the `AsyncStream<T>.Continuation` property of the the stream
+    internal mutating func setCon(continuation: AsyncStream<T>.Continuation) {
+        self.continuation = continuation
+    }
+    
+    ///Finish the continuation 
+    internal func finish(){
+        continuation?.finish()
     }
 }
 
