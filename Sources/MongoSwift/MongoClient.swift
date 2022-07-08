@@ -313,7 +313,7 @@ public class MongoClient {
             return self._commandEvents as! CommandEventStream
         }
         // swiftlint:disable unused_setter_value
-        set (setter){ }
+        set(setter) {}
     }
 
     /// Provides an `AsyncSequence` API for consuming SDAM monitoring events.
@@ -342,7 +342,7 @@ public class MongoClient {
             return self._sdamEvents as! SDAMEventStream
         }
         // swiftlint:disable unused_setter_value
-        set(setter) {  }
+        set(setter) {}
     }
 #endif
 
@@ -487,8 +487,11 @@ public class MongoClient {
         }
         closeResult.whenComplete { _ in
             self.wasClosed = true
-            if #available(macOS 10.15, *){
+            if #available(macOS 10.15, *) {
+                // Need to use getter to make field exist before finishing
+                _ = self.sdamEvents
                 self.sdamEvents.finish()
+                _ = self.commandEvents
                 self.commandEvents.finish()
             }
         }

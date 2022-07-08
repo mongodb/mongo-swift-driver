@@ -132,14 +132,14 @@ public struct EventStream<T> {
         self.continuation = nil
     }
 
-    ///Set the `AsyncStream<T>.Continuation` property of the the stream
+    /// Set the `AsyncStream<T>.Continuation` property of the the stream
     internal mutating func setCon(continuation: AsyncStream<T>.Continuation) {
         self.continuation = continuation
     }
-    
-    ///Finish the continuation 
-    internal func finish(){
-        continuation?.finish()
+
+    /// Finish the continuation
+    internal func finish() {
+        self.continuation?.finish()
     }
 }
 
