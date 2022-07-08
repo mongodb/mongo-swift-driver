@@ -266,7 +266,7 @@ struct UnifiedFindOneAndReplace: UnifiedOperationProtocol {
             options: options,
             session: session
         ) else {
-            return .unacknowledgedWrite
+            return .none
         }
         return .rootDocument(result)
     }
@@ -327,7 +327,7 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
         if let doc = result {
             return .rootDocument(doc)
         } else {
-            return .unacknowledgedWrite
+            return .none
         }
     }
 }
@@ -358,7 +358,7 @@ struct UnifiedFindOneAndDelete: UnifiedOperationProtocol {
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         guard let result = try collection.findOneAndDelete(filter, options: self.options) else {
-            return .unacknowledgedWrite
+            return .none
         }
         return .rootDocument(result)
     }

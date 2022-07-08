@@ -92,32 +92,7 @@ final class CrudTests: MongoSwiftTestCase {
             asType: UnifiedTestFile.self
         )
         let runner = try UnifiedTestRunner()
-        var skipList: [String: [String]] = [
-            // Skipped because ignored unacknowledged write concern via SWIFT-1304
-            "findOneAndDelete-hint-unacknowledged":
-                [
-                    "Unacknowledged findOneAndDelete with hint string on 4.4+ server",
-                    "Unacknowledged findOneAndDelete with hint document on 4.4+ server"
-                ],
-            "findOneAndReplace-hint-unacknowledged":
-                [
-                    "Unacknowledged findOneAndReplace with hint string on 4.4+ server",
-                    "Unacknowledged findOneAndReplace with hint document on 4.4+ server"
-                ],
-            "findOneAndUpdate-hint-unacknowledged":
-                [
-                    "Unacknowledged findOneAndUpdate with hint string on 4.4+ server",
-                    "Unacknowledged findOneAndUpdate with hint document on 4.4+ server"
-                ]
-        ]
-        // Skipping due to a bug in server latest. TODO: SWIFT-1359 unskip
-        let client = try MongoClient.makeTestClient()
-        if try client.serverVersion() >= ServerVersion(major: 5, minor: 1, patch: 0)
-            && client.topologyType().isSharded
-        {
-            skipList["aggregate-out-readConcern"] = ["readConcern available with out stage"]
-        }
-        try runner.runFiles(files.map { $0.1 }, skipTests: skipList)
+        try runner.runFiles(files.map { $0.1 })
     }
 }
 
