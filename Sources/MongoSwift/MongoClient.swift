@@ -489,10 +489,10 @@ public class MongoClient {
             self.wasClosed = true
             if #available(macOS 10.15, *) {
                 // Need to use getter to make field exist before finishing
-                let _ = self.sdamEvents
-                self.sdamEvents.finish()
-                let _ = self.commandEvents
-                self.commandEvents.finish()
+//                let _ = self.sdamEvents
+//                self.sdamEvents.finish()
+//                let _ = self.commandEvents
+//                self.commandEvents.finish()
             }
         }
 
