@@ -117,15 +117,15 @@ private protocol CommandEventProtocol {
     var serviceID: BSONObjectID? { get }
 }
 
-#if compiler(>=5.5) && canImport(_Concurrency)
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 /// An asynchronous way to monitor events that uses `AsyncSequence`.
-/// Only available for Swift 5.5 and higher.
+/// Only available for Swift 5.5.2 and higher.
 @available(macOS 10.15, *)
 // sourcery: skipSyncExport
 public struct EventStream<T> {
     private var stream: AsyncStream<T>
     /// Initialize the stream
-    public init(stream: AsyncStream<T>) {
+    internal init(stream: AsyncStream<T>) {
         self.stream = stream
     }
 }
@@ -153,7 +153,7 @@ public struct EventStreamIterator<T>: AsyncIteratorProtocol {
     private var iterator: AsyncStream<T>.AsyncIterator?
 
     /// Initialize the iterator
-    public init(asyncStream: AsyncStream<T>) {
+    internal init(asyncStream: AsyncStream<T>) {
         self.iterator = asyncStream.makeAsyncIterator()
     }
 
@@ -166,11 +166,11 @@ public struct EventStreamIterator<T>: AsyncIteratorProtocol {
     public typealias Element = T
 }
 
-/// An asynchronous way to monitor command events using `EventStream`
+/// An asynchronous way to monitor command events using `EventStream`.
 @available(macOS 10.15, *)
 public typealias CommandEventStream = EventStream<CommandEvent>
 
-/// An asynchronous way to monitor SDAM events using `EventStream`
+/// An asynchronous way to monitor SDAM events using `EventStream`.
 @available(macOS 10.15, *)
 public typealias SDAMEventStream = EventStream<SDAMEvent>
 #endif

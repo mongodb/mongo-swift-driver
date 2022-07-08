@@ -286,8 +286,11 @@ public class MongoClient {
     private var _commandEvents: Any?
     private var _sdamEvents: Any?
 
-#if compiler(>=5.5) && canImport(_Concurrency)
-    /// Async way to monitor command events. Need macOS above 10.15 to use practically.
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+    /// Provides an `AsyncSequence` API for consuming command monitoring events.
+    /// Example: printing the command events out would be written as
+    /// `for await event in client.commandEvents { print(event) }`.
+    /// Wrapping in a `Task { ... }` may be desired for asynchronicity.
     @available(macOS 10.15, *)
     public var commandEvents: CommandEventStream {
         if self._commandEvents == nil {
@@ -304,7 +307,10 @@ public class MongoClient {
         return self._commandEvents as! CommandEventStream
     }
 
-    /// Async way to monitor SDAM events. Need macOS above 10.15 to use practically.
+    /// Provides an `AsyncSequence` API for consuming SDAM monitoring events.
+    /// Example: printing the SDAM events out would be written as
+    /// `for await event in client.sdamEvents { print(event) }`.
+    /// Wrapping in a `Task { ... }` may be desired for asynchronicity.
     @available(macOS 10.15, *)
     public var sdamEvents: SDAMEventStream {
         if self._sdamEvents == nil {
@@ -404,7 +410,7 @@ public class MongoClient {
         self.decoder = BSONDecoder(options: options)
         self.sdamEventHandlers = []
         self.commandEventHandlers = []
-        // commandEvents and sdamEvents are initialized when called
+        // commandEvents and sdamEvents have initial handlers initialized
         self.connectionPool.initializeMonitoring(client: self)
     }
 
