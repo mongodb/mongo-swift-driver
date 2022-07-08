@@ -82,8 +82,8 @@ public struct ListCollectionsOptions: Codable {
     public var batchSize: Int?
 
     /// A comment to help trace the operation through the database profiler,
-    /// currentOp and logs. Can be any valid BSON type for server versions
-    /// 4.4 and above but older server versions do not support.
+    /// currentOp and logs. Can be any valid BSON type. Only supported on server
+    /// versions 4.4 and above.
     /// The default is to not send a value.
     public var comment: BSON?
 

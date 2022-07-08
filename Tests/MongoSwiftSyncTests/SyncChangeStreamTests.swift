@@ -300,17 +300,7 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase {
             asType: UnifiedTestFile.self
         ).map { $0.1 }
         let testRunner = try UnifiedTestRunner()
-        // TODO: SWIFT-1385: Comment field for all helpers
-        try testRunner.runFiles(tests, skipTests: [
-            "change-streams":
-                [
-                    "Test with document comment - pre 4.4",
-                    "Test with document comment",
-                    "Test with string comment",
-                    "Test that comment is set on getMore",
-                    "Test that comment is not set on getMore - pre 4.4"
-                ]
-        ])
+        try testRunner.runFiles(tests)
     }
 }
 

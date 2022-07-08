@@ -647,7 +647,10 @@ struct UnifiedDistinct: UnifiedOperationProtocol {
     let session: String?
 
     static var knownArguments: Set<String> {
-        ["comment", "fieldName", "filter", "session"]
+        Set(
+            CodingKeys.allCases.map { $0.rawValue } +
+                DistinctOptions.CodingKeys.allCases.map { $0.rawValue }
+        )
     }
 
     enum CodingKeys: String, CodingKey, CaseIterable {

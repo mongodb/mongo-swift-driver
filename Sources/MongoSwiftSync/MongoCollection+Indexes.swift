@@ -181,7 +181,7 @@ extension MongoCollection {
      * Retrieves a list of the indexes currently on this collection.
      *
      * - Parameters:
-     *   - options: Optional `ListIndexOptions` to use for the command
+     *   - options: Optional `ListIndexesOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `MongoCursor` over the `IndexModel`s.
@@ -189,8 +189,8 @@ extension MongoCollection {
      * - Throws: `MongoError.LogicError` if the provided session is inactive.
      */
     public func listIndexes(
-        session: ClientSession? = nil,
-        options: ListIndexOptions? = nil
+        options: ListIndexesOptions? = nil,
+        session: ClientSession? = nil
     ) throws -> MongoCursor<IndexModel> {
         let asyncCursor = try self.asyncColl.listIndexes(options: options, session: session?.asyncSession).wait()
         return MongoCursor(wrapping: asyncCursor, client: self.client)
@@ -200,7 +200,7 @@ extension MongoCollection {
      * Retrieves a list of names of the indexes currently on this collection.
      *
      * - Parameters:
-     *   - options: Optional `ListIndexOptions` to use for the command
+     *   - options: Optional `ListIndexesOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns: A `MongoCursor` over the index names.
@@ -208,8 +208,8 @@ extension MongoCollection {
      * - Throws: `MongoError.LogicError` if the provided session is inactive.
      */
     public func listIndexNames(
-        session: ClientSession? = nil,
-        options: ListIndexOptions? = nil
+        options: ListIndexesOptions? = nil,
+        session: ClientSession? = nil
     ) throws -> [String] {
         try self.asyncColl.listIndexNames(options: options, session: session?.asyncSession).wait()
     }

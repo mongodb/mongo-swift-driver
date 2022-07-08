@@ -37,7 +37,7 @@ final class OptionsTests: MongoSwiftTestCase {
         CountDocumentsOptions(),
         EstimatedDocumentCountOptions(),
         TransactionOptions(),
-        ListIndexOptions()
+        ListIndexesOptions()
     ]
 
     // This will be useful with Swift 5.1 auto-generated initializers (see SWIFT-622)

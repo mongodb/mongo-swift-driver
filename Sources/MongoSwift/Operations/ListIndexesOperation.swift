@@ -10,10 +10,10 @@ internal enum ListIndexesResults {
 }
 
 /// Options to use when listing indexes on a `MongoCollection`.
-public struct ListIndexOptions: Encodable {
+public struct ListIndexesOptions: Encodable {
     /// A comment to help trace the operation through the database profiler,
-    /// currentOp and logs. Can be any valid BSON type for server versions
-    /// 4.4 and above but older server versions do not support.
+    /// currentOp and logs. Can be any valid BSON type. Only supported on server
+    /// versions 4.4 and above.
     /// The default is to not send a value.
     public var comment: BSON?
 
@@ -27,9 +27,9 @@ public struct ListIndexOptions: Encodable {
 internal struct ListIndexesOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
     private let nameOnly: Bool
-    private let options: ListIndexOptions?
+    private let options: ListIndexesOptions?
 
-    internal init(collection: MongoCollection<T>, nameOnly: Bool, options: ListIndexOptions?) {
+    internal init(collection: MongoCollection<T>, nameOnly: Bool, options: ListIndexesOptions?) {
         self.collection = collection
         self.nameOnly = nameOnly
         self.options = options

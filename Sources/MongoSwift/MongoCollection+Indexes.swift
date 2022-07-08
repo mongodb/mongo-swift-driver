@@ -415,7 +415,7 @@ extension MongoCollection {
      * Retrieves a list of the indexes currently on this collection.
      *
      * - Parameters:
-     *   - options: Optional `ListIndexOptions` to use for the command
+     *   - options: Optional `ListIndexesOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Warning:
@@ -430,7 +430,7 @@ extension MongoCollection {
      *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      */
     public func listIndexes(
-        options: ListIndexOptions? = nil,
+        options: ListIndexesOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<MongoCursor<IndexModel>> {
         let operation = ListIndexesOperation(collection: self, nameOnly: false, options: options)
@@ -452,7 +452,7 @@ extension MongoCollection {
      * Retrieves a list of names of the indexes currently on this collection.
      *
      * - Parameters:
-     *   - options: Optional `ListIndexOptions` to use for the command
+     *   - options: Optional `ListIndexesOptions` to use for the command
      *   - session: Optional `ClientSession` to use when executing this command
      *
      * - Returns:
@@ -463,7 +463,7 @@ extension MongoCollection {
      *    - `MongoError.LogicError` if this collection's parent client has already been closed.
      */
     public func listIndexNames(
-        options: ListIndexOptions? = nil,
+        options: ListIndexesOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<[String]> {
         let operation = ListIndexesOperation(collection: self, nameOnly: true, options: options)

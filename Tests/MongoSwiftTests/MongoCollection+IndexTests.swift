@@ -1,7 +1,6 @@
 import Foundation
-@testable import MongoSwift
+import MongoSwift
 import Nimble
-import NIO
 import TestsCommon
 
 final class MongoCollection_IndexTests: MongoSwiftTestCase {
@@ -33,7 +32,7 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
                 )
                 expect(createIndOperationNoComm).to(equal("cat_1"))
 
-                let listIndexOpts = ListIndexOptions(comment: comment)
+                let listIndexOpts = ListIndexesOptions(comment: comment)
                 let listNames = try await collection.listIndexNames(options: listIndexOpts)
                 expect(Set(listNames)).to(equal(Set(["_id_", "cat_1", "dog_1"])))
 
