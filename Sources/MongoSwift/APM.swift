@@ -117,6 +117,23 @@ private protocol CommandEventProtocol {
     var serviceID: BSONObjectID? { get }
 }
 
+// @available(macOS 10.15, *)
+// class THandler<T>: CommandEventHandler, SDAMEventHandler {
+//    let con : AsyncStream<T>.Continuation
+//    init(con: AsyncStream<T>.Continuation){
+//        self.con = con
+//    }
+//    func handleCommandEvent(_ event: CommandEvent) {
+//        con.yield(event as! T)
+//
+//    }
+//
+//    func handleSDAMEvent(_ event: SDAMEvent) {
+//        con.yield(event as! T)
+//
+//    }
+// }
+
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 /// An asynchronous way to monitor events that uses `AsyncSequence`.
 /// Only available for Swift 5.5.2 and higher.
@@ -125,18 +142,38 @@ private protocol CommandEventProtocol {
 public struct EventStream<T> {
     private var stream: AsyncStream<T>
     private var continuation: AsyncStream<T>.Continuation?
-
     /// Initialize the stream
     internal init(stream: AsyncStream<T>) {
         self.stream = stream
         self.continuation = nil
     }
 
-    /// Set the `AsyncStream<T>.Continuation` property of the the stream
-    internal mutating func setCon(continuation: AsyncStream<T>.Continuation) {
-        self.continuation = continuation
-    }
+//    internal init(client: MongoClient) {
+//        self.continuation = nil
+//        self.stream =
+//        AsyncStream<T> (
+//                T.self,
+//                bufferingPolicy: .bufferingNewest(100),
+//                {con in setUpCon(con: con, client: client)}
+//           )
+//
+//    }
 
+//    /// Set the `AsyncStream<T>.Continuation` property of the the stream
+//    internal mutating func setCon(continuation: AsyncStream<T>.Continuation) {
+//        self.continuation = continuation
+//    }
+//
+//    internal mutating func setUpCon(con: AsyncStream<T>.Continuation, client: MongoClient) {
+//
+//        self.continuation = con
+//        con.onTermination = { @Sendable _ in print("terminadoCMD")}
+//        if client.wasClosed {
+//            print("command closed")
+//            con.finish()
+//        }
+//
+//    }
     /// Finish the continuation
     internal func finish() {
         self.continuation?.finish()
