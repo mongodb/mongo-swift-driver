@@ -30,9 +30,19 @@ public struct ListDatabasesOptions {
     /// Specifies whether to only return databases for which the user has privileges.
     public var authorizedDatabases: Bool?
 
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type. Only supported on server
+    /// versions 4.4 and above.
+    /// The default is to not send a value.
+    public var comment: BSON?
+
     /// Convenience initializer allowing any/all parameters to be omitted or optional.
-    public init(authorizedDatabases: Bool? = nil) {
+    public init(
+        authorizedDatabases: Bool? = nil,
+        comment: BSON? = nil
+    ) {
         self.authorizedDatabases = authorizedDatabases
+        self.comment = comment
     }
 }
 
@@ -67,6 +77,10 @@ internal struct ListDatabasesOperation: Operation {
         }
         if let authorizedDatabases = self.options?.authorizedDatabases {
             cmd["authorizedDatabases"] = .bool(authorizedDatabases)
+        }
+
+        if let comment = self.options?.comment {
+            cmd["comment"] = comment
         }
 
         let opts = try encodeOptions(options: nil as BSONDocument?, session: session)

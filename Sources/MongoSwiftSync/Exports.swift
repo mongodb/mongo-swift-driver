@@ -1,4 +1,4 @@
-// Generated using Sourcery 1.6.0 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 1.6.1 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 // Re-export the BSON library
@@ -50,6 +50,7 @@
 @_exported import struct MongoSwift.InsertOneResult
 @_exported import struct MongoSwift.ListCollectionsOptions
 @_exported import struct MongoSwift.ListDatabasesOptions
+@_exported import struct MongoSwift.ListIndexesOptions
 @_exported import struct MongoSwift.MongoClientOptions
 @_exported import struct MongoSwift.MongoCollectionOptions
 @_exported import struct MongoSwift.MongoConnectionString

@@ -5,6 +5,12 @@ public struct DistinctOptions: Codable {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
+    public var comment: BSON?
+
     /// The maximum amount of time to allow the query to run.
     public var maxTimeMS: Int?
 
@@ -19,18 +25,20 @@ public struct DistinctOptions: Codable {
     /// Convenience initializer allowing any/all parameters to be optional
     public init(
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         maxTimeMS: Int? = nil,
         readConcern: ReadConcern? = nil,
         readPreference: ReadPreference? = nil
     ) {
         self.collation = collation
+        self.comment = comment
         self.maxTimeMS = maxTimeMS
         self.readConcern = readConcern
         self.readPreference = readPreference
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case collation, maxTimeMS, readConcern
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
+        case collation, comment, maxTimeMS, readConcern
     }
 }
 

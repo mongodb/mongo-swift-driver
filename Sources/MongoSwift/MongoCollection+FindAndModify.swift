@@ -187,6 +187,12 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     /// Specifies a collation to use.
     public var collation: BSONDocument?
 
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
+    public var comment: BSON?
+
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
 
@@ -209,6 +215,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     internal func toFindAndModifyOptions() throws -> FindAndModifyOptions {
         try FindAndModifyOptions(
             collation: self.collation,
+            comment: self.comment,
             hint: self.hint,
             letValue: self.let,
             maxTimeMS: self.maxTimeMS,
@@ -222,6 +229,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
     /// Convenience initializer allowing any/all parameters to be omitted/optional
     public init(
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         `let`: BSONDocument? = nil,
         maxTimeMS: Int? = nil,
@@ -230,6 +238,7 @@ public struct FindOneAndDeleteOptions: FindAndModifyOptionsConvertible, Decodabl
         writeConcern: WriteConcern? = nil
     ) {
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.let = `let`
         self.maxTimeMS = maxTimeMS
@@ -246,6 +255,12 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
 
     /// Specifies a collation to use.
     public var collation: BSONDocument?
+
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
+    public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
@@ -276,6 +291,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
         try FindAndModifyOptions(
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
+            comment: self.comment,
             hint: self.hint,
             letValue: self.let,
             maxTimeMS: self.maxTimeMS,
@@ -291,6 +307,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     public init(
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         `let`: BSONDocument? = nil,
         maxTimeMS: Int? = nil,
@@ -302,6 +319,7 @@ public struct FindOneAndReplaceOptions: FindAndModifyOptionsConvertible, Decodab
     ) {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.let = `let`
         self.maxTimeMS = maxTimeMS
@@ -323,6 +341,12 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
 
     /// Specifies a collation to use.
     public var collation: BSONDocument?
+
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
+    public var comment: BSON?
 
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
@@ -354,6 +378,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
             arrayFilters: self.arrayFilters,
             bypassDocumentValidation: self.bypassDocumentValidation,
             collation: self.collation,
+            comment: self.comment,
             hint: self.hint,
             letValue: self.let,
             maxTimeMS: self.maxTimeMS,
@@ -370,6 +395,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
         arrayFilters: [BSONDocument]? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         `let`: BSONDocument? = nil,
         maxTimeMS: Int? = nil,
@@ -382,6 +408,7 @@ public struct FindOneAndUpdateOptions: FindAndModifyOptionsConvertible, Decodabl
         self.arrayFilters = arrayFilters
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.let = `let`
         self.maxTimeMS = maxTimeMS

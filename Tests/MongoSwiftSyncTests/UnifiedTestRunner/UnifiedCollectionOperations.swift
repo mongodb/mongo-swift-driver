@@ -640,17 +640,41 @@ struct UnifiedDistinct: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
 
+    /// Options to use for the operation.
+    let options: DistinctOptions?
+
     /// Optional identifier for a session entity to use.
     let session: String?
 
     static var knownArguments: Set<String> {
-        ["fieldName", "filter", "session"]
+        Set(
+            CodingKeys.allCases.map { $0.rawValue } +
+                DistinctOptions.CodingKeys.allCases.map { $0.rawValue }
+        )
+    }
+
+    enum CodingKeys: String, CodingKey, CaseIterable {
+        case fieldName, filter, session
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.fieldName = try container.decode(String.self, forKey: .fieldName)
+        self.filter = try container.decode(BSONDocument.self, forKey: .filter)
+        self.options = try decoder.singleValueContainer().decode(DistinctOptions.self)
+        self.session = try container.decodeIfPresent(String.self, forKey: .session)
     }
 
     func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        let result = try collection.distinct(fieldName: self.fieldName, filter: filter, session: session)
+        let result = try collection.distinct(
+            fieldName: self.fieldName,
+            filter: self.filter,
+            options: self.options,
+            session: session
+        )
+
         return .bson(.array(result))
     }
 }

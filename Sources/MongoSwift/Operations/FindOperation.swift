@@ -53,8 +53,11 @@ public struct FindOptions: Codable {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
-    /// Attaches a comment to the query.
-    public var comment: String?
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
+    public var comment: BSON?
 
     /// Indicates the type of cursor to use. This value includes both the tailable and awaitData options.
     public var cursorType: MongoCursorType? {
@@ -148,7 +151,7 @@ public struct FindOptions: Codable {
         allowPartialResults: Bool? = nil,
         batchSize: Int? = nil,
         collation: BSONDocument? = nil,
-        comment: String? = nil,
+        comment: BSON? = nil,
         cursorType: MongoCursorType? = nil,
         hint: IndexHint? = nil,
         `let`: BSONDocument? = nil,
@@ -224,8 +227,11 @@ public struct FindOneOptions: Codable {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
-    /// Attaches a comment to the query.
-    public var comment: String?
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
+    public var comment: BSON?
 
     /// A hint for the index to use.
     public var hint: IndexHint?
@@ -269,7 +275,7 @@ public struct FindOneOptions: Codable {
     public init(
         allowPartialResults: Bool? = nil,
         collation: BSONDocument? = nil,
-        comment: String? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         `let`: BSONDocument? = nil,
         max: BSONDocument? = nil,

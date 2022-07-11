@@ -74,6 +74,34 @@ final class MongoClientTests: MongoSwiftTestCase {
         }
     }
 
+    func testListDatabasesComment() async throws {
+        try await self.withTestClient { client in
+            // comment only supported here for 4.4+
+
+            guard try await client.serverVersionIsInRange("4.4", nil) else {
+                print("Skipping list databases comment test due to unsupported server version")
+                return
+            }
+
+            let comment = BSON("hello world")
+            let monitor = client.addCommandMonitor()
+
+            try await monitor.captureEvents {
+                let dbOptions = ListDatabasesOptions(comment: comment)
+                _ = try await client.listDatabases(options: dbOptions)
+                _ = try await client.listDatabases()
+            }
+
+            let receivedEvents = monitor.commandStartedEvents()
+            expect(receivedEvents.count).to(equal(2))
+            expect(receivedEvents[0].command["listDatabases"]).toNot(beNil())
+            expect(receivedEvents[0].command["comment"]).toNot(beNil())
+            expect(receivedEvents[0].command["comment"]).to(equal(comment))
+            expect(receivedEvents[1].command["listDatabases"]).toNot(beNil())
+            expect(receivedEvents[1].command["comment"]).to(beNil())
+        }
+    }
+
     func testClientIdGeneration() throws {
         let ids = try (0...2).map { _ in
             try self.withTestClient { $0._id }

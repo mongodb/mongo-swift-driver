@@ -2,6 +2,12 @@ import CLibMongoC
 
 /// Options to use when dropping an index from a `MongoCollection`.
 public struct DropIndexOptions: Encodable {
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type. Only supported on server
+    /// versions 4.4 and above.
+    /// The default is to not send a value.
+    public var comment: BSON?
+
     /// The maximum amount of time to allow the query to run - enforced server-side.
     public var maxTimeMS: Int?
 
@@ -9,7 +15,12 @@ public struct DropIndexOptions: Encodable {
     public var writeConcern: WriteConcern?
 
     /// Initializer allowing any/all parameters to be omitted.
-    public init(maxTimeMS: Int? = nil, writeConcern: WriteConcern? = nil) {
+    public init(
+        comment: BSON? = nil,
+        maxTimeMS: Int? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
+        self.comment = comment
         self.maxTimeMS = maxTimeMS
         self.writeConcern = writeConcern
     }

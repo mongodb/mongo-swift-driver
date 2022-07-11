@@ -81,10 +81,21 @@ public struct ListCollectionsOptions: Codable {
     /// The batchSize for the returned cursor.
     public var batchSize: Int?
 
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type. Only supported on server
+    /// versions 4.4 and above.
+    /// The default is to not send a value.
+    public var comment: BSON?
+
     /// Convenience initializer allowing any/all parameters to be omitted or optional
-    public init(authorizedCollections: Bool? = nil, batchSize: Int? = nil) {
+    public init(
+        authorizedCollections: Bool? = nil,
+        batchSize: Int? = nil,
+        comment: BSON? = nil
+    ) {
         self.authorizedCollections = authorizedCollections
         self.batchSize = batchSize
+        self.comment = comment
     }
 }
 
@@ -128,6 +139,10 @@ internal struct ListCollectionsOperation: Operation {
         }
         if let authorizedCollections = self.options?.authorizedCollections {
             cmd["authorizedCollections"] = .bool(authorizedCollections)
+        }
+
+        if let comment = self.options?.comment {
+            cmd["comment"] = comment
         }
 
         var cursorOpts: BSONDocument = [:]

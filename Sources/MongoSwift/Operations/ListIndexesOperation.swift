@@ -9,21 +9,37 @@ internal enum ListIndexesResults {
     case names([String])
 }
 
+/// Options to use when listing indexes on a `MongoCollection`.
+public struct ListIndexesOptions: Encodable {
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type. Only supported on server
+    /// versions 4.4 and above.
+    /// The default is to not send a value.
+    public var comment: BSON?
+
+    /// Initializer allowing any/all parameters to be omitted.
+    public init(comment: BSON? = nil) {
+        self.comment = comment
+    }
+}
+
 /// An operation corresponding to a "listIndexes" command on a collection.
 internal struct ListIndexesOperation<T: Codable>: Operation {
     private let collection: MongoCollection<T>
     private let nameOnly: Bool
+    private let options: ListIndexesOptions?
 
-    internal init(collection: MongoCollection<T>, nameOnly: Bool) {
+    internal init(collection: MongoCollection<T>, nameOnly: Bool, options: ListIndexesOptions?) {
         self.collection = collection
         self.nameOnly = nameOnly
+        self.options = options
     }
 
     internal func execute(
         using connection: Connection,
         session: ClientSession?
     ) throws -> ListIndexesResults {
-        let opts = try encodeOptions(options: nil as BSONDocument?, session: session)
+        let opts = try encodeOptions(options: options, session: session)
 
         let indexes: OpaquePointer = self.collection.withMongocCollection(from: connection) { collPtr in
             withOptionalBSONPointer(to: opts) { optsPtr in

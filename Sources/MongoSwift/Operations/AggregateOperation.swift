@@ -27,9 +27,11 @@ public struct AggregateOptions: Codable {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
-    /// Enables users to specify an arbitrary string to help trace the operation through
-    /// the database profiler, currentOp and logs. The default is to not send a value.
-    public var comment: String?
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
+    public var comment: BSON?
 
     /// The index hint to use for the aggregation. The hint does not apply to $lookup and $graphLookup stages.
     public var hint: IndexHint?
@@ -58,7 +60,7 @@ public struct AggregateOptions: Codable {
         batchSize: Int? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
-        comment: String? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         `let`: BSONDocument? = nil,
         maxTimeMS: Int? = nil,

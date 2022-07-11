@@ -271,7 +271,10 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
-        let modelOptions = DeleteModelOptions(collation: options?.collation, hint: options?.hint)
+        let modelOptions = DeleteModelOptions(
+            collation: options?.collation,
+            hint: options?.hint
+        )
         let model: WriteModel<CollectionType> = .deleteOne(filter, options: modelOptions)
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }
@@ -303,7 +306,10 @@ extension MongoCollection {
         options: DeleteOptions? = nil,
         session: ClientSession? = nil
     ) -> EventLoopFuture<DeleteResult?> {
-        let modelOptions = DeleteModelOptions(collation: options?.collation, hint: options?.hint)
+        let modelOptions = DeleteModelOptions(
+            collation: options?.collation,
+            hint: options?.hint
+        )
         let model: WriteModel<CollectionType> = .deleteMany(filter, options: modelOptions)
         return self.bulkWrite([model], options: options?.toBulkWriteOptions(), session: session)
             .flatMapThrowing { try DeleteResult(from: $0) }
@@ -314,6 +320,7 @@ extension MongoCollection {
 /// Protocol indicating that an options type can be converted to a BulkWriteOptions.
 private protocol BulkWriteOptionsConvertible {
     var bypassDocumentValidation: Bool? { get }
+    var comment: BSON? { get }
     var writeConcern: WriteConcern? { get }
     func toBulkWriteOptions() -> BulkWriteOptions
 }
@@ -323,6 +330,7 @@ private extension BulkWriteOptionsConvertible {
     func toBulkWriteOptions() -> BulkWriteOptions {
         BulkWriteOptions(
             bypassDocumentValidation: self.bypassDocumentValidation,
+            comment: self.comment,
             writeConcern: self.writeConcern
         )
     }
@@ -335,12 +343,23 @@ public struct InsertOneOptions: Codable, BulkWriteOptionsConvertible {
     /// If true, allows the write to opt-out of document level validation.
     public var bypassDocumentValidation: Bool?
 
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
+    public var comment: BSON?
+
     /// An optional WriteConcern to use for the command.
     public var writeConcern: WriteConcern?
 
     /// Convenience initializer allowing bypassDocumentValidation to be omitted or optional
-    public init(bypassDocumentValidation: Bool? = nil, writeConcern: WriteConcern? = nil) {
+    public init(
+        bypassDocumentValidation: Bool? = nil,
+        comment: BSON? = nil,
+        writeConcern: WriteConcern? = nil
+    ) {
         self.bypassDocumentValidation = bypassDocumentValidation
+        self.comment = comment
         self.writeConcern = writeConcern
     }
 }
@@ -359,6 +378,12 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
+    public var comment: BSON?
+
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
 
@@ -373,6 +398,7 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
         arrayFilters: [BSONDocument]? = nil,
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         upsert: Bool? = nil,
         writeConcern: WriteConcern? = nil
@@ -380,6 +406,7 @@ public struct UpdateOptions: Codable, BulkWriteOptionsConvertible {
         self.arrayFilters = arrayFilters
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.upsert = upsert
         self.writeConcern = writeConcern
@@ -394,6 +421,12 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
+    public var comment: BSON?
+
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.2+.
     public var hint: IndexHint?
 
@@ -407,12 +440,14 @@ public struct ReplaceOptions: Codable, BulkWriteOptionsConvertible {
     public init(
         bypassDocumentValidation: Bool? = nil,
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         upsert: Bool? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.bypassDocumentValidation = bypassDocumentValidation
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.upsert = upsert
         self.writeConcern = writeConcern
@@ -424,6 +459,12 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// Specifies a collation.
     public var collation: BSONDocument?
 
+    /// A comment to help trace the operation through the database profiler,
+    /// currentOp and logs. Can be any valid BSON type for server versions
+    /// 4.4 and above but older server versions only support string comments
+    /// (non-string types cause server-side errors). The default is to not send a value.
+    public var comment: BSON?
+
     /// A document or string that specifies the index to use to support the query. Only supported in server 4.4+.
     public var hint: IndexHint?
 
@@ -433,10 +474,12 @@ public struct DeleteOptions: Codable, BulkWriteOptionsConvertible {
     /// Convenience initializer allowing collation to be omitted or optional
     public init(
         collation: BSONDocument? = nil,
+        comment: BSON? = nil,
         hint: IndexHint? = nil,
         writeConcern: WriteConcern? = nil
     ) {
         self.collation = collation
+        self.comment = comment
         self.hint = hint
         self.writeConcern = writeConcern
     }
