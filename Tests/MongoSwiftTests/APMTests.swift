@@ -17,26 +17,21 @@ final class APMTests: MongoSwiftTestCase {
             Task {
                 var i = 0
                 let outputter = client.commandEventStream()
+                // outputter.finish()
                 for try await event in outputter {
-                    // print("cmd-event")
+                    print("cmd-event")
                     expect(commandStr[i]).to(equal(event.commandName))
                     expect(eventTypes[i]).to(equal(event.type))
                     i += 1
+                    if i == 4 {
+                        outputter.finish()
+                    }
                 }
-                // print("exiting...")
-                // return i
+                print("exiting...")
+                expect(i).to(be(4))
             }
-            defer { _ = client.close() }
 
             try await client.db("admin").runCommand(["ping": 1])
-//            try await client.close()
-//            let taskResult =  await cmdEventsTask.result
-//            do {
-//                let output = try taskResult.get()
-//                expect(output).to(equal(4))
-//            } catch {
-//                print("oopsies")
-//            }
         }
     }
 
@@ -56,13 +51,16 @@ final class APMTests: MongoSwiftTestCase {
                     }
                 }
                 // Async so cannot lock
-                for try await event in client.sdamEventStream() {
+                let outputter = client.sdamEventStream()
+                for try await event in outputter {
                     if !event.isHeartbeatEvent {
-                        // print("sdam-event")
+                        print("sdam-event")
                         expect(event.type).to(equal(eventTypes[i]))
                         i += 1
                     }
                 }
+                // Doesnt print since we dont .finish()
+                print("goodbye")
             }
 
             try await client.db("admin").runCommand(["ping": 1])

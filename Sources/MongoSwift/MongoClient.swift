@@ -510,8 +510,9 @@ public class MongoClient {
     /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
     public func commandEventStream() -> CommandEventStream {
-        // let handler = CmdHandler()
-        let commandEvents = CommandEventStream(
+        let handler = CmdHandler()
+        var outerCon: AsyncStream<CommandEvent>.Continuation?
+        var commandEvents = CommandEventStream(
             stream: AsyncStream(
                 CommandEvent.self,
                 bufferingPolicy: .bufferingNewest(100)
@@ -519,8 +520,9 @@ public class MongoClient {
                 // adds it strongly
                 self.addCommandEventHandler { event in con.yield(event) }
                 // adds it weakly
-                // handler.setCon(con: con)
+                handler.setCon(con: con)
                 // self.addCommandEventHandler(handler)
+                outerCon = con
                 con.onTermination = { @Sendable _ in print("terminadoCMD") }
                 if self.wasClosed {
                     print("command closed")
@@ -528,6 +530,8 @@ public class MongoClient {
                 }
             }
         )
+        commandEvents.setCon(con: outerCon)
+
         return commandEvents
     }
 
@@ -539,7 +543,8 @@ public class MongoClient {
     @available(macOS 10.15, *)
     public func sdamEventStream() -> SDAMEventStream {
         // let handler = SDAMHandler()
-        let sdamEvents = SDAMEventStream(
+        var outerCon: AsyncStream<SDAMEvent>.Continuation?
+        var sdamEvents = SDAMEventStream(
             stream: AsyncStream(
                 SDAMEvent.self,
                 bufferingPolicy: .bufferingNewest(100)
@@ -549,6 +554,7 @@ public class MongoClient {
                 // adds it weakly
                 // handler.setCon(con: con)
                 // self.addSDAMEventHandler(handler)
+                outerCon = con
                 con.onTermination = { @Sendable _ in print("terminadoSDAM") }
                 if self.wasClosed {
                     print("sdam closed")
@@ -556,6 +562,7 @@ public class MongoClient {
                 }
             }
         )
+        sdamEvents.setCon(con: outerCon)
         return sdamEvents
     }
 

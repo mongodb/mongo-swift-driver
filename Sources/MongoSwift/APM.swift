@@ -148,6 +148,10 @@ public struct EventStream<T> {
         self.continuation = nil
     }
 
+    internal mutating func setCon(con: AsyncStream<T>.Continuation?) {
+        self.continuation = con
+    }
+
 //    internal init(client: MongoClient) {
 //        self.continuation = nil
 //        self.stream =
