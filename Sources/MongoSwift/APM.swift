@@ -117,23 +117,6 @@ private protocol CommandEventProtocol {
     var serviceID: BSONObjectID? { get }
 }
 
-// @available(macOS 10.15, *)
-// class THandler<T>: CommandEventHandler, SDAMEventHandler {
-//    let con : AsyncStream<T>.Continuation
-//    init(con: AsyncStream<T>.Continuation){
-//        self.con = con
-//    }
-//    func handleCommandEvent(_ event: CommandEvent) {
-//        con.yield(event as! T)
-//
-//    }
-//
-//    func handleSDAMEvent(_ event: SDAMEvent) {
-//        con.yield(event as! T)
-//
-//    }
-// }
-
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 /// An asynchronous way to monitor events that uses `AsyncSequence`.
 /// Only available for Swift 5.5.2 and higher.
@@ -142,14 +125,32 @@ private protocol CommandEventProtocol {
 public struct EventStream<T> {
     private var stream: AsyncStream<T>
     private var continuation: AsyncStream<T>.Continuation?
+    // private var handler: THandler?
+    private var cmdHandler: CommandEventHandler?
+    private var sdamHandler: SDAMEventHandler?
     /// Initialize the stream
     internal init(stream: AsyncStream<T>) {
         self.stream = stream
         self.continuation = nil
+        // self.handler = nil
+        self.cmdHandler = nil
+        self.sdamHandler = nil
     }
 
     internal mutating func setCon(con: AsyncStream<T>.Continuation?) {
         self.continuation = con
+    }
+
+//    internal mutating func setHandler(handler: THandler) {
+//        self.handler = handler
+//    }
+
+    internal mutating func setCmdHandler(cmdHandler: CommandEventHandler) {
+        self.cmdHandler = cmdHandler
+    }
+
+    internal mutating func setSdamHandler(sdamHandler: SDAMEventHandler) {
+        self.sdamHandler = sdamHandler
     }
 
 //    internal init(client: MongoClient) {

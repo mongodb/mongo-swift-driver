@@ -17,6 +17,9 @@ final class APMTests: MongoSwiftTestCase {
             Task {
                 var i = 0
                 let outputter = client.commandEventStream()
+//                let outputter = result.0
+//                let handler = result.1
+
                 // outputter.finish()
                 for try await event in outputter {
                     print("cmd-event")

@@ -462,45 +462,59 @@ public class MongoClient {
     }
 
     @available(macOS 10.15, *)
-    private class CmdHandler: CommandEventHandler {
-        var con: AsyncStream<CommandEvent>.Continuation?
-        init(con: AsyncStream<CommandEvent>.Continuation) {
+    internal class CmdHandler: CommandEventHandler {
+        private var con: AsyncStream<CommandEvent>.Continuation?
+        internal init(con: AsyncStream<CommandEvent>.Continuation) {
             self.con = con
             // print("initing")
         }
 
-        init() {
+        internal init() {
             self.con = nil
         }
 
-        func handleCommandEvent(_ event: CommandEvent) {
-            // print("handling")
+        internal func handleCommandEvent(_ event: CommandEvent) {
+            // never prints anything
+            print("handling")
+            if self.con == nil {
+                print("nil land")
+            }
             self.con?.yield(event)
         }
 
-        func setCon(con: AsyncStream<CommandEvent>.Continuation) {
+        internal func setCon(con: AsyncStream<CommandEvent>.Continuation) {
+            self.con = con
+        }
+
+        internal func inScope() {
+            print("I am in scope")
+        }
+    }
+
+    @available(macOS 10.15, *)
+    internal class SDAMHandler: SDAMEventHandler {
+        private var con: AsyncStream<SDAMEvent>.Continuation?
+        internal init(con: AsyncStream<SDAMEvent>.Continuation) {
+            self.con = con
+        }
+
+        internal init() {
+            self.con = nil
+        }
+
+        internal func handleSDAMEvent(_ event: SDAMEvent) {
+            self.con?.yield(event)
+        }
+
+        internal func setCon(con: AsyncStream<SDAMEvent>.Continuation) {
             self.con = con
         }
     }
 
     @available(macOS 10.15, *)
-    private class SDAMHandler: SDAMEventHandler {
-        var con: AsyncStream<SDAMEvent>.Continuation?
-        init(con: AsyncStream<SDAMEvent>.Continuation) {
-            self.con = con
-        }
-
-        init() {
-            self.con = nil
-        }
-
-        func handleSDAMEvent(_ event: SDAMEvent) {
-            self.con?.yield(event)
-        }
-
-        func setCon(con: AsyncStream<SDAMEvent>.Continuation) {
-            self.con = con
-        }
+    internal enum THandler {
+        case CmdHandler(CmdHandler)
+        case SdamHandler(SDAMHandler)
     }
 
     /// Provides an `AsyncSequence` API for consuming command monitoring events.
@@ -510,6 +524,7 @@ public class MongoClient {
     /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
     public func commandEventStream() -> CommandEventStream {
+        // Keep handler outside so it has scope after commandEvents is init'd
         let handler = CmdHandler()
         var outerCon: AsyncStream<CommandEvent>.Continuation?
         var commandEvents = CommandEventStream(
@@ -518,10 +533,10 @@ public class MongoClient {
                 bufferingPolicy: .bufferingNewest(100)
             ) { con in
                 // adds it strongly
-                self.addCommandEventHandler { event in con.yield(event) }
+                // self.addCommandEventHandler { event in con.yield(event) }
                 // adds it weakly
                 handler.setCon(con: con)
-                // self.addCommandEventHandler(handler)
+                self.addCommandEventHandler(handler)
                 outerCon = con
                 con.onTermination = { @Sendable _ in print("terminadoCMD") }
                 if self.wasClosed {
@@ -531,8 +546,10 @@ public class MongoClient {
             }
         )
         commandEvents.setCon(con: outerCon)
+        commandEvents.setCmdHandler(cmdHandler: handler)
+        handler.inScope()
 
-        return commandEvents
+        return commandEvents // , handler)
     }
 
     /// Provides an `AsyncSequence` API for consuming SDAM monitoring events.
@@ -542,7 +559,7 @@ public class MongoClient {
     /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
     public func sdamEventStream() -> SDAMEventStream {
-        // let handler = SDAMHandler()
+        let handler = SDAMHandler()
         var outerCon: AsyncStream<SDAMEvent>.Continuation?
         var sdamEvents = SDAMEventStream(
             stream: AsyncStream(
@@ -552,7 +569,7 @@ public class MongoClient {
                 // adds it strongly
                 self.addSDAMEventHandler { event in con.yield(event) }
                 // adds it weakly
-                // handler.setCon(con: con)
+                handler.setCon(con: con)
                 // self.addSDAMEventHandler(handler)
                 outerCon = con
                 con.onTermination = { @Sendable _ in print("terminadoSDAM") }
@@ -563,6 +580,7 @@ public class MongoClient {
             }
         )
         sdamEvents.setCon(con: outerCon)
+        sdamEvents.setSdamHandler(sdamHandler: handler)
         return sdamEvents
     }
 
