@@ -125,25 +125,21 @@ private protocol CommandEventProtocol {
 public struct EventStream<T> {
     private var stream: AsyncStream<T>
     private var continuation: AsyncStream<T>.Continuation?
-    // private var handler: THandler?
     private var cmdHandler: CommandEventHandler?
     private var sdamHandler: SDAMEventHandler?
+
     /// Initialize the stream
     internal init(stream: AsyncStream<T>) {
         self.stream = stream
         self.continuation = nil
-        // self.handler = nil
         self.cmdHandler = nil
         self.sdamHandler = nil
     }
 
+    // Setters that are called after init()
     internal mutating func setCon(con: AsyncStream<T>.Continuation?) {
         self.continuation = con
     }
-
-//    internal mutating func setHandler(handler: THandler) {
-//        self.handler = handler
-//    }
 
     internal mutating func setCmdHandler(cmdHandler: CommandEventHandler) {
         self.cmdHandler = cmdHandler
@@ -153,33 +149,10 @@ public struct EventStream<T> {
         self.sdamHandler = sdamHandler
     }
 
-//    internal init(client: MongoClient) {
-//        self.continuation = nil
-//        self.stream =
-//        AsyncStream<T> (
-//                T.self,
-//                bufferingPolicy: .bufferingNewest(100),
-//                {con in setUpCon(con: con, client: client)}
-//           )
-//
-//    }
-
-//    /// Set the `AsyncStream<T>.Continuation` property of the the stream
-//    internal mutating func setCon(continuation: AsyncStream<T>.Continuation) {
-//        self.continuation = continuation
-//    }
-//
-//    internal mutating func setUpCon(con: AsyncStream<T>.Continuation, client: MongoClient) {
-//
-//        self.continuation = con
-//        con.onTermination = { @Sendable _ in print("terminadoCMD")}
-//        if client.wasClosed {
-//            print("command closed")
-//            con.finish()
-//        }
-//
-//    }
-    /// Finish the continuation
+    /// Finishes the stream by having the task return nil,
+    /// which signifies the end of the iteration. Calling this function more than once has no effect.
+    /// After calling finish, the stream enters a terminal state and doesn't produces any additional
+    /// elements.
     public func finish() {
         self.continuation?.finish()
     }
@@ -198,8 +171,6 @@ extension EventStream: AsyncSequence {
     public func makeAsyncIterator() -> EventStreamIterator<T> {
         EventStreamIterator<T>(asyncStream: self.stream)
     }
-
-    // startMonitoring?
 }
 
 @available(macOS 10.15, *)

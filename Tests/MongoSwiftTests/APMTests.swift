@@ -18,21 +18,16 @@ final class APMTests: MongoSwiftTestCase {
             // let cmdEventsTask = Task { () -> Int in
             Task {
                 var i = 0
-                let outputter = client.commandEventStream()
-//                let outputter = result.0
-//                let handler = result.1
-
-                // outputter.finish()
-                for try await event in outputter {
-                    // print("cmd-event")
+                let cmdStream = client.commandEventStream()
+                for try await event in cmdStream {
+                    print("cmd-event")
                     expect(commandStr[i]).to(equal(event.commandName))
                     expect(eventTypes[i]).to(equal(event.type))
                     i += 1
                     if i == 4 {
-                        outputter.finish()
+                        cmdStream.finish()
                     }
                 }
-                // print("exiting...")
                 expect(i).to(be(4))
             }
 
@@ -56,16 +51,14 @@ final class APMTests: MongoSwiftTestCase {
                     }
                 }
                 // Async so cannot lock
-                let outputter = client.sdamEventStream()
-                for try await event in outputter {
+                let sdamStream = client.sdamEventStream()
+                for try await event in sdamStream {
                     if !event.isHeartbeatEvent {
-                        // print("sdam-event")
                         expect(event.type).to(equal(eventTypes[i]))
                         i += 1
                     }
                 }
-                // Doesnt print since we dont .finish()
-                // print("goodbye")
+                // Doesnt exit since we dont .finish()
             }
 
             try await client.db("admin").runCommand(["ping": 1])

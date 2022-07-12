@@ -463,37 +463,28 @@ public class MongoClient {
 
 #if compiler(>=5.5.2) && canImport(_Concurrency)
     @available(macOS 10.15, *)
-    internal class CmdHandler: CommandEventHandler {
+    private class CmdHandler: CommandEventHandler {
         private var con: AsyncStream<CommandEvent>.Continuation?
         internal init(con: AsyncStream<CommandEvent>.Continuation) {
             self.con = con
-            // print("initing")
         }
 
         internal init() {
             self.con = nil
         }
 
+        // Satisfies the protocol
         internal func handleCommandEvent(_ event: CommandEvent) {
-            // never prints anything
-            // print("handling")
-//            if self.con == nil {
-//                //print("nil land")
-//            }
             self.con?.yield(event)
         }
 
         internal func setCon(con: AsyncStream<CommandEvent>.Continuation) {
             self.con = con
         }
-
-//        internal func inScope() {
-//            print("I am in scope")
-//        }
     }
 
     @available(macOS 10.15, *)
-    internal class SDAMHandler: SDAMEventHandler {
+    private class SDAMHandler: SDAMEventHandler {
         private var con: AsyncStream<SDAMEvent>.Continuation?
         internal init(con: AsyncStream<SDAMEvent>.Continuation) {
             self.con = con
@@ -503,6 +494,7 @@ public class MongoClient {
             self.con = nil
         }
 
+        // Satisfies the protocol
         internal func handleSDAMEvent(_ event: SDAMEvent) {
             self.con?.yield(event)
         }
@@ -512,12 +504,6 @@ public class MongoClient {
         }
     }
 
-    @available(macOS 10.15, *)
-    internal enum THandler {
-        case CmdHandler(CmdHandler)
-        case SdamHandler(SDAMHandler)
-    }
-
     /// Provides an `AsyncSequence` API for consuming command monitoring events.
     /// Example: printing the command events out would be written as
     /// c
@@ -525,7 +511,6 @@ public class MongoClient {
     /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
     public func commandEventStream() -> CommandEventStream {
-        // Keep handler outside so it has scope after commandEvents is init'd
         let handler = CmdHandler()
         var outerCon: AsyncStream<CommandEvent>.Continuation?
         var commandEvents = CommandEventStream(
@@ -533,24 +518,18 @@ public class MongoClient {
                 CommandEvent.self,
                 bufferingPolicy: .bufferingNewest(100)
             ) { con in
-                // adds it strongly
-                // self.addCommandEventHandler { event in con.yield(event) }
-                // adds it weakly
                 handler.setCon(con: con)
                 self.addCommandEventHandler(handler)
                 outerCon = con
-                con.onTermination = { @Sendable _ in print("terminadoCMD") }
                 if self.wasClosed {
-                    print("command closed")
                     con.finish()
                 }
             }
         )
         commandEvents.setCon(con: outerCon)
         commandEvents.setCmdHandler(cmdHandler: handler)
-        // handler.inScope()
 
-        return commandEvents // , handler)
+        return commandEvents
     }
 
     /// Provides an `AsyncSequence` API for consuming SDAM monitoring events.
@@ -568,15 +547,10 @@ public class MongoClient {
                 SDAMEvent.self,
                 bufferingPolicy: .bufferingNewest(100)
             ) { con in
-                // adds it strongly
-                self.addSDAMEventHandler { event in con.yield(event) }
-                // adds it weakly
                 handler.setCon(con: con)
-                // self.addSDAMEventHandler(handler)
+                self.addSDAMEventHandler(handler)
                 outerCon = con
-                con.onTermination = { @Sendable _ in print("terminadoSDAM") }
                 if self.wasClosed {
-                    print("sdam closed")
                     con.finish()
                 }
             }
@@ -607,13 +581,6 @@ public class MongoClient {
         }
         closeResult.whenComplete { _ in
             self.wasClosed = true
-            if #available(macOS 10.15, *) {
-                // Need to use getter to make field exist before finishing
-//                let _ = self.sdamEvents
-//                self.sdamEvents.finish()
-//                let _ = self.commandEvents
-//                self.commandEvents.finish()
-            }
         }
 
         return closeResult
