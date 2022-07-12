@@ -15,7 +15,6 @@ final class APMTests: MongoSwiftTestCase {
                 .commandStartedEvent,
                 .commandSucceededEvent
             ]
-            // let cmdEventsTask = Task { () -> Int in
             Task {
                 var i = 0
                 let cmdStream = client.commandEventStream()
