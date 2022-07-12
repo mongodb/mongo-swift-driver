@@ -461,6 +461,7 @@ public class MongoClient {
         )
     }
 
+#if compiler(>=5.5.2) && canImport(_Concurrency)
     @available(macOS 10.15, *)
     internal class CmdHandler: CommandEventHandler {
         private var con: AsyncStream<CommandEvent>.Continuation?
@@ -519,7 +520,7 @@ public class MongoClient {
 
     /// Provides an `AsyncSequence` API for consuming command monitoring events.
     /// Example: printing the command events out would be written as
-    /// `for await event in client.commandEventStream() { print(event) }`.
+    /// c
     /// Wrapping in a `Task { ... }` may be desired for asynchronicity.
     /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
@@ -553,8 +554,9 @@ public class MongoClient {
     }
 
     /// Provides an `AsyncSequence` API for consuming SDAM monitoring events.
-    /// Example: printing the command events out would be written as
-    /// `for await event in client.sdamEventStream() { print(event) }`.
+    /// Example: printing the SDAM events out would be written as
+    /// `let stream = client.sdamEventStream()
+    /// `for await event in stream { print(event) }`.
     /// Wrapping in a `Task { ... }` may be desired for asynchronicity.
     /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
@@ -583,7 +585,7 @@ public class MongoClient {
         sdamEvents.setSdamHandler(sdamHandler: handler)
         return sdamEvents
     }
-
+#endif
     /**
      * Closes this `MongoClient`, closing all connections to the server and cleaning up internal state.
      *
