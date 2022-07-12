@@ -10,4 +10,4 @@ INSTALL_DIR="${PROJECT_DIRECTORY}/opt"
 # configure Swift
 . ${PROJECT_DIRECTORY}/.evergreen/configure-swift.sh
 
-swift build
+swift build --build-tests
