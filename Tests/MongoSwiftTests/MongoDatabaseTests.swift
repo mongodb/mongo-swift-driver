@@ -1,8 +1,10 @@
+#if compiler(>=5.5) && canImport(_Concurrency)
 import Foundation
 import MongoSwift
 import Nimble
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class MongoDatabaseTests: MongoSwiftTestCase {
     func testListCollectionsComment() async throws {
         try await self.withTestClient { client in
@@ -39,3 +41,4 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         }
     }
 }
+#endif

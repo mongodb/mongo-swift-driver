@@ -1,8 +1,10 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
 import MongoSwift
 import Nimble
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class MongoCollection_IndexTests: MongoSwiftTestCase {
     func testCreateListDropIndexesComment() async throws {
         try await self.withTestClient { client in
@@ -66,3 +68,4 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         }
     }
 }
+#endif
