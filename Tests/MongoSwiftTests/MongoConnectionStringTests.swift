@@ -595,6 +595,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(try connStr.applyOptions(opts)).to(throwError(errorType: MongoError.InvalidArgumentError.self))
     }
 
+#if compiler(>=5.4)
     func testIPv4AddressParsing() throws {
         // valid IPv4
         let connString1 = try MongoConnectionString(string: "mongodb://1.2.3.4")
@@ -621,6 +622,7 @@ final class ConnectionStringTests: MongoSwiftTestCase {
         expect(host.host).to(equal("256.1.2.3"))
         expect(host.type).to(equal(.hostname))
     }
+#endif
 
     func testAuthSourceInDescription() throws {
         // defaultAuthDB
