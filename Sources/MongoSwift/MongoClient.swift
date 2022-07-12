@@ -476,10 +476,10 @@ public class MongoClient {
 
         internal func handleCommandEvent(_ event: CommandEvent) {
             // never prints anything
-            print("handling")
-            if self.con == nil {
-                print("nil land")
-            }
+            // print("handling")
+//            if self.con == nil {
+//                //print("nil land")
+//            }
             self.con?.yield(event)
         }
 
@@ -487,9 +487,9 @@ public class MongoClient {
             self.con = con
         }
 
-        internal func inScope() {
-            print("I am in scope")
-        }
+//        internal func inScope() {
+//            print("I am in scope")
+//        }
     }
 
     @available(macOS 10.15, *)
@@ -548,7 +548,7 @@ public class MongoClient {
         )
         commandEvents.setCon(con: outerCon)
         commandEvents.setCmdHandler(cmdHandler: handler)
-        handler.inScope()
+        // handler.inScope()
 
         return commandEvents // , handler)
     }

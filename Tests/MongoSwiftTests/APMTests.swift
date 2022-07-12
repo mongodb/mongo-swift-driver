@@ -1,8 +1,10 @@
-@testable import MongoSwift
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+import MongoSwift
 import Nimble
 import NIOConcurrencyHelpers
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class APMTests: MongoSwiftTestCase {
     func testCommandEventStreamClient() async throws {
         try await self.withTestClient { client in
@@ -22,7 +24,7 @@ final class APMTests: MongoSwiftTestCase {
 
                 // outputter.finish()
                 for try await event in outputter {
-                    print("cmd-event")
+                    // print("cmd-event")
                     expect(commandStr[i]).to(equal(event.commandName))
                     expect(eventTypes[i]).to(equal(event.type))
                     i += 1
@@ -30,7 +32,7 @@ final class APMTests: MongoSwiftTestCase {
                         outputter.finish()
                     }
                 }
-                print("exiting...")
+                // print("exiting...")
                 expect(i).to(be(4))
             }
 
@@ -57,13 +59,13 @@ final class APMTests: MongoSwiftTestCase {
                 let outputter = client.sdamEventStream()
                 for try await event in outputter {
                     if !event.isHeartbeatEvent {
-                        print("sdam-event")
+                        // print("sdam-event")
                         expect(event.type).to(equal(eventTypes[i]))
                         i += 1
                     }
                 }
                 // Doesnt print since we dont .finish()
-                print("goodbye")
+                // print("goodbye")
             }
 
             try await client.db("admin").runCommand(["ping": 1])
@@ -71,3 +73,4 @@ final class APMTests: MongoSwiftTestCase {
         }
     }
 }
+#endif

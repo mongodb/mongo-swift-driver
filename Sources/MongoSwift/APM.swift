@@ -180,7 +180,7 @@ public struct EventStream<T> {
 //
 //    }
     /// Finish the continuation
-    internal func finish() {
+    public func finish() {
         self.continuation?.finish()
     }
 }
