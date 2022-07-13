@@ -283,65 +283,6 @@ public class MongoClient {
     /// Handlers for SDAM monitoring events.
     internal var sdamEventHandlers: [SDAMEventHandler]
 
-//    private var _commandEvents: Any?
-//    private var _sdamEvents: Any?
-
-    // #if compiler(>=5.5.2) && canImport(_Concurrency)
-    /// Provides an `AsyncSequence` API for consuming command monitoring events.
-    /// Example: printing the command events out would be written as
-    /// `for await event in client.commandEvents { print(event) }`.
-    /// Wrapping in a `Task { ... }` may be desired for asynchronicity.
-    /// Note that only the most recent 100 events are stored in the stream.
-//    @available(macOS 10.15, *)
-//    public var commandEvents: CommandEventStream {
-//        get {
-//            if self._commandEvents == nil {
-//                self._commandEvents = CommandEventStream(
-//                    stream: AsyncStream(
-//                        CommandEvent.self,
-//                        bufferingPolicy: .bufferingNewest(100)
-//                    ) { con in
-//                        self.addCommandEventHandler { event in
-//                            con.yield(event)
-//                            self.commandEvents.setCon(continuation: con)
-//                        }
-//                    }
-//                )
-//            }
-//            // Ok to force cast since we are explictly setting up the CommandEventStream
-//            return self._commandEvents as! CommandEventStream
-//        }
-//        set(setter) {}
-//    }
-
-    /// Provides an `AsyncSequence` API for consuming SDAM monitoring events.
-    /// Example: printing the SDAM events out would be written as
-    /// `for await event in client.sdamEvents { print(event) }`.
-    /// Wrapping in a `Task { ... }` may be desired for asynchronicity.
-    /// Note that only the most recent 100 events are stored in the stream.
-//    @available(macOS 10.15, *)
-//    public var sdamEvents: SDAMEventStream {
-//        get {
-//            if self._sdamEvents == nil {
-//                self._sdamEvents = SDAMEventStream(
-//                    stream: AsyncStream(
-//                        SDAMEvent.self,
-//                        bufferingPolicy: .bufferingNewest(100)
-//                    ) { con in
-//                        self.addSDAMEventHandler { event in
-//                            con.yield(event)
-//                            self.sdamEvents.setCon(continuation: con)
-//                        }
-//                    }
-//                )
-//            }
-//            // Ok to force cast since we are explictly setting up the SDAMEventStream
-//            return self._sdamEvents as! SDAMEventStream
-//        }
-//        set(setter) {}
-//    }
-    // #endif
-
     /// Counter for generating client _ids.
     internal static var clientIDGenerator = NIOAtomic<Int>.makeAtomic(value: 0)
 
@@ -463,103 +404,126 @@ public class MongoClient {
 
 #if compiler(>=5.5.2) && canImport(_Concurrency)
     @available(macOS 10.15, *)
-    private class CmdHandler: CommandEventHandler {
-        private var con: AsyncStream<CommandEvent>.Continuation?
-        internal init(con: AsyncStream<CommandEvent>.Continuation) {
-            self.con = con
+    internal class CmdHandler: CommandEventHandler {
+        private var continuation: AsyncStream<CommandEvent>.Continuation?
+        internal init(continuation: AsyncStream<CommandEvent>.Continuation) {
+            self.continuation = continuation
         }
 
         internal init() {
-            self.con = nil
+            self.continuation = nil
         }
 
         // Satisfies the protocol
         internal func handleCommandEvent(_ event: CommandEvent) {
-            self.con?.yield(event)
+            self.continuation?.yield(event)
         }
 
-        internal func setCon(con: AsyncStream<CommandEvent>.Continuation) {
-            self.con = con
+        // Sets the continuation after init'ing
+        internal func setCon(continuation: AsyncStream<CommandEvent>.Continuation) {
+            self.continuation = continuation
+        }
+
+        internal func finish() {
+            // Ok to force unwrap since continuations are always set
+            // swiftlint:disable force_unwrapping
+            self.continuation!.finish()
+            print("continuation finishes")
         }
     }
 
     @available(macOS 10.15, *)
-    private class SDAMHandler: SDAMEventHandler {
-        private var con: AsyncStream<SDAMEvent>.Continuation?
-        internal init(con: AsyncStream<SDAMEvent>.Continuation) {
-            self.con = con
+    internal class SDAMHandler: SDAMEventHandler {
+        private var continuation: AsyncStream<SDAMEvent>.Continuation?
+        internal init(continuation: AsyncStream<SDAMEvent>.Continuation) {
+            self.continuation = continuation
         }
 
         internal init() {
-            self.con = nil
+            self.continuation = nil
         }
 
         // Satisfies the protocol
         internal func handleSDAMEvent(_ event: SDAMEvent) {
-            self.con?.yield(event)
+            self.continuation?.yield(event)
         }
 
-        internal func setCon(con: AsyncStream<SDAMEvent>.Continuation) {
-            self.con = con
+        // Sets the continuation after init'ing
+        internal func setCon(continuation: AsyncStream<SDAMEvent>.Continuation) {
+            self.continuation = continuation
+        }
+
+        internal func finish() {
+            // Ok to force unwrap since continuations are always set
+            // swiftlint:disable force_unwrapping
+            self.continuation!.finish()
         }
     }
 
     /// Provides an `AsyncSequence` API for consuming command monitoring events.
     /// Example: printing the command events out would be written as
-    /// c
+    /// `for await event in client.commandEventStream() { print(event) }`.
     /// Wrapping in a `Task { ... }` may be desired for asynchronicity.
     /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
     public func commandEventStream() -> CommandEventStream {
         let handler = CmdHandler()
-        var outerCon: AsyncStream<CommandEvent>.Continuation?
-        var commandEvents = CommandEventStream(
-            stream: AsyncStream(
-                CommandEvent.self,
-                bufferingPolicy: .bufferingNewest(100)
-            ) { con in
-                handler.setCon(con: con)
-                self.addCommandEventHandler(handler)
-                outerCon = con
-                if self.wasClosed {
-                    con.finish()
-                }
-            }
+        let stream = AsyncStream(
+            CommandEvent.self,
+            bufferingPolicy: .bufferingNewest(100)
+        ) { con in
+            handler.setCon(continuation: con)
+            self.addCommandEventHandler(handler)
+        }
+
+        let commandEvents = CommandEventStream(
+            cmdHandler: handler, stream: stream
         )
-        commandEvents.setCon(con: outerCon)
-        commandEvents.setCmdHandler(cmdHandler: handler)
 
         return commandEvents
     }
 
     /// Provides an `AsyncSequence` API for consuming SDAM monitoring events.
     /// Example: printing the SDAM events out would be written as
-    /// `let stream = client.sdamEventStream()
-    /// `for await event in stream { print(event) }`.
+    /// `for await event in client.sdamEventStream() { print(event) }`.
     /// Wrapping in a `Task { ... }` may be desired for asynchronicity.
     /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
     public func sdamEventStream() -> SDAMEventStream {
         let handler = SDAMHandler()
-        var outerCon: AsyncStream<SDAMEvent>.Continuation?
-        var sdamEvents = SDAMEventStream(
-            stream: AsyncStream(
-                SDAMEvent.self,
-                bufferingPolicy: .bufferingNewest(100)
-            ) { con in
-                handler.setCon(con: con)
-                self.addSDAMEventHandler(handler)
-                outerCon = con
-                if self.wasClosed {
-                    con.finish()
-                }
-            }
-        )
-        sdamEvents.setCon(con: outerCon)
-        sdamEvents.setSdamHandler(sdamHandler: handler)
+        let stream = AsyncStream(
+            SDAMEvent.self,
+            bufferingPolicy: .bufferingNewest(100)
+        ) { con in
+            handler.setCon(continuation: con)
+            self.addSDAMEventHandler(handler)
+        }
+
+        let sdamEvents = SDAMEventStream(sdamHandler: handler, stream: stream)
         return sdamEvents
     }
 #endif
+
+    // Check which handlers are assoc. with streams and finish them
+    private func closeHandlers() {
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+        if #available(macOS 10.15, *) {
+            for handler in commandEventHandlers {
+                // print(handler)
+                if let cmdHandler = handler as? WeakEventHandler<CmdHandler> {
+                    cmdHandler.handler?.finish()
+                    print("closing")
+                }
+            }
+            for handler in sdamEventHandlers {
+                if let sdamHandler = handler as? WeakEventHandler<SDAMHandler> {
+                    sdamHandler.handler?.finish()
+                }
+            }
+        }
+#endif
+    }
+
     /**
      * Closes this `MongoClient`, closing all connections to the server and cleaning up internal state.
      *
@@ -580,6 +544,7 @@ public class MongoClient {
             self.operationExecutor.shutdown()
         }
         closeResult.whenComplete { _ in
+            self.closeHandlers()
             self.wasClosed = true
         }
 
@@ -599,6 +564,7 @@ public class MongoClient {
     public func syncClose() throws {
         try self.connectionPool.close()
         try self.operationExecutor.syncShutdown()
+        self.closeHandlers()
         self.wasClosed = true
     }
 
@@ -1040,7 +1006,7 @@ extension CallbackEventHandler: CommandEventHandler where EventType == CommandEv
 
 /// Event handler that stores a weak reference to the underlying handler.
 private class WeakEventHandler<T: AnyObject> {
-    private weak var handler: T?
+    internal weak var handler: T?
 
     fileprivate init(referencing handler: T) {
         self.handler = handler
