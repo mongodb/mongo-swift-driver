@@ -79,7 +79,6 @@ final class APMTests: MongoSwiftTestCase {
 
             for try await _ in stream {
                 i += 1
-                print(i)
             }
             return i
         }
