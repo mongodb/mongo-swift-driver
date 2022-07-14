@@ -61,8 +61,10 @@ final class APMTests: MongoSwiftTestCase {
 
     func testCommandStreamConcurrentStreams() async throws {
         actor CmdEventArray {
+            // Keep track of types, commands, and tasks themselves
             var eventTypes: [[EventType]] = []
             var eventCommands: [[String]] = []
+            var tasks: [Task<Bool, Error>] = []
 
             func appendType(eventType: EventType, index: Int) {
                 self.eventTypes[index].append(eventType)
@@ -72,6 +74,10 @@ final class APMTests: MongoSwiftTestCase {
                 self.eventCommands[index].append(commandEvent)
             }
 
+            func appendTasks(task: Task<Bool, Error>) {
+                self.tasks.append(task)
+            }
+
             func newTask() {
                 // let currSize = self.eventTypes.count
                 self.eventTypes.append([])
@@ -79,44 +85,46 @@ final class APMTests: MongoSwiftTestCase {
                 print("here")
             }
 
-            func isRectangular() -> Bool {
-                let size = self.eventTypes[0].count
-                for entry in self.eventTypes where entry.count != size {
-                    return false
+            func getResults() async throws -> [Bool] {
+                var output: [Bool] = []
+                for elt in self.tasks {
+                    print("attempting")
+                    try await output.append(elt.value)
+                    print("success")
                 }
-                return true
+                return output
             }
         }
         let cmdEventArray = CmdEventArray()
-        try await self.withTestClient { client in
-            // Task to create a commandEventStream and should return when the client is closed
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        defer { elg.syncShutdownOrFail() }
+        let client = try MongoClient.makeTestClient(eventLoopGroup: elg)
 
-            for i in 0...4 {
-                _ = Task { () -> Bool in
-                    await cmdEventArray.newTask()
-                    let p = await cmdEventArray.eventTypes.count
-                    print(String(p) + " " + String(i))
-//                    try await assertIsEventuallyTrue(description: "event stream should be started") {
-//                        await cmdEventArray.eventTypes.count == i + 1
-//                    }
-                    for try await event in client.commandEventStream() {
-                        // print(event.commandName)
-                        await cmdEventArray.appendType(eventType: event.type, index: i)
-                        await cmdEventArray.appendCommands(commandEvent: event.commandName, index: i)
-                    }
-
-                    return true
+        // Kick off 5 streams
+        for i in 0...4 {
+            let task = Task { () -> Bool in
+                await cmdEventArray.newTask()
+                for try await event in client.commandEventStream() {
+                    await cmdEventArray.appendType(eventType: event.type, index: i)
+                    await cmdEventArray.appendCommands(commandEvent: event.commandName, index: i)
                 }
-            }
 
-            try await client.db("admin").runCommand(["ping": 1])
-            //try await client.db("trialDB").collection("trialColl").insertOne(["hello": "world"])
-            try await assertIsEventuallyTrue(description: "5 tasks started") {
-                await cmdEventArray.eventTypes.count == 5
+                return true
             }
-            try await assertIsEventuallyTrue(description: "each task gets same events") {
-                await cmdEventArray.isRectangular()
-            }
+            await cmdEventArray.appendTasks(task: task)
+        }
+
+        try await client.db("admin").runCommand(["ping": 1])
+        try await client.db("trialDB").collection("trialColl").insertOne(["hello": "world"])
+
+        // Tasks start, close client, close all tasks
+        try await assertIsEventuallyTrue(description: "each task is started") {
+            await cmdEventArray.eventTypes.count == 5
+        }
+
+        try await client.close()
+        try await assertIsEventuallyTrue(description: "each task is closed") {
+            try await cmdEventArray.getResults().count == 5
         }
         // Expect all tasks received the same number (>0) of events
         for i in 0...4 {

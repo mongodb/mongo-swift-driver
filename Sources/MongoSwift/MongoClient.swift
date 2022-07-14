@@ -304,6 +304,9 @@ public class MongoClient {
     /// The write concern set on this client, or nil if one is not set.
     public let writeConcern: WriteConcern?
 
+    /// Lock used to prevent `malloc_double_free` errors when accessing handlers due to data races
+    private let eventHandlerLock: Lock = .init()
+
     /**
      * Create a new client for a MongoDB deployment. For options that included in both the `MongoConnectionString`
      * and the `MongoClientOptions` struct, the final value is set in descending order of priority: the value specified
@@ -511,7 +514,7 @@ public class MongoClient {
             for handler in commandEventHandlers {
                 // print(handler)
                 if let cmdHandler = handler as? WeakEventHandler<CmdHandler> {
-                    cmdHandler.handler?.finish()
+                    cmdHandler.handler!.finish()
                     print("closing")
                 }
             }
@@ -910,7 +913,9 @@ public class MongoClient {
      * to continue to receive events.
      */
     public func addCommandEventHandler<T: CommandEventHandler>(_ handler: T) {
-        self.commandEventHandlers.append(WeakEventHandler<T>(referencing: handler))
+        self.eventHandlerLock.withLock {
+            self.commandEventHandlers.append(WeakEventHandler<T>(referencing: handler))
+        }
     }
 
     /**
@@ -920,7 +925,9 @@ public class MongoClient {
      * strong reference cycle and potentially result in memory leaks.
      */
     public func addCommandEventHandler(_ handlerFunc: @escaping (CommandEvent) -> Void) {
-        self.commandEventHandlers.append(CallbackEventHandler(handlerFunc))
+        self.eventHandlerLock.withLock {
+            self.commandEventHandlers.append(CallbackEventHandler(handlerFunc))
+        }
     }
 
     /**
@@ -930,7 +937,9 @@ public class MongoClient {
      * to continue to receive events.
      */
     public func addSDAMEventHandler<T: SDAMEventHandler>(_ handler: T) {
-        self.sdamEventHandlers.append(WeakEventHandler(referencing: handler))
+        self.eventHandlerLock.withLock {
+            self.sdamEventHandlers.append(WeakEventHandler(referencing: handler))
+        }
     }
 
     /**
@@ -940,7 +949,9 @@ public class MongoClient {
      * strong reference cycle and potentially result in memory leaks.
      */
     public func addSDAMEventHandler(_ handlerFunc: @escaping (SDAMEvent) -> Void) {
-        self.sdamEventHandlers.append(CallbackEventHandler(handlerFunc))
+        self.eventHandlerLock.withLock {
+            self.sdamEventHandlers.append(CallbackEventHandler(handlerFunc))
+        }
     }
 
     /// Internal method to check the `ReadConcern` that was ultimately set on this client. **This method may block
