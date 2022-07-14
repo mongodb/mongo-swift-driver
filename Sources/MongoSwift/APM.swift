@@ -13,10 +13,6 @@ public protocol SDAMEventHandler: AnyObject {
     func handleSDAMEvent(_ event: SDAMEvent)
 }
 
-internal protocol EventHandler {
-    associatedtype HandlerEventType
-}
-
 /// A protocol for events that are directly consumable by users to implement.
 private protocol Publishable {
     func publish(to client: MongoClient)

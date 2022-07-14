@@ -275,7 +275,7 @@ public class MongoClient {
     /// Indicates whether this client has been closed. A lock around this variable is not needed because:
     /// - This value is only modified on success of `ConnectionPool.close()`. That method will succeed exactly once.
     /// - This value is only read in `deinit`. That occurs exactly once after the above modification is complete.
-    internal var wasClosed = false
+    private var wasClosed = false
 
     /// Handlers for command monitoring events.
     internal var commandEventHandlers: [CommandEventHandler]
