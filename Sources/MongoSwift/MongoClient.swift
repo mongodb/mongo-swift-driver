@@ -431,7 +431,6 @@ public class MongoClient {
             // Ok to force unwrap since continuations are always set
             // swiftlint:disable force_unwrapping
             self.continuation!.finish()
-            print("continuation finishes")
         }
     }
 
@@ -512,10 +511,8 @@ public class MongoClient {
 #if compiler(>=5.5.2) && canImport(_Concurrency)
         if #available(macOS 10.15, *) {
             for handler in commandEventHandlers {
-                // print(handler)
                 if let cmdHandler = handler as? WeakEventHandler<CmdHandler> {
-                    cmdHandler.handler!.finish()
-                    print("closing")
+                    cmdHandler.handler?.finish()
                 }
             }
             for handler in sdamEventHandlers {
