@@ -68,13 +68,23 @@ final class APMTests: MongoSwiftTestCase {
                 self.eventTypes[index].append(eventType)
             }
 
-            func newTask() {
-                self.eventTypes.append([])
-                self.eventCommands.append([])
-            }
-
             func appendCommands(commandEvent: String, index: Int) {
                 self.eventCommands[index].append(commandEvent)
+            }
+
+            func newTask() {
+                // let currSize = self.eventTypes.count
+                self.eventTypes.append([])
+                self.eventCommands.append([])
+                print("here")
+            }
+
+            func isRectangular() -> Bool {
+                let size = self.eventTypes[0].count
+                for entry in self.eventTypes where entry.count != size {
+                    return false
+                }
+                return true
             }
         }
         let cmdEventArray = CmdEventArray()
@@ -84,20 +94,29 @@ final class APMTests: MongoSwiftTestCase {
             for i in 0...4 {
                 _ = Task { () -> Bool in
                     await cmdEventArray.newTask()
+                    let p = await cmdEventArray.eventTypes.count
+                    print(String(p) + " " + String(i))
+//                    try await assertIsEventuallyTrue(description: "event stream should be started") {
+//                        await cmdEventArray.eventTypes.count == i + 1
+//                    }
                     for try await event in client.commandEventStream() {
                         // print(event.commandName)
                         await cmdEventArray.appendType(eventType: event.type, index: i)
                         await cmdEventArray.appendCommands(commandEvent: event.commandName, index: i)
                     }
+
                     return true
                 }
             }
-            try await assertIsEventuallyTrue(description: "event stream should be started") {
-                await cmdEventArray.eventTypes.count == 5
-            }
 
             try await client.db("admin").runCommand(["ping": 1])
-            try await client.db("trialDB").collection("trialColl").insertOne(["hello": "world"])
+            //try await client.db("trialDB").collection("trialColl").insertOne(["hello": "world"])
+            try await assertIsEventuallyTrue(description: "5 tasks started") {
+                await cmdEventArray.eventTypes.count == 5
+            }
+            try await assertIsEventuallyTrue(description: "each task gets same events") {
+                await cmdEventArray.isRectangular()
+            }
         }
         // Expect all tasks received the same number (>0) of events
         for i in 0...4 {
@@ -180,7 +199,6 @@ final class APMTests: MongoSwiftTestCase {
         // Expect all tasks received the same number (>0) of events
         for i in 0...4 {
             let eventTypes = await sdamEventArray.eventTypes[i]
-
             expect(eventTypes.count).to(beGreaterThan(0))
         }
         for i in 1...4 {
