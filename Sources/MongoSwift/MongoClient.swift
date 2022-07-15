@@ -304,7 +304,7 @@ public class MongoClient {
     /// The write concern set on this client, or nil if one is not set.
     public let writeConcern: WriteConcern?
 
-    /// Lock used to prevent `malloc_double_free` errors when accessing handlers due to data races
+    /// Lock used to synchronize access to the event handler arrays to prevent data races
     private let eventHandlerLock: Lock = .init()
 
     /**
@@ -408,57 +408,35 @@ public class MongoClient {
 #if compiler(>=5.5.2) && canImport(_Concurrency)
     @available(macOS 10.15, *)
     internal class CmdHandler: CommandEventHandler {
-        private var continuation: AsyncStream<CommandEvent>.Continuation?
+        private var continuation: AsyncStream<CommandEvent>.Continuation
         internal init(continuation: AsyncStream<CommandEvent>.Continuation) {
             self.continuation = continuation
         }
 
-        internal init() {
-            self.continuation = nil
-        }
-
         // Satisfies the protocol
         internal func handleCommandEvent(_ event: CommandEvent) {
-            self.continuation?.yield(event)
-        }
-
-        // Sets the continuation after init'ing
-        internal func setCon(continuation: AsyncStream<CommandEvent>.Continuation) {
-            self.continuation = continuation
+            self.continuation.yield(event)
         }
 
         internal func finish() {
-            // Ok to force unwrap since continuations are always set
-            // swiftlint:disable force_unwrapping
-            self.continuation!.finish()
+            self.continuation.finish()
         }
     }
 
     @available(macOS 10.15, *)
     internal class SDAMHandler: SDAMEventHandler {
-        private var continuation: AsyncStream<SDAMEvent>.Continuation?
+        private var continuation: AsyncStream<SDAMEvent>.Continuation
         internal init(continuation: AsyncStream<SDAMEvent>.Continuation) {
             self.continuation = continuation
         }
 
-        internal init() {
-            self.continuation = nil
-        }
-
         // Satisfies the protocol
         internal func handleSDAMEvent(_ event: SDAMEvent) {
-            self.continuation?.yield(event)
-        }
-
-        // Sets the continuation after init'ing
-        internal func setCon(continuation: AsyncStream<SDAMEvent>.Continuation) {
-            self.continuation = continuation
+            self.continuation.yield(event)
         }
 
         internal func finish() {
-            // Ok to force unwrap since continuations are always set
-            // swiftlint:disable force_unwrapping
-            self.continuation!.finish()
+            self.continuation.finish()
         }
     }
 
@@ -469,18 +447,20 @@ public class MongoClient {
     /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
     public func commandEventStream() -> CommandEventStream {
-        let handler = CmdHandler()
+        var handler: CmdHandler?
         let stream = AsyncStream(
             CommandEvent.self,
             bufferingPolicy: .bufferingNewest(100)
         ) { con in
-            handler.setCon(continuation: con)
-            self.addCommandEventHandler(handler)
+            handler = CmdHandler(continuation: con)
+            // Ok to force unwrap since handler is set just above
+            // swiftlint:disable force_unwrapping
+            self.addCommandEventHandler(handler!)
         }
 
-        let commandEvents = CommandEventStream(
-            cmdHandler: handler, stream: stream
-        )
+        // Ok to force unwrap since handler is set in the closure
+        // swiftlint:disable force_unwrapping
+        let commandEvents = CommandEventStream(cmdHandler: handler!, stream: stream)
 
         return commandEvents
     }
@@ -492,16 +472,19 @@ public class MongoClient {
     /// Note that only the most recent 100 events are stored in the stream.
     @available(macOS 10.15, *)
     public func sdamEventStream() -> SDAMEventStream {
-        let handler = SDAMHandler()
+        var handler: SDAMHandler?
         let stream = AsyncStream(
             SDAMEvent.self,
             bufferingPolicy: .bufferingNewest(100)
         ) { con in
-            handler.setCon(continuation: con)
-            self.addSDAMEventHandler(handler)
+            handler = SDAMHandler(continuation: con)
+            // Ok to force unwrap since handler is set just above
+            // swiftlint:disable force_unwrapping
+            self.addSDAMEventHandler(handler!)
         }
-
-        let sdamEvents = SDAMEventStream(sdamHandler: handler, stream: stream)
+        // Ok to force unwrap since handler is set just above
+        // swiftlint:disable force_unwrapping
+        let sdamEvents = SDAMEventStream(sdamHandler: handler!, stream: stream)
         return sdamEvents
     }
 #endif

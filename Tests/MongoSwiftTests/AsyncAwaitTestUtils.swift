@@ -58,16 +58,31 @@ func assertIsEventuallyTrue(
     description: String,
     timeout: TimeInterval = 5,
     sleepInterval: TimeInterval = 0.1,
-    _ block: () async throws -> Bool
+    _ block: @escaping () async throws -> Bool
 ) async throws {
-    let start = DispatchTime.now()
-    while DispatchTime.now() < start + timeout {
-        if try await block() {
-            return
+    // Task that does the work as long as its not cancelled
+    let workTask = Task { () -> Bool in
+        while !Task.isCancelled {
+            guard try await block() else {
+                try await Task.sleep(seconds: sleepInterval)
+                continue
+            }
+            // task succeeded to we return true
+            return true
         }
-        try await Task.sleep(seconds: sleepInterval)
+        // Ran out of time before we succeeded, so return false
+        return false
     }
-    XCTFail("Expected condition \"\(description)\" to be true within \(timeout) seconds, but was not")
+
+    // Sleep until the timeout time is reached and then cancel the work
+    Task {
+        try await Task.sleep(seconds: timeout)
+        workTask.cancel()
+    }
+    guard try await workTask.value else {
+        XCTFail("Expected condition \"\(description)\" to be true within \(timeout) seconds, but was not")
+        return
+    }
 }
 
 @available(macOS 10.15.0, *)

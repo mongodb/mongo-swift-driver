@@ -23,7 +23,6 @@ final class APMTests: MongoSwiftTestCase {
 
         // Task to create a commandEventStream and should return when the client is closed
         let eventTask = Task { () -> Bool in
-            // let cmdStream = client.commandEventStream()
             for try await _ in client.commandEventStream() {}
             return true
         }
@@ -35,9 +34,6 @@ final class APMTests: MongoSwiftTestCase {
     }
 
     func testCommandStreamHasCorrectEvents() async throws {
-        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        defer { elg.syncShutdownOrFail() }
-        let client = try MongoClient.makeTestClient(eventLoopGroup: elg)
         let commandStr: [String] = ["ping", "ping", "endSessions", "endSessions"]
         let eventTypes: [EventType] = [
             .commandStartedEvent,
@@ -45,53 +41,42 @@ final class APMTests: MongoSwiftTestCase {
             .commandStartedEvent,
             .commandSucceededEvent
         ]
-
-        // Task to create a commandEventStream and should return when the client is closed
-        let eventTask = Task { () -> Int in
-            var i = 0
-            for try await event in client.commandEventStream() {
-                expect(event.commandName).to(equal(commandStr[i]))
-                expect(event.type).to(equal(eventTypes[i]))
-                i += 1
+        try await self.withTestClient { client in
+            Task {
+                var i = 0
+                for try await event in client.commandEventStream() {
+                    expect(event.commandName).to(equal(commandStr[i]))
+                    expect(event.type).to(equal(eventTypes[i]))
+                    i += 1
+                }
+                expect(i).to(equal(4))
             }
-            return i
-        }
-        try await client.db("admin").runCommand(["ping": 1])
-        try await client.close()
 
-        // Ensure the task returned with proper number of events
-        let numEvents = try await eventTask.value
-        expect(numEvents).to(equal(4))
+            try await client.db("admin").runCommand(["ping": 1])
+        }
     }
 
     func testCommandStreamBufferingPolicy() async throws {
-        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        defer { elg.syncShutdownOrFail() }
-        let client = try MongoClient.makeTestClient(eventLoopGroup: elg)
         let insertsDone = NIOAtomic<Bool>.makeAtomic(value: false)
+        try await self.withTestNamespace { client, _, coll in
+            Task {
+                let stream = client.commandEventStream()
+                try await assertIsEventuallyTrue(description: "inserts done") {
+                    insertsDone.load()
+                }
+                var i = 0
+                for try await _ in stream {
+                    i += 1
+                }
 
-        let taskBuffer = Task { () -> Int in
-            let stream = client.commandEventStream()
-            try await assertIsEventuallyTrue(description: "inserts done") {
-                insertsDone.load()
+                // Cant check for exactly 100 because of potential load balancer events getting added in during loop
+                expect(i).to(beLessThan(120))
             }
-            var i = 0
-
-            for try await _ in stream {
-                i += 1
+            for _ in 1...60 { // 120 events
+                try await coll.insertOne(["hello": "world"])
             }
-            return i
+            insertsDone.store(true)
         }
-        for _ in 1...60 { // 120 events
-            try await client.db("trialDB").collection("trialColl").insertOne(["hello": "world"])
-        }
-        insertsDone.store(true)
-        try await client.close()
-
-        let eventTypes1 = try await taskBuffer.value
-
-        // Cant check for explictly 100 because of potential load balancer events getting added in during for loop
-        expect(eventTypes1).to(beLessThan(120))
     }
 
     // Actor to handle array access/modification in an async way
@@ -121,36 +106,31 @@ final class APMTests: MongoSwiftTestCase {
     }
 
     /// Helper that tests kicking off multiple streams concurrently
-    fileprivate func concurrencyHelper<T>(f: @escaping (MongoClient) -> T) async throws
+    fileprivate func concurrentStreamTestHelper<T>(f: @escaping (MongoClient) -> T) async throws
         where T: AsyncSequence, T.Element: StreamableEvent
     {
         let eventArray = EventArray()
-        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-        defer { elg.syncShutdownOrFail() }
-        let client = try MongoClient.makeTestClient(eventLoopGroup: elg)
+        try await self.withTestNamespace { client, _, coll in
+            // Kick off 5 streams
+            for i in 0...4 {
+                let task = Task { () -> Bool in
+                    await eventArray.newTask()
+                    for try await event in f(client) {
+                        await eventArray.appendType(eventType: event.type, index: i)
+                    }
 
-        // Kick off 5 streams
-        for i in 0...4 {
-            let task = Task { () -> Bool in
-                await eventArray.newTask()
-                for try await event in f(client) {
-                    await eventArray.appendType(eventType: event.type, index: i)
+                    return true
                 }
-
-                return true
+                await eventArray.appendTasks(task: task)
             }
-            await eventArray.appendTasks(task: task)
+
+            try await client.db("admin").runCommand(["ping": 1])
+            try await coll.insertOne(["hello": "world"])
         }
-
-        try await client.db("admin").runCommand(["ping": 1])
-        try await client.db("trialDB").collection("trialColl").insertOne(["hello": "world"])
-
-        // Tasks start, close client, close all tasks
+        // Tasks start and finish
         try await assertIsEventuallyTrue(description: "each task is started") {
             await eventArray.eventTypes.count == 5
         }
-
-        try await client.close()
         try await assertIsEventuallyTrue(description: "each task is closed") {
             try await eventArray.getResults().count == 5
         }
@@ -167,13 +147,13 @@ final class APMTests: MongoSwiftTestCase {
     }
 
     func testCommandStreamConcurrentStreams() async throws {
-        try await self.concurrencyHelper { client in
+        try await self.concurrentStreamTestHelper { client in
             client.commandEventStream()
         }
     }
 
     func testSDAMStreamConcurrentStreams() async throws {
-        try await self.concurrencyHelper { client in
+        try await self.concurrentStreamTestHelper { client in
             client.sdamEventStream()
         }
     }
@@ -208,7 +188,7 @@ final class APMTests: MongoSwiftTestCase {
         let taskStarted = NIOAtomic<Bool>.makeAtomic(value: false)
         var handlerEvents: [EventType] = []
         let eventArray = EventArray()
-        try await self.withTestClient { client in
+        try await self.withTestNamespace { client, _, coll in
             client.addSDAMEventHandler { event in
                 lock.withLock {
                     if !event.isHeartbeatEvent {
@@ -231,9 +211,10 @@ final class APMTests: MongoSwiftTestCase {
             }
 
             try await client.db("admin").runCommand(["ping": 1])
-            try await client.db("trialDB").collection("trialColl").insertOne(["hello": "world"])
+            try await coll.insertOne(["hello": "world"])
         }
         let streamEvents = await eventArray.streamEvents
+        expect(streamEvents.count).to(beGreaterThan(0))
         expect(streamEvents).to(equal(handlerEvents))
     }
 }
