@@ -304,7 +304,7 @@ public class MongoClient {
     /// The write concern set on this client, or nil if one is not set.
     public let writeConcern: WriteConcern?
 
-    /// Lock used to synchronize access to the event handler arrays to prevent data races
+    /// Lock used to synchronize access to the event handler arrays to prevent data races.
     private let eventHandlerLock: Lock = .init()
 
     /**
@@ -452,10 +452,9 @@ public class MongoClient {
             CommandEvent.self,
             bufferingPolicy: .bufferingNewest(100)
         ) { con in
-            handler = CmdHandler(continuation: con)
-            // Ok to force unwrap since handler is set just above
-            // swiftlint:disable force_unwrapping
-            self.addCommandEventHandler(handler!)
+            let cmdHandler = CmdHandler(continuation: con)
+            handler = cmdHandler
+            self.addCommandEventHandler(cmdHandler)
         }
 
         // Ok to force unwrap since handler is set in the closure
@@ -477,10 +476,9 @@ public class MongoClient {
             SDAMEvent.self,
             bufferingPolicy: .bufferingNewest(100)
         ) { con in
-            handler = SDAMHandler(continuation: con)
-            // Ok to force unwrap since handler is set just above
-            // swiftlint:disable force_unwrapping
-            self.addSDAMEventHandler(handler!)
+            let sdamHandler = SDAMHandler(continuation: con)
+            handler = sdamHandler
+            self.addSDAMEventHandler(sdamHandler)
         }
         // Ok to force unwrap since handler is set just above
         // swiftlint:disable force_unwrapping
