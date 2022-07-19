@@ -74,6 +74,8 @@ final class MongoClientTests: MongoSwiftTestCase {
         }
     }
 
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+    @available(macOS 10.15, *)
     func testListDatabasesComment() async throws {
         try await self.withTestClient { client in
             // comment only supported here for 4.4+
@@ -101,6 +103,7 @@ final class MongoClientTests: MongoSwiftTestCase {
             expect(receivedEvents[1].command["comment"]).to(beNil())
         }
     }
+#endif
 
     func testClientIdGeneration() throws {
         let ids = try (0...2).map { _ in
