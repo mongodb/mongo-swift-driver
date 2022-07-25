@@ -5,8 +5,6 @@ import NIO
 import NIOConcurrencyHelpers
 import TestsCommon
 
-@available(macOS 10.15, *)
-
 private protocol StreamableEvent {
     var type: EventType { get }
 }
@@ -15,6 +13,7 @@ extension CommandEvent: StreamableEvent {}
 
 extension SDAMEvent: StreamableEvent {}
 
+@available(macOS 10.15, *)
 final class APMTests: MongoSwiftTestCase {
     func testClientFinishesCommandStreams() async throws {
         let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
@@ -41,7 +40,7 @@ final class APMTests: MongoSwiftTestCase {
             .commandStartedEvent,
             .commandSucceededEvent
         ]
-        let clientTask = try await self.withTestClient { client -> Task<Int, Error> in
+        let clientTask = try await self.withTestNamespace { client, db, _ -> Task<Int, Error> in
             let cmdTask = Task { () -> Int in
                 var i = 0
                 for try await event in client.commandEventStream() {
@@ -52,7 +51,7 @@ final class APMTests: MongoSwiftTestCase {
                 return i
             }
 
-            try await client.db("admin").runCommand(["ping": 1])
+            try await db.runCommand(["ping": 1])
             return cmdTask
         }
         let numEvents = try await clientTask.value
@@ -85,15 +84,25 @@ final class APMTests: MongoSwiftTestCase {
         expect(numEventsBuffer).to(beLessThan(120))
     }
 
+    actor TaskCounter {
+        var taskCounter = 0
+
+        func incr() {
+            self.taskCounter += 1
+        }
+    }
+
     /// Helper that tests kicking off multiple streams concurrently
     fileprivate func concurrentStreamTestHelper<T>(f: @escaping (MongoClient) -> T) async throws
         where T: AsyncSequence, T.Element: StreamableEvent
     {
         var taskArr: [Task<[EventType], Error>] = []
-        try await self.withTestNamespace { client, _, coll in
+        let taskActor = TaskCounter()
+        try await self.withTestNamespace { client, db, coll in
             // Kick off 5 streams
             for _ in 0...4 {
                 let task = Task { () -> [EventType] in
+                    await taskActor.incr()
                     var eventArr: [EventType] = []
                     for try await event in f(client) {
                         eventArr.append(event.type)
@@ -104,12 +113,13 @@ final class APMTests: MongoSwiftTestCase {
                 taskArr.append(task)
             }
 
-            try await client.db("admin").runCommand(["ping": 1])
+            // Tasks start
+            try await assertIsEventuallyTrue(description: "each task is started") {
+                await taskActor.taskCounter == 5
+            }
+
+            try await db.runCommand(["ping": 1])
             try await coll.insertOne(["hello": "world"])
-        }
-        // Tasks start and finish
-        try await assertIsEventuallyTrue(description: "each task is started") {
-            taskArr.count == 5
         }
 
         // Expect all tasks received the same number (>0) of events
@@ -157,7 +167,7 @@ final class APMTests: MongoSwiftTestCase {
         let taskStarted = NIOAtomic<Bool>.makeAtomic(value: false)
         // Events seen by the regular SDAM handler
         var handlerEvents: [EventType] = []
-        let clientTask = try await self.withTestNamespace { client, _, coll -> Task<[EventType], Error> in
+        let clientTask = try await self.withTestNamespace { client, db, coll -> Task<[EventType], Error> in
             client.addSDAMEventHandler { event in
                 if !event.isHeartbeatEvent {
                     handlerEvents.append(event.type)
@@ -179,7 +189,7 @@ final class APMTests: MongoSwiftTestCase {
                 taskStarted.load()
             }
 
-            try await client.db("admin").runCommand(["ping": 1])
+            try await db.runCommand(["ping": 1])
             try await coll.insertOne(["hello": "world"])
             return sdamTask
         }

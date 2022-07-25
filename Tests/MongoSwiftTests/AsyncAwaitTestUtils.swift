@@ -64,7 +64,7 @@ func assertIsEventuallyTrue(
     let workTask = Task { () -> Bool in
         while !Task.isCancelled {
             guard try await block() else {
-                try await Task.sleep(seconds: sleepInterval)
+                try? await Task.sleep(seconds: sleepInterval)
                 continue
             }
             // task succeeded to we return true
