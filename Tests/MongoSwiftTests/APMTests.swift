@@ -33,8 +33,10 @@ final class APMTests: MongoSwiftTestCase {
     }
 
     func testCommandStreamHasCorrectEvents() async throws {
-        let commandStr: [String] = ["ping", "ping", "endSessions", "endSessions"]
+        let commandStr: [String] = ["ping", "ping", "drop", "drop", "endSessions", "endSessions"]
         let eventTypes: [EventType] = [
+            .commandStartedEvent,
+            .commandSucceededEvent,
             .commandStartedEvent,
             .commandSucceededEvent,
             .commandStartedEvent,
@@ -55,7 +57,7 @@ final class APMTests: MongoSwiftTestCase {
             return cmdTask
         }
         let numEvents = try await clientTask.value
-        expect(numEvents).to(equal(4))
+        expect(numEvents).to(equal(6))
     }
 
     func testCommandStreamBufferingPolicy() async throws {
