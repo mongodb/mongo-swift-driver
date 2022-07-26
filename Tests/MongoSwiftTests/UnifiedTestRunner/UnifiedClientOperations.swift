@@ -14,7 +14,7 @@ struct AssertNumberConnectionsCheckedOut: UnifiedOperationProtocol {
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let testClient = try context.entities.getEntity(id: self.client).asTestClient()
-        let actualCheckedOut = testClient.client.asyncClient.connectionPool.checkedOutConnections
+        let actualCheckedOut = testClient.client.connectionPool.checkedOutConnections
         expect(actualCheckedOut).to(
             equal(self.connections),
             description: "Number of checked out connections did not match expected. Path: \(context.path)"
@@ -33,10 +33,10 @@ struct UnifiedListDatabases: UnifiedOperationProtocol {
         self.session = nil
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let testClient = try context.entities.getEntity(from: object).asTestClient()
         let session = try context.entities.resolveSession(id: self.session)
-        let dbSpecs = try testClient.client.listDatabases(session: session)
+        let dbSpecs = try await testClient.client.listDatabases(session: session)
         let encoded = try BSONEncoder().encode(dbSpecs)
         return .bson(.array(encoded.map { .document($0) }))
     }

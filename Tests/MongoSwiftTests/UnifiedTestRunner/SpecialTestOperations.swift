@@ -1,6 +1,6 @@
+import MongoSwift
 // swiftlint:disable duplicate_imports
 @testable import class MongoSwift.ClientSession
-import MongoSwift
 import Nimble
 import TestsCommon
 import XCTest
@@ -38,7 +38,7 @@ struct UnifiedAssertCollectionExists: UnifiedOperationProtocol {
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let db = context.internalClient.anyClient.db(self.databaseName)
-        expect(try db.listCollectionNames()).to(
+        expect(try await db.listCollectionNames()).to(
             contain(self.collectionName),
             description: "Expected db \(self.databaseName) to contain collection \(self.collectionName)." +
                 " Path: \(context.path)"
@@ -60,7 +60,7 @@ struct UnifiedAssertCollectionNotExists: UnifiedOperationProtocol {
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let db = context.internalClient.anyClient.db(self.databaseName)
-        expect(try db.listCollectionNames()).toNot(
+        expect(try await db.listCollectionNames()).toNot(
             contain(self.collectionName),
             description: "Expected db \(self.databaseName) to not contain collection \(self.collectionName)." +
                 " Path: \(context.path)"
@@ -85,7 +85,7 @@ struct UnifiedAssertIndexExists: UnifiedOperationProtocol {
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = context.internalClient.anyClient.db(self.databaseName).collection(self.collectionName)
-        expect(try collection.listIndexNames()).to(
+        expect(try await collection.listIndexNames()).to(
             contain(self.indexName),
             description: "Expected collection \(collection.namespace) to have index \(self.indexName)."
                 + " Path: \(context.path)"
@@ -110,7 +110,7 @@ struct UnifiedAssertIndexNotExists: UnifiedOperationProtocol {
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let collection = context.internalClient.anyClient.db(self.databaseName).collection(self.collectionName)
-        expect(try collection.listIndexNames()).toNot(
+        expect(try await collection.listIndexNames()).toNot(
             contain(self.indexName),
             description: "Expected collection \(collection.namespace) to not have index \(self.indexName)."
                 + " Path: \(context.path)"
@@ -129,7 +129,7 @@ struct AssertSessionNotDirty: UnifiedOperationProtocol {
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let session = try context.entities.getEntity(id: self.session).asSession()
-        expect(session.asyncSession.isDirty())
+        expect(session.isDirty())
             .to(beFalse(), description: "Session \(self.session) should not be dirty. Path: \(context.path)")
         return .none
     }
@@ -145,7 +145,7 @@ struct AssertSessionDirty: UnifiedOperationProtocol {
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let session = try context.entities.getEntity(id: self.session).asSession()
-        expect(session.asyncSession.isDirty())
+        expect(session.isDirty())
             .to(beTrue(), description: "Session \(self.session) should be dirty. Path: \(context.path)")
         return .none
     }
@@ -196,7 +196,7 @@ struct UnifiedAssertSessionTransactionState: UnifiedOperationProtocol {
 
     func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
         let session = try context.entities.getEntity(id: self.session).asSession()
-        let actualState = session.asyncSession.transactionState
+        let actualState = session.transactionState
         expect(actualState).to(equal(self.state), description: "Session had unexpected transaction state")
         return .none
     }

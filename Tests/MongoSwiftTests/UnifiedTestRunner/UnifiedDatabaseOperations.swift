@@ -27,10 +27,10 @@ struct UnifiedCreateCollection: UnifiedOperationProtocol {
         )
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let db = try context.entities.getEntity(from: object).asDatabase()
         let session = try context.entities.resolveSession(id: self.session)
-        _ = try db.createCollection(self.collection, options: self.options, session: session)
+        _ = try await db.createCollection(self.collection, options: self.options, session: session)
         return .none
     }
 }
@@ -46,10 +46,10 @@ struct UnifiedDropCollection: UnifiedOperationProtocol {
         ["collection", "session"]
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let db = try context.entities.getEntity(from: object).asDatabase()
         let session = try context.entities.resolveSession(id: self.session)
-        try db.collection(self.collection).drop(session: session)
+        try await db.collection(self.collection).drop(session: session)
         return .none
     }
 }
@@ -68,7 +68,7 @@ struct UnifiedRunCommand: UnifiedOperationProtocol {
         ["commandName", "command", "session"]
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         var orderedCommand = self.command
         // reorder if needed to put command name first.
         if self.command.keys.first != self.commandName {
@@ -80,7 +80,7 @@ struct UnifiedRunCommand: UnifiedOperationProtocol {
         }
         let db = try context.entities.getEntity(from: object).asDatabase()
         let session = try context.entities.resolveSession(id: self.session)
-        try db.runCommand(orderedCommand, session: session)
+        try await db.runCommand(orderedCommand, session: session)
         return .none
     }
 }
@@ -112,10 +112,10 @@ struct UnifiedListCollections: UnifiedOperationProtocol {
         )
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let db = try context.entities.getEntity(from: object).asDatabase()
         let session = try context.entities.resolveSession(id: self.session)
-        let results = try db.listCollections(self.filter, options: self.options, session: session)
+        let results = try await db.listCollections(self.filter, options: self.options, session: session)
         return .rootDocumentArray(try results.map { try $0.get() }.map { try BSONEncoder().encode($0) })
     }
 }

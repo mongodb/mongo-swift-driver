@@ -8,7 +8,7 @@ protocol UnifiedOperationProtocol: Decodable {
     static var knownArguments: Set<String> { get }
 
     /// Executes this operation on the provided object, using the provided context.
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult
 }
 
 enum UnifiedOperationResult {
@@ -88,9 +88,9 @@ struct UnifiedOperation: Decodable {
     /// Expected result of the operation.
     let expectedResult: ExpectedOperationResult?
 
-    func executeAndCheckResult(context: Context) throws {
+    func executeAndCheckResult(context: Context) async throws {
         do {
-            let actualResult = try self.operation.execute(on: self.object, context: context)
+            let actualResult = try await self.operation.execute(on: self.object, context: context)
             switch self.expectedResult {
             case .error:
                 throw TestError(
@@ -280,7 +280,7 @@ struct UnifiedOperation: Decodable {
 struct Placeholder: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
-    func execute(on _: UnifiedOperation.Object, context _: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context _: Context) async throws -> UnifiedOperationResult {
         fatalError("Unexpectedly tried to execute placeholder operation")
     }
 }
