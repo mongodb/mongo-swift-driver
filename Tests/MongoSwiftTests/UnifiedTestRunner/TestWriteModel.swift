@@ -1,4 +1,4 @@
-import MongoSwiftSync
+import MongoSwift
 import TestsCommon
 
 /// Intermediate representation of a bulk write model to match the test format, used for decoding purposes.

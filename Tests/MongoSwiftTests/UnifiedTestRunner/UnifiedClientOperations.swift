@@ -1,5 +1,4 @@
 @testable import MongoSwift
-@testable import MongoSwiftSync
 import Nimble
 
 struct AssertNumberConnectionsCheckedOut: UnifiedOperationProtocol {

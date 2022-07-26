@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwiftSync
+import MongoSwift
 
 /// Represents the events expected for the specified client.
 struct ExpectedEventsForClient: Decodable {

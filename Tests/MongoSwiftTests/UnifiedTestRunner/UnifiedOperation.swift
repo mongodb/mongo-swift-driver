@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwiftSync
+import MongoSwift
 import TestsCommon
 
 /// Protocol which all operations supported by the unified test runner conform to.

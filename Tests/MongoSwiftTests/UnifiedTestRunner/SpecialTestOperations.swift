@@ -1,7 +1,6 @@
 // swiftlint:disable duplicate_imports
 @testable import class MongoSwift.ClientSession
-import MongoSwiftSync
-@testable import class MongoSwiftSync.ClientSession
+import MongoSwift
 import Nimble
 import TestsCommon
 import XCTest

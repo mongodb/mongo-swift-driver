@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwiftSync
+import MongoSwift
 import TestsCommon
 
 struct CreateChangeStream: UnifiedOperationProtocol {

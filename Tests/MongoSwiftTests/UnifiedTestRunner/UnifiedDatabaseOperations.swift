@@ -1,4 +1,4 @@
-import MongoSwiftSync
+import MongoSwift
 import SwiftBSON
 struct UnifiedCreateCollection: UnifiedOperationProtocol {
     /// The collection to create.

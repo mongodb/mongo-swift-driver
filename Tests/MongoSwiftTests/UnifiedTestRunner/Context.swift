@@ -1,4 +1,4 @@
-import MongoSwiftSync
+import MongoSwift
 
 /// Context passed around while executing tests.
 class Context {

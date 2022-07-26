@@ -1,7 +1,7 @@
 import Foundation
 @testable import struct MongoSwift.AggregateOptions
 @testable import struct MongoSwift.FindOptions
-import MongoSwiftSync
+import MongoSwift
 import TestsCommon
 
 struct UnifiedAggregate: UnifiedOperationProtocol {

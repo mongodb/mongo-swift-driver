@@ -1,6 +1,6 @@
-import MongoSwiftSync
+import MongoSwift
 // swiftlint:disable duplicate_imports
-@testable import class MongoSwiftSync.ClientSession
+@testable import class MongoSwift.ClientSession
 
 struct EndSession: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }

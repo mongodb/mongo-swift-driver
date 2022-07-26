@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwiftSync
+import MongoSwift
 import TestsCommon
 
 /// Generic error thrown when matching fails, containing the expected and actual values as well as the path taken to

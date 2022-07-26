@@ -1,6 +1,6 @@
 import Foundation
 @testable import struct MongoSwift.MongoClientOptions
-import MongoSwiftSync
+import MongoSwift
 import TestsCommon
 
 /// Represents a description of an entity (client, db, etc.).

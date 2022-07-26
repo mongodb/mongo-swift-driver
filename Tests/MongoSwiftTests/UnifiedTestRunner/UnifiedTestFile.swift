@@ -1,4 +1,4 @@
-import MongoSwiftSync
+import MongoSwift
 import TestsCommon
 
 /// Structure representing a test file in the unified test format.
