@@ -444,11 +444,11 @@ public class MongoClient {
      * Provides an `AsyncSequence` API for consuming command monitoring events.
      *
      * Example: printing the command events out would be written as
-
-     for try await event in client.commandEventStream() {
-             print(event)
-     }
-
+     *  ```
+     *  for try await event in client.commandEventStream() {
+     *      print(event)
+     *  }
+     *  ```
      * Wrapping in a `Task { ... }` may be desired for asynchronicity.
      * - Returns: A `CommandEventStream` that implements `AsyncSequence`.
      * - Note: Only the most recent 100 events are stored in the stream.
@@ -476,11 +476,11 @@ public class MongoClient {
      * Provides an `AsyncSequence` API for consuming SDAM monitoring events.
      *
      * Example: printing the SDAM events out would be written as
-
-     for try await event in client.sdamEventStream() {
-             print(event)
-     }
-
+     *  ```
+     *  for try await event in client.sdamEventStream() {
+     *      print(event)
+     *  }
+     *  ```
      * Wrapping in a `Task { ... }` may be desired for asynchronicity.
      * - Returns: An `SDAMEventStream` that implements `AsyncSequence`.
      * - Note: Only the most recent 100 events are stored in the stream.
