@@ -32,10 +32,12 @@ public func retrieveSpecTestFiles<T: Decodable>(
         .subpathsOfDirectory(atPath: path)
         .filter { $0.hasSuffix(".json") }
         .compactMap { filename in
+            //print(filename)
             guard !excludeFiles.contains(filename) else {
                 return nil
             }
             let url = URL(fileURLWithPath: "\(path)/\(filename)")
+            print(url)
             let jsonString = try String(contentsOf: url, encoding: .utf8)
             var doc = try ExtendedJSONDecoder().decode(BSONDocument.self, from: jsonString.data(using: .utf8)!)
             doc["name"] = .string(filename)

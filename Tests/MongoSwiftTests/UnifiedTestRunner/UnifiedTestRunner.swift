@@ -33,6 +33,17 @@ struct UnifiedTestRunner {
             }
             return clientMap
         }
+        func closeAll() throws {
+            switch self {
+            case let .single(c):
+                try c.syncClose()
+            case let .mongosClients(clientMap):
+                for client in clientMap.values {
+                    try client.syncClose()
+                }
+            }
+        
+        }
     }
 
     let internalClient: InternalClient
@@ -104,7 +115,6 @@ struct UnifiedTestRunner {
                     message: "Test file \"\(file.description)\" has unsupported schema version \(file.schemaVersion)"
                 )
             }
-
             // If runOnRequirements is specified, the test runner MUST skip the test file unless one or more
             //  runOnRequirement objects are satisfied.
             if let requirements = file.runOnRequirements {
@@ -194,21 +204,22 @@ struct UnifiedTestRunner {
                 }
 
                 fileLevelLog("Running test \"\(test.description)\" from file \"\(file.description)\"")
-
+                
                 do {
                     for (i, operation) in test.operations.enumerated() {
+                        //print("outie")
                         try await context.withPushedElt("Operation \(i) (\(operation.name))") {
+                            //print("innie")
                             try await operation.executeAndCheckResult(context: context)
+                            //print("done")
                         }
                     }
-
                     var clientEvents = [String: [CommandEvent]]()
                     // If any event listeners were enabled on any client entities, the test runner MUST now disable
                     // those event listeners.
                     for (id, client) in context.entities.compactMapValues({ try? $0.asTestClient() }) {
                         clientEvents[id] = try client.stopCapturingEvents()
                     }
-
                     if let expectEvents = test.expectEvents {
                         // TODO: SWIFT-1321 don't skip CMAP event assertions here.
                         for expectedEventList in expectEvents where expectedEventList.eventType != .cmap {
@@ -217,7 +228,6 @@ struct UnifiedTestRunner {
                             guard let actualEvents = clientEvents[clientId] else {
                                 throw TestError(message: "No client entity found with id \(clientId)")
                             }
-
                             try context.withPushedElt("Expected events for client \(clientId)") {
                                 try matchesEvents(
                                     expected: expectedEventList.events,
@@ -226,9 +236,9 @@ struct UnifiedTestRunner {
                                     ignoreExtraEvents: expectedEventList.ignoreExtraEvents
                                 )
                             }
+                            
                         }
                     }
-
                     if let expectedOutcome = test.outcome {
                         for collectionData in expectedOutcome {
                             let collection = self.internalClient
@@ -241,7 +251,6 @@ struct UnifiedTestRunner {
                                 sort: ["_id": 1]
                             )
                             let documents = try await collection.find(options: opts).toArray()
-
                             expect(documents.count).to(equal(collectionData.documents.count))
                             for (expected, actual) in zip(collectionData.documents, documents) {
                                 expect(actual).to(
@@ -251,6 +260,10 @@ struct UnifiedTestRunner {
                             }
                         }
                     }
+                    try self.internalClient.closeAll()
+                    //Reaches HERE
+                    print("bozo!")
+                    try await self.terminateOpenTransactions()
                 } catch let testErr {
                     // Test runners SHOULD terminate all open transactions after each failed test by killing all
                     // sessions in the cluster.
