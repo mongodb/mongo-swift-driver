@@ -8,7 +8,7 @@ struct EndSession: UnifiedOperationProtocol {
     func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let session = try context.entities.getEntity(from: object).asSession()
         // Method doesnt exist for async/await bc if concurrency is available, the method is auto-called with deinit
-        session.end()
+        let _ = session.end()
         return .none
     }
 }

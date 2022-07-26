@@ -69,14 +69,4 @@ final class TransactionsTests: MongoSwiftTestCase {
             try testFile.runTests()
         }
     }
-
-    func testTransactionsUnified() throws {
-        let files = try retrieveSpecTestFiles(
-            specName: "transactions",
-            subdirectory: "unified",
-            asType: UnifiedTestFile.self
-        )
-        let runner = try UnifiedTestRunner()
-        try runner.runFiles(files.map { $0.1 })
-    }
 }

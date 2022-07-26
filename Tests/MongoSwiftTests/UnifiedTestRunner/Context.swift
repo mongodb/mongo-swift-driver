@@ -9,7 +9,7 @@ class Context {
     var entities: EntityMap
 
     /// Fail points that have been set during test execution and should be disabled on completion.
-    var enabledFailPoints: [FailPointGuard] = []
+    //var enabledFailPoints: [FailPointGuard] = []
 
     let internalClient: UnifiedTestRunner.InternalClient
 
@@ -24,5 +24,12 @@ class Context {
         self.path.append(elt)
         defer { self.path.removeLast() }
         return try work()
+    }
+    
+    /// Executes an async closure with the given path element added to the path, removing it after the closure is complete.
+    func withPushedElt<T>(_ elt: String, work: () async throws -> T) async rethrows -> T {
+        self.path.append(elt)
+        defer { self.path.removeLast() }
+        return try await work()
     }
 }

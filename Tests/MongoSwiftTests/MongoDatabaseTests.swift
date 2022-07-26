@@ -5,7 +5,7 @@ import Nimble
 import TestsCommon
 
 @available(macOS 10.15, *)
-final class MongoDatabaseTests: MongoSwiftTestCase {
+final class MongoDatabaseCommentTests: MongoSwiftTestCase {
     func testListCollectionsComment() async throws {
         try await self.withTestClient { client in
             let monitor = client.addCommandMonitor()
@@ -39,6 +39,16 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
             expect(events[1].commandName).to(equal("listCollections"))
             expect(events[1].command["comment"]).to(beNil())
         }
+    }
+    
+    func testCreateCollectionUnified() async throws {
+        let tests = try retrieveSpecTestFiles(
+            specName: "collection-management",
+            asType: UnifiedTestFile.self
+        ).map { $0.1 }
+
+        let runner = try await UnifiedTestRunner()
+        try await runner.runFiles(tests)
     }
 }
 #endif

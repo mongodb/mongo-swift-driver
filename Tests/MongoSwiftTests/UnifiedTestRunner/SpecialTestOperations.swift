@@ -5,25 +5,25 @@ import Nimble
 import TestsCommon
 import XCTest
 
-struct UnifiedFailPoint: UnifiedOperationProtocol {
-    /// The failpoint to set.
-    let failPoint: FailPoint
-
-    /// The client entity to use for setting the failpoint.
-    let client: String
-
-    static var knownArguments: Set<String> {
-        ["failPoint", "client"]
-    }
-
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
-        let testClient = try context.entities.getEntity(id: self.client).asTestClient()
-        let opts = RunCommandOptions(readPreference: .primary)
-        let fpGuard = try self.failPoint.enableWithGuard(using: testClient.client, options: opts)
-        context.enabledFailPoints.append(fpGuard)
-        return .none
-    }
-}
+//struct UnifiedFailPoint: UnifiedOperationProtocol {
+//    /// The failpoint to set.
+//    let failPoint: FailPoint
+//
+//    /// The client entity to use for setting the failpoint.
+//    let client: String
+//
+//    static var knownArguments: Set<String> {
+//        ["failPoint", "client"]
+//    }
+//
+//    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
+//        let testClient = try context.entities.getEntity(id: self.client).asTestClient()
+//        let opts = RunCommandOptions(readPreference: .primary)
+//        let fpGuard = try self.failPoint.enableWithGuard(using: testClient.client, options: opts)
+//        context.enabledFailPoints.append(fpGuard)
+//        return .none
+//    }
+//}
 
 struct UnifiedAssertCollectionExists: UnifiedOperationProtocol {
     /// The collection name.
@@ -36,9 +36,10 @@ struct UnifiedAssertCollectionExists: UnifiedOperationProtocol {
         ["collectionName", "databaseName"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let db = context.internalClient.anyClient.db(self.databaseName)
-        expect(try await db.listCollectionNames()).to(
+        let listNames = try await db.listCollectionNames()
+        expect(listNames).to(
             contain(self.collectionName),
             description: "Expected db \(self.databaseName) to contain collection \(self.collectionName)." +
                 " Path: \(context.path)"
@@ -58,9 +59,10 @@ struct UnifiedAssertCollectionNotExists: UnifiedOperationProtocol {
         ["collectionName", "databaseName"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let db = context.internalClient.anyClient.db(self.databaseName)
-        expect(try await db.listCollectionNames()).toNot(
+        let listNames = try await db.listCollectionNames()
+        expect(listNames).toNot(
             contain(self.collectionName),
             description: "Expected db \(self.databaseName) to not contain collection \(self.collectionName)." +
                 " Path: \(context.path)"
@@ -83,9 +85,10 @@ struct UnifiedAssertIndexExists: UnifiedOperationProtocol {
         ["collectionName", "databaseName", "indexName"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = context.internalClient.anyClient.db(self.databaseName).collection(self.collectionName)
-        expect(try await collection.listIndexNames()).to(
+        let listIndexes = try await collection.listIndexNames()
+        expect(listIndexes).to(
             contain(self.indexName),
             description: "Expected collection \(collection.namespace) to have index \(self.indexName)."
                 + " Path: \(context.path)"
@@ -108,9 +111,10 @@ struct UnifiedAssertIndexNotExists: UnifiedOperationProtocol {
         ["collectionName", "databaseName", "indexName"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = context.internalClient.anyClient.db(self.databaseName).collection(self.collectionName)
-        expect(try await collection.listIndexNames()).toNot(
+        let listNames = try await collection.listIndexNames()
+        expect(listNames).toNot(
             contain(self.indexName),
             description: "Expected collection \(collection.namespace) to not have index \(self.indexName)."
                 + " Path: \(context.path)"
@@ -258,33 +262,33 @@ func makeLsidAssertion(client: UnifiedTestClient, same: Bool, context: Context) 
     }
 }
 
-struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
-    /// The failpoint to set.
-    let failPoint: FailPoint
-
-    /// Identifier for the session entity with which to set the fail point.
-    let session: String
-
-    static var knownArguments: Set<String> {
-        ["failPoint", "session"]
-    }
-
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
-        let session = try context.entities.getEntity(id: self.session).asSession()
-        // The mongos on which to set the fail point is determined by the session argument (after resolution to a
-        // session entity). Test runners MUST error if the session is not pinned to a mongos server at the time this
-        // operation is executed.
-        guard session.pinnedServerAddress != nil else {
-            XCTFail("Session \(self.session) unexpectedly not pinned to a mongos. Path: \(context.path)")
-            return .none
-        }
-        let mongosClients = try context.internalClient.asMongosClients()
-        guard let clientForPinnedMongos = mongosClients[session.pinnedServerAddress!] else {
-            throw TestError(message: "Unexpectedly missing client for mongos \(session.pinnedServerAddress!)")
-        }
-        let fpGuard = try self.failPoint.enableWithGuard(using: clientForPinnedMongos)
-        // add to context's list of enabled failpoints to ensure we disable it later.
-        context.enabledFailPoints.append(fpGuard)
-        return .none
-    }
-}
+//struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
+//    /// The failpoint to set.
+//    let failPoint: FailPoint
+//
+//    /// Identifier for the session entity with which to set the fail point.
+//    let session: String
+//
+//    static var knownArguments: Set<String> {
+//        ["failPoint", "session"]
+//    }
+//
+//    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+//        let session = try context.entities.getEntity(id: self.session).asSession()
+//        // The mongos on which to set the fail point is determined by the session argument (after resolution to a
+//        // session entity). Test runners MUST error if the session is not pinned to a mongos server at the time this
+//        // operation is executed.
+//        guard session.pinnedServerAddress != nil else {
+//            XCTFail("Session \(self.session) unexpectedly not pinned to a mongos. Path: \(context.path)")
+//            return .none
+//        }
+//        let mongosClients = try context.internalClient.asMongosClients()
+//        guard let clientForPinnedMongos = mongosClients[session.pinnedServerAddress!] else {
+//            throw TestError(message: "Unexpectedly missing client for mongos \(session.pinnedServerAddress!)")
+//        }
+//        let fpGuard = try self.failPoint.enableWithGuard(using: clientForPinnedMongos)
+//        // add to context's list of enabled failpoints to ensure we disable it later.
+//        context.enabledFailPoints.append(fpGuard)
+//        return .none
+//    }
+//}

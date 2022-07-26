@@ -48,4 +48,14 @@ final class ClientSessionTests: MongoSwiftTestCase {
             expect(escapedSession?.active).to(beFalse())
         }
     }
+    
+    func testSessionsUnified() async throws {
+        let tests = try retrieveSpecTestFiles(
+            specName: "sessions",
+            subdirectory: "unified",
+            asType: UnifiedTestFile.self
+        )
+        let runner = try await UnifiedTestRunner()
+        try await runner.runFiles(tests.map { $0.1 })
+    }
 }

@@ -1,4 +1,4 @@
-import MongoSwiftSync
+import MongoSwift
 import Nimble
 import TestsCommon
 
@@ -8,7 +8,7 @@ final class LoadBalancerTests: MongoSwiftTestCase {
         "wait-queue-timeouts.json"
     ]
 
-    func testLoadBalancers() throws {
+    func testLoadBalancers() async throws {
         let tests = try retrieveSpecTestFiles(
             specName: "load-balancers",
             excludeFiles: skipFiles,
@@ -59,7 +59,7 @@ final class LoadBalancerTests: MongoSwiftTestCase {
             ]
         ]
 
-        let runner = try UnifiedTestRunner()
-        try runner.runFiles(tests, skipTests: skipTests)
+        let runner = try await UnifiedTestRunner()
+        try await runner.runFiles(tests, skipTests: skipTests)
     }
 }

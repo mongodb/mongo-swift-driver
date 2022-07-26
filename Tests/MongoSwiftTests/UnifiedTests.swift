@@ -1,4 +1,4 @@
-import MongoSwiftSync
+import MongoSwift
 import Nimble
 import TestsCommon
 
@@ -40,7 +40,7 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         }
     }
 
-    func testSampleUnifiedTests() throws {
+    func testSampleUnifiedTests() async throws {
         let skipValidPassFiles = [
             // we don't support convenient txns API.
             "poc-transactions-convenient-api.json",
@@ -66,8 +66,8 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             asType: UnifiedTestFile.self
         ).map { $0.1 }
 
-        let runner = try UnifiedTestRunner()
-        try runner.runFiles(validPassTests)
+        let runner = try await UnifiedTestRunner()
+        try await runner.runFiles(validPassTests)
 
         // These are test files that we cannot/should not be able to decode because they operations they contain are
         // malformed.
@@ -101,7 +101,13 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         )
 
         for (_, test) in validFailTests {
-            expect(try runner.runFiles([test])).to(throwError())
+            //work around to expect(try await ...) bc expect is sync
+            do {
+                try await runner.runFiles([test])
+            } catch {
+                expect(error).toNot(beNil())
+            }
+            
         }
     }
 
@@ -155,7 +161,7 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             ["ok": .double(1.00001)]
         ]
 
-        let client = try MongoClient.makeTestClient()
+        let client = try MongoClient.makeAsyncTestClient()
         for params in meetableParamRequirements {
             let req = TestRequirement(serverParameters: params)
             expect(try client.getUnmetRequirement(req)).to(beNil())

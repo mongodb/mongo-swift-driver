@@ -91,9 +91,9 @@ struct UnifiedCloseCursor: UnifiedOperationProtocol {
         let entity = try context.entities.getEntity(from: object)
         switch entity {
         case let .changeStream(cs):
-            cs.kill()
+            let _ = cs.kill()
         case let .findCursor(c):
-            c.kill()
+            let _ = c.kill()
         default:
             throw TestError(message: "Unsupported entity type \(entity) for close operation")
         }

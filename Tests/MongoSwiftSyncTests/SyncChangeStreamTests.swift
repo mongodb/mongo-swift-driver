@@ -292,16 +292,6 @@ final class ChangeStreamSpecTests: MongoSwiftTestCase {
             }
         }
     }
-
-    func testChangeStreamSpecUnified() throws {
-        let tests = try retrieveSpecTestFiles(
-            specName: "change-streams",
-            subdirectory: "unified",
-            asType: UnifiedTestFile.self
-        ).map { $0.1 }
-        let testRunner = try UnifiedTestRunner()
-        try testRunner.runFiles(tests)
-    }
 }
 
 /// Class for spec prose tests and other integration tests associated with change streams.

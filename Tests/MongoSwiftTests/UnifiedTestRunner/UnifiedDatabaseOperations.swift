@@ -115,7 +115,7 @@ struct UnifiedListCollections: UnifiedOperationProtocol {
     func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let db = try context.entities.getEntity(from: object).asDatabase()
         let session = try context.entities.resolveSession(id: self.session)
-        let results = try await db.listCollections(self.filter, options: self.options, session: session)
-        return .rootDocumentArray(try results.map { try $0.get() }.map { try BSONEncoder().encode($0) })
+        let results = try await db.listCollections(self.filter, options: self.options, session: session).toArray()
+        return .rootDocumentArray(try results.map { try BSONEncoder().encode($0) })
     }
 }

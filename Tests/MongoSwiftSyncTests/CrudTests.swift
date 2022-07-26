@@ -73,27 +73,6 @@ final class CrudTests: MongoSwiftTestCase {
     func testWrites() throws {
         try self.doTests(forSubdirectory: "v1/write")
     }
-
-    func testCrudUnified() throws {
-        let skipFiles: [String] = [
-            // Skipping because we use bulk-write for these commands and can't pass extra options
-            // TODO: SWIFT-1429 unskip
-            "deleteOne-let.json",
-            "deleteMany-let.json",
-            "updateOne-let.json",
-            "updateMany-let.json",
-            // TODO: SWIFT-1515 unskip
-            "estimatedDocumentCount-comment.json"
-        ]
-        let files = try retrieveSpecTestFiles(
-            specName: "crud",
-            subdirectory: "unified",
-            excludeFiles: skipFiles,
-            asType: UnifiedTestFile.self
-        )
-        let runner = try UnifiedTestRunner()
-        try runner.runFiles(files.map { $0.1 })
-    }
 }
 
 /// A container for the data from a single .json file.

@@ -515,17 +515,7 @@ final class SyncClientSessionTests: MongoSwiftTestCase {
             expect(startedEvents[0].command["readConcern"]?.documentValue?["afterClusterTime"]).to(beNil())
         }
     }
-
-    func testSessionsUnified() throws {
-        let tests = try retrieveSpecTestFiles(
-            specName: "sessions",
-            subdirectory: "unified",
-            asType: UnifiedTestFile.self
-        )
-        let runner = try UnifiedTestRunner()
-        try runner.runFiles(tests.map { $0.1 })
-    }
-
+    
     func testSnapshotSessionsProse() throws {
         /// 1. Setting both snapshot and causalConsistency to true is not allowed
         try self.withTestNamespace { client, _, _ in

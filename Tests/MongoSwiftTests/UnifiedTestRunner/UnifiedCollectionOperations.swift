@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwift
+@testable import MongoSwift
 import TestsCommon
 
 struct UnifiedAggregate: UnifiedOperationProtocol {
@@ -44,7 +44,7 @@ struct UnifiedAggregate: UnifiedOperationProtocol {
             throw TestError(message: "Unsupported entity \(entity) for aggregate")
         }
 
-        let docs = try cursor.map { try $0.get() }
+        let docs = try await cursor.toArray()
         return .rootDocumentArray(docs)
     }
 }
@@ -106,8 +106,8 @@ struct UnifiedListIndexes: UnifiedOperationProtocol {
         }
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        let results = try await collection.listIndexes(session: session)
-        return .rootDocumentArray(try results.map { try $0.get() }.map { try BSONEncoder().encode($0) })
+        let results = try await collection.listIndexes(session: session).toArray()
+        return .rootDocumentArray(try results.map { try BSONEncoder().encode($0) })
     }
 }
 
@@ -182,9 +182,8 @@ struct UnifiedFind: UnifiedOperationProtocol {
     func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        let cursor = try await collection.find(self.filter, options: self.options, session: session)
-        let docs = try cursor.map { try $0.get() }
-        return .rootDocumentArray(docs)
+        let cursor = try await collection.find(self.filter, options: self.options, session: session).toArray()
+        return .rootDocumentArray(cursor)
     }
 }
 

@@ -54,16 +54,15 @@ struct UnifiedTestRunner {
             }
             self.internalClient = .mongosClients(mongosClients)
         default:
-            let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
             let client = try MongoClient.makeAsyncTestClient()
             self.internalClient = .single(client)
         }
-        self.serverVersion = try self.internalClient.anyClient.serverVersion()
-        self.topologyType = try self.internalClient.anyClient.topologyType()
-        self.serverParameters = try self.internalClient.anyClient.serverParameters()
+        self.serverVersion = try await self.internalClient.anyClient.serverVersion()
+        self.topologyType = try await self.internalClient.anyClient.topologyType()
+        self.serverParameters = try await self.internalClient.anyClient.serverParameters()
     }
 
-    func terminateOpenTransactions() throws {
+    func terminateOpenTransactions() async throws {
         // Using the internal MongoClient, execute the killAllSessions command on either the primary or, if
         // connected to a sharded cluster, all mongos servers.
         switch self.topologyType {
@@ -76,12 +75,12 @@ struct UnifiedTestRunner {
             // SERVER-38335.
             do {
                 let opts = RunCommandOptions(readPreference: .primary)
-                _ = try self.internalClient.anyClient.db("admin").runCommand(["killAllSessions": []], options: opts)
+                _ = try await self.internalClient.anyClient.db("admin").runCommand(["killAllSessions": []], options: opts)
             } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
         case .sharded, .shardedReplicaSet:
             for (_, client) in try self.internalClient.asMongosClients() {
                 do {
-                    _ = try client.db("admin").runCommand(["killAllSessions": []])
+                    _ = try await client.db("admin").runCommand(["killAllSessions": []])
                 } catch let commandError as MongoError.CommandError where commandError.code == 11601 {
                     continue
                 }
@@ -96,7 +95,7 @@ struct UnifiedTestRunner {
     /// Runs the provided files. `skipTestCases` is a map of file description strings to arrays of test description
     /// strings indicating cases to skip. If the array contains a single string "*" all tests in the file will be
     /// skipped.
-    func runFiles(_ files: [UnifiedTestFile], skipTests: [String: [String]] = [:]) throws {
+    func runFiles(_ files: [UnifiedTestFile], skipTests: [String: [String]] = [:]) async throws {
         for file in files {
             // Upon loading a file, the test runner MUST read the schemaVersion field and determine if the test file
             // can be processed further.
@@ -160,17 +159,17 @@ struct UnifiedTestRunner {
                         let db = self.internalClient.anyClient.db(collData.databaseName)
                         let collOpts = MongoCollectionOptions(writeConcern: .majority)
                         let coll = db.collection(collData.collectionName, options: collOpts)
-                        try coll.drop()
+                        let _ = try await coll.drop()
 
                         guard !collData.documents.isEmpty else {
-                            _ = try db.createCollection(
+                            _ = try await db.createCollection(
                                 collData.collectionName,
                                 options: CreateCollectionOptions(writeConcern: .majority)
                             )
                             continue
                         }
 
-                        try coll.insertMany(collData.documents)
+                        let _ = try await coll.insertMany(collData.documents)
                     }
                 }
 
@@ -187,7 +186,7 @@ struct UnifiedTestRunner {
                     let collEntities = context.entities.values.compactMap { try? $0.asCollection() }
                     for (_, client) in try self.internalClient.asMongosClients() {
                         for entity in collEntities {
-                            _ = try client.db(entity.namespace.db).runCommand(
+                            _ = try await client.db(entity.namespace.db).runCommand(
                                 ["distinct": .string(entity.name), "key": "_id"]
                             )
                         }
@@ -198,8 +197,8 @@ struct UnifiedTestRunner {
 
                 do {
                     for (i, operation) in test.operations.enumerated() {
-                        try context.withPushedElt("Operation \(i) (\(operation.name))") {
-                            try operation.executeAndCheckResult(context: context)
+                        try await context.withPushedElt("Operation \(i) (\(operation.name))") {
+                            try await operation.executeAndCheckResult(context: context)
                         }
                     }
 
@@ -241,7 +240,7 @@ struct UnifiedTestRunner {
                                 readPreference: .primary,
                                 sort: ["_id": 1]
                             )
-                            let documents = try collection.find(options: opts).map { try $0.get() }
+                            let documents = try await collection.find(options: opts).toArray()
 
                             expect(documents.count).to(equal(collectionData.documents.count))
                             for (expected, actual) in zip(collectionData.documents, documents) {
@@ -256,7 +255,7 @@ struct UnifiedTestRunner {
                     // Test runners SHOULD terminate all open transactions after each failed test by killing all
                     // sessions in the cluster.
                     do {
-                        try self.terminateOpenTransactions()
+                        try await self.terminateOpenTransactions()
                     } catch {
                         print("Failed to terminate open transactions: \(error)")
                     }

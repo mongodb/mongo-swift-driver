@@ -1,5 +1,5 @@
 import Foundation
-import MongoSwift
+@testable import MongoSwift
 import TestsCommon
 
 /// Represents a description of an entity (client, db, etc.).

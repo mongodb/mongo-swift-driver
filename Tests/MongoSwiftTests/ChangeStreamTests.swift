@@ -164,4 +164,14 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             expect(try stream.forEach(increment).wait()).to(throwError(errorType: MongoError.LogicError.self))
         }
     }
+    
+    func testChangeStreamSpecUnified() async throws {
+        let tests = try retrieveSpecTestFiles(
+            specName: "change-streams",
+            subdirectory: "unified",
+            asType: UnifiedTestFile.self
+        ).map { $0.1 }
+        let testRunner = try await UnifiedTestRunner()
+        try await testRunner.runFiles(tests)
+    }
 }

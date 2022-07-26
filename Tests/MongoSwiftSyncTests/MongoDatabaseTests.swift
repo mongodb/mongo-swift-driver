@@ -138,16 +138,6 @@ final class MongoDatabaseTests: MongoSwiftTestCase {
         expect(collectionInfo[1]).to(equal(expectedView))
     }
 
-    func testCreateCollectionUnified() throws {
-        let tests = try retrieveSpecTestFiles(
-            specName: "collection-management",
-            asType: UnifiedTestFile.self
-        ).map { $0.1 }
-
-        let runner = try UnifiedTestRunner()
-        try runner.runFiles(tests)
-    }
-
     func testListCollections() throws {
         let client = try MongoClient.makeTestClient()
         let monitor = client.addCommandMonitor()

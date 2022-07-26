@@ -208,8 +208,8 @@ struct UnifiedOperation: Decodable {
             self.operation = try container.decode(UnifiedFindOneAndUpdate.self, forKey: .arguments)
         case "findOneAndDelete":
             self.operation = try container.decode(UnifiedFindOneAndDelete.self, forKey: .arguments)
-        case "failPoint":
-            self.operation = try container.decode(UnifiedFailPoint.self, forKey: .arguments)
+//        case "failPoint":
+//            self.operation = try container.decode(UnifiedFailPoint.self, forKey: .arguments)
         case "insertOne":
             self.operation = try container.decode(UnifiedInsertOne.self, forKey: .arguments)
         case "insertMany":
@@ -234,8 +234,8 @@ struct UnifiedOperation: Decodable {
             self.operation = try container.decode(UnifiedRunCommand.self, forKey: .arguments)
         case "startTransaction":
             self.operation = UnifiedStartTransaction()
-        case "targetedFailPoint":
-            self.operation = try container.decode(UnifiedTargetedFailPoint.self, forKey: .arguments)
+//        case "targetedFailPoint":
+//            self.operation = try container.decode(UnifiedTargetedFailPoint.self, forKey: .arguments)
         case "updateOne":
             self.operation = try container.decode(UnifiedUpdateOne.self, forKey: .arguments)
         case "updateMany":
