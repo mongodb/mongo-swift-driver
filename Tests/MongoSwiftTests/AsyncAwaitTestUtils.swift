@@ -149,6 +149,24 @@ extension MongoClient {
             return false
         }
     }
+    
+    static func makeAsyncTestClient(
+        _ uri: MongoConnectionString = MongoSwiftTestCase.getConnectionString(),
+        options: MongoClientOptions? = nil
+    ) throws -> MongoClient {
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        let opts = resolveClientOptions(options)
+        return try MongoClient(uri, using: elg, options: opts)
+    }
+    
+    static func makeAsyncTestClient(
+        _ uri: String,
+        options: MongoClientOptions? = nil
+    ) throws -> MongoClient {
+        let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        let opts = resolveClientOptions(options)
+        return try MongoClient(uri, using: elg, options: opts)
+    }
 
     internal func supportsTransactions() async throws -> Bool {
         try await self.meetsAnyRequirement(in: TestRequirement.transactionsSupport)

@@ -1,7 +1,10 @@
-import MongoSwiftSync
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+import MongoSwift
 import Nimble
 import TestsCommon
+import NIOPosix
 
+@available(macOS 10.15, *)
 struct UnifiedTestRunner {
     enum InternalClient {
         /// For all topologies besides sharded, we use a single client.
@@ -40,18 +43,19 @@ struct UnifiedTestRunner {
     static let minSchemaVersion = SchemaVersion(rawValue: "1.0.0")!
     static let maxSchemaVersion = SchemaVersion(rawValue: "1.7.0")!
 
-    init() throws {
+    init() async throws {
         switch MongoSwiftTestCase.topologyType {
         case .sharded:
             var mongosClients = [ServerAddress: MongoClient]()
             for host in MongoSwiftTestCase.getHosts() {
                 let connString = MongoSwiftTestCase.getConnectionString(forHost: host)
-                let client = try MongoClient.makeTestClient(connString)
+                let client = try MongoClient.makeAsyncTestClient(connString)
                 mongosClients[host] = client
             }
             self.internalClient = .mongosClients(mongosClients)
         default:
-            let client = try MongoClient.makeTestClient()
+            let elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+            let client = try MongoClient.makeAsyncTestClient()
             self.internalClient = .single(client)
         }
         self.serverVersion = try self.internalClient.anyClient.serverVersion()
@@ -262,3 +266,4 @@ struct UnifiedTestRunner {
         }
     }
 }
+#endif
