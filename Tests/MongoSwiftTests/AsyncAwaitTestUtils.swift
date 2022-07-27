@@ -64,6 +64,7 @@ func assertIsEventuallyTrue(
     let workTask = Task { () -> Bool in
         while !Task.isCancelled {
             guard try await block() else {
+                // Optional bc if task is cancelled, we want to return false and not encounter a `CancellationError`
                 try? await Task.sleep(seconds: sleepInterval)
                 continue
             }
