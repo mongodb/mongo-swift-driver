@@ -66,6 +66,7 @@ class UnifiedTestRunner {
             }
             self.internalClient = .mongosClients(mongosClients)
         default:
+            print("default mode")
             let client = try MongoClient.makeAsyncTestClient()
             self.internalClient = .single(client)
         }
@@ -75,6 +76,7 @@ class UnifiedTestRunner {
     }
     
     deinit {
+        print("I am dying....")
         switch internalClient {
         case .single(let mongoClient):
             try! mongoClient.syncClose()
@@ -97,12 +99,14 @@ class UnifiedTestRunner {
             // The test runner MAY ignore any command failure with error Interrupted(11601) to work around
             // SERVER-38335.
             do {
+                print("dna polymerase")
                 let opts = RunCommandOptions(readPreference: .primary)
                 _ = try await self.internalClient.anyClient.db("admin").runCommand(["killAllSessions": []], options: opts)
             } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
         case .sharded, .shardedReplicaSet:
             for (_, client) in try self.internalClient.asMongosClients() {
                 do {
+                    print("sharding time")
                     _ = try await client.db("admin").runCommand(["killAllSessions": []])
                 } catch let commandError as MongoError.CommandError where commandError.code == 11601 {
                     continue
@@ -144,6 +148,7 @@ class UnifiedTestRunner {
             }
             print("b")
             for test in file.tests {
+                print("attending a test")
                 // If test.skipReason is specified, the test runner MUST skip this test and MAY use the string value to
                 // log a message.
                 if let skipReason = test.skipReason {
@@ -273,11 +278,11 @@ class UnifiedTestRunner {
                             }
                         }
                     }
-                    print("bozo!")
+                    print("done!")
                     //try self.internalClient.closeAll()
                     //Reaches HERE
                     try await self.terminateOpenTransactions()
-                    print("airpod shawty")
+                    print("i have closed gn")
                 } catch let testErr {
                     // Test runners SHOULD terminate all open transactions after each failed test by killing all
                     // sessions in the cluster.
@@ -288,8 +293,28 @@ class UnifiedTestRunner {
                     }
                     throw testErr
                 }
-            }
+                print(context.entities.count)
+                print("I am outside do-catch")
+                print(try await self.internalClient.anyClient.supportsTransactions()) //internal client in scope?
+                print("loopy")
+                var count = 0
+                for entity in context.entities.values {
+                    do {
+                        count += 1
+                        print(count)
+                        let client = try entity.asTestClient()
+                        print(try await client.client.supportsTransactions())
+                        client.client.syncCloseOrFail()
+                    } catch {
+                        print("no clientele")
+                    }
+                }
+            }//Client goes out of scope? "not closed before deinit" but we dont want to deinit
+             //But is it internalClient or an entityClient or smth else
+             //Entity might go out of scope since test ends
+            print("I am outside the test loop")
         }
+        print("i am outside the file loop")
     }
 }
 #endif
