@@ -450,7 +450,7 @@ public class MongoClient {
      *  }
      *  ```
      * If you are looping over the events in the stream, you may wish to do so in a dedicated `Task`.
-     * The stream will be ended automatically if the   `Task` it is running in is cancelled.
+     * The stream will be ended automatically if the `Task` it is running in is cancelled.
      * - Returns: A `CommandEventStream` that implements `AsyncSequence`.
      * - Note: Only the most recent 100 events are stored in the stream.
      */
@@ -483,7 +483,7 @@ public class MongoClient {
      *  }
      *  ```
      * If you are looping over the events in the stream, you may wish to do so in a dedicated `Task`.
-     * The stream will be ended automatically if the   `Task` it is running in is cancelled.
+     * The stream will be ended automatically if the `Task` it is running in is cancelled.
      * - Returns: An `SDAMEventStream` that implements `AsyncSequence`.
      * - Note: Only the most recent 100 events are stored in the stream.
      */
