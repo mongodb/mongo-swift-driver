@@ -55,6 +55,7 @@ struct UnifiedTestRunner {
     static let maxSchemaVersion = SchemaVersion(rawValue: "1.7.0")!
 
     init() async throws {
+        print("init'ing")
         switch MongoSwiftTestCase.topologyType {
         case .sharded:
             var mongosClients = [ServerAddress: MongoClient]()
@@ -108,6 +109,7 @@ struct UnifiedTestRunner {
     /// skipped.
     func runFiles(_ files: [UnifiedTestFile], skipTests: [String: [String]] = [:]) async throws {
         for file in files {
+            print("here")
             // Upon loading a file, the test runner MUST read the schemaVersion field and determine if the test file
             // can be processed further.
             guard file.schemaVersion >= Self.minSchemaVersion && file.schemaVersion <= Self.maxSchemaVersion else {

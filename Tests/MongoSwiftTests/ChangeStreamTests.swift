@@ -171,6 +171,7 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             subdirectory: "unified",
             asType: UnifiedTestFile.self
         ).map { $0.1 }
+        print("yuh")
         let testRunner = try await UnifiedTestRunner()
         try await testRunner.runFiles(tests)
     }

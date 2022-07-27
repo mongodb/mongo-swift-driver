@@ -28,22 +28,82 @@ public func retrieveSpecTestFiles<T: Decodable>(
     if let sd = subdirectory {
         path += "/\(sd)"
     }
+    let names = try
+    FileManager.default
+        .subpathsOfDirectory(atPath: path)
+        .filter { $0.hasSuffix(".json") }
+    print(names) //correct
+    let mapped : [String] =  try names.compactMap { filename in
+                    print(filename)
+                    guard !excludeFiles.contains(filename) else {
+                        return nil
+                    }
+                    let url = URL(fileURLWithPath: "\(path)/\(filename)")
+                    print(url)
+                    let jsonString = try String(contentsOf: url, encoding: .utf8)
+                    var doc = try ExtendedJSONDecoder().decode(BSONDocument.self, from: jsonString.data(using: .utf8)!)
+                    doc["name"] = .string(filename)
+                    print(doc.count)
+                    let decoder = BSONDecoder()
+                    print("initd!")
+                    print(type(of: doc))
+                    //let bson = try decoder.decode(T.self, from: doc) //errors out
+        return  "hello"
+                    //return try BSONDecoder().decode(T.self, from: doc)
+    }
+    print(mapped) //correct
+    let p : [(String, T)] = try names.compactMap { filename in
+            print(filename)
+            guard !excludeFiles.contains(filename) else {
+                return nil
+            } //correct
+            let url = URL(fileURLWithPath: "\(path)/\(filename)")
+            print(url)
+            let jsonString = try String(contentsOf: url, encoding: .utf8)
+            print("1")
+            var doc = try ExtendedJSONDecoder().decode(BSONDocument.self, from: jsonString.data(using: .utf8)!)
+            print("2")
+            doc["name"] = .string(filename)
+            print("3")
+            return try (filename, BSONDecoder().decode(T.self, from: doc))
+        }
+    print(p)
+    return p
+}
+
+/// Given a spec folder name (e.g. "crud") and optionally a subdirectory name for a folder (e.g. "read") retrieves an
+/// array of [(filename, file decoded to type T)].
+public func retrieveSpecTestFilesAsync<T: Decodable>(
+    specName: String,
+    subdirectory: String? = nil,
+    excludeFiles: [String] = [],
+    asType _: T.Type
+) async throws -> [(String, T)] {
+    var path = "\(MongoSwiftTestCase.specsPath)/\(specName)/tests"
+    if let sd = subdirectory {
+        path += "/\(sd)"
+    }
     return try FileManager.default
         .subpathsOfDirectory(atPath: path)
         .filter { $0.hasSuffix(".json") }
         .compactMap { filename in
-            //print(filename)
+            print(filename)
             guard !excludeFiles.contains(filename) else {
+                print("here")
                 return nil
             }
             let url = URL(fileURLWithPath: "\(path)/\(filename)")
             print(url)
             let jsonString = try String(contentsOf: url, encoding: .utf8)
+            print("1")
             var doc = try ExtendedJSONDecoder().decode(BSONDocument.self, from: jsonString.data(using: .utf8)!)
+            print("2")
             doc["name"] = .string(filename)
+            print("3")
             return try (filename, BSONDecoder().decode(T.self, from: doc))
         }
 }
+
 
 /// Given two documents, returns a copy of the input document with all keys that *don't*
 /// exist in `standard` removed, and with all matching keys put in the same order they
