@@ -5,25 +5,25 @@ import Nimble
 import TestsCommon
 import XCTest
 
-//struct UnifiedFailPoint: UnifiedOperationProtocol {
-//    /// The failpoint to set.
-//    let failPoint: FailPoint
-//
-//    /// The client entity to use for setting the failpoint.
-//    let client: String
-//
-//    static var knownArguments: Set<String> {
-//        ["failPoint", "client"]
-//    }
-//
-//    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
-//        let testClient = try context.entities.getEntity(id: self.client).asTestClient()
-//        let opts = RunCommandOptions(readPreference: .primary)
-//        let fpGuard = try self.failPoint.enableWithGuard(using: testClient.client, options: opts)
-//        context.enabledFailPoints.append(fpGuard)
-//        return .none
-//    }
-//}
+struct UnifiedFailPoint: UnifiedOperationProtocol {
+    /// The failpoint to set.
+    let failPoint: FailPoint
+
+    /// The client entity to use for setting the failpoint.
+    let client: String
+
+    static var knownArguments: Set<String> {
+        ["failPoint", "client"]
+    }
+
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
+        let testClient = try context.entities.getEntity(id: self.client).asTestClient()
+        let opts = RunCommandOptions(readPreference: .primary)
+        let fpGuard = try await self.failPoint.enableWithGuard(using: testClient.client, options: opts)
+        context.enabledFailPoints.append(fpGuard)
+        return .none
+    }
+}
 
 struct UnifiedAssertCollectionExists: UnifiedOperationProtocol {
     /// The collection name.
@@ -262,33 +262,33 @@ func makeLsidAssertion(client: UnifiedTestClient, same: Bool, context: Context) 
     }
 }
 
-//struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
-//    /// The failpoint to set.
-//    let failPoint: FailPoint
-//
-//    /// Identifier for the session entity with which to set the fail point.
-//    let session: String
-//
-//    static var knownArguments: Set<String> {
-//        ["failPoint", "session"]
-//    }
-//
-//    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
-//        let session = try context.entities.getEntity(id: self.session).asSession()
-//        // The mongos on which to set the fail point is determined by the session argument (after resolution to a
-//        // session entity). Test runners MUST error if the session is not pinned to a mongos server at the time this
-//        // operation is executed.
-//        guard session.pinnedServerAddress != nil else {
-//            XCTFail("Session \(self.session) unexpectedly not pinned to a mongos. Path: \(context.path)")
-//            return .none
-//        }
-//        let mongosClients = try context.internalClient.asMongosClients()
-//        guard let clientForPinnedMongos = mongosClients[session.pinnedServerAddress!] else {
-//            throw TestError(message: "Unexpectedly missing client for mongos \(session.pinnedServerAddress!)")
-//        }
-//        let fpGuard = try self.failPoint.enableWithGuard(using: clientForPinnedMongos)
-//        // add to context's list of enabled failpoints to ensure we disable it later.
-//        context.enabledFailPoints.append(fpGuard)
-//        return .none
-//    }
-//}
+struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
+    /// The failpoint to set.
+    let failPoint: FailPoint
+
+    /// Identifier for the session entity with which to set the fail point.
+    let session: String
+
+    static var knownArguments: Set<String> {
+        ["failPoint", "session"]
+    }
+
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
+        let session = try context.entities.getEntity(id: self.session).asSession()
+        // The mongos on which to set the fail point is determined by the session argument (after resolution to a
+        // session entity). Test runners MUST error if the session is not pinned to a mongos server at the time this
+        // operation is executed.
+        guard session.pinnedServerAddress != nil else {
+            XCTFail("Session \(self.session) unexpectedly not pinned to a mongos. Path: \(context.path)")
+            return .none
+        }
+        let mongosClients = try context.internalClient.asMongosClients()
+        guard let clientForPinnedMongos = mongosClients[session.pinnedServerAddress!] else {
+            throw TestError(message: "Unexpectedly missing client for mongos \(session.pinnedServerAddress!)")
+        }
+        let fpGuard = try await self.failPoint.enableWithGuard(using: clientForPinnedMongos)
+        // add to context's list of enabled failpoints to ensure we disable it later.
+        context.enabledFailPoints.append(fpGuard)
+        return .none
+    }
+}

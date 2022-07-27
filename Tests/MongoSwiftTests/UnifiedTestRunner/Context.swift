@@ -9,7 +9,7 @@ class Context {
     var entities: EntityMap
 
     /// Fail points that have been set during test execution and should be disabled on completion.
-    //var enabledFailPoints: [FailPointGuard] = []
+    var enabledFailPoints: [FailPointGuard] = []
 
     let internalClient: UnifiedTestRunner.InternalClient
 

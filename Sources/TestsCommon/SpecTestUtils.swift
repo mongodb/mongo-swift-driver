@@ -32,27 +32,27 @@ public func retrieveSpecTestFiles<T: Decodable>(
     FileManager.default
         .subpathsOfDirectory(atPath: path)
         .filter { $0.hasSuffix(".json") }
-    print(names) //correct
-    let mapped : [String] =  try names.compactMap { filename in
-                    print(filename)
-                    guard !excludeFiles.contains(filename) else {
-                        return nil
-                    }
-                    let url = URL(fileURLWithPath: "\(path)/\(filename)")
-                    print(url)
-                    let jsonString = try String(contentsOf: url, encoding: .utf8)
-                    var doc = try ExtendedJSONDecoder().decode(BSONDocument.self, from: jsonString.data(using: .utf8)!)
-                    doc["name"] = .string(filename)
-                    print(doc.count)
-                    let decoder = BSONDecoder()
-                    print("initd!")
-                    print(type(of: doc))
-                    //let bson = try decoder.decode(T.self, from: doc) //errors out
-        return  "hello"
-                    //return try BSONDecoder().decode(T.self, from: doc)
-    }
-    print(mapped) //correct
-    let p : [(String, T)] = try names.compactMap { filename in
+//    print(names) //correct
+//    let mapped : [String] =  try names.compactMap { filename in
+//                    print(filename)
+//                    guard !excludeFiles.contains(filename) else {
+//                        return nil
+//                    }
+//                    let url = URL(fileURLWithPath: "\(path)/\(filename)")
+//                    print(url)
+//                    let jsonString = try String(contentsOf: url, encoding: .utf8)
+//                    var doc = try ExtendedJSONDecoder().decode(BSONDocument.self, from: jsonString.data(using: .utf8)!)
+//                    doc["name"] = .string(filename)
+//                    //print(doc.count)
+//                    let decoder = BSONDecoder()
+//                    //print("initd!")
+//                    //print(type(of: doc))
+//                    let bson = try decoder.decode(T.self, from: doc) //errors out
+//        return  "hello"
+//                    //return try BSONDecoder().decode(T.self, from: doc)
+//    }
+//    print(mapped) //correct
+    return try names.compactMap { filename in
             print(filename)
             guard !excludeFiles.contains(filename) else {
                 return nil
@@ -67,8 +67,6 @@ public func retrieveSpecTestFiles<T: Decodable>(
             print("3")
             return try (filename, BSONDecoder().decode(T.self, from: doc))
         }
-    print(p)
-    return p
 }
 
 /// Given a spec folder name (e.g. "crud") and optionally a subdirectory name for a folder (e.g. "read") retrieves an

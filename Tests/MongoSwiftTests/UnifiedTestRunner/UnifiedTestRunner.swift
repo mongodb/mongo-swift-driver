@@ -5,7 +5,7 @@ import NIOPosix
 import TestsCommon
 
 @available(macOS 10.15, *)
-struct UnifiedTestRunner {
+class UnifiedTestRunner {
     enum InternalClient {
         /// For all topologies besides sharded, we use a single client.
         case single(MongoClient)
@@ -33,17 +33,17 @@ struct UnifiedTestRunner {
             }
             return clientMap
         }
-        func closeAll() throws {
-            switch self {
-            case let .single(c):
-                try c.syncClose()
-            case let .mongosClients(clientMap):
-                for client in clientMap.values {
-                    try client.syncClose()
-                }
-            }
-        
-        }
+//        func closeAll() throws {
+//            switch self {
+//            case let .single(c):
+//                try c.syncClose()
+//            case let .mongosClients(clientMap):
+//                for client in clientMap.values {
+//                    try client.syncClose()
+//                }
+//            }
+//
+//        }
     }
 
     let internalClient: InternalClient
@@ -72,6 +72,17 @@ struct UnifiedTestRunner {
         self.serverVersion = try await self.internalClient.anyClient.serverVersion()
         self.topologyType = try await self.internalClient.anyClient.topologyType()
         self.serverParameters = try await self.internalClient.anyClient.serverParameters()
+    }
+    
+    deinit {
+        switch internalClient {
+        case .single(let mongoClient):
+            try! mongoClient.syncClose()
+        case .mongosClients(let clientMap):
+            for client in clientMap.values {
+                try! client.syncClose()
+            }
+        }
     }
 
     func terminateOpenTransactions() async throws {
@@ -109,7 +120,7 @@ struct UnifiedTestRunner {
     /// skipped.
     func runFiles(_ files: [UnifiedTestFile], skipTests: [String: [String]] = [:]) async throws {
         for file in files {
-            print("here")
+            print("a")
             // Upon loading a file, the test runner MUST read the schemaVersion field and determine if the test file
             // can be processed further.
             guard file.schemaVersion >= Self.minSchemaVersion && file.schemaVersion <= Self.maxSchemaVersion else {
@@ -131,7 +142,7 @@ struct UnifiedTestRunner {
                 fileLevelLog("Skipping all tests from file \"\(file.description)\", was included in skip list")
                 continue
             }
-
+            print("b")
             for test in file.tests {
                 // If test.skipReason is specified, the test runner MUST skip this test and MAY use the string value to
                 // log a message.
@@ -161,7 +172,7 @@ struct UnifiedTestRunner {
                         continue
                     }
                 }
-
+                print("c")
                 // If initialData is specified, for each collectionData therein the test runner MUST drop the
                 // collection and insert the specified documents (if any) using a "majority" write concern. If no
                 // documents are specified, the test runner MUST create the collection with a "majority" write concern.
@@ -204,16 +215,16 @@ struct UnifiedTestRunner {
                         }
                     }
                 }
-
+                print("d")
                 fileLevelLog("Running test \"\(test.description)\" from file \"\(file.description)\"")
                 
                 do {
                     for (i, operation) in test.operations.enumerated() {
-                        //print("outie")
+                        print("outie")
                         try await context.withPushedElt("Operation \(i) (\(operation.name))") {
-                            //print("innie")
+                            print("innie")
                             try await operation.executeAndCheckResult(context: context)
-                            //print("done")
+                            print("done")
                         }
                     }
                     var clientEvents = [String: [CommandEvent]]()
@@ -262,10 +273,11 @@ struct UnifiedTestRunner {
                             }
                         }
                     }
-                    try self.internalClient.closeAll()
-                    //Reaches HERE
                     print("bozo!")
+                    //try self.internalClient.closeAll()
+                    //Reaches HERE
                     try await self.terminateOpenTransactions()
+                    print("airpod shawty")
                 } catch let testErr {
                     // Test runners SHOULD terminate all open transactions after each failed test by killing all
                     // sessions in the cluster.

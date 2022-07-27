@@ -22,7 +22,8 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "8.0.0")),
         .package(url: "https://github.com/apple/swift-nio", getMinNIOVersion()),
-        .package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "3.0.0"))
+        .package(path: "~/documents/swift-bson")
+        //.package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "3.0.0"))
     ],
     targets: [
         .target(name: "MongoSwiftSync", dependencies: ["MongoSwift", "NIO"]),
