@@ -125,7 +125,7 @@ private protocol CommandEventProtocol {
 public struct CommandEventStream {
     fileprivate let stream: AsyncStream<CommandEvent>
     private let cmdHandler: CommandEventHandler
-    /// Initialize the stream with a   `CommandEventHandler`
+    /// Initialize the stream with a `CommandEventHandler`
     internal init(cmdHandler: CommandEventHandler, stream: AsyncStream<CommandEvent>) {
         self.cmdHandler = cmdHandler
         self.stream = stream
@@ -139,7 +139,7 @@ public struct CommandEventStream {
 public struct SDAMEventStream {
     fileprivate let stream: AsyncStream<SDAMEvent>
     private let sdamHandler: SDAMEventHandler
-    /// Initialize the stream with a   `CommandEventHandler`
+    /// Initialize the stream with an `SDAMEventHandler`
     internal init(sdamHandler: SDAMEventHandler, stream: AsyncStream<SDAMEvent>) {
         self.sdamHandler = sdamHandler
         self.stream = stream
@@ -190,7 +190,7 @@ public struct CommandEventStreamIterator: AsyncIteratorProtocol {
     }
 
     /// Asynchronously advances to the next element and returns it, or ends the sequence if there is no next element.
-    public mutating func next() async throws -> CommandEvent? {
+    public mutating func next() async -> CommandEvent? {
         await self.iterator.next()
     }
 
@@ -212,7 +212,7 @@ public struct SDAMEventStreamIterator: AsyncIteratorProtocol {
     }
 
     /// Asynchronously advances to the next element and returns it, or ends the sequence if there is no next element.
-    public mutating func next() async throws -> SDAMEvent? {
+    public mutating func next() async -> SDAMEvent? {
         await self.iterator.next()
     }
 

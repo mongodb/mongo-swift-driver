@@ -277,11 +277,14 @@ public class MongoClient {
     /// - This value is only read in `deinit`. That occurs exactly once after the above modification is complete.
     private var wasClosed = false
 
-    /// Handlers for command monitoring events.
+    /// Handlers for command monitoring events. Should only be accessed when holding `eventHandlerLock`.
     internal var commandEventHandlers: [CommandEventHandler]
 
-    /// Handlers for SDAM monitoring events.
+    /// Handlers for SDAM monitoring events. Should only be accessed when holding `eventHandlerLock`.
     internal var sdamEventHandlers: [SDAMEventHandler]
+
+    /// Lock used to synchronize access to the event handler arrays to prevent data races.
+    private let eventHandlerLock: Lock = .init()
 
     /// Counter for generating client _ids.
     internal static var clientIDGenerator = NIOAtomic<Int>.makeAtomic(value: 0)
@@ -303,9 +306,6 @@ public class MongoClient {
 
     /// The write concern set on this client, or nil if one is not set.
     public let writeConcern: WriteConcern?
-
-    /// Lock used to synchronize access to the event handler arrays to prevent data races.
-    private let eventHandlerLock: Lock = .init()
 
     /**
      * Create a new client for a MongoDB deployment. For options that included in both the `MongoConnectionString`
@@ -408,7 +408,7 @@ public class MongoClient {
 #if compiler(>=5.5.2) && canImport(_Concurrency)
     @available(macOS 10.15, *)
     internal class CmdHandler: CommandEventHandler {
-        private var continuation: AsyncStream<CommandEvent>.Continuation
+        private let continuation: AsyncStream<CommandEvent>.Continuation
         internal init(continuation: AsyncStream<CommandEvent>.Continuation) {
             self.continuation = continuation
         }
@@ -425,7 +425,7 @@ public class MongoClient {
 
     @available(macOS 10.15, *)
     internal class SDAMHandler: SDAMEventHandler {
-        private var continuation: AsyncStream<SDAMEvent>.Continuation
+        private let continuation: AsyncStream<SDAMEvent>.Continuation
         internal init(continuation: AsyncStream<SDAMEvent>.Continuation) {
             self.continuation = continuation
         }
@@ -449,7 +449,8 @@ public class MongoClient {
      *      print(event)
      *  }
      *  ```
-     * Wrapping in a `Task { ... }` may be desired for asynchronicity.
+     * If you are looping over the events in the stream, you may wish to do so in a dedicated `Task`.
+     * The stream will be ended automatically if the   `Task` it is running in is cancelled.
      * - Returns: A `CommandEventStream` that implements `AsyncSequence`.
      * - Note: Only the most recent 100 events are stored in the stream.
      */
@@ -481,7 +482,8 @@ public class MongoClient {
      *      print(event)
      *  }
      *  ```
-     * Wrapping in a `Task { ... }` may be desired for asynchronicity.
+     * If you are looping over the events in the stream, you may wish to do so in a dedicated `Task`.
+     * The stream will be ended automatically if the   `Task` it is running in is cancelled.
      * - Returns: An `SDAMEventStream` that implements `AsyncSequence`.
      * - Note: Only the most recent 100 events are stored in the stream.
      */

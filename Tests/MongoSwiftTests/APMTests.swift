@@ -86,52 +86,50 @@ final class APMTests: MongoSwiftTestCase {
         expect(numEventsBuffer).to(beLessThan(120))
     }
 
-    actor TaskCounter {
-        var taskCounter = 0
-
-        func incr() {
-            self.taskCounter += 1
-        }
-    }
-
     /// Helper that tests kicking off multiple streams concurrently
     fileprivate func concurrentStreamTestHelper<T>(f: @escaping (MongoClient) -> T) async throws
         where T: AsyncSequence, T.Element: StreamableEvent
     {
-        var taskArr: [Task<[EventType], Error>] = []
-        let taskActor = TaskCounter()
-        try await self.withTestNamespace { client, db, coll in
-            // Kick off 5 streams
-            for _ in 0...4 {
-                let task = Task { () -> [EventType] in
-                    await taskActor.incr()
-                    var eventArr: [EventType] = []
-                    for try await event in f(client) {
-                        eventArr.append(event.type)
+        let taskCounter = NIOAtomic<Int>.makeAtomic(value: 0)
+        let concurrentTaskGroupCorrect = try await withThrowingTaskGroup(
+            of: [EventType].self,
+            returning: [[EventType]].self
+        ) { taskGroup in
+            // Client used for stream and then closed with taskGroup in scope to ensure all tasks return
+            try await self.withTestNamespace { client, db, coll in
+                for _ in 0...4 {
+                    // Add 5 tasks
+                    taskGroup.addTask {
+                        taskCounter.add(1)
+                        var eventArr: [EventType] = []
+                        for try await event in f(client) {
+                            eventArr.append(event.type)
+                        }
+                        return eventArr
                     }
-
-                    return eventArr
                 }
-                taskArr.append(task)
+                // Ensure all tasks start, then run commands
+                try await assertIsEventuallyTrue(description: "each task is started") {
+                    taskCounter.load() == 5
+                }
+                try await db.runCommand(["ping": 1])
+                try await coll.insertOne(["hello": "world"])
             }
-
-            // Tasks start
-            try await assertIsEventuallyTrue(description: "each task is started") {
-                await taskActor.taskCounter == 5
+            var taskArr: [[EventType]] = []
+            for try await result in taskGroup {
+                taskArr.append(result)
             }
-
-            try await db.runCommand(["ping": 1])
-            try await coll.insertOne(["hello": "world"])
+            return taskArr
         }
 
         // Expect all tasks received the same number (>0) of events
         for i in 0...4 {
-            let eventArrOutput = try await taskArr[i].value
+            let eventArrOutput = concurrentTaskGroupCorrect[i]
             expect(eventArrOutput.count).to(beGreaterThan(0))
         }
         for i in 1...4 {
-            let eventArrOld = try await taskArr[i - 1].value
-            let eventArrCurr = try await taskArr[i].value
+            let eventArrOld = concurrentTaskGroupCorrect[i]
+            let eventArrCurr = concurrentTaskGroupCorrect[i]
             expect(eventArrOld).to(equal(eventArrCurr))
         }
     }
