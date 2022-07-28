@@ -287,75 +287,23 @@ class UnifiedTestRunner {
                         }
                     }
                     print("done!")
-                    //try self.internalClient.closeAll()
                     //Reaches HERE
                     try await self.terminateOpenTransactions()
                     print("i have closed gn")
-                    //print(try await self.internalClient.anyClient.supportsTransactions()) //internal client in scope?
-                    print("loopy")
-                    var count = 0
-                    for entity in context.entities.values {
-                            count += 1
-                            print(count)
-                            switch(entity) {
-                            case let .client(testClient):
-                                print("I am a client")
-                                //let result = try await closeCursorsAndSessions(client: testClient.client)
-                            case let .changeStream(changeStream):
-                                print("I am a water stream")
-                                try changeStream.kill().wait()
-                            case let .session(session):
-                                print("sesh?")
-                                try session.end().wait()
-                            default:
-                                print("moving on")
-                            }
-                    }
-                    for entity in context.entities.values {
-                        switch entity {
-                        case let .client(c):
-                            try await c.client.close()
-                        default:
-                            print("def skin")
-                        }
-                    }
+                    try await closeEntities(context: context)
                 print("returning to next test")
                 } catch let testErr {
                     // Test runners SHOULD terminate all open transactions after each failed test by killing all
                     // sessions in the cluster.
                     do {
+                        try await closeEntities(context: context)
                         try await self.terminateOpenTransactions()
-                        var count = 0
-                        for entity in context.entities.values {
-                            count += 1
-                            print(count)
-                            switch(entity) {
-                            case let .client(testClient):
-                                print("I am a client")
-                                //let result = try await closeCursorsAndSessions(client: testClient.client)
-                            case let .changeStream(changeStream):
-                                print("I am a water stream")
-                                try changeStream.kill().wait()
-                            case let .session(session):
-                                print("sesh?")
-                                try session.end().wait()
-                            default:
-                                print("moving on")
-                            }
-                        }
-                        for entity in context.entities.values {
-                            switch entity {
-                            case let .client(c):
-                                try await c.client.close()
-                            default:
-                                print("def skin")
-                            }
-                        }
+                        
+                        
                     } catch {
                         print("Failed to terminate open transactions: \(error)")
                     }
                     print(testErr.localizedDescription)
-                    try self.internalClient.anyClient.syncClose()
                     throw testErr
                 }
 
@@ -383,6 +331,35 @@ class UnifiedTestRunner {
             }
         }
         return (killSesh, killCurse)
+    }
+    
+    func closeEntities(context: Context) async throws {
+        var count = 0
+        for entity in context.entities.values {
+            count += 1
+            print(count)
+            switch(entity) {
+            case let .client(testClient):
+                print("I am a client")
+                //let result = try await closeCursorsAndSessions(client: testClient.client)
+            case let .changeStream(changeStream):
+                print("I am a water stream")
+                try changeStream.kill().wait()
+            case let .session(session):
+                print("sesh?")
+                try session.end().wait()
+            default:
+                print("moving on")
+            }
+        }
+        for entity in context.entities.values {
+            switch entity {
+            case let .client(c):
+                try await c.client.close()
+            default:
+                print("def skin")
+            }
+        }
     }
 }
 #endif

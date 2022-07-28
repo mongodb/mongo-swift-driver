@@ -110,7 +110,7 @@ struct UnifiedOperation: Decodable {
                 return
             }
         } catch {
-            print(self.expectedResult!)
+            print(self.expectedResult)
             switch self.expectedResult {
             case .ignoreResultAndError:
                 return

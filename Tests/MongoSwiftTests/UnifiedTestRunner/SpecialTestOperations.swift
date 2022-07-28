@@ -17,10 +17,15 @@ struct UnifiedFailPoint: UnifiedOperationProtocol {
     }
 
     func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
+        print("5 elixer no targ")
         let testClient = try context.entities.getEntity(id: self.client).asTestClient()
+        print("4 elixer no targ")
         let opts = RunCommandOptions(readPreference: .primary)
+        print("3 elixer no targ")
         let fpGuard = try await self.failPoint.enableWithGuard(using: testClient.client, options: opts)
+        print("2 elixer no targ")
         context.enabledFailPoints.append(fpGuard)
+        print("1 elixer no targ")
         return .none
     }
 }
@@ -274,6 +279,7 @@ struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
     }
 
     func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
+        print("5 elixer targeted")
         let session = try context.entities.getEntity(id: self.session).asSession()
         // The mongos on which to set the fail point is determined by the session argument (after resolution to a
         // session entity). Test runners MUST error if the session is not pinned to a mongos server at the time this
