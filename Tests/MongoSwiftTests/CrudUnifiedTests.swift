@@ -16,14 +16,12 @@ final class CrudUnifiedTests: MongoSwiftTestCase {
             // TODO: SWIFT-1515 unskip
             "estimatedDocumentCount-comment.json"
         ]
-        print("yo")
         let files = try retrieveSpecTestFiles(
             specName: "crud",
             subdirectory: "unified",
             excludeFiles: skipFiles,
             asType: UnifiedTestFile.self
         )
-        print("yo")
         let runner = try await UnifiedTestRunner()
         print("utr set up")
         try await runner.runFiles(files.map { $0.1 })
