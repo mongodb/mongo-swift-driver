@@ -68,7 +68,7 @@ func assertIsEventuallyTrue(
                 try? await Task.sleep(seconds: sleepInterval)
                 continue
             }
-            // task succeeded to we return true
+            // task succeeded so we return true
             return true
         }
         // Ran out of time before we succeeded, so return false
