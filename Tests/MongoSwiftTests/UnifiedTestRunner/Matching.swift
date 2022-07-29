@@ -1,3 +1,4 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
 @testable import MongoSwift
 import TestsCommon
@@ -605,3 +606,4 @@ func equals<T: Equatable>(expected: T, actual: T, context: Context) throws {
         throw NonMatchingError(expected: expected, actual: actual, context: context)
     }
 }
+#endif
