@@ -1,3 +1,4 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
 @testable import MongoSwift
 import TestsCommon
@@ -127,6 +128,7 @@ enum EntityDescription: Decodable {
 }
 
 /// Wrapper around a MongoClient used for test runner purposes.
+@available(macOS 10.15.0, *)
 struct UnifiedTestClient {
     let client: MongoClient
 
@@ -316,3 +318,4 @@ extension EntityMap {
         return try self.getEntity(id: id).asSession()
     }
 }
+#endif
