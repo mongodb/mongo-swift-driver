@@ -312,6 +312,7 @@ enum SpecialOperator {
 }
 
 /// Determines if the events in `actual` match the events in `expected`.
+@available(macOS 10.15, *)
 func matchesEvents(
     expected: [ExpectedEvent],
     actual: [CommandEvent],
