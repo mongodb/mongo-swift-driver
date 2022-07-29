@@ -1,8 +1,10 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
 import MongoSwift
 import TestsCommon
 
 /// Protocol which all operations supported by the unified test runner conform to.
+@available(macOS 10.15, *)
 protocol UnifiedOperationProtocol: Decodable {
     /// Set of supported arguments for the operation.
     static var knownArguments: Set<String> { get }
@@ -42,6 +44,7 @@ enum UnifiedOperationResult {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedOperation: Decodable {
     /// Represents an object on which to perform an operation.
     enum Object: RawRepresentable, Decodable {
@@ -277,6 +280,7 @@ struct UnifiedOperation: Decodable {
 }
 
 /// Placeholder for an unsupported operation.
+@available(macOS 10.15, *)
 struct Placeholder: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
@@ -356,3 +360,4 @@ struct ExpectedError: Decodable {
     /// This field is only used in cases where the error includes a result (e.g. bulkWrite).
     let expectResult: BSON?
 }
+#endif

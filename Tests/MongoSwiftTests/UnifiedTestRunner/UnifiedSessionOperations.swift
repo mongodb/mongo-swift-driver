@@ -1,7 +1,7 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
-// swiftlint:disable duplicate_imports
-@testable import class MongoSwift.ClientSession
 
+@available(macOS 10.15, *)
 struct EndSession: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
@@ -13,6 +13,7 @@ struct EndSession: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedStartTransaction: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
@@ -23,6 +24,7 @@ struct UnifiedStartTransaction: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedCommitTransaction: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
@@ -33,6 +35,7 @@ struct UnifiedCommitTransaction: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedAbortTransaction: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
@@ -42,3 +45,4 @@ struct UnifiedAbortTransaction: UnifiedOperationProtocol {
         return .none
     }
 }
+#endif

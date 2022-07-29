@@ -1,7 +1,9 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
 @testable import MongoSwift
 import TestsCommon
 
+@available(macOS 10.15, *)
 struct UnifiedAggregate: UnifiedOperationProtocol {
     /// Aggregation pipeline.
     let pipeline: [BSONDocument]
@@ -49,6 +51,7 @@ struct UnifiedAggregate: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedCreateIndex: UnifiedOperationProtocol {
     /// The name of the index to create.
     let name: String
@@ -73,6 +76,7 @@ struct UnifiedCreateIndex: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedListIndexes: UnifiedOperationProtocol {
     /// Optional identifier for a session entity to use.
     let session: String?
@@ -111,6 +115,7 @@ struct UnifiedListIndexes: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedBulkWrite: UnifiedOperationProtocol {
     /// Writes to perform.
     let requests: [WriteModel<BSONDocument>]
@@ -151,6 +156,7 @@ struct UnifiedBulkWrite: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedFind: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -187,6 +193,7 @@ struct UnifiedFind: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedCreateFindCursor: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -222,6 +229,7 @@ struct UnifiedCreateFindCursor: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedFindOneAndReplace: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -269,6 +277,7 @@ struct UnifiedFindOneAndReplace: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -329,6 +338,7 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedFindOneAndDelete: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -361,6 +371,7 @@ struct UnifiedFindOneAndDelete: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedDeleteOne: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -400,6 +411,7 @@ struct UnifiedDeleteOne: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedDeleteMany: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -433,6 +445,7 @@ struct UnifiedDeleteMany: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedInsertOne: UnifiedOperationProtocol {
     /// Document to insert.
     let document: BSONDocument
@@ -471,6 +484,7 @@ struct UnifiedInsertOne: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedInsertMany: UnifiedOperationProtocol {
     /// Documents to insert.
     let documents: [BSONDocument]
@@ -510,6 +524,7 @@ struct UnifiedInsertMany: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedReplaceOne: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
@@ -558,6 +573,7 @@ struct UnifiedReplaceOne: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedCountDocuments: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
@@ -592,6 +608,7 @@ struct UnifiedCountDocuments: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedEstimatedDocumentCount: UnifiedOperationProtocol {
     let options: EstimatedDocumentCountOptions?
 
@@ -614,6 +631,7 @@ struct UnifiedEstimatedDocumentCount: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedRename: UnifiedOperationProtocol {
     /// Field that defines what the collection is renamed to.
     let to: String
@@ -630,6 +648,7 @@ struct UnifiedRename: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedDistinct: UnifiedOperationProtocol {
     /// Field to retrieve distinct values for.
     let fieldName: String
@@ -676,6 +695,7 @@ struct UnifiedDistinct: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedUpdateOne: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
@@ -735,6 +755,7 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedUpdateMany: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
@@ -801,3 +822,4 @@ enum UpdateModel: Decodable {
         }
     }
 }
+#endif

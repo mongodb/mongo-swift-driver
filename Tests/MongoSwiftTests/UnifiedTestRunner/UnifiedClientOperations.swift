@@ -1,6 +1,8 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 @testable import MongoSwift
 import Nimble
 
+@available(macOS 10.15, *)
 struct AssertNumberConnectionsCheckedOut: UnifiedOperationProtocol {
     /// The name of the client entity to perform the assertion on.
     let client: String
@@ -12,7 +14,7 @@ struct AssertNumberConnectionsCheckedOut: UnifiedOperationProtocol {
         ["client", "connections"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let testClient = try context.entities.getEntity(id: self.client).asTestClient()
         let actualCheckedOut = testClient.client.connectionPool.checkedOutConnections
         expect(actualCheckedOut).to(
@@ -23,6 +25,7 @@ struct AssertNumberConnectionsCheckedOut: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedListDatabases: UnifiedOperationProtocol {
     /// Optional identifier for a session entity to use.
     let session: String?
@@ -41,3 +44,4 @@ struct UnifiedListDatabases: UnifiedOperationProtocol {
         return .bson(.array(encoded.map { .document($0) }))
     }
 }
+#endif

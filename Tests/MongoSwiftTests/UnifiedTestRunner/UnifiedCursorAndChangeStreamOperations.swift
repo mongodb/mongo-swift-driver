@@ -1,7 +1,9 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
 import MongoSwift
 import TestsCommon
 
+@available(macOS 10.15, *)
 struct CreateChangeStream: UnifiedOperationProtocol {
     /// Pipeline for the change stream.
     let pipeline: [BSONDocument]
@@ -62,6 +64,7 @@ struct CreateChangeStream: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct IterateUntilDocumentOrError: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
@@ -84,6 +87,7 @@ struct IterateUntilDocumentOrError: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedCloseCursor: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
@@ -101,3 +105,4 @@ struct UnifiedCloseCursor: UnifiedOperationProtocol {
         return .none
     }
 }
+#endif

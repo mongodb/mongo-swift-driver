@@ -1,6 +1,8 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 
 /// Context passed around while executing tests.
+@available(macOS 10.15, *)
 class Context {
     /// Path taken to get to the current state.
     var path: [String]
@@ -41,3 +43,4 @@ class Context {
         return try await work()
     }
 }
+#endif

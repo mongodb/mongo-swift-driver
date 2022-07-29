@@ -1,5 +1,8 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import SwiftBSON
+
+@available(macOS 10.15, *)
 struct UnifiedCreateCollection: UnifiedOperationProtocol {
     /// The collection to create.
     let collection: String
@@ -35,6 +38,7 @@ struct UnifiedCreateCollection: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedDropCollection: UnifiedOperationProtocol {
     /// The collection to drop.
     let collection: String
@@ -54,6 +58,7 @@ struct UnifiedDropCollection: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedRunCommand: UnifiedOperationProtocol {
     /// The name of the command to run.
     let commandName: String
@@ -85,6 +90,7 @@ struct UnifiedRunCommand: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedListCollections: UnifiedOperationProtocol {
     /// Filter to use for the command.
     let filter: BSONDocument?
@@ -119,3 +125,4 @@ struct UnifiedListCollections: UnifiedOperationProtocol {
         return .rootDocumentArray(try results.map { try BSONEncoder().encode($0) })
     }
 }
+#endif
