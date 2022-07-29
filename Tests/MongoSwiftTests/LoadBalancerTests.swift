@@ -1,7 +1,9 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import Nimble
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class LoadBalancerTests: MongoSwiftTestCase {
     let skipFiles: [String] = [
         // We don't support this option.
@@ -63,3 +65,4 @@ final class LoadBalancerTests: MongoSwiftTestCase {
         try await runner.runFiles(tests, skipTests: skipTests)
     }
 }
+#endif

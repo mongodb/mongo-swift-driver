@@ -25,10 +25,6 @@ private func checkReadPreference<T: ReadPreferenceable>(
 }
 
 final class ReadPreferenceTests: MongoSwiftTestCase {
-    override func setUp() {
-        self.continueAfterFailure = false
-    }
-
     func testMode() {
         expect(ReadPreference.primary.mode).to(equal(.primary))
         expect(ReadPreference.primaryPreferred.mode).to(equal(.primaryPreferred))

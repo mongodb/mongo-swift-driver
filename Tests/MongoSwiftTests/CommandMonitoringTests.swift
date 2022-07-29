@@ -1,15 +1,11 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import Nimble
 import TestsCommon
 import XCTest
 
-let center = NotificationCenter.default
-
+@available(macOS 10.15, *)
 final class CommandMonitoringTests: MongoSwiftTestCase {
-    override func setUp() {
-        self.continueAfterFailure = false
-    }
-
     func testCommandMonitoringUnified() async throws {
         // these require that command events expose server connection IDs.
         // TODO: SWIFT-1262 Unskip.
@@ -28,3 +24,4 @@ final class CommandMonitoringTests: MongoSwiftTestCase {
         try await runner.runFiles(files)
     }
 }
+#endif

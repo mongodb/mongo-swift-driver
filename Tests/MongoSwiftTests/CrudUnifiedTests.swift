@@ -1,7 +1,9 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import Nimble
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class CrudUnifiedTests: MongoSwiftTestCase {
     func testCrudUnified() async throws {
         let skipFiles: [String] = [
@@ -24,3 +26,4 @@ final class CrudUnifiedTests: MongoSwiftTestCase {
         try await runner.runFiles(files.map { $0.1 })
     }
 }
+#endif

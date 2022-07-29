@@ -1,8 +1,10 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 @testable import MongoSwift
 import Nimble
 import NIO
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class ClientSessionTests: MongoSwiftTestCase {
     func testSession() throws {
         try self.withTestNamespace { client, _, coll in
@@ -59,3 +61,4 @@ final class ClientSessionTests: MongoSwiftTestCase {
         try await runner.runFiles(tests.map { $0.1 })
     }
 }
+#endif

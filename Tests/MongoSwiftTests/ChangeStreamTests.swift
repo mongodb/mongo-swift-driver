@@ -1,3 +1,4 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
 import MongoSwift
 import Nimble
@@ -5,6 +6,7 @@ import NIO
 import NIOConcurrencyHelpers
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class ChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamNext() throws {
         try self.withTestClient { client in
@@ -175,3 +177,4 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         try await testRunner.runFiles(tests)
     }
 }
+#endif

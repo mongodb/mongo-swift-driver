@@ -1,12 +1,10 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import Nimble
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class UnifiedRunnerTests: MongoSwiftTestCase {
-    override func setUp() {
-        self.continueAfterFailure = false
-    }
-
     func testSchemaVersion() {
         let oneTwoThree = SchemaVersion(rawValue: "1.2.3")
         expect(oneTwoThree).toNot(beNil())
@@ -184,3 +182,4 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         }
     }
 }
+#endif

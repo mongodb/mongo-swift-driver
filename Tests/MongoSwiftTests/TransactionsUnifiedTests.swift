@@ -1,13 +1,11 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
 import MongoSwift
 import Nimble
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class TransactionsTests: MongoSwiftTestCase {
-    override func setUp() {
-        self.continueAfterFailure = false
-    }
-
     func testTransactionsUnified() async throws {
         let files = try retrieveSpecTestFiles(
             specName: "transactions",
@@ -18,3 +16,4 @@ final class TransactionsTests: MongoSwiftTestCase {
         try await runner.runFiles(files.map { $0.1 })
     }
 }
+#endif

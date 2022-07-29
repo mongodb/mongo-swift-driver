@@ -1,14 +1,12 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
 import MongoSwift
 import Nimble
 import TestsCommon
 import XCTest
 
+@available(macOS 10.15, *)
 final class RetryableWritesUnifiedTests: MongoSwiftTestCase {
-    override func setUp() {
-        self.continueAfterFailure = false
-    }
-
     func testRetryableWritesUnified() async throws {
         let tests = try retrieveSpecTestFiles(
             specName: "retryable-writes",
@@ -20,3 +18,4 @@ final class RetryableWritesUnifiedTests: MongoSwiftTestCase {
         try await runner.runFiles(tests)
     }
 }
+#endif

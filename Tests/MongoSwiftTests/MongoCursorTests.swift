@@ -10,11 +10,6 @@ private let doc2: BSONDocument = ["_id": 2, "x": 2]
 private let doc3: BSONDocument = ["_id": 3, "x": 3]
 
 final class AsyncMongoCursorTests: MongoSwiftTestCase {
-    override func setUp() {
-        super.setUp()
-        self.continueAfterFailure = false
-    }
-
     func testNonTailableCursor() throws {
         try self.withTestNamespace { _, db, coll in
             // query empty collection
