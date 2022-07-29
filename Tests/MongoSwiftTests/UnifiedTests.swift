@@ -101,13 +101,12 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         )
 
         for (_, test) in validFailTests {
-            //work around to expect(try await ...) bc expect is sync
+            // work around to expect(try await ...) bc expect is sync
             do {
                 try await runner.runFiles([test])
             } catch {
                 expect(error).toNot(beNil())
             }
-            
         }
     }
 

@@ -1,6 +1,6 @@
 import Foundation
-import TestsCommon
 @testable import MongoSwift
+import TestsCommon
 
 /// Generic error thrown when matching fails, containing the expected and actual values as well as the path taken to
 /// get to them for nested assertions.

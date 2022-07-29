@@ -7,7 +7,7 @@ final class TransactionsTests: MongoSwiftTestCase {
     override func setUp() {
         self.continueAfterFailure = false
     }
-    
+
     func testTransactionsUnified() async throws {
         let files = try retrieveSpecTestFiles(
             specName: "transactions",

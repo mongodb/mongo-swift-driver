@@ -196,16 +196,11 @@ class UnifiedTestCommandMonitor: CommandEventHandler {
     }
 
     func disable() throws -> [CommandEvent] {
-        print("disable1")
         guard self.monitoring else {
-            print("disablesad")
             throw TestError(message: "TestCommandMonitor is already disabled")
         }
-        print("disable2")
         self.monitoring = false
-        print("disable3")
         defer { self.events.removeAll() }
-        print("disable4")
         return self.events
     }
 }

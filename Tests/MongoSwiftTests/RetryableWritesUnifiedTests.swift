@@ -4,13 +4,11 @@ import Nimble
 import TestsCommon
 import XCTest
 
-
 final class RetryableWritesUnifiedTests: MongoSwiftTestCase {
     override func setUp() {
         self.continueAfterFailure = false
     }
-    
-    
+
     func testRetryableWritesUnified() async throws {
         let tests = try retrieveSpecTestFiles(
             specName: "retryable-writes",

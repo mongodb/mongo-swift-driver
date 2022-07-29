@@ -85,7 +85,7 @@ internal struct FailPoint: Decodable {
         self.failPoint = ordered
     }
 
-    internal func enable (
+    internal func enable(
         using client: MongoClient,
         options: RunCommandOptions? = nil
     ) async throws {
@@ -135,6 +135,7 @@ internal struct FailPoint: Decodable {
         internal func toBSON() -> BSON {
             switch self {
             case let .times(i):
+                print("sign of the times")
                 return ["times": BSON(i)]
             case let .activationProbability(d):
                 return ["activationProbability": .double(d)]

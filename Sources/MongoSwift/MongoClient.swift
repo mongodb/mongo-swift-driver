@@ -415,21 +415,15 @@ public class MongoClient {
      * down.
      */
     public func close() -> EventLoopFuture<Void> {
-        print("s")
         let closeResult = self.operationExecutor.execute(on: nil) {
-            print("h")
             try self.connectionPool.close()
-            print("y")
         }
         .flatMap {
             self.operationExecutor.shutdown()
         }
-        print("a")
         closeResult.whenComplete { _ in
-            print("w")
             self.wasClosed = true
         }
-        print("t")
 
         return closeResult
     }
@@ -445,13 +439,9 @@ public class MongoClient {
      * This method must complete before the `EventLoopGroup` provided to this client's constructor is shut down.
      */
     public func syncClose() throws {
-        print("a")
         try self.connectionPool.close()
-        print("i")
         try self.operationExecutor.syncShutdown()
-        print("r")
         self.wasClosed = true
-        print("p")
     }
 
     /**

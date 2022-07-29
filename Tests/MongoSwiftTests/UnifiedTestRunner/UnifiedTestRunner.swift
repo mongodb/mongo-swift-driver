@@ -33,17 +33,6 @@ class UnifiedTestRunner {
             }
             return clientMap
         }
-//        func closeAll() throws {
-//            switch self {
-//            case let .single(c):
-//                try c.syncClose()
-//            case let .mongosClients(clientMap):
-//                for client in clientMap.values {
-//                    try client.syncClose()
-//                }
-//            }
-//
-//        }
     }
 
     let internalClient: InternalClient
@@ -55,7 +44,6 @@ class UnifiedTestRunner {
     static let maxSchemaVersion = SchemaVersion(rawValue: "1.7.0")!
 
     init() async throws {
-        print("init'ing")
         switch MongoSwiftTestCase.topologyType {
         case .sharded:
             var mongosClients = [ServerAddress: MongoClient]()
@@ -66,7 +54,6 @@ class UnifiedTestRunner {
             }
             self.internalClient = .mongosClients(mongosClients)
         default:
-            print("default mode")
             let client = try MongoClient.makeAsyncTestClient()
             self.internalClient = .single(client)
         }
@@ -74,18 +61,6 @@ class UnifiedTestRunner {
         self.topologyType = try await self.internalClient.anyClient.topologyType()
         self.serverParameters = try await self.internalClient.anyClient.serverParameters()
     }
-//
-//    deinit {
-//        print("I am dying....")
-//        switch internalClient {
-//        case .single(let mongoClient):
-//            try! mongoClient.syncClose()
-//        case .mongosClients(let clientMap):
-//            for client in clientMap.values {
-//                try! client.syncClose()
-//            }
-//        }
-//    }
 
     func terminateOpenTransactions() async throws {
         // Using the internal MongoClient, execute the killAllSessions command on either the primary or, if
@@ -101,11 +76,12 @@ class UnifiedTestRunner {
             do {
                 print("dna polymerase")
                 let opts = RunCommandOptions(readPreference: .primary)
-                let killSesh = try await self.internalClient.anyClient.db("admin").runCommand(["killAllSessions": []], options: opts)
-                //let killCursor = try await self.internalClient.anyClient.db("admin").runCommand(["killCursors": [], "cursors" : []], options: opts)
+                _ = try await self.internalClient.anyClient.db("admin").runCommand(
+                    ["killAllSessions": []], options: opts
+                )
                 print("rna polymerase")
-                //print(killSesh)
-                //print(killCursor)
+                // print(killSesh)
+                // print(killCursor)
             } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
         case .sharded, .shardedReplicaSet:
             for (_, client) in try self.internalClient.asMongosClients() {
@@ -128,7 +104,6 @@ class UnifiedTestRunner {
     /// skipped.
     func runFiles(_ files: [UnifiedTestFile], skipTests: [String: [String]] = [:]) async throws {
         for file in files {
-            print("a")
             // Upon loading a file, the test runner MUST read the schemaVersion field and determine if the test file
             // can be processed further.
             guard file.schemaVersion >= Self.minSchemaVersion && file.schemaVersion <= Self.maxSchemaVersion else {
@@ -150,10 +125,7 @@ class UnifiedTestRunner {
                 fileLevelLog("Skipping all tests from file \"\(file.description)\", was included in skip list")
                 continue
             }
-            print("b")
-            print(file.tests.count)
             for test in file.tests {
-                print("attending a test")
                 // If test.skipReason is specified, the test runner MUST skip this test and MAY use the string value to
                 // log a message.
                 if let skipReason = test.skipReason {
@@ -182,7 +154,6 @@ class UnifiedTestRunner {
                         continue
                     }
                 }
-                print("c")
                 // If initialData is specified, for each collectionData therein the test runner MUST drop the
                 // collection and insert the specified documents (if any) using a "majority" write concern. If no
                 // documents are specified, the test runner MUST create the collection with a "majority" write concern.
@@ -192,7 +163,7 @@ class UnifiedTestRunner {
                         let db = self.internalClient.anyClient.db(collData.databaseName)
                         let collOpts = MongoCollectionOptions(writeConcern: .majority)
                         let coll = db.collection(collData.collectionName, options: collOpts)
-                        let _ = try await coll.drop()
+                        _ = try await coll.drop()
 
                         guard !collData.documents.isEmpty else {
                             _ = try await db.createCollection(
@@ -202,7 +173,7 @@ class UnifiedTestRunner {
                             continue
                         }
 
-                        let _ = try await coll.insertMany(collData.documents)
+                        _ = try await coll.insertMany(collData.documents)
                     }
                 }
 
@@ -225,9 +196,8 @@ class UnifiedTestRunner {
                         }
                     }
                 }
-                print("d")
                 fileLevelLog("Running test \"\(test.description)\" from file \"\(file.description)\"")
-                
+
                 do {
                     for (i, operation) in test.operations.enumerated() {
                         print("outie")
@@ -240,11 +210,11 @@ class UnifiedTestRunner {
                     var clientEvents = [String: [CommandEvent]]()
                     // If any event listeners were enabled on any client entities, the test runner MUST now disable
                     // those event listeners.
-                    //try await self.terminateOpenTransactions()
+                    // try await self.terminateOpenTransactions()
                     for (id, client) in context.entities.compactMapValues({ try? $0.asTestClient() }) {
                         clientEvents[id] = try client.stopCapturingEvents()
-                        //print(clientEvents[id]!)
-                        //try await client.client.close()
+                        // print(clientEvents[id]!)
+                        // try await client.client.close()
                     }
                     if let expectEvents = test.expectEvents {
                         // TODO: SWIFT-1321 don't skip CMAP event assertions here.
@@ -262,7 +232,6 @@ class UnifiedTestRunner {
                                     ignoreExtraEvents: expectedEventList.ignoreExtraEvents
                                 )
                             }
-                            
                         }
                     }
                     if let expectedOutcome = test.outcome {
@@ -287,77 +256,50 @@ class UnifiedTestRunner {
                         }
                     }
                     print("done!")
-                    //Reaches HERE
                     try await self.terminateOpenTransactions()
+                    print("terminator")
+                    await context.disableFailpoints()
                     print("i have closed gn")
-                    try await closeEntities(context: context)
-                print("returning to next test")
+                    try await self.closeEntities(context: context)
+                    print("returning to next test")
                 } catch let testErr {
                     // Test runners SHOULD terminate all open transactions after each failed test by killing all
                     // sessions in the cluster.
                     do {
                         try await closeEntities(context: context)
+                        await context.disableFailpoints()
                         try await self.terminateOpenTransactions()
-                        
-                        
                     } catch {
                         print("Failed to terminate open transactions: \(error)")
                     }
-                    print(testErr.localizedDescription)
                     throw testErr
                 }
-
-            }//Entities go out of scope and dont close before deinit'ing
-            print("I am outside the test loop")
+            }
         }
-        print("i am outside the file loop")
         try await self.internalClient.anyClient.close()
     }
-    
-    func closeCursorsAndSessions(client : MongoClient) async throws -> ([BSONDocument], [BSONDocument]){
-        
-        let opts = RunCommandOptions(readPreference: .primary)
-        var killSesh : [BSONDocument] = []
-        var killCurse : [BSONDocument] = []
-        let dbList = try await client.listMongoDatabases()
-        for db in dbList {
-            let killSession = try await db.runCommand(["killAllSessions": []], options: opts)
-            killSesh.append(killSession)
-            let collList = try await db.listCollectionNames()
-            for coll in collList {
-                let bson = BSON(stringLiteral: coll)
-                let output = try await db.runCommand(["killCursors" : bson, "cursors" : []], options: opts)
-                killCurse.append(output)
-            }
-        }
-        return (killSesh, killCurse)
-    }
-    
+
     func closeEntities(context: Context) async throws {
-        var count = 0
+        // Close streams and cursors
         for entity in context.entities.values {
-            count += 1
-            print(count)
-            switch(entity) {
-            case let .client(testClient):
-                print("I am a client")
-                //let result = try await closeCursorsAndSessions(client: testClient.client)
+            switch entity {
             case let .changeStream(changeStream):
-                print("I am a water stream")
-                try changeStream.kill().wait()
+                // Operations doesnt exist in async extension
+                try await changeStream.kill().get()
             case let .session(session):
-                print("sesh?")
-                try session.end().wait()
+                // Operation doesnt exist in async extension
+                try await session.end().get()
             default:
-                print("moving on")
+                continue
             }
         }
+        // Close clients
         for entity in context.entities.values {
             switch entity {
             case let .client(c):
                 try await c.client.close()
             default:
-                print("def skin")
+                continue
             }
         }
     }

@@ -40,7 +40,7 @@ final class MongoDatabaseCommentTests: MongoSwiftTestCase {
             expect(events[1].command["comment"]).to(beNil())
         }
     }
-    
+
     func testCreateCollectionUnified() async throws {
         let tests = try retrieveSpecTestFiles(
             specName: "collection-management",

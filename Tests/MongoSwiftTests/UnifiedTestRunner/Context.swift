@@ -19,14 +19,22 @@ class Context {
         self.internalClient = internalClient
     }
 
-    /// Executes a closure with the given path element added to the path, removing it after the closure is complete.
+    func disableFailpoints() async {
+        for failpointGuard in self.enabledFailPoints {
+            print("I am disabled")
+            await failpointGuard.failPoint.disable(using: self.internalClient.anyClient)
+        }
+        print("donezeo")
+    }
+
+    /// Executes a closure with the given path element added to the path, removing it after closure completes.
     func withPushedElt<T>(_ elt: String, work: () throws -> T) rethrows -> T {
         self.path.append(elt)
         defer { self.path.removeLast() }
         return try work()
     }
-    
-    /// Executes an async closure with the given path element added to the path, removing it after the closure is complete.
+
+    /// Executes an async closure with the given path element added to the path, removing it after closure completes.
     func withPushedElt<T>(_ elt: String, work: () async throws -> T) async rethrows -> T {
         self.path.append(elt)
         defer { self.path.removeLast() }

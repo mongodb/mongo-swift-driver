@@ -91,7 +91,6 @@ struct UnifiedOperation: Decodable {
     func executeAndCheckResult(context: Context) async throws {
         do {
             let actualResult = try await self.operation.execute(on: self.object, context: context)
-            print("I did not err!")
             switch self.expectedResult {
             case .error:
                 throw TestError(
@@ -110,7 +109,6 @@ struct UnifiedOperation: Decodable {
                 return
             }
         } catch {
-            print(self.expectedResult)
             switch self.expectedResult {
             case .ignoreResultAndError:
                 return

@@ -3,9 +3,7 @@ import Nimble
 import TestsCommon
 
 final class CrudUnifiedTests: MongoSwiftTestCase {
-
     func testCrudUnified() async throws {
-        print("yo")
         let skipFiles: [String] = [
             // Skipping because we use bulk-write for these commands and can't pass extra options
             // TODO: SWIFT-1429 unskip
@@ -23,8 +21,6 @@ final class CrudUnifiedTests: MongoSwiftTestCase {
             asType: UnifiedTestFile.self
         )
         let runner = try await UnifiedTestRunner()
-        print("utr set up")
         try await runner.runFiles(files.map { $0.1 })
-        
     }
 }
