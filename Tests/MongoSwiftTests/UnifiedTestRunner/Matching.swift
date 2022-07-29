@@ -598,6 +598,7 @@ extension MongoErrorProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 func equals<T: Equatable>(expected: T, actual: T, context: Context) throws {
     guard actual == expected else {
         throw NonMatchingError(expected: expected, actual: actual, context: context)
