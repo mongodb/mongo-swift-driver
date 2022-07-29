@@ -44,33 +44,6 @@ public func retrieveSpecTestFiles<T: Decodable>(
         }
 }
 
-/// Given a spec folder name (e.g. "crud") and optionally a subdirectory name for a folder (e.g. "read") retrieves an
-/// array of [(filename, file decoded to type T)].
-public func retrieveSpecTestFilesAsync<T: Decodable>(
-    specName: String,
-    subdirectory: String? = nil,
-    excludeFiles: [String] = [],
-    asType _: T.Type
-) async throws -> [(String, T)] {
-    var path = "\(MongoSwiftTestCase.specsPath)/\(specName)/tests"
-    if let sd = subdirectory {
-        path += "/\(sd)"
-    }
-    return try FileManager.default
-        .subpathsOfDirectory(atPath: path)
-        .filter { $0.hasSuffix(".json") }
-        .compactMap { filename in
-            guard !excludeFiles.contains(filename) else {
-                return nil
-            }
-            let url = URL(fileURLWithPath: "\(path)/\(filename)")
-            let jsonString = try String(contentsOf: url, encoding: .utf8)
-            var doc = try ExtendedJSONDecoder().decode(BSONDocument.self, from: jsonString.data(using: .utf8)!)
-            doc["name"] = .string(filename)
-            return try (filename, BSONDecoder().decode(T.self, from: doc))
-        }
-}
-
 /// Given two documents, returns a copy of the input document with all keys that *don't*
 /// exist in `standard` removed, and with all matching keys put in the same order they
 /// appear in `standard`.
