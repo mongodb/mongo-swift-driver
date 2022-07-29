@@ -1,3 +1,4 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import TestsCommon
 
@@ -10,6 +11,7 @@ internal protocol FailPointConfigured {
     var targetedHost: ServerAddress? { get set }
 }
 
+@available(macOS 10.15, *)
 extension FailPointConfigured {
     /// Sets the active fail point to the provided fail point and enables it.
     internal mutating func activateFailPoint(
@@ -41,19 +43,13 @@ class FailPointGuard {
         self.failPoint = failPoint
         self.client = client
     }
-
-//    deinit {
-//        print("look ma im deinit")
-//        Task.init {
-//            await self.failPoint.disable(using: self.client)
-//        }
-//    }
 }
 
 /// Struct modeling a MongoDB fail point.
 ///
 /// - Note: if a fail point results in a connection being closed / interrupted, libmongoc built in debug mode will print
 ///         a warning.
+@available(macOS 10.15, *)
 internal struct FailPoint: Decodable {
     private var failPoint: BSONDocument
 
@@ -186,3 +182,4 @@ internal struct FailPoint: Decodable {
         return FailPoint(command)
     }
 }
+#endif
