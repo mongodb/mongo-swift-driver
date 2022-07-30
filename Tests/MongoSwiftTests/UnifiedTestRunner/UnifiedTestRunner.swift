@@ -255,13 +255,9 @@ class UnifiedTestRunner {
                             }
                         }
                     }
-                    print("done!")
                     try await self.terminateOpenTransactions()
-                    print("terminator")
                     await context.disableFailpoints()
-                    print("i have closed gn")
                     try await self.closeEntities(context: context)
-                    print("returning to next test")
                 } catch let testErr {
                     // Test runners SHOULD terminate all open transactions after each failed test by killing all
                     // sessions in the cluster.

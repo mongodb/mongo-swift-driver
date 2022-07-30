@@ -159,6 +159,10 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         ]
 
         let client = try MongoClient.makeAsyncTestClient()
+        //Need to close client since there's no automatic `deinit`
+        defer {
+            try! client.syncClose()
+        }
         for params in meetableParamRequirements {
             let req = TestRequirement(serverParameters: params)
             expect(try client.getUnmetRequirement(req)).to(beNil())
