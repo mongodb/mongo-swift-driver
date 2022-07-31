@@ -285,7 +285,7 @@ class UnifiedTestRunner {
             }
         }
 
-        try closeClients()
+        try self.internalClient.closeClients()
     }
 
     func closeEntities(context: Context) async throws {
