@@ -33,6 +33,18 @@ class UnifiedTestRunner {
             }
             return clientMap
         }
+
+        func closeClients() throws {
+            switch self {
+            case let .single(c):
+                try c.syncClose()
+            case let .mongosClients(clientMap):
+                for elt in clientMap.values {
+                    print("sharding")
+                    try elt.syncClose()
+                }
+            }
+        }
     }
 
     let internalClient: InternalClient
@@ -272,7 +284,8 @@ class UnifiedTestRunner {
                 }
             }
         }
-        try await self.internalClient.anyClient.close()
+
+        try closeClients()
     }
 
     func closeEntities(context: Context) async throws {

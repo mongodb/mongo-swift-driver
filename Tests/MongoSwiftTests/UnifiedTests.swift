@@ -159,7 +159,7 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         ]
 
         let client = try MongoClient.makeAsyncTestClient()
-        //Need to close client since there's no automatic `deinit`
+        // Need to close client since there's no automatic `deinit`
         defer {
             try! client.syncClose()
         }
