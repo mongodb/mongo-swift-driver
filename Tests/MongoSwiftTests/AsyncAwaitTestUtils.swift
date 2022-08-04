@@ -51,6 +51,41 @@ func assertIsEventuallyTrue(
     XCTFail("Expected condition \"\(description)\" to be true within \(timeout) seconds, but was not")
 }
 
+/// Asserts that the provided block returns true within the specified timeout. Nimble's `toEventually` can only be used
+/// rom the main testing thread which is too restrictive for our purposes testing the async/await APIs.
+@available(macOS 10.15.0, *)
+func assertIsEventuallyTrue(
+    description: String,
+    timeout: TimeInterval = 5,
+    sleepInterval: TimeInterval = 0.1,
+    _ block: @escaping () async throws -> Bool
+) async throws {
+    // Task that does the work as long as its not cancelled
+    let workTask = Task { () -> Bool in
+        while !Task.isCancelled {
+            guard try await block() else {
+                // Optional bc if task is cancelled, we want to return false and not encounter a `CancellationError`
+                try? await Task.sleep(seconds: sleepInterval)
+                continue
+            }
+            // task succeeded so we return true
+            return true
+        }
+        // Ran out of time before we succeeded, so return false
+        return false
+    }
+
+    // Sleep until the timeout time is reached and then cancel the work
+    Task {
+        try await Task.sleep(seconds: timeout)
+        workTask.cancel()
+    }
+    guard try await workTask.value else {
+        XCTFail("Expected condition \"\(description)\" to be true within \(timeout) seconds, but was not")
+        return
+    }
+}
+
 @available(macOS 10.15.0, *)
 extension MongoSwiftTestCase {
     internal func withTestClient<T>(
