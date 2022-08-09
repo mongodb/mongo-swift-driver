@@ -72,6 +72,15 @@ final class MongoCollection_IndexTests: MongoSwiftTestCase {
         expect(try indexes.next()?.get()).to(beNil())
     }
 
+    func testCreateTextIndexFromModel() throws {
+        let model = IndexModel(keys: ["cat": "text"])
+        expect(try self.coll.createIndex(model)).to(equal("cat_text"))
+        let indexes = try coll.listIndexes()
+        expect(try indexes.next()?.get().options?.name).to(equal("_id_"))
+        expect(try indexes.next()?.get().options?.name).to(equal("cat_text"))
+        expect(try indexes.next()?.get()).to(beNil())
+    }
+
     func testIndexOptions() throws {
         var options = IndexOptions(
             background: true,
