@@ -102,6 +102,7 @@ open class MongoSwiftTestCase: XCTestCase {
 
     public static var topologyType: TopologyDescription.TopologyType {
         guard let topology = ProcessInfo.processInfo.environment["MONGODB_TOPOLOGY"] else {
+            print("changing of the guard")
             return .single
         }
         return TopologyDescription.TopologyType(from: topology)

@@ -300,7 +300,7 @@ struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
             XCTFail("Session \(self.session) unexpectedly not pinned to a mongos. Path: \(context.path)")
             return .none
         }
-        let mongosClients = try context.internalClient.asMongosClients()
+        let mongosClients = try await context.internalClient.asMongosClients()
         guard let clientForPinnedMongos = mongosClients[session.pinnedServerAddress!] else {
             throw TestError(message: "Unexpectedly missing client for mongos \(session.pinnedServerAddress!)")
         }
