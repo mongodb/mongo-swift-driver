@@ -53,6 +53,7 @@ class UnifiedTestRunner {
         func asMongosClients(context: Context? = nil) async throws -> [ServerAddress: MongoClient] {
             print("who")
             guard case let .mongosClients(clientMap) = self else {
+                // close everything before throwing
                 print("why")
                 if let context = context {
                     try await self.closeEntitiesInternal(context: context)
@@ -127,14 +128,14 @@ class UnifiedTestRunner {
                     ["killAllSessions": []], options: opts
                 )
                 print("rna polymerase")
-                // print(killSesh)
-                // print(killCursor)
             } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
         case .sharded, .shardedReplicaSet:
             for (_, client) in try await self.internalClient.asMongosClients() {
                 do {
                     print("sharding time")
-                    _ = try await client.db("admin").runCommand(["killAllSessions": []])
+                    print(try await client.supportsTransactions())
+                    _ = try await client.db("admin").runCommand(["killAllSessions": []]) // source of err
+                    print("the sharding is done my man")
                 } catch let commandError as MongoError.CommandError where commandError.code == 11601 {
                     continue
                 }
@@ -173,7 +174,7 @@ class UnifiedTestRunner {
                 continue
             }
             for test in file.tests {
-                print("within a test")
+                print("within a test" + test.description)
                 // If test.skipReason is specified, the test runner MUST skip this test and MAY use the string value to
                 // log a message.
                 if let skipReason = test.skipReason {
@@ -244,9 +245,11 @@ class UnifiedTestRunner {
                         print("sharding workaround3")
                         for entity in collEntities {
                             print("sup")
+                            print(try await client.supportsTransactions())
                             _ = try await client.db(entity.namespace.db).runCommand(
                                 ["distinct": .string(entity.name), "key": "_id"]
-                            )
+                            ) // de-init problems ;(((((((((((
+                            print("soup")
                         }
                     }
                 }
@@ -261,15 +264,17 @@ class UnifiedTestRunner {
                             print("done")
                         }
                     }
+                    print("op city done1")
                     var clientEvents = [String: [CommandEvent]]()
                     // If any event listeners were enabled on any client entities, the test runner MUST now disable
                     // those event listeners.
                     // try await self.terminateOpenTransactions()
                     for (id, client) in context.entities.compactMapValues({ try? $0.asTestClient() }) {
                         clientEvents[id] = try client.stopCapturingEvents()
-                        // print(clientEvents[id]!)
+                        print(clientEvents[id] ?? "nillio")
                         // try await client.client.close()
                     }
+                    print("op city done 1.5")
                     if let expectEvents = test.expectEvents {
                         // TODO: SWIFT-1321 don't skip CMAP event assertions here.
                         for expectedEventList in expectEvents where expectedEventList.eventType != .cmap {
@@ -288,6 +293,7 @@ class UnifiedTestRunner {
                             }
                         }
                     }
+                    print("op city done2")
                     if let expectedOutcome = test.outcome {
                         for collectionData in expectedOutcome {
                             let collection = self.internalClient
@@ -309,20 +315,28 @@ class UnifiedTestRunner {
                             }
                         }
                     }
-                    print("here")
-                    try await self.terminateOpenTransactions()
-                    await context.disableFailpoints()
+                    print("hereee")
+                    try await self.terminateOpenTransactions() // ERRS HERE
+                    print("the test is FINISHIDO1")
+                    await context.disableFailpoints() // i am disabled
+                    print("the test is FINISHIDO2")
                     try await self.closeEntities(context: context)
+                    print("the test is FINISHIDO3")
                 } catch let testErr {
                     // Test runners SHOULD terminate all open transactions after each failed test by killing all
                     // sessions in the cluster.
                     do {
-                        try await closeEntities(context: context)
-                        await context.disableFailpoints()
+                        print("I am doing and catching")
                         try await self.terminateOpenTransactions()
+                        print("i have erred1")
+                        await context.disableFailpoints()
+                        print("i have erred3")
+                        try await closeEntities(context: context)
+                        print("i have erred2")
                     } catch {
                         print("Failed to terminate open transactions: \(error)")
                     }
+                    print("pre rethrow")
                     throw testErr
                 }
             }
