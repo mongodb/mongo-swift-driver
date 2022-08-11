@@ -28,8 +28,7 @@ public func retrieveSpecTestFiles<T: Decodable>(
     if let sd = subdirectory {
         path += "/\(sd)"
     }
-    return try
-        FileManager.default
+    return try FileManager.default
         .subpathsOfDirectory(atPath: path)
         .filter { $0.hasSuffix(".json") }
         .compactMap { filename in

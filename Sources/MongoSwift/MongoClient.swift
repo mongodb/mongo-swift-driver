@@ -439,11 +439,8 @@ public class MongoClient {
      * This method must complete before the `EventLoopGroup` provided to this client's constructor is shut down.
      */
     public func syncClose() throws {
-        print("sync1")
         try self.connectionPool.close()
-        print("sync2")
         try self.operationExecutor.syncShutdown()
-        print("sync3")
         self.wasClosed = true
     }
 

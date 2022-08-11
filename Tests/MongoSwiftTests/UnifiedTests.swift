@@ -52,20 +52,9 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             // expected command events.
             "expectedEventsForClient-eventType.json",
             // we have not implemented this test runner feature yet. TODO: SWIFT-1288
-            "observeSensitiveCommands.json"
+            "observeSensitiveCommands.json",
             // We don't support storeEventsAsEntities yet. TODO: SWIFT-1077
-
-//                        "entity-client-storeEventsAsEntities.json",
-//            "ignoreResultAndError",
-//            "observeSensitiveCommands",
-//            "poc-change-streams",
-//            "poc-command-monitoring",
-//            "poc-crud",
-//            "poc-retryable-reads",
-//            "poc-retryable-writes",
-//            "poc-sessions",
-//            "poc-transactions-mongos-pin-auto",
-//            "poc-transactions"
+            "entity-client-storeEventsAsEntities.json"
         ]
 
         let validPassTests = try retrieveSpecTestFiles(
@@ -114,11 +103,8 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
                 try await runner.runFiles([test])
             } catch {
                 expect(error).toNot(beNil())
-                print("air bud")
             }
         }
-        print("pushing q")
-        // try runner.internalClient.closeClients() //not even in scope?
     }
 
     func testStrictDecodableTypes() throws {

@@ -320,14 +320,12 @@ func matchesEvents(
     context: Context,
     ignoreExtraEvents: Bool
 ) throws {
-    print("we made it")
     // Ensure correct amount of events present (or more than enough if ignorable)
     guard (actual.count == expected.count) || (ignoreExtraEvents && actual.count >= expected.count) else {
-        print(NonMatchingError(expected: expected, actual: actual, context: context))
+        print(expected.count)
+        print(actual.count)
         throw NonMatchingError(expected: expected, actual: actual, context: context)
     }
-    print(expected)
-    print(actual)
     for i in 0..<expected.count {
         try context.withPushedElt(String(i)) {
             let expectedEvent = expected[i]

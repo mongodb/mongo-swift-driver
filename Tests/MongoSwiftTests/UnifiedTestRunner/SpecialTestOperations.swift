@@ -17,15 +17,10 @@ struct UnifiedFailPoint: UnifiedOperationProtocol {
     }
 
     func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
-        print("5 elixer no targ")
         let testClient = try context.entities.getEntity(id: self.client).asTestClient()
-        print("4 elixer no targ")
         let opts = RunCommandOptions(readPreference: .primary)
-        print("3 elixer no targ")
         let fpGuard = try await self.failPoint.enableWithGuard(using: testClient.client, options: opts)
-        print("2 elixer no targ")
         context.enabledFailPoints.append(fpGuard)
-        print("1 elixer no targ")
         return .none
     }
 }

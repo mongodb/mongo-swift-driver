@@ -94,9 +94,7 @@ internal struct FailPoint: Decodable {
         using client: MongoClient,
         options: RunCommandOptions? = nil
     ) async throws -> FailPointGuard {
-        print("I AM ENABLING")
         try await self.enable(using: client, options: options)
-        print("I AM DONE ENABLING")
         return FailPointGuard(failPoint: self, client: client)
     }
 

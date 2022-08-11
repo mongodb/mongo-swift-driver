@@ -21,12 +21,11 @@ class Context {
         self.internalClient = internalClient
     }
 
+    /// Method to manually close failpoints given the new `async` implementation
     func disableFailpoints() async {
         for failpointGuard in self.enabledFailPoints {
-            print("I am disabled")
             await failpointGuard.failPoint.disable(using: self.internalClient.anyClient)
         }
-        print("donezeo")
     }
 
     /// Executes a closure with the given path element added to the path, removing it after closure completes.
