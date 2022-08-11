@@ -52,7 +52,7 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             // expected command events.
             "expectedEventsForClient-eventType.json",
             // we have not implemented this test runner feature yet. TODO: SWIFT-1288
-            "observeSensitiveCommands.json",
+            "observeSensitiveCommands.json"
             // We don't support storeEventsAsEntities yet. TODO: SWIFT-1077
 
 //                        "entity-client-storeEventsAsEntities.json",
@@ -111,14 +111,14 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         for (_, test) in validFailTests {
             // work around to expect(try await ...) bc expect is sync
             do {
-               try await runner.runFiles([test])
+                try await runner.runFiles([test])
             } catch {
                 expect(error).toNot(beNil())
                 print("air bud")
             }
         }
         print("pushing q")
-        //try runner.internalClient.closeClients() //not even in scope?
+        // try runner.internalClient.closeClients() //not even in scope?
     }
 
     func testStrictDecodableTypes() throws {
