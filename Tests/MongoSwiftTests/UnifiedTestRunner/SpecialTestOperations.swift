@@ -286,7 +286,6 @@ struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
     }
 
     func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
-        print("5 elixer targeted")
         let session = try context.entities.getEntity(id: self.session).asSession()
         // The mongos on which to set the fail point is determined by the session argument (after resolution to a
         // session entity). Test runners MUST error if the session is not pinned to a mongos server at the time this

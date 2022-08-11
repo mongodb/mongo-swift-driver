@@ -129,7 +129,6 @@ internal struct FailPoint: Decodable {
         internal func toBSON() -> BSON {
             switch self {
             case let .times(i):
-                print("sign of the times")
                 return ["times": BSON(i)]
             case let .activationProbability(d):
                 return ["activationProbability": .double(d)]
