@@ -133,7 +133,7 @@ class UnifiedTestRunner {
             for (_, client) in try await self.internalClient.asMongosClients() {
                 do {
                     print("sharding time")
-                    print(try await client.supportsTransactions())
+                    //print(try await client.supportsTransactions())
                     _ = try await client.db("admin").runCommand(["killAllSessions": []]) // source of err
                     print("the sharding is done my man")
                 } catch let commandError as MongoError.CommandError where commandError.code == 11601 {
@@ -174,7 +174,7 @@ class UnifiedTestRunner {
                 continue
             }
             for test in file.tests {
-                print("within a test" + test.description)
+                print("within a test" + test.description + file.description)
                 // If test.skipReason is specified, the test runner MUST skip this test and MAY use the string value to
                 // log a message.
                 if let skipReason = test.skipReason {
@@ -245,11 +245,17 @@ class UnifiedTestRunner {
                         print("sharding workaround3")
                         for entity in collEntities {
                             print("sup")
-                            print(try await client.supportsTransactions())
-                            _ = try await client.db(entity.namespace.db).runCommand(
-                                ["distinct": .string(entity.name), "key": "_id"]
-                            ) // de-init problems ;(((((((((((
-                            print("soup")
+                            //print(try await client.supportsTransactions())
+                            //do {
+                                _ = try? await client.db(entity.namespace.db).runCommand(
+                                    ["distinct": .string(entity.name), "key": "_id"]
+                                ) // de-init problems but doesnt hit the catch (((((((((((
+                                print("soup")
+//                            } catch let err {
+//                                print(err)
+//                                throw err
+//                            }
+//
                         }
                     }
                 }
@@ -271,7 +277,7 @@ class UnifiedTestRunner {
                     // try await self.terminateOpenTransactions()
                     for (id, client) in context.entities.compactMapValues({ try? $0.asTestClient() }) {
                         clientEvents[id] = try client.stopCapturingEvents()
-                        print(clientEvents[id] ?? "nillio")
+                        //print(clientEvents[id] ?? "nillio")
                         // try await client.client.close()
                     }
                     print("op city done 1.5")
@@ -279,11 +285,13 @@ class UnifiedTestRunner {
                         // TODO: SWIFT-1321 don't skip CMAP event assertions here.
                         for expectedEventList in expectEvents where expectedEventList.eventType != .cmap {
                             let clientId = expectedEventList.client
-
+                            print("op city done 1.6")
                             guard let actualEvents = clientEvents[clientId] else {
                                 throw TestError(message: "No client entity found with id \(clientId)")
                             }
+                            print("op city done 1.7")
                             try context.withPushedElt("Expected events for client \(clientId)") {
+                                print("op city done 1.8")
                                 try matchesEvents(
                                     expected: expectedEventList.events,
                                     actual: actualEvents,
@@ -291,6 +299,7 @@ class UnifiedTestRunner {
                                     ignoreExtraEvents: expectedEventList.ignoreExtraEvents
                                 )
                             }
+                            print("op city done 1.9")
                         }
                     }
                     print("op city done2")
@@ -326,17 +335,21 @@ class UnifiedTestRunner {
                     // Test runners SHOULD terminate all open transactions after each failed test by killing all
                     // sessions in the cluster.
                     do {
+                        print(testErr)
                         print("I am doing and catching")
-                        try await self.terminateOpenTransactions()
+                        try? await self.terminateOpenTransactions() //bug
                         print("i have erred1")
                         await context.disableFailpoints()
                         print("i have erred3")
                         try await closeEntities(context: context)
                         print("i have erred2")
                     } catch {
+                        try self.internalClient.closeClients()
                         print("Failed to terminate open transactions: \(error)")
                     }
                     print("pre rethrow")
+                    //bug moment frtry self.internalClient.closeClients()
+                    print("internally closed")
                     throw testErr
                 }
             }
