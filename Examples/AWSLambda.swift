@@ -27,16 +27,13 @@ struct Response: Codable {
 
 Lambda.run { (_, _: Input, callback: @escaping (Result<Response, Error>) -> Void) in
     let db = client.db("db")
-    let response = db.runCommand(["ping": 1])
-    response.whenSuccess { document in
-        do {
-            let response = try BSONDecoder().decode(Response.self, from: document)
-            callback(.success(response))
-        } catch {
-            callback(.failure(error))
-        }
+    let result = db.runCommand(["ping": 1]).flatMapThrowing { document in
+        try BSONDecoder().decode(Response.self, from: document)
     }
-    response.whenFailure { error in
+    result.whenSuccess { response in
+        callback(.success(response))
+    }
+    result.whenFailure { error in
         callback(.failure(error))
     }
 }
