@@ -91,13 +91,14 @@ struct IterateUntilDocumentOrError: UnifiedOperationProtocol {
 struct UnifiedCloseCursor: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
+        // print("cursor")
         let entity = try context.entities.getEntity(from: object)
         switch entity {
         case let .changeStream(cs):
-            _ = cs.kill()
+            _ = try await cs.kill().get()
         case let .findCursor(c):
-            _ = c.kill()
+            _ = try await c.kill().get()
         default:
             throw TestError(message: "Unsupported entity type \(entity) for close operation")
         }
