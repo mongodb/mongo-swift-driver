@@ -92,7 +92,6 @@ struct UnifiedCloseCursor: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
     func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
-        // print("cursor")
         let entity = try context.entities.getEntity(from: object)
         switch entity {
         case let .changeStream(cs):
