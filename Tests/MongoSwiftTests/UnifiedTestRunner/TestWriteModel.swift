@@ -1,9 +1,9 @@
-// #if compiler(>=5.5.2) && canImport(_Concurrency)
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import TestsCommon
 
 /// Intermediate representation of a bulk write model to match the test format, used for decoding purposes.
-// @available(macOS 10.15.0, *)
+@available(macOS 10.15.0, *)
 enum TestWriteModel: Decodable {
     case insertOne(BSONDocument)
     case deleteOne(BSONDocument, options: DeleteModelOptions)
@@ -134,4 +134,4 @@ extension UpdateModel {
     }
 }
 
-// #endif
+#endif
