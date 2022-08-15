@@ -33,6 +33,10 @@ struct DNSSeedlistTestCase: Decodable {
 }
 
 final class DNSSeedlistTests: MongoSwiftTestCase {
+    override func setUp() {
+        self.continueAfterFailure = false
+    }
+
     fileprivate class TopologyDescriptionWatcher: SDAMEventHandler {
         private var lastTopologyDescription: TopologyDescription?
 

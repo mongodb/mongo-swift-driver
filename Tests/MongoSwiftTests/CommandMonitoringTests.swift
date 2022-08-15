@@ -3,6 +3,10 @@ import TestsCommon
 
 @available(macOS 10.15, *)
 final class CommandMonitoringTests: MongoSwiftTestCase {
+    override func setUp() {
+        self.continueAfterFailure = false
+    }
+
     func testCommandMonitoringUnified() async throws {
         // these require that command events expose server connection IDs.
         // TODO: SWIFT-1262 Unskip.

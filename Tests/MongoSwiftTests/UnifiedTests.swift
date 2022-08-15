@@ -5,6 +5,10 @@ import TestsCommon
 
 @available(macOS 10.15, *)
 final class UnifiedRunnerTests: MongoSwiftTestCase {
+    override func setUp() {
+        self.continueAfterFailure = false
+    }
+
     func testSchemaVersion() {
         let oneTwoThree = SchemaVersion(rawValue: "1.2.3")
         expect(oneTwoThree).toNot(beNil())
