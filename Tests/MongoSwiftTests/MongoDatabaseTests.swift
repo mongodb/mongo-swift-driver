@@ -5,7 +5,7 @@ import Nimble
 import TestsCommon
 
 @available(macOS 10.15, *)
-final class MongoDatabaseCommentTests: MongoSwiftTestCase {
+final class MongoDatabaseTests: MongoSwiftTestCase {
     func testListCollectionsComment() async throws {
         try await self.withTestClient { client in
             let monitor = client.addCommandMonitor()

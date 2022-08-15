@@ -1,7 +1,4 @@
 #if compiler(>=5.5.2) && canImport(_Concurrency)
-import Foundation
-import MongoSwift
-import Nimble
 import TestsCommon
 
 @available(macOS 10.15, *)

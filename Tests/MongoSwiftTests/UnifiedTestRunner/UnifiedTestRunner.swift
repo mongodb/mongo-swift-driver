@@ -1,7 +1,6 @@
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import Nimble
-import NIOPosix
 import TestsCommon
 
 @available(macOS 10.15, *)
@@ -25,7 +24,7 @@ class UnifiedTestRunner {
         }
 
         /// If the internal client is a map of per-mongos clients, returns that map; otherwise throws an erorr.
-        func asMongosClients() async throws -> [ServerAddress: MongoClient] {
+        func asMongosClients() throws -> [ServerAddress: MongoClient] {
             guard case let .mongosClients(clientMap) = self else {
                 throw TestError(
                     message: "Runner unexpectedly did not create per-mongos clients"
@@ -34,7 +33,8 @@ class UnifiedTestRunner {
             return clientMap
         }
 
-        func closeClients() throws {
+        /// Closes the internal clients (needed because can't  rely on `deinit` with async clients)
+        func close() throws {
             switch self {
             case let .single(c):
                 try c.syncClose()
@@ -60,12 +60,12 @@ class UnifiedTestRunner {
             var mongosClients = [ServerAddress: MongoClient]()
             for host in MongoSwiftTestCase.getHosts() {
                 let connString = MongoSwiftTestCase.getConnectionString(forHost: host)
-                let client = try MongoClient.makeAsyncTestClient(connString)
+                let client = try MongoClient.makeTestClient(connString)
                 mongosClients[host] = client
             }
             self.internalClient = .mongosClients(mongosClients)
         default:
-            let client = try MongoClient.makeAsyncTestClient()
+            let client = try MongoClient.makeTestClient()
             self.internalClient = .single(client)
         }
         self.serverVersion = try await self.internalClient.anyClient.serverVersion()
@@ -87,11 +87,12 @@ class UnifiedTestRunner {
             do {
                 let opts = RunCommandOptions(readPreference: .primary)
                 _ = try await self.internalClient.anyClient.db("admin").runCommand(
-                    ["killAllSessions": []], options: opts
+                    ["killAllSessions": []],
+                    options: opts
                 )
             } catch let commandError as MongoError.CommandError where commandError.code == 11601 {}
         case .sharded, .shardedReplicaSet:
-            for (_, client) in try await self.internalClient.asMongosClients() {
+            for (_, client) in try self.internalClient.asMongosClients() {
                 do {
                     _ = try await client.db("admin").runCommand(["killAllSessions": []])
                 } catch let commandError as MongoError.CommandError where commandError.code == 11601 {
@@ -169,7 +170,7 @@ class UnifiedTestRunner {
                         let db = self.internalClient.anyClient.db(collData.databaseName)
                         let collOpts = MongoCollectionOptions(writeConcern: .majority)
                         let coll = db.collection(collData.collectionName, options: collOpts)
-                        _ = try await coll.drop()
+                        try await coll.drop()
 
                         guard !collData.documents.isEmpty else {
                             _ = try await db.createCollection(
@@ -179,7 +180,7 @@ class UnifiedTestRunner {
                             continue
                         }
 
-                        _ = try await coll.insertMany(collData.documents)
+                        try await coll.insertMany(collData.documents)
                     }
                 }
 
@@ -193,7 +194,7 @@ class UnifiedTestRunner {
                 // the implementation, test runners MAY execute distinct before every test.
                 if self.topologyType.isSharded && !MongoSwiftTestCase.serverless {
                     let collEntities = context.entities.values.compactMap { try? $0.asCollection() }
-                    let clientMap = try await self.internalClient.asMongosClients()
+                    let clientMap = try self.internalClient.asMongosClients()
                     for (_, client) in clientMap {
                         for entity in collEntities {
                             _ = try? await client.db(entity.namespace.db).runCommand(
@@ -212,7 +213,6 @@ class UnifiedTestRunner {
                     var clientEvents = [String: [CommandEvent]]()
                     // If any event listeners were enabled on any client entities, the test runner MUST now disable
                     // those event listeners.
-                    // try await self.terminateOpenTransactions()
                     for (id, client) in context.entities.compactMapValues({ try? $0.asTestClient() }) {
                         clientEvents[id] = try client.stopCapturingEvents()
                     }
@@ -263,7 +263,7 @@ class UnifiedTestRunner {
                     // sessions in the cluster.
                     do {
                         // Clean up to prevent a client closing error from obscuring the real error
-                        try? await self.terminateOpenTransactions() // bug
+                        try? await self.terminateOpenTransactions()
                         await context.disableFailpoints()
                         try await closeEntities(context: context)
                     } catch {
@@ -274,11 +274,11 @@ class UnifiedTestRunner {
             }
         }
 
-        try self.internalClient.closeClients()
+        try self.internalClient.close()
     }
 
     func closeEntities(context: Context) async throws {
-        // Close streams and cursors
+        // Must close streams and cursors before closing the parent client
         for entity in context.entities.values {
             switch entity {
             case let .changeStream(changeStream):
@@ -291,7 +291,7 @@ class UnifiedTestRunner {
                 continue
             }
         }
-        // Close clients
+        // Close clients once all its streams/cursors are correctly closed
         for entity in context.entities.values {
             switch entity {
             case let .client(c):

@@ -11,7 +11,7 @@ class Context {
     var entities: EntityMap
 
     /// Fail points that have been set during test execution and should be disabled on completion.
-    var enabledFailPoints: [FailPointGuard] = []
+    var enabledFailPoints: [EnabledFailpoint] = []
 
     let internalClient: UnifiedTestRunner.InternalClient
 
@@ -23,8 +23,8 @@ class Context {
 
     /// Method to manually close failpoints given the new `async` implementation
     func disableFailpoints() async {
-        for failpointGuard in self.enabledFailPoints {
-            await failpointGuard.failPoint.disable(using: self.internalClient.anyClient)
+        for enabledFailPoint in self.enabledFailPoints {
+            await enabledFailPoint.close()
         }
     }
 

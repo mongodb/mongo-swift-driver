@@ -7,7 +7,7 @@ import XCTest
 extension MongoClient {
     internal static func makeTestClient(
         _ uri: String = MongoSwiftTestCase.getConnectionString().description,
-        eventLoopGroup: EventLoopGroup,
+        eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1),
         options: MongoClientOptions? = nil
     ) throws -> MongoClient {
         let opts = resolveClientOptions(options)
@@ -16,7 +16,7 @@ extension MongoClient {
 
     internal static func makeTestClient(
         _ uri: MongoConnectionString,
-        eventLoopGroup: EventLoopGroup,
+        eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1),
         options: MongoClientOptions? = nil
     ) throws -> MongoClient {
         let opts = resolveClientOptions(options)

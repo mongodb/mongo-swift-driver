@@ -148,7 +148,7 @@ struct UnifiedTestClient {
             opts.minHeartbeatFrequencyMS = 50
             opts.heartbeatFrequencyMS = 50
         }
-        self.client = try MongoClient.makeAsyncTestClient(connStr, options: opts)
+        self.client = try MongoClient.makeTestClient(connStr, options: opts)
         self.commandMonitor = UnifiedTestCommandMonitor(
             observeEvents: clientDescription.observeEvents,
             ignoreEvents: clientDescription.ignoreCommandMonitoringEvents

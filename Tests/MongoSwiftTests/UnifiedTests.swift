@@ -98,12 +98,8 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         )
 
         for (_, test) in validFailTests {
-            // work around to expect(try await ...) bc expect is sync
-            do {
-                try await runner.runFiles([test])
-            } catch {
-                expect(error).toNot(beNil())
-            }
+            let testResult: ()? = try? await runner.runFiles([test])
+            expect(testResult).to(beNil())
         }
     }
 
@@ -157,30 +153,27 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             ["ok": .double(1.00001)]
         ]
 
-        let client = try MongoClient.makeAsyncTestClient()
-        // Need to close client since there's no automatic `deinit`
-        defer {
-            try! client.syncClose()
-        }
-        for params in meetableParamRequirements {
-            let req = TestRequirement(serverParameters: params)
-            expect(try client.getUnmetRequirement(req)).to(beNil())
-        }
+        try withTestClient { client in
+            for params in meetableParamRequirements {
+                let req = TestRequirement(serverParameters: params)
+                expect(try client.getUnmetRequirement(req)).to(beNil())
+            }
 
-        let unmeetableParamRequirements: [BSONDocument] = [
-            ["fakeParameterNameTheServerWillNeverUse": true],
-            ["ok": 2],
-            ["ok": "hi"]
-        ]
+            let unmeetableParamRequirements: [BSONDocument] = [
+                ["fakeParameterNameTheServerWillNeverUse": true],
+                ["ok": 2],
+                ["ok": "hi"]
+            ]
 
-        for param in unmeetableParamRequirements {
-            let req = TestRequirement(serverParameters: param)
-            let unmetReq = try client.getUnmetRequirement(req)
-            switch unmetReq {
-            case .serverParameter:
-                continue
-            default:
-                fail("Expected server parameter requirement \(param) to be unmet, but was met")
+            for param in unmeetableParamRequirements {
+                let req = TestRequirement(serverParameters: param)
+                let unmetReq = try client.getUnmetRequirement(req)
+                switch unmetReq {
+                case .serverParameter:
+                    continue
+                default:
+                    fail("Expected server parameter requirement \(param) to be unmet, but was met")
+                }
             }
         }
     }
