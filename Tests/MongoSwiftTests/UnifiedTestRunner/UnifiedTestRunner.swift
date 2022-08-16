@@ -77,8 +77,8 @@ class UnifiedTestRunner {
     }
 
     deinit {
-        try? self.elg.syncShutdownGracefully()
         try? self.internalClient.close()
+        try? self.elg.syncShutdownGracefully()
     }
 
     func terminateOpenTransactions() async throws {
