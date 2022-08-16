@@ -4,7 +4,7 @@ import NIOPosix
 import TestsCommon
 
 @available(macOS 10.15, *)
-/// Convenience class which wraps a `FailPoint` and its underlying client to handle closing.
+/// Convenience type which wraps a `FailPoint` and its corresponding client to handle closing.
 struct EnabledFailpoint {
     /// The failpoint.
     let failPoint: FailPoint

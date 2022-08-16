@@ -273,7 +273,7 @@ class UnifiedTestRunner {
                         // Clean up to prevent a client closing error from obscuring the real error
                         try? await self.terminateOpenTransactions()
                         await context.disableFailpoints()
-                        try await closeEntities(context: context)
+                        try await self.closeEntities(context: context)
                     } catch {
                         print("Failed to terminate open transactions: \(error)")
                     }
