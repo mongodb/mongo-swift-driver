@@ -21,7 +21,7 @@ class Context {
         self.internalClient = internalClient
     }
 
-    /// Method to manually close failpoints given the new `async` implementation
+    /// Disables all failpoints that were enabled during the execution of this context's corresponding test case.
     func disableFailpoints() async {
         for enabledFailPoint in self.enabledFailPoints {
             await enabledFailPoint.close()

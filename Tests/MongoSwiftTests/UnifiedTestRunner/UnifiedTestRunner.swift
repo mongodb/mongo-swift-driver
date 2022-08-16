@@ -1,6 +1,7 @@
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import Nimble
+import NIOPosix
 import TestsCommon
 
 @available(macOS 10.15, *)
@@ -50,27 +51,34 @@ class UnifiedTestRunner {
     let serverVersion: ServerVersion
     let topologyType: TestTopologyConfiguration
     let serverParameters: BSONDocument
+    let elg: MultiThreadedEventLoopGroup
 
     static let minSchemaVersion = SchemaVersion(rawValue: "1.0.0")!
     static let maxSchemaVersion = SchemaVersion(rawValue: "1.7.0")!
 
     init() async throws {
+        self.elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         switch MongoSwiftTestCase.topologyType {
         case .sharded:
             var mongosClients = [ServerAddress: MongoClient]()
             for host in MongoSwiftTestCase.getHosts() {
                 let connString = MongoSwiftTestCase.getConnectionString(forHost: host)
-                let client = try MongoClient.makeTestClient(connString)
+                let client = try MongoClient.makeTestClient(connString, eventLoopGroup: self.elg)
                 mongosClients[host] = client
             }
             self.internalClient = .mongosClients(mongosClients)
         default:
-            let client = try MongoClient.makeTestClient()
+            let client = try MongoClient.makeTestClient(eventLoopGroup: self.elg)
             self.internalClient = .single(client)
         }
         self.serverVersion = try await self.internalClient.anyClient.serverVersion()
         self.topologyType = try await self.internalClient.anyClient.topologyType()
         self.serverParameters = try await self.internalClient.anyClient.serverParameters()
+    }
+
+    deinit {
+        try? self.elg.syncShutdownGracefully()
+        try? self.internalClient.close()
     }
 
     func terminateOpenTransactions() async throws {
@@ -273,8 +281,6 @@ class UnifiedTestRunner {
                 }
             }
         }
-
-        try self.internalClient.close()
     }
 
     func closeEntities(context: Context) async throws {
@@ -287,6 +293,9 @@ class UnifiedTestRunner {
             case let .session(session):
                 // Operation doesnt exist in async extension, so .get()
                 try await session.end().get()
+            case let .findCursor(cursor):
+                // Operation doesnt exist in async extension, so .get()
+                try await cursor.kill().get()
             default:
                 continue
             }

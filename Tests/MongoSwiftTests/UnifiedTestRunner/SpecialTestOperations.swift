@@ -19,7 +19,7 @@ struct UnifiedFailPoint: UnifiedOperationProtocol {
     func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let testClient = try context.entities.getEntity(id: self.client).asTestClient()
         let opts = RunCommandOptions(readPreference: .primary)
-        let fpGuard = try await self.failPoint.enableWithGuard(using: testClient.client, options: opts)
+        let fpGuard = try await self.failPoint.enable(using: testClient.client, options: opts)
         context.enabledFailPoints.append(fpGuard)
         return .none
     }
@@ -298,7 +298,7 @@ struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
         guard let clientForPinnedMongos = mongosClients[session.pinnedServerAddress!] else {
             throw TestError(message: "Unexpectedly missing client for mongos \(session.pinnedServerAddress!)")
         }
-        let fpGuard = try await self.failPoint.enableWithGuard(using: clientForPinnedMongos)
+        let fpGuard = try await self.failPoint.enable(using: clientForPinnedMongos)
         // add to context's list of enabled failpoints to ensure we disable it later.
         context.enabledFailPoints.append(fpGuard)
         return .none

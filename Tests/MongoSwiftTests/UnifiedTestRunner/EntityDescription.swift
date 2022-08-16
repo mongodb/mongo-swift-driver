@@ -1,6 +1,7 @@
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
 @testable import MongoSwift
+import NIOPosix
 import TestsCommon
 
 /// Represents a description of an entity (client, db, etc.).
@@ -129,8 +130,9 @@ enum EntityDescription: Decodable {
 
 /// Wrapper around a MongoClient used for test runner purposes.
 @available(macOS 10.15.0, *)
-struct UnifiedTestClient {
+class UnifiedTestClient {
     let client: MongoClient
+    let elg: MultiThreadedEventLoopGroup
 
     let commandMonitor: UnifiedTestCommandMonitor
 
@@ -148,7 +150,8 @@ struct UnifiedTestClient {
             opts.minHeartbeatFrequencyMS = 50
             opts.heartbeatFrequencyMS = 50
         }
-        self.client = try MongoClient.makeTestClient(connStr, options: opts)
+        self.elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        self.client = try MongoClient.makeTestClient(connStr, eventLoopGroup: self.elg, options: opts)
         self.commandMonitor = UnifiedTestCommandMonitor(
             observeEvents: clientDescription.observeEvents,
             ignoreEvents: clientDescription.ignoreCommandMonitoringEvents
@@ -160,6 +163,10 @@ struct UnifiedTestClient {
     /// Disables command monitoring for the client and returns a list of the captured events.
     func stopCapturingEvents() throws -> [CommandEvent] {
         try self.commandMonitor.disable()
+    }
+
+    deinit {
+        try? self.elg.syncShutdownGracefully()
     }
 }
 
