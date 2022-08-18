@@ -41,4 +41,5 @@ final class MongoHandler: LambdaHandler {
         return try BSONDecoder().decode(Output.self, from: response)
     }
 }
+
 // end lambda connection example 1
