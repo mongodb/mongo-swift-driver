@@ -2,7 +2,7 @@
 
 exit_code=0
 
-examples=("BugReport" "Docs" "KituraExample" "PerfectExample" "VaporExample" "Atlas")
+examples=("BugReport" "Docs" "KituraExample" "PerfectExample" "VaporExample" "Atlas" "AWSLambda")
 
 branch=${1}
 # Ensure branch is non-empty
