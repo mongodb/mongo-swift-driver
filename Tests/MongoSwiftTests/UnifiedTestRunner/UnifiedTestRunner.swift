@@ -205,9 +205,16 @@ class UnifiedTestRunner {
                     let clientMap = try self.internalClient.asMongosClients()
                     for (_, client) in clientMap {
                         for entity in collEntities {
-                            _ = try await client.db(entity.namespace.db).runCommand(
-                                ["distinct": .string(entity.name), "key": "_id"]
-                            )
+                            do {
+                                _ = try await client.db(entity.namespace.db).runCommand(
+                                    ["distinct": .string(entity.name), "key": "_id"]
+                                )
+                            } catch {
+                                // DB not explicitly initially created for operation-failure test bc no initialData
+                                if !(error is MongoError.CommandError) {
+                                    throw error
+                                }
+                            }
                         }
                     }
                 }
