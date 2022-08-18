@@ -1,6 +1,5 @@
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
-import NIOPosix
 import TestsCommon
 
 @available(macOS 10.15, *)
