@@ -194,7 +194,7 @@ class UnifiedTestRunner {
 
                 let context = Context(
                     path: [],
-                    entities: try file.createEntities?.toEntityMap() ?? [:],
+                    entities: try file.createEntities?.toEntityMap(elg: self.elg) ?? [:],
                     internalClient: self.internalClient
                 )
                 // Workaround for SERVER-39704:  a test runners MUST execute a non-transactional distinct command on
@@ -279,7 +279,7 @@ class UnifiedTestRunner {
                         await context.disableFailpoints()
                         try await self.closeEntities(context: context)
                     } catch {
-                        print("Failed to terminate open transactions: \(error)")
+                        print("Failed to close unified test runner elements: \(error)")
                     }
                     throw testErr
                 }

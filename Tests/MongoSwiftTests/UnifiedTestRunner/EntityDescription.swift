@@ -136,7 +136,7 @@ class UnifiedTestClient {
 
     let commandMonitor: UnifiedTestCommandMonitor
 
-    init(_ clientDescription: EntityDescription.Client) throws {
+    init(_ clientDescription: EntityDescription.Client, elg: MultiThreadedEventLoopGroup) throws {
         let connStr = MongoSwiftTestCase.getConnectionString(
             singleMongos: clientDescription.useMultipleMongoses != true
         )
@@ -150,7 +150,7 @@ class UnifiedTestClient {
             opts.minHeartbeatFrequencyMS = 50
             opts.heartbeatFrequencyMS = 50
         }
-        self.elg = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        self.elg = elg
         self.client = try MongoClient.makeTestClient(connStr, eventLoopGroup: self.elg, options: opts)
         self.commandMonitor = UnifiedTestCommandMonitor(
             observeEvents: clientDescription.observeEvents,
@@ -163,10 +163,6 @@ class UnifiedTestClient {
     /// Disables command monitoring for the client and returns a list of the captured events.
     func stopCapturingEvents() throws -> [CommandEvent] {
         try self.commandMonitor.disable()
-    }
-
-    deinit {
-        try? self.elg.syncShutdownGracefully()
     }
 }
 
@@ -271,12 +267,12 @@ typealias EntityMap = [String: Entity]
 
 extension Array where Element == EntityDescription {
     /// Converts an array of entity descriptions from a test file into an entity map.
-    func toEntityMap() throws -> EntityMap {
+    func toEntityMap(elg: MultiThreadedEventLoopGroup) throws -> EntityMap {
         var map = EntityMap()
         for desc in self {
             switch desc {
             case let .client(clientDesc):
-                map[clientDesc.id] = try .client(UnifiedTestClient(clientDesc))
+                map[clientDesc.id] = try .client(UnifiedTestClient(clientDesc, elg: elg))
             case let .database(dbDesc):
                 guard let clientEntity = try map[dbDesc.client]?.asTestClient() else {
                     throw TestError(message: "No client with id \(dbDesc.client) found in entity map")
