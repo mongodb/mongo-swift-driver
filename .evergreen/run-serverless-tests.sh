@@ -18,8 +18,15 @@ fi
 # configure Swift
 . ${PROJECT_DIRECTORY}/.evergreen/configure-swift.sh
 
+
+# work around https://github.com/mattgallagher/CwlPreconditionTesting/issues/22 (bug still exists in version 1.x
+# when using Xcode 13.2)
+if [ "$OS" == "darwin" ]; then
+    EXTRA_FLAGS="-Xswiftc -Xfrontend -Xswiftc -validate-tbd-against-ir=none"
+fi
+
 # build the driver
-swift build
+swift build $EXTRA_FLAGS
 
 MONGODB_TOPOLOGY="load_balanced" \
   MONGODB_URI=${MONGODB_URI} \
@@ -30,4 +37,4 @@ MONGODB_TOPOLOGY="load_balanced" \
   MONGODB_SCRAM_PASSWORD=${SERVERLESS_ATLAS_PASSWORD} \
   AUTH="auth" \
   SSL="ssl" \
-    swift test --enable-test-discovery --filter="(Crud|Retryable|Transactions|Versioned|Session|LoadBalancer|MongoCursor|Unified)"
+    swift test --enable-test-discovery $EXTRA_FLAGS --filter="(Crud|Retryable|Transactions|Versioned|Session|LoadBalancer|MongoCursor|Unified)"

@@ -18,7 +18,7 @@ version = sys.argv[1]
 if version == "main-snapshot":
     tag_data = requests.get('https://api.github.com/repos/apple/swift/tags').json()
     latest_snapshot = next(filter(lambda tag: 'swift-DEVELOPMENT-SNAPSHOT' in tag['name'], tag_data))
-    print(latest_snapshot['name'])
+    print(latest_snapshot['name'][6:])
 else:
     components = version.split('.')
     if len(components) != 2:

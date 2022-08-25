@@ -631,55 +631,55 @@ tasks:
             TOPOLOGY: "load_balanced"
         - func: stop-load-balancer
 
-  - name: "test-6.0-standalone"
-    tags: ["6.0", "standalone"]
-    commands:
-      - func: "prepare resources"
-      - func: "fix absolute paths"
-      - func: "bootstrap mongo-orchestration"
-        vars:
-          MONGODB_VERSION: "6.0"
-          TOPOLOGY: "server"
-      - func: "run tests"
+    - name: "test-6.0-standalone"
+      tags: ["6.0", "standalone"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "6.0"
+            TOPOLOGY: "server"
+        - func: "run tests"
 
     - name: "test-6.0-replica_set"
-    tags: ["6.0", "replica_set"]
-    commands:
-      - func: "prepare resources"
-      - func: "fix absolute paths"
-      - func: "bootstrap mongo-orchestration"
-        vars:
-          MONGODB_VERSION: "6.0"
-          TOPOLOGY: "replica_set"
-      - func: "run tests"
+      tags: ["6.0", "replica_set"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "6.0"
+            TOPOLOGY: "replica_set"
+        - func: "run tests"
 
     - name: "test-6.0-sharded_cluster"
-    tags: ["6.0", "sharded_cluster"]
-    exec_timeout_secs: 3600 # TODO SWIFT-1410: remove
-    commands:
-      - func: "prepare resources"
-      - func: "fix absolute paths"
-      - func: "bootstrap mongo-orchestration"
-        vars:
-          MONGODB_VERSION: "6.0"
-          TOPOLOGY: "sharded_cluster"
-      - func: "run tests"
+      tags: ["6.0", "sharded_cluster"]
+      exec_timeout_secs: 3600 # TODO SWIFT-1410: remove
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "6.0"
+            TOPOLOGY: "sharded_cluster"
+        - func: "run tests"
 
     - name: "test-6.0-load_balancer"
-    tags: ["6.0", "load-balancer"]
-    commands:
-      - func: "prepare resources"
-      - func: "fix absolute paths"
-      - func: "bootstrap mongo-orchestration"
-        vars:
-          MONGODB_VERSION: "6.0"
-          TOPOLOGY: "sharded_cluster"
-          LOAD_BALANCER: "true"
-      - func: start-load-balancer
-      - func: "run-lb-tests"
-        vars:
-          TOPOLOGY: "load_balanced"
-      - func: stop-load-balancer
+      tags: ["6.0", "load-balancer"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "6.0"
+            TOPOLOGY: "sharded_cluster"
+            LOAD_BALANCER: "true"
+        - func: start-load-balancer
+        - func: "run-lb-tests"
+          vars:
+            TOPOLOGY: "load_balanced"
+        - func: stop-load-balancer
 
     - name: "test-latest-standalone"
       tags: ["latest", "standalone"]
