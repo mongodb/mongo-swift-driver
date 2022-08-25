@@ -1,7 +1,7 @@
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import Nimble
-import NIO
+import NIOPosix
 import NIOConcurrencyHelpers
 import TestsCommon
 
