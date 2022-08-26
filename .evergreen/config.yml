@@ -1554,4 +1554,4 @@ buildvariants:
     ssl-auth: "*"
     check-leaks: "leaks"
   tasks:
-     - ".5.0"
+     - ".6.0 !.load-balancer"
