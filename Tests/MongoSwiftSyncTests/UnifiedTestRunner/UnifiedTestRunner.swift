@@ -183,9 +183,13 @@ struct UnifiedTestRunner {
                     let collEntities = context.entities.values.compactMap { try? $0.asCollection() }
                     for (_, client) in try self.internalClient.asMongosClients() {
                         for entity in collEntities {
-                            _ = try client.db(entity.namespace.db).runCommand(
-                                ["distinct": .string(entity.name), "key": "_id"]
-                            )
+                            do {
+                                _ = try client.db(entity.namespace.db).runCommand(
+                                    ["distinct": .string(entity.name), "key": "_id"]
+                                )
+                            } catch let commandError as MongoError.CommandError where commandError.code == 26 {
+                                // ignore NamespaceNotFound errors from distinct.
+                            }
                         }
                     }
                 }
