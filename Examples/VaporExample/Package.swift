@@ -9,7 +9,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/vapor/vapor", .upToNextMajor(from: "4.50.0")),
         .package(url: "https://github.com/vapor/leaf", .upToNextMajor(from: "4.0.0")),
-        .package(url: "https://github.com/mongodb/mongodb-vapor", .exact("1.1.0-alpha.2"))
+        .package(url: "https://github.com/mongodb/mongodb-vapor", .upToNextMajor(from: "1.1.0"))
     ],
     targets: [
         .target(

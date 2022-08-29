@@ -168,9 +168,16 @@ final class ChangeStreamTests: MongoSwiftTestCase {
     }
 
     func testChangeStreamSpecUnified() async throws {
+        let excludeFiles = [
+            // TODO: SWIFT-1458 Unskip.
+            "change-streams-showExpandedEvents.json",
+            // TODO: SWIFT-1472 Unskip.
+            "change-streams-pre_and_post_images.json"
+        ]
         let tests = try retrieveSpecTestFiles(
             specName: "change-streams",
             subdirectory: "unified",
+            excludeFiles: excludeFiles,
             asType: UnifiedTestFile.self
         ).map { $0.1 }
         let testRunner = try await UnifiedTestRunner()

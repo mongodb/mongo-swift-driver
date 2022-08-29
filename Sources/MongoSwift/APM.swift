@@ -117,6 +117,111 @@ private protocol CommandEventProtocol {
     var serviceID: BSONObjectID? { get }
 }
 
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+/// An asynchronous way to monitor command events that uses `AsyncSequence`.
+/// Only available for Swift 5.5.2 and higher.
+@available(macOS 10.15, *)
+// sourcery: skipSyncExport
+public struct CommandEventStream {
+    fileprivate let stream: AsyncStream<CommandEvent>
+    private let cmdHandler: CommandEventHandler
+    /// Initialize the stream with a `CommandEventHandler`
+    internal init(cmdHandler: CommandEventHandler, stream: AsyncStream<CommandEvent>) {
+        self.cmdHandler = cmdHandler
+        self.stream = stream
+    }
+}
+
+/// An asynchronous way to monitor SDAM events that uses `AsyncSequence`.
+/// Only available for Swift 5.5.2 and higher.
+@available(macOS 10.15, *)
+// sourcery: skipSyncExport
+public struct SDAMEventStream {
+    fileprivate let stream: AsyncStream<SDAMEvent>
+    private let sdamHandler: SDAMEventHandler
+    /// Initialize the stream with an `SDAMEventHandler`
+    internal init(sdamHandler: SDAMEventHandler, stream: AsyncStream<SDAMEvent>) {
+        self.sdamHandler = sdamHandler
+        self.stream = stream
+    }
+}
+
+@available(macOS 10.15, *)
+extension CommandEventStream: AsyncSequence {
+    /// The type of element produced by this `CommandEventStream`.
+    public typealias Element = CommandEvent
+
+    /// The asynchronous iterator of type `CommandEventStreamIterator`
+    /// that produces elements of this asynchronous sequence.
+    public typealias AsyncIterator = CommandEventStreamIterator
+
+    /// Creates the asynchronous iterator that produces elements of this `CommandEventStream`.
+    public func makeAsyncIterator() -> CommandEventStreamIterator {
+        CommandEventStreamIterator(cmdEventStream: self)
+    }
+}
+
+@available(macOS 10.15, *)
+extension SDAMEventStream: AsyncSequence {
+    /// The type of element produced by this `SDAMEventStream`.
+    public typealias Element = SDAMEvent
+
+    /// The asynchronous iterator of type `SDAMEventStreamIterator`
+    /// that produces elements of this asynchronous sequence.
+    public typealias AsyncIterator = SDAMEventStreamIterator
+
+    /// Creates the asynchronous iterator that produces elements of this `SDAMEventStream`.
+    public func makeAsyncIterator() -> SDAMEventStreamIterator {
+        SDAMEventStreamIterator(sdamEventStream: self)
+    }
+}
+
+/// The associated iterator for the `CommandEventStream`.
+@available(macOS 10.15, *)
+// sourcery: skipSyncExport
+public struct CommandEventStreamIterator: AsyncIteratorProtocol {
+    private var iterator: AsyncStream<CommandEvent>.AsyncIterator
+    private let cmdEventStream: CommandEventStream
+
+    /// Initialize the iterator
+    internal init(cmdEventStream: CommandEventStream) {
+        self.iterator = cmdEventStream.stream.makeAsyncIterator()
+        self.cmdEventStream = cmdEventStream
+    }
+
+    /// Asynchronously advances to the next element and returns it, or ends the sequence if there is no next element.
+    public mutating func next() async -> CommandEvent? {
+        await self.iterator.next()
+    }
+
+    /// The type of element iterated over by this `CommandEventStreamIterator`.
+    public typealias Element = CommandEvent
+}
+
+/// The associated iterator for the `SDAMEventStream`.
+@available(macOS 10.15, *)
+// sourcery: skipSyncExport
+public struct SDAMEventStreamIterator: AsyncIteratorProtocol {
+    private var iterator: AsyncStream<SDAMEvent>.AsyncIterator
+    private let sdamEventStream: SDAMEventStream
+
+    /// Initialize the iterator
+    internal init(sdamEventStream: SDAMEventStream) {
+        self.iterator = sdamEventStream.stream.makeAsyncIterator()
+        self.sdamEventStream = sdamEventStream
+    }
+
+    /// Asynchronously advances to the next element and returns it, or ends the sequence if there is no next element.
+    public mutating func next() async -> SDAMEvent? {
+        await self.iterator.next()
+    }
+
+    /// The type of element iterated over by this `SDAMEventStreamIterator`.
+    public typealias Element = SDAMEvent
+}
+
+#endif
+
 /// An event published when a command starts.
 public struct CommandStartedEvent: MongoSwiftEvent, CommandEventProtocol {
     /// Wrapper around a `mongoc_apm_command_started_t`.

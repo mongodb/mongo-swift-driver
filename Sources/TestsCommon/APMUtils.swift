@@ -84,7 +84,10 @@ public enum EventType: String, Decodable {
     case commandStartedEvent, commandSucceededEvent, commandFailedEvent,
          connectionCreatedEvent, connectionReadyEvent, connectionClosedEvent,
          connectionCheckedInEvent, connectionCheckedOutEvent, connectionCheckOutFailedEvent,
-         poolCreatedEvent, poolReadyEvent, poolClearedEvent, poolClosedEvent
+         poolCreatedEvent, poolReadyEvent, poolClearedEvent, poolClosedEvent,
+         topologyDescriptionChanged, topologyOpening, topologyClosed, serverDescriptionChanged,
+         serverOpening, serverClosed, serverHeartbeatStarted, serverHeartbeatSucceeded,
+         serverHeartbeatFailed
 }
 
 extension CommandEvent {
@@ -121,5 +124,115 @@ extension CommandEvent {
             return nil
         }
         return event
+    }
+}
+
+extension SDAMEvent {
+    public var type: EventType {
+        switch self {
+        case .topologyDescriptionChanged:
+            return .topologyDescriptionChanged
+        case .topologyOpening:
+            return .topologyOpening
+        case .topologyClosed:
+            return .topologyClosed
+        case .serverDescriptionChanged:
+            return .serverDescriptionChanged
+        case .serverOpening:
+            return .serverOpening
+        case .serverClosed:
+            return .serverClosed
+        case .serverHeartbeatStarted:
+            return .serverHeartbeatStarted
+        case .serverHeartbeatSucceeded:
+            return .serverHeartbeatSucceeded
+        case .serverHeartbeatFailed:
+            return .serverHeartbeatFailed
+        }
+    }
+
+    // Failable accessors for the different types of topology events.
+
+    /// Returns this event as a `TopologyOpeningEvent` if it is one, nil otherwise.
+    public var topologyOpeningValue: TopologyOpeningEvent? {
+        guard case let .topologyOpening(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    /// Returns this event as a `TopologyClosedEvent` if it is one, nil otherwise.
+    public var topologyClosedValue: TopologyClosedEvent? {
+        guard case let .topologyClosed(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    /// Returns this event as a `TopologyDescriptionChangedEvent` if it is one, nil otherwise.
+    public var topologyDescriptionChangedValue: TopologyDescriptionChangedEvent? {
+        guard case let .topologyDescriptionChanged(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    /// Returns this event as a `ServerOpeningEvent` if it is one, nil otherwise.
+    public var serverOpeningValue: ServerOpeningEvent? {
+        guard case let .serverOpening(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    /// Returns this event as a `ServerClosedEvent` if it is one, nil otherwise.
+    public var serverClosedValue: ServerClosedEvent? {
+        guard case let .serverClosed(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    /// Returns this event as a `ServerDescriptionChangedEvent` if it is one, nil otherwise.
+    public var serverDescriptionChangedValue: ServerDescriptionChangedEvent? {
+        guard case let .serverDescriptionChanged(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    /// Returns this event as a `ServerHeartbeatStartedEvent` if it is one, nil otherwise.
+    public var serverHeartbeatStartedValue: ServerHeartbeatStartedEvent? {
+        guard case let .serverHeartbeatStarted(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    /// Returns this event as a `ServerHeartbeatSucceededEvent` if it is one, nil otherwise.
+    public var serverHeartbeatSucceededValue: ServerHeartbeatSucceededEvent? {
+        guard case let .serverHeartbeatSucceeded(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    /// Returns this event as a `ServerHeartbeatFailedEvent` if it is one, nil otherwise.
+    public var serverHeartbeatFailedValue: ServerHeartbeatFailedEvent? {
+        guard case let .serverHeartbeatFailed(event) = self else {
+            return nil
+        }
+        return event
+    }
+
+    /// Checks whether or not this event is a `ServerHeartbeatStartedEvent`, `ServerHeartbeatSucceededEvent`, or
+    /// a `ServerHeartbeatFailedEvent`.
+    public var isHeartbeatEvent: Bool {
+        switch self {
+        case .serverHeartbeatFailed, .serverHeartbeatStarted, .serverHeartbeatSucceeded:
+            return true
+        default:
+            return false
+        }
     }
 }
