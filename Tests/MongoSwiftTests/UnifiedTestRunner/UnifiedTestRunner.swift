@@ -2,7 +2,7 @@
 import MongoSwift
 import Nimble
 import TestsCommon
-import NIO
+import NIOPosix
 
 @available(macOS 10.15, *)
 class UnifiedTestRunner {
