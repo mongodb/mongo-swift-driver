@@ -336,15 +336,9 @@ functions:
         script: |
           set -o xtrace
           set -o errexit
-
-          if [ "${SWIFT_MINOR_VERSION}" = "main-snapshot" ]; then
-              export SWIFT_VERSION="${SWIFT_MINOR_VERSION}"
-          else
-              # otherwise, find the latest patch release for the specified version
-              ${PYTHON} -m virtualenv ./requests-env
-              ./requests-env/${VENV_BIN_DIR}/python3 -m pip install requests
-              export SWIFT_VERSION="$(./requests-env/${VENV_BIN_DIR}/python3 .evergreen/get_latest_swift_patch.py ${SWIFT_MINOR_VERSION})"
-          fi
+          ${PYTHON} -m virtualenv ./requests-env
+          ./requests-env/${VENV_BIN_DIR}/python3 -m pip install requests
+          export SWIFT_VERSION="$(./requests-env/${VENV_BIN_DIR}/python3 .evergreen/get_latest_swift_patch.py ${SWIFT_MINOR_VERSION})"
           echo "SWIFT_VERSION: $SWIFT_VERSION" > swift-version.yml
           cat swift-version.yml
     - command: expansions.update
@@ -620,6 +614,72 @@ tasks:
             MONGODB_VERSION: "5.0"
             TOPOLOGY: "sharded_cluster"
         - func: "run tests"
+  
+    - name: "test-5.0-load_balancer"
+      tags: ["5.0", "load-balancer"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "5.0"
+            TOPOLOGY: "sharded_cluster"
+            LOAD_BALANCER: "true"
+        - func: start-load-balancer
+        - func: "run-lb-tests"
+          vars:
+            TOPOLOGY: "load_balanced"
+        - func: stop-load-balancer
+
+    - name: "test-6.0-standalone"
+      tags: ["6.0", "standalone"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "6.0"
+            TOPOLOGY: "server"
+        - func: "run tests"
+
+    - name: "test-6.0-replica_set"
+      tags: ["6.0", "replica_set"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "6.0"
+            TOPOLOGY: "replica_set"
+        - func: "run tests"
+
+    - name: "test-6.0-sharded_cluster"
+      tags: ["6.0", "sharded_cluster"]
+      exec_timeout_secs: 3600 # TODO SWIFT-1410: remove
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "6.0"
+            TOPOLOGY: "sharded_cluster"
+        - func: "run tests"
+
+    - name: "test-6.0-load_balancer"
+      tags: ["6.0", "load-balancer"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "6.0"
+            TOPOLOGY: "sharded_cluster"
+            LOAD_BALANCER: "true"
+        - func: start-load-balancer
+        - func: "run-lb-tests"
+          vars:
+            TOPOLOGY: "load_balanced"
+        - func: stop-load-balancer
 
     - name: "test-latest-standalone"
       tags: ["latest", "standalone"]
@@ -663,6 +723,56 @@ tasks:
         - func: "bootstrap mongo-orchestration"
           vars:
             MONGODB_VERSION: "latest"
+            TOPOLOGY: "sharded_cluster"
+            LOAD_BALANCER: "true"
+        - func: start-load-balancer
+        - func: "run-lb-tests"
+          vars:
+            TOPOLOGY: "load_balanced"
+        - func: stop-load-balancer
+
+    - name: "test-rapid-standalone"
+      tags: ["rapid", "standalone"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "rapid"
+            TOPOLOGY: "server"
+        - func: "run tests"
+
+    - name: "test-rapid-replica_set"
+      tags: ["rapid", "replica_set"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "rapid"
+            TOPOLOGY: "replica_set"
+        - func: "run tests"
+
+    - name: "test-rapid-sharded_cluster"
+      tags: ["rapid", "sharded_cluster"]
+      exec_timeout_secs: 3600 # TODO SWIFT-1410: remove
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "rapid"
+            TOPOLOGY: "sharded_cluster"
+        - func: "run tests"
+  
+    - name: "test-rapid-load_balancer"
+      tags: ["rapid", "load-balancer"]
+      commands:
+        - func: "prepare resources"
+        - func: "fix absolute paths"
+        - func: "bootstrap mongo-orchestration"
+          vars:
+            MONGODB_VERSION: "rapid"
             TOPOLOGY: "sharded_cluster"
             LOAD_BALANCER: "true"
         - func: start-load-balancer
@@ -1049,6 +1159,14 @@ axes:
         display_name: "latest"
         variables:
            MONGODB_VERSION: "latest"
+      - id: "rapid"
+        display_name: "rapid"
+        variables:
+           MONGODB_VERSION: "rapid"
+      - id: "6.0"
+        display_name: "6.0"
+        variables:
+          MONGODB_VERSION: "6.0"
       - id: "5.0"
         display_name: "5.0"
         variables:
@@ -1087,6 +1205,13 @@ axes:
           PYTHON: "/opt/mongodbtoolchain/v3/bin/python3"
           VENV_BIN_DIR: "bin"
 
+      - id: macos-10.14
+        display_name: "macOS 10.14"
+        run_on: macos-1014
+        variables:
+          PYTHON: "/opt/mongodbtoolchain/v3/bin/python3"
+          VENV_BIN_DIR: "bin"
+
       - id: macos-11
         display_name: "macOS 11"
         run_on: macos-1100
@@ -1112,10 +1237,6 @@ axes:
   - id: swift-version
     display_name: "Swift"
     values:
-      - id: "5.1"
-        display_name: "Swift 5.1"
-        variables:
-           SWIFT_MINOR_VERSION: "5.1"
       - id: "5.2"
         display_name: "Swift 5.2"
         variables:
@@ -1250,18 +1371,21 @@ buildvariants:
 
 - matrix_name: "min-version-compile"
   matrix_spec:
-  # Ubuntu 20.04 does not have Swift 5.1 toolchains.
     os-fully-featured:
-      - "macos-11"
-      - "ubuntu-18.04"
-    swift-version: "5.1"
+      - macos-10.14
+      - ubuntu-18.04
+      - ubuntu-20.04
+    swift-version: "5.2"
   display_name: "Compile ${swift-version} ${os-fully-featured}"
   tasks:
     - "compile"
 
 - matrix_name: "tests-all"
   matrix_spec:
-    os-fully-featured: "*"
+    os-fully-featured:
+      - macos-11
+      - ubuntu-18.04
+      - ubuntu-20.04
     swift-version:
       - "5.5"
       - "5.6"
@@ -1269,8 +1393,10 @@ buildvariants:
     ssl-auth: "*"
   display_name: "${swift-version} ${os-fully-featured} ${ssl-auth}"
   tasks:
+     - ".rapid !.load-balancer"
      - ".latest !.load-balancer"
-     - ".5.0"
+     - ".6.0 !.load-balancer"
+     - ".5.0 !.load-balancer"
      - ".4.4"
      - ".4.2"
      - ".4.0"
@@ -1302,7 +1428,10 @@ buildvariants:
 
 - matrix_name: "atlas-connect"
   matrix_spec:
-    os-fully-featured: "*"
+    os-fully-featured:
+      - macos-11
+      - ubuntu-18.04
+      - ubuntu-20.04
     swift-version:
       - "5.5"
       - "5.6"
@@ -1340,6 +1469,8 @@ buildvariants:
       - "ubuntu-20.04"
     versions:
       - latest
+      - rapid
+      - 6.0
       - 5.0
       - 4.4
     swift-version: "5.6"
@@ -1363,6 +1494,8 @@ buildvariants:
     swift-version: "5.6"
     versions:
       - latest
+      - rapid
+      - 6.0
       - 5.0
       - 4.4
   display_name: "OCSP ${swift-version} ${os-fully-featured} ${versions}"
@@ -1382,6 +1515,9 @@ buildvariants:
   tasks:
     # Versioned API was introduced in MongoDB 4.7
     - "test-latest-standalone"
+    - "test-rapid-standalone"
+    - "test-6.0-standalone"
+    - "test-5.0-standalone"
 
 - matrix_name: "format-lint"
   display_name: "Format and Lint"
@@ -1418,4 +1554,4 @@ buildvariants:
     ssl-auth: "*"
     check-leaks: "leaks"
   tasks:
-     - ".5.0"
+     - ".6.0 !.load-balancer"

@@ -1,13 +1,4 @@
-// swift-tools-version:5.1
-
-///  To avoid breaking Swift 5.1 compatibility, only require newer NIO versions when we need NIO's concurrency APIs.
-func getMinNIOVersion() -> PackageDescription.Package.Dependency.Requirement {
-#if compiler(>=5.5.2) && canImport(_Concurrency)
-    return .upToNextMajor(from: "2.36.0")
-#else
-    return .upToNextMajor(from: "2.15.0")
-#endif
-}
+// swift-tools-version:5.2
 
 import PackageDescription
 let package = Package(
@@ -20,17 +11,56 @@ let package = Package(
         .library(name: "MongoSwiftSync", targets: ["MongoSwiftSync"])
     ],
     dependencies: [
-        .package(url: "https://github.com/Quick/Nimble.git", .upToNextMajor(from: "8.0.0")),
-        .package(url: "https://github.com/apple/swift-nio", getMinNIOVersion()),
+        .package(url: "https://github.com/Quick/Nimble", .upToNextMajor(from: "8.0.0")),
+        .package(url: "https://github.com/apple/swift-nio", .upToNextMajor(from: "2.36.0")),
         .package(url: "https://github.com/mongodb/swift-bson", .upToNextMajor(from: "3.0.0"))
     ],
     targets: [
-        .target(name: "MongoSwiftSync", dependencies: ["MongoSwift", "NIO"]),
+        .target(
+            name: "MongoSwiftSync",
+            dependencies: [
+                "MongoSwift",
+                .product(name: "NIOPosix", package: "swift-nio"),
+            ]
+        ),
         .target(name: "AtlasConnectivity", dependencies: ["MongoSwiftSync"]),
-        .target(name: "TestsCommon", dependencies: ["MongoSwift", "Nimble"]),
-        .testTarget(name: "BSONTests", dependencies: ["MongoSwift", "TestsCommon", "Nimble", "CLibMongoC"]),
-        .testTarget(name: "MongoSwiftTests", dependencies: ["MongoSwift", "TestsCommon", "Nimble", "NIO", "NIOConcurrencyHelpers"]),
-        .testTarget(name: "MongoSwiftSyncTests", dependencies: ["MongoSwiftSync", "TestsCommon", "Nimble", "MongoSwift"]),
+        .target(
+            name: "TestsCommon",
+            dependencies: [
+                "MongoSwift",
+                .product(name: "Nimble", package: "Nimble"),
+            ]
+        ),
+        .testTarget(
+            name: "BSONTests",
+            dependencies: [
+                "MongoSwift",
+                "TestsCommon",
+                "CLibMongoC",
+                .product(name: "Nimble", package: "Nimble")
+            ]
+        ),
+        .testTarget(
+            name: "MongoSwiftTests",
+            dependencies: [
+                "MongoSwift",
+                "TestsCommon",
+                "Nimble",
+                .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio")
+            ]
+        ),
+        .testTarget(
+            name: "MongoSwiftSyncTests",
+            dependencies: [
+                "MongoSwiftSync",
+                "TestsCommon",
+                "MongoSwift",
+                .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+                .product(name: "Nimble", package: "Nimble")
+            ]
+        ),
         .target(
             name: "CLibMongoC",
             dependencies: [],
@@ -46,7 +76,30 @@ let package = Package(
 
 #if compiler(>=5.3)
 package.dependencies += [.package(url: "https://github.com/apple/swift-atomics", .upToNextMajor(from: "1.0.0"))]
-package.targets += [.target(name: "MongoSwift", dependencies: ["Atomics", "CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON"])]
+package.targets += [
+    .target(
+        name: "MongoSwift",
+        dependencies: [
+            "CLibMongoC",
+            .product(name: "Atomics", package: "swift-atomics"),
+            .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+            .product(name: "NIOCore", package: "swift-nio"),
+            .product(name: "NIOPosix", package: "swift-nio"),
+            .product(name: "SwiftBSON", package: "swift-bson")
+        ]
+    )
+]
 #else
-package.targets += [.target(name: "MongoSwift", dependencies: ["CLibMongoC", "NIO", "NIOConcurrencyHelpers", "SwiftBSON"])]
+package.targets += [
+    .target(
+        name: "MongoSwift",
+        dependencies: [
+            "CLibMongoC",
+            .product(name: "NIOConcurrencyHelpers", package: "swift-nio"),
+            .product(name: "NIOCore", package: "swift-nio"),
+            .product(name: "NIOPosix", package: "swift-nio"),
+            .product(name: "SwiftBSON", package: "swift-bson")
+        ]
+    )
+]
 #endif

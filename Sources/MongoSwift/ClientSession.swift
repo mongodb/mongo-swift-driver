@@ -1,6 +1,6 @@
 import CLibMongoC
 import Foundation
-import NIO
+import NIOCore
 
 // sourcery: skipSyncExport
 /**

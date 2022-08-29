@@ -1,6 +1,5 @@
 import Foundation
-@testable import MongoSwift
-import NIO
+import MongoSwift
 import XCTest
 
 extension MongoSwiftTestCase {

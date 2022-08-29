@@ -1,6 +1,6 @@
 @testable import MongoSwift
 import Nimble
-import NIO
+import NIOCore
 import TestsCommon
 
 final class ClientSessionTests: MongoSwiftTestCase {

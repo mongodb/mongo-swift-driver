@@ -1,7 +1,7 @@
 import CLibMongoC
 import Foundation
-import NIO
 import NIOConcurrencyHelpers
+import NIOCore
 import SwiftBSON
 
 /// A connection to the database.

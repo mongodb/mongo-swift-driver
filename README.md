@@ -85,7 +85,7 @@ Note: You should call `cleanupMongoSwift()` exactly once at the end of your appl
 **Async/Await (recommended)**:
 ```swift
 import MongoSwift
-import NIO
+import NIOPosix
 
 let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let client = try MongoClient("mongodb://localhost:27017", using: elg)
@@ -107,7 +107,7 @@ let collection = try await db.createCollection("myCollection")
 **Async (`EventLoopFuture`s)**:
 ```swift
 import MongoSwift
-import NIO
+import NIOPosix
 
 let elg = MultiThreadedEventLoopGroup(numberOfThreads: 4)
 let client = try MongoClient("mongodb://localhost:27017", using: elg)

@@ -1,6 +1,6 @@
 import CLibMongoC
 import Foundation
-import NIO
+import NIOCore
 
 /// The entity on which to execute the `aggregate` command against.
 internal enum AggregateTarget<CollectionType: Codable> {

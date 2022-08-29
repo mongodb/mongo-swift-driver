@@ -1,8 +1,8 @@
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import Nimble
-import NIO
 import NIOConcurrencyHelpers
+import NIOPosix
 import TestsCommon
 
 private protocol StreamableEvent {
@@ -177,10 +177,8 @@ final class APMTests: MongoSwiftTestCase {
             let sdamTask = Task { () -> [EventType] in
                 var eventTypeSdam: [EventType] = []
                 taskStarted.store(true)
-                for try await event in client.sdamEventStream() {
-                    if !event.isHeartbeatEvent {
-                        eventTypeSdam.append(event.type)
-                    }
+                for try await event in client.sdamEventStream() where !event.isHeartbeatEvent {
+                    eventTypeSdam.append(event.type)
                 }
                 return eventTypeSdam
             }

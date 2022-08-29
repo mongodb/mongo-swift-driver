@@ -3,8 +3,9 @@
 import Foundation
 @testable import MongoSwift
 import Nimble
-import NIO
 import NIOConcurrencyHelpers
+import NIOCore
+import NIOPosix
 import TestsCommon
 import XCTest
 

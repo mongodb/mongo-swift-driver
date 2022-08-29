@@ -1,5 +1,5 @@
 import CLibMongoC
-import NIO
+import NIOCore
 
 /// Options to use when dropping a collection.
 public struct DropCollectionOptions: Codable {

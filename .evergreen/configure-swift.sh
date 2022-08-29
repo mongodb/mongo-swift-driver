@@ -16,20 +16,16 @@ export SWIFTENV_ROOT="${INSTALL_DIR}/swiftenv"
 export PATH="${SWIFTENV_ROOT}/bin:$PATH"
 eval "$(swiftenv init -)"
 
-# dynamically determine latest available snapshot if needed
-if [ "$SWIFT_VERSION" = "main-snapshot" ]; then
-    SWIFT_VERSION=$(swiftenv install --list-snapshots | tail -1)
-fi
-
 if [ "$OS" == "darwin" ]; then
-    # latest snapshots require a newer version of Xcode/Command Line Tools
-    if [[ "$SWIFT_VERSION" == DEVELOPMENT-SNAPSHOT* ]]; then
-        sudo xcode-select -s /Applications/Xcode13.1.app
+    # 5.2 requires an older version of Xcode/Command Line Tools
+    if [[ "$SWIFT_VERSION" == 5.2.* ]]; then
+        sudo xcode-select -s /Applications/Xcode11.3.app
     else
-        sudo xcode-select -s /Applications/Xcode12.app
+        sudo xcode-select -s /Applications/Xcode13.2.1.app
     fi
 
-    # TODO SWIFT-1421: remove this once we have new Xcode on Evergreen to test with
+    # required to use the toolchain's concurrency library rather than the one which ships with Xcode
+    # and may not necessarily match the Swift version being used.
     export DYLD_LIBRARY_PATH=${SWIFTENV_ROOT}/versions/${SWIFT_VERSION}/usr/lib/swift/macosx/
 fi
 

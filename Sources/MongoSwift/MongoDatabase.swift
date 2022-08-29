@@ -1,5 +1,5 @@
 import CLibMongoC
-import NIO
+import NIOCore
 
 /// Options to set on a retrieved `MongoCollection`.
 public struct MongoCollectionOptions: CodingStrategyProvider {
