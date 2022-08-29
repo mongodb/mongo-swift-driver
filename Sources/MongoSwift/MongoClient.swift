@@ -1,7 +1,7 @@
 import CLibMongoC
 import Foundation
-import NIO
 import NIOConcurrencyHelpers
+import NIOCore
 
 /// Options to use when creating a `MongoClient`.
 public struct MongoClientOptions: CodingStrategyProvider {

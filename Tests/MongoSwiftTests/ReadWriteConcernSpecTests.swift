@@ -1,6 +1,6 @@
 import MongoSwift
 import Nimble
-import NIO
+import NIOPosix
 import TestsCommon
 
 extension WriteConcern {

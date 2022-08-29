@@ -39,12 +39,10 @@ if [ "$SANITIZE" != "false" ]; then
     SANITIZE_STATEMENT="--sanitize ${SANITIZE}"
 fi
 
-# TODO SWIFT-1421: remove this, it is currently needed due to a bug in Xcode 13.0/13.1.
-# see: https://bugs.swift.org/browse/SR-14968
+# work around https://github.com/mattgallagher/CwlPreconditionTesting/issues/22 (bug still exists in version 1.x
+# when using Xcode 13.2)
 if [ "$OS" == "darwin" ]; then
-    if [[ "$SWIFT_VERSION" == DEVELOPMENT-SNAPSHOT* ]]; then
-        EXTRA_FLAGS="-Xswiftc -Xfrontend -Xswiftc -validate-tbd-against-ir=none"
-    fi
+    EXTRA_FLAGS="-Xswiftc -Xfrontend -Xswiftc -validate-tbd-against-ir=none"
 fi
 
 # build the driver

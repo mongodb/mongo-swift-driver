@@ -1,6 +1,6 @@
 import CLibMongoC
 import Foundation
-import NIO
+import NIOCore
 
 internal typealias BSONPointer = UnsafePointer<bson_t>
 internal typealias MutableBSONPointer = UnsafeMutablePointer<bson_t>

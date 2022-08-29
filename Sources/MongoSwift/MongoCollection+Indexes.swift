@@ -1,5 +1,5 @@
 import CLibMongoC
-import NIO
+import NIOCore
 
 /// A struct representing an index on a `MongoCollection`.
 public struct IndexModel: Codable {

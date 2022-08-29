@@ -467,12 +467,10 @@ public struct MongoConnectionString: Codable, LosslessStringConvertible {
         // Parse the defaultAuthDB if present.
         if userHostsAndAuthDB.count == 2 && !userHostsAndAuthDB[1].isEmpty {
             let defaultAuthDB = try userHostsAndAuthDB[1].getPercentDecoded(forKey: "defaultAuthDB")
-            for character in Self.forbiddenDBCharacters {
-                if defaultAuthDB.contains(character) {
-                    throw MongoError.InvalidArgumentError(
-                        message: "defaultAuthDB contains invalid character: \(character)"
-                    )
-                }
+            for character in Self.forbiddenDBCharacters where defaultAuthDB.contains(character) {
+                throw MongoError.InvalidArgumentError(
+                    message: "defaultAuthDB contains invalid character: \(character)"
+                )
             }
             self.defaultAuthDB = defaultAuthDB
             // If no other authentication options were provided, we should use the defaultAuthDB as the credential
@@ -1347,13 +1345,11 @@ extension StringProtocol {
     }
 
     fileprivate func getValidatedUserInfo(forKey key: String) throws -> String {
-        for character in MongoConnectionString.genDelims {
-            if self.contains(character) {
-                throw MongoError.InvalidArgumentError(
-                    message: "\(key) in the connection string contains invalid character that must be percent-encoded:"
-                        + " \(character)"
-                )
-            }
+        for character in MongoConnectionString.genDelims where self.contains(character) {
+            throw MongoError.InvalidArgumentError(
+                message: "\(key) in the connection string contains invalid character that must be percent-encoded:"
+                    + " \(character)"
+            )
         }
         return try self.getPercentDecoded(forKey: key)
     }

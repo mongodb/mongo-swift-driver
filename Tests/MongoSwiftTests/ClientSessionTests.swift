@@ -1,7 +1,7 @@
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 @testable import MongoSwift
 import Nimble
-import NIO
+import NIOCore
 import TestsCommon
 
 @available(macOS 10.15, *)

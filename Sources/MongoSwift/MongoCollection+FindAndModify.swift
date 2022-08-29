@@ -1,5 +1,5 @@
 import CLibMongoC
-import NIO
+import NIOCore
 
 /// An extension of `MongoCollection` encapsulating find and modify operations.
 extension MongoCollection {

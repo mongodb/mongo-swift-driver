@@ -1,7 +1,7 @@
 import CLibMongoC
 import Foundation
-import NIO
 import NIOConcurrencyHelpers
+import NIOCore
 
 /// A protocol describing the common public API between cursor-like objects in the driver.
 internal protocol CursorProtocol {

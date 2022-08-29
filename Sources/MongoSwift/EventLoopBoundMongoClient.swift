@@ -1,4 +1,4 @@
-import NIO
+import NIOCore
 
 // sourcery: skipSyncExport
 /// A wrapper around a `MongoClient` that will return `EventLoopFuture`s on the specified `EventLoop`.
