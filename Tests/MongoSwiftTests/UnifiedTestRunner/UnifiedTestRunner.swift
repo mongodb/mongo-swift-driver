@@ -1,8 +1,8 @@
 #if compiler(>=5.5.2) && canImport(_Concurrency)
 import MongoSwift
 import Nimble
-import NIOPosix
 import TestsCommon
+import NIO
 
 @available(macOS 10.15, *)
 class UnifiedTestRunner {

@@ -132,8 +132,6 @@ enum EntityDescription: Decodable {
 @available(macOS 10.15.0, *)
 class UnifiedTestClient {
     let client: MongoClient
-    let elg: MultiThreadedEventLoopGroup
-
     let commandMonitor: UnifiedTestCommandMonitor
 
     init(_ clientDescription: EntityDescription.Client, elg: MultiThreadedEventLoopGroup) throws {
@@ -150,8 +148,7 @@ class UnifiedTestClient {
             opts.minHeartbeatFrequencyMS = 50
             opts.heartbeatFrequencyMS = 50
         }
-        self.elg = elg
-        self.client = try MongoClient.makeTestClient(connStr, eventLoopGroup: self.elg, options: opts)
+        self.client = try MongoClient.makeTestClient(connStr, eventLoopGroup: elg, options: opts)
         self.commandMonitor = UnifiedTestCommandMonitor(
             observeEvents: clientDescription.observeEvents,
             ignoreEvents: clientDescription.ignoreCommandMonitoringEvents
