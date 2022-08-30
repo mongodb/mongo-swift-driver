@@ -18,10 +18,10 @@ public struct IndexModel: Codable {
     /// Gets the default name for this index.
     internal func getDefaultName() throws -> String {
         try self.keys.map { k, v in
-            guard let vInt = v.toInt() else {
+            guard let vString = v.toInt().map({ String($0) }) ?? v.stringValue else {
                 throw MongoError.InvalidArgumentError(message: "Invalid index value for key: \"\(k)\"=\(v)")
             }
-            return "\(k)_\(vInt)"
+            return "\(k)_\(vString)"
         }.joined(separator: "_")
     }
 
