@@ -142,15 +142,4 @@ final class RetryableWritesTests: MongoSwiftTestCase {
             }
         }
     }
-
-    func testRetryableWritesUnified() throws {
-        let tests = try retrieveSpecTestFiles(
-            specName: "retryable-writes",
-            subdirectory: "unified",
-            asType: UnifiedTestFile.self
-        ).map { $0.1 }
-
-        let runner = try UnifiedTestRunner()
-        try runner.runFiles(tests)
-    }
 }

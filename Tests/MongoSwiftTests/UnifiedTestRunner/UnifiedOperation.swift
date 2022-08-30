@@ -1,14 +1,16 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
-import MongoSwiftSync
+import MongoSwift
 import TestsCommon
 
 /// Protocol which all operations supported by the unified test runner conform to.
+@available(macOS 10.15, *)
 protocol UnifiedOperationProtocol: Decodable {
     /// Set of supported arguments for the operation.
     static var knownArguments: Set<String> { get }
 
     /// Executes this operation on the provided object, using the provided context.
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult
 }
 
 enum UnifiedOperationResult {
@@ -42,6 +44,7 @@ enum UnifiedOperationResult {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedOperation: Decodable {
     /// Represents an object on which to perform an operation.
     enum Object: RawRepresentable, Decodable {
@@ -88,9 +91,9 @@ struct UnifiedOperation: Decodable {
     /// Expected result of the operation.
     let expectedResult: ExpectedOperationResult?
 
-    func executeAndCheckResult(context: Context) throws {
+    func executeAndCheckResult(context: Context) async throws {
         do {
-            let actualResult = try self.operation.execute(on: self.object, context: context)
+            let actualResult = try await self.operation.execute(on: self.object, context: context)
             switch self.expectedResult {
             case .error:
                 throw TestError(
@@ -277,10 +280,11 @@ struct UnifiedOperation: Decodable {
 }
 
 /// Placeholder for an unsupported operation.
+@available(macOS 10.15, *)
 struct Placeholder: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
-    func execute(on _: UnifiedOperation.Object, context _: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context _: Context) async throws -> UnifiedOperationResult {
         fatalError("Unexpectedly tried to execute placeholder operation")
     }
 }
@@ -356,3 +360,4 @@ struct ExpectedError: Decodable {
     /// This field is only used in cases where the error includes a result (e.g. bulkWrite).
     let expectResult: BSON?
 }
+#endif

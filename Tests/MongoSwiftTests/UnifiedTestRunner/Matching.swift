@@ -1,9 +1,11 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
-import MongoSwiftSync
+@testable import MongoSwift
 import TestsCommon
 
 /// Generic error thrown when matching fails, containing the expected and actual values as well as the path taken to
 /// get to them for nested assertions.
+@available(macOS 10.15, *)
 struct NonMatchingError: LocalizedError {
     let expected: String
     let actual: String
@@ -20,6 +22,7 @@ struct NonMatchingError: LocalizedError {
     }
 }
 
+@available(macOS 10.15, *)
 extension UnifiedOperationResult {
     /// Determines whether this result matches `expected`.
     func matches(expected: BSON, context: Context) throws {
@@ -44,6 +47,7 @@ extension UnifiedOperationResult {
 }
 
 /// Enum representing types that can be matched against expected values.
+@available(macOS 10.15, *)
 enum MatchableResult {
     /// A root document. i.e. a documents where extra keys are ignored when matching against an expected document.
     case rootDocument(BSONDocument)
@@ -309,6 +313,7 @@ enum SpecialOperator {
 }
 
 /// Determines if the events in `actual` match the events in `expected`.
+@available(macOS 10.15, *)
 func matchesEvents(
     expected: [ExpectedEvent],
     actual: [CommandEvent],
@@ -319,7 +324,6 @@ func matchesEvents(
     guard (actual.count == expected.count) || (ignoreExtraEvents && actual.count >= expected.count) else {
         throw NonMatchingError(expected: expected, actual: actual, context: context)
     }
-
     for i in 0..<expected.count {
         try context.withPushedElt(String(i)) {
             let expectedEvent = expected[i]
@@ -442,6 +446,7 @@ extension MongoError.BulkWriteError: HasErrorCodes {
     }
 }
 
+@available(macOS 10.15, *)
 extension MongoErrorProtocol {
     func matches(_ expected: ExpectedError, context: Context) throws {
         if let isClientError = expected.isClientError {
@@ -594,8 +599,10 @@ extension MongoErrorProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 func equals<T: Equatable>(expected: T, actual: T, context: Context) throws {
     guard actual == expected else {
         throw NonMatchingError(expected: expected, actual: actual, context: context)
     }
 }
+#endif

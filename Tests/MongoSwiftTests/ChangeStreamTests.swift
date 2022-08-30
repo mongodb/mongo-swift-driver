@@ -1,9 +1,11 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
 import MongoSwift
 import Nimble
 import NIOConcurrencyHelpers
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class ChangeStreamTests: MongoSwiftTestCase {
     func testChangeStreamNext() throws {
         try self.withTestClient { client in
@@ -163,4 +165,22 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             expect(try stream.forEach(increment).wait()).to(throwError(errorType: MongoError.LogicError.self))
         }
     }
+
+    func testChangeStreamSpecUnified() async throws {
+        let excludeFiles = [
+            // TODO: SWIFT-1458 Unskip.
+            "change-streams-showExpandedEvents.json",
+            // TODO: SWIFT-1472 Unskip.
+            "change-streams-pre_and_post_images.json"
+        ]
+        let tests = try retrieveSpecTestFiles(
+            specName: "change-streams",
+            subdirectory: "unified",
+            excludeFiles: excludeFiles,
+            asType: UnifiedTestFile.self
+        ).map { $0.1 }
+        let testRunner = try await UnifiedTestRunner()
+        try await testRunner.runFiles(tests)
+    }
 }
+#endif

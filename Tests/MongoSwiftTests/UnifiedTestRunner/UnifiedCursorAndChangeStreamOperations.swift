@@ -1,7 +1,9 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
-import MongoSwiftSync
+import MongoSwift
 import TestsCommon
 
+@available(macOS 10.15, *)
 struct CreateChangeStream: UnifiedOperationProtocol {
     /// Pipeline for the change stream.
     let pipeline: [BSONDocument]
@@ -28,27 +30,27 @@ struct CreateChangeStream: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(ChangeStreamOptions.self)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let entity = try context.entities.getEntity(from: object)
         let session = try context.entities.resolveSession(id: self.session)
         let changeStream: ChangeStream<BSONDocument>
         switch entity {
         case let .client(testClient):
-            changeStream = try testClient.client.watch(
+            changeStream = try await testClient.client.watch(
                 self.pipeline,
                 options: self.options,
                 session: session,
                 withEventType: BSONDocument.self
             )
         case let .database(db):
-            changeStream = try db.watch(
+            changeStream = try await db.watch(
                 self.pipeline,
                 options: self.options,
                 session: session,
                 withEventType: BSONDocument.self
             )
         case let .collection(coll):
-            changeStream = try coll.watch(
+            changeStream = try await coll.watch(
                 self.pipeline,
                 options: self.options,
                 session: session,
@@ -62,38 +64,40 @@ struct CreateChangeStream: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct IterateUntilDocumentOrError: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let entity = try context.entities.getEntity(from: object)
         switch entity {
         case let .changeStream(cs):
-            guard let next = cs.next() else {
+            guard let next = try await cs.next() else {
                 throw TestError(message: "Change stream unexpectedly exhausted")
             }
-            return .rootDocument(try next.get())
+            return .rootDocument(next)
         case let .findCursor(c):
-            guard let next = c.next() else {
+            guard let next = try await c.next() else {
                 throw TestError(message: "Cursor unexpectedly exhausted")
             }
-            return .rootDocument(try next.get())
+            return .rootDocument(next)
         default:
             throw TestError(message: "Unsupported entity type \(entity) for IterateUntilDocumentOrError operation")
         }
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedCloseCursor: UnifiedOperationProtocol {
     static var knownArguments: Set<String> { [] }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let entity = try context.entities.getEntity(from: object)
         switch entity {
         case let .changeStream(cs):
-            cs.kill()
+            _ = try await cs.kill().get()
         case let .findCursor(c):
-            c.kill()
+            _ = try await c.kill().get()
         default:
             throw TestError(message: "Unsupported entity type \(entity) for close operation")
         }
@@ -101,3 +105,4 @@ struct UnifiedCloseCursor: UnifiedOperationProtocol {
         return .none
     }
 }
+#endif

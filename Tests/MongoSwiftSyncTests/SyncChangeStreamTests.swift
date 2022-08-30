@@ -4,23 +4,6 @@ import TestsCommon
 import XCTest
 
 final class SyncChangeStreamTests: MongoSwiftTestCase {
-    let excludeFiles = [
-        // TODO: SWIFT-1458 Unskip.
-        "change-streams-showExpandedEvents.json",
-        // TODO: SWIFT-1472 Unskip.
-        "change-streams-pre_and_post_images.json"
-    ]
-    func testChangeStreamSpecUnified() throws {
-        let tests = try retrieveSpecTestFiles(
-            specName: "change-streams",
-            subdirectory: "unified",
-            excludeFiles: excludeFiles,
-            asType: UnifiedTestFile.self
-        ).map { $0.1 }
-        let testRunner = try UnifiedTestRunner()
-        try testRunner.runFiles(tests)
-    }
-
     /// How long in total a change stream should poll for an event or error before returning.
     /// Used as a default value for `ChangeStream.nextWithTimeout`
     public static let TIMEOUT: TimeInterval = 15

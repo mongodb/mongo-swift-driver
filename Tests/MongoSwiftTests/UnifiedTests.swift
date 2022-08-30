@@ -1,7 +1,9 @@
-import MongoSwiftSync
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+import MongoSwift
 import Nimble
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class UnifiedRunnerTests: MongoSwiftTestCase {
     override func setUp() {
         self.continueAfterFailure = false
@@ -40,7 +42,7 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         }
     }
 
-    func testSampleUnifiedTests() throws {
+    func testSampleUnifiedTests() async throws {
         let skipValidPassFiles = [
             // we don't support convenient txns API.
             "poc-transactions-convenient-api.json",
@@ -65,9 +67,8 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             excludeFiles: skipValidPassFiles,
             asType: UnifiedTestFile.self
         ).map { $0.1 }
-
-        let runner = try UnifiedTestRunner()
-        try runner.runFiles(validPassTests)
+        let runner = try await UnifiedTestRunner()
+        try await runner.runFiles(validPassTests)
 
         // These are test files that we cannot/should not be able to decode because they operations they contain are
         // malformed.
@@ -101,7 +102,8 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
         )
 
         for (_, test) in validFailTests {
-            expect(try runner.runFiles([test])).to(throwError())
+            let testResult: ()? = try? await runner.runFiles([test])
+            expect(testResult).to(beNil())
         }
     }
 
@@ -155,27 +157,29 @@ final class UnifiedRunnerTests: MongoSwiftTestCase {
             ["ok": .double(1.00001)]
         ]
 
-        let client = try MongoClient.makeTestClient()
-        for params in meetableParamRequirements {
-            let req = TestRequirement(serverParameters: params)
-            expect(try client.getUnmetRequirement(req)).to(beNil())
-        }
+        try withTestClient { client in
+            for params in meetableParamRequirements {
+                let req = TestRequirement(serverParameters: params)
+                expect(try client.getUnmetRequirement(req)).to(beNil())
+            }
 
-        let unmeetableParamRequirements: [BSONDocument] = [
-            ["fakeParameterNameTheServerWillNeverUse": true],
-            ["ok": 2],
-            ["ok": "hi"]
-        ]
+            let unmeetableParamRequirements: [BSONDocument] = [
+                ["fakeParameterNameTheServerWillNeverUse": true],
+                ["ok": 2],
+                ["ok": "hi"]
+            ]
 
-        for param in unmeetableParamRequirements {
-            let req = TestRequirement(serverParameters: param)
-            let unmetReq = try client.getUnmetRequirement(req)
-            switch unmetReq {
-            case .serverParameter:
-                continue
-            default:
-                fail("Expected server parameter requirement \(param) to be unmet, but was met")
+            for param in unmeetableParamRequirements {
+                let req = TestRequirement(serverParameters: param)
+                let unmetReq = try client.getUnmetRequirement(req)
+                switch unmetReq {
+                case .serverParameter:
+                    continue
+                default:
+                    fail("Expected server parameter requirement \(param) to be unmet, but was met")
+                }
             }
         }
     }
 }
+#endif

@@ -1,7 +1,9 @@
-import MongoSwiftSync
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+import MongoSwift
 import TestsCommon
 
 /// Structure representing a test file in the unified test format.
+@available(macOS 10.15.0, *)
 struct UnifiedTestFile: Decodable {
     /// The name of the test file.
     let description: String
@@ -60,3 +62,4 @@ struct UnifiedTest: Decodable {
     /// Data that is expected to exist in collections after the test case is executed.
     let outcome: [CollectionData]?
 }
+#endif

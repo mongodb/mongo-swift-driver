@@ -98,6 +98,9 @@ public final class ClientSession {
         return false
     }
 
+    /// Returns whether or not the `pinnedServerAddress` exists.
+    internal var isPinned: Bool { self.pinnedServerAddress != nil }
+
     /// The client used to start this session.
     public let client: MongoClient
 

@@ -1,5 +1,8 @@
-import MongoSwiftSync
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+import MongoSwift
 import SwiftBSON
+
+@available(macOS 10.15, *)
 struct UnifiedCreateCollection: UnifiedOperationProtocol {
     /// The collection to create.
     let collection: String
@@ -27,14 +30,15 @@ struct UnifiedCreateCollection: UnifiedOperationProtocol {
         )
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let db = try context.entities.getEntity(from: object).asDatabase()
         let session = try context.entities.resolveSession(id: self.session)
-        _ = try db.createCollection(self.collection, options: self.options, session: session)
+        _ = try await db.createCollection(self.collection, options: self.options, session: session)
         return .none
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedDropCollection: UnifiedOperationProtocol {
     /// The collection to drop.
     let collection: String
@@ -46,14 +50,15 @@ struct UnifiedDropCollection: UnifiedOperationProtocol {
         ["collection", "session"]
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let db = try context.entities.getEntity(from: object).asDatabase()
         let session = try context.entities.resolveSession(id: self.session)
-        try db.collection(self.collection).drop(session: session)
+        try await db.collection(self.collection).drop(session: session)
         return .none
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedRunCommand: UnifiedOperationProtocol {
     /// The name of the command to run.
     let commandName: String
@@ -68,7 +73,7 @@ struct UnifiedRunCommand: UnifiedOperationProtocol {
         ["commandName", "command", "session"]
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         var orderedCommand = self.command
         // reorder if needed to put command name first.
         if self.command.keys.first != self.commandName {
@@ -80,11 +85,12 @@ struct UnifiedRunCommand: UnifiedOperationProtocol {
         }
         let db = try context.entities.getEntity(from: object).asDatabase()
         let session = try context.entities.resolveSession(id: self.session)
-        try db.runCommand(orderedCommand, session: session)
+        try await db.runCommand(orderedCommand, session: session)
         return .none
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedListCollections: UnifiedOperationProtocol {
     /// Filter to use for the command.
     let filter: BSONDocument?
@@ -112,10 +118,11 @@ struct UnifiedListCollections: UnifiedOperationProtocol {
         )
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let db = try context.entities.getEntity(from: object).asDatabase()
         let session = try context.entities.resolveSession(id: self.session)
-        let results = try db.listCollections(self.filter, options: self.options, session: session)
-        return .rootDocumentArray(try results.map { try $0.get() }.map { try BSONEncoder().encode($0) })
+        let results = try await db.listCollections(self.filter, options: self.options, session: session).toArray()
+        return .rootDocumentArray(try results.map { try BSONEncoder().encode($0) })
     }
 }
+#endif

@@ -1,14 +1,14 @@
-import MongoSwiftSync
-import Nimble
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class LoadBalancerTests: MongoSwiftTestCase {
     let skipFiles: [String] = [
         // We don't support this option.
         "wait-queue-timeouts.json"
     ]
 
-    func testLoadBalancers() throws {
+    func testLoadBalancers() async throws {
         let tests = try retrieveSpecTestFiles(
             specName: "load-balancers",
             excludeFiles: skipFiles,
@@ -59,7 +59,8 @@ final class LoadBalancerTests: MongoSwiftTestCase {
             ]
         ]
 
-        let runner = try UnifiedTestRunner()
-        try runner.runFiles(tests, skipTests: skipTests)
+        let runner = try await UnifiedTestRunner()
+        try await runner.runFiles(tests, skipTests: skipTests)
     }
 }
+#endif

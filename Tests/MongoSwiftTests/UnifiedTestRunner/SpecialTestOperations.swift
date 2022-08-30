@@ -1,11 +1,10 @@
-// swiftlint:disable duplicate_imports
-@testable import class MongoSwift.ClientSession
-import MongoSwiftSync
-@testable import class MongoSwiftSync.ClientSession
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+@testable import MongoSwift
 import Nimble
 import TestsCommon
 import XCTest
 
+@available(macOS 10.15, *)
 struct UnifiedFailPoint: UnifiedOperationProtocol {
     /// The failpoint to set.
     let failPoint: FailPoint
@@ -17,15 +16,16 @@ struct UnifiedFailPoint: UnifiedOperationProtocol {
         ["failPoint", "client"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let testClient = try context.entities.getEntity(id: self.client).asTestClient()
         let opts = RunCommandOptions(readPreference: .primary)
-        let fpGuard = try self.failPoint.enableWithGuard(using: testClient.client, options: opts)
+        let fpGuard = try await self.failPoint.enable(using: testClient.client, options: opts)
         context.enabledFailPoints.append(fpGuard)
         return .none
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedAssertCollectionExists: UnifiedOperationProtocol {
     /// The collection name.
     let collectionName: String
@@ -37,9 +37,10 @@ struct UnifiedAssertCollectionExists: UnifiedOperationProtocol {
         ["collectionName", "databaseName"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let db = context.internalClient.anyClient.db(self.databaseName)
-        expect(try db.listCollectionNames()).to(
+        let listNames = try await db.listCollectionNames()
+        expect(listNames).to(
             contain(self.collectionName),
             description: "Expected db \(self.databaseName) to contain collection \(self.collectionName)." +
                 " Path: \(context.path)"
@@ -48,6 +49,7 @@ struct UnifiedAssertCollectionExists: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedAssertCollectionNotExists: UnifiedOperationProtocol {
     /// The collection name.
     let collectionName: String
@@ -59,9 +61,10 @@ struct UnifiedAssertCollectionNotExists: UnifiedOperationProtocol {
         ["collectionName", "databaseName"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let db = context.internalClient.anyClient.db(self.databaseName)
-        expect(try db.listCollectionNames()).toNot(
+        let listNames = try await db.listCollectionNames()
+        expect(listNames).toNot(
             contain(self.collectionName),
             description: "Expected db \(self.databaseName) to not contain collection \(self.collectionName)." +
                 " Path: \(context.path)"
@@ -70,6 +73,7 @@ struct UnifiedAssertCollectionNotExists: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedAssertIndexExists: UnifiedOperationProtocol {
     /// The collection name.
     let collectionName: String
@@ -84,9 +88,10 @@ struct UnifiedAssertIndexExists: UnifiedOperationProtocol {
         ["collectionName", "databaseName", "indexName"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = context.internalClient.anyClient.db(self.databaseName).collection(self.collectionName)
-        expect(try collection.listIndexNames()).to(
+        let listIndexes = try await collection.listIndexNames()
+        expect(listIndexes).to(
             contain(self.indexName),
             description: "Expected collection \(collection.namespace) to have index \(self.indexName)."
                 + " Path: \(context.path)"
@@ -95,6 +100,7 @@ struct UnifiedAssertIndexExists: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedAssertIndexNotExists: UnifiedOperationProtocol {
     /// The collection name.
     let collectionName: String
@@ -109,9 +115,10 @@ struct UnifiedAssertIndexNotExists: UnifiedOperationProtocol {
         ["collectionName", "databaseName", "indexName"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = context.internalClient.anyClient.db(self.databaseName).collection(self.collectionName)
-        expect(try collection.listIndexNames()).toNot(
+        let listNames = try await collection.listIndexNames()
+        expect(listNames).toNot(
             contain(self.indexName),
             description: "Expected collection \(collection.namespace) to not have index \(self.indexName)."
                 + " Path: \(context.path)"
@@ -120,6 +127,7 @@ struct UnifiedAssertIndexNotExists: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct AssertSessionNotDirty: UnifiedOperationProtocol {
     /// The session entity to perform the assertion on.
     let session: String
@@ -128,14 +136,15 @@ struct AssertSessionNotDirty: UnifiedOperationProtocol {
         ["session"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let session = try context.entities.getEntity(id: self.session).asSession()
-        expect(session.asyncSession.isDirty())
+        expect(session.isDirty())
             .to(beFalse(), description: "Session \(self.session) should not be dirty. Path: \(context.path)")
         return .none
     }
 }
 
+@available(macOS 10.15, *)
 struct AssertSessionDirty: UnifiedOperationProtocol {
     /// The session entity to perform the assertion on.
     let session: String
@@ -144,14 +153,15 @@ struct AssertSessionDirty: UnifiedOperationProtocol {
         ["session"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let session = try context.entities.getEntity(id: self.session).asSession()
-        expect(session.asyncSession.isDirty())
+        expect(session.isDirty())
             .to(beTrue(), description: "Session \(self.session) should be dirty. Path: \(context.path)")
         return .none
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedAssertSessionPinned: UnifiedOperationProtocol {
     /// The session entity to perform the assertion on.
     let session: String
@@ -160,7 +170,7 @@ struct UnifiedAssertSessionPinned: UnifiedOperationProtocol {
         ["session"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let session = try context.entities.getEntity(id: self.session).asSession()
         expect(session.isPinned)
             .to(beTrue(), description: "Session \(self.session) unexpectedly unpinned. Path: \(context.path)")
@@ -168,6 +178,7 @@ struct UnifiedAssertSessionPinned: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedAssertSessionUnpinned: UnifiedOperationProtocol {
     /// The session entity to perform the assertion on.
     let session: String
@@ -176,7 +187,7 @@ struct UnifiedAssertSessionUnpinned: UnifiedOperationProtocol {
         ["session"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let session = try context.entities.getEntity(id: self.session).asSession()
         expect(session.isPinned)
             .to(beFalse(), description: "Session \(self.session) unexpectedly pinned. Path: \(context.path)")
@@ -184,6 +195,7 @@ struct UnifiedAssertSessionUnpinned: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedAssertSessionTransactionState: UnifiedOperationProtocol {
     /// The session entity to perform the assertion on.
     let session: String
@@ -195,14 +207,15 @@ struct UnifiedAssertSessionTransactionState: UnifiedOperationProtocol {
         ["session", "state"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let session = try context.entities.getEntity(id: self.session).asSession()
-        let actualState = session.asyncSession.transactionState
+        let actualState = session.transactionState
         expect(actualState).to(equal(self.state), description: "Session had unexpected transaction state")
         return .none
     }
 }
 
+@available(macOS 10.15, *)
 struct AssertDifferentLsidOnLastTwoCommands: UnifiedOperationProtocol {
     /// Identifier for the client to perform the assertion on.
     let client: String
@@ -211,13 +224,14 @@ struct AssertDifferentLsidOnLastTwoCommands: UnifiedOperationProtocol {
         ["client"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let client = try context.entities.getEntity(id: self.client).asTestClient()
         makeLsidAssertion(client: client, same: false, context: context)
         return .none
     }
 }
 
+@available(macOS 10.15, *)
 struct AssertSameLsidOnLastTwoCommands: UnifiedOperationProtocol {
     /// Identifier for the client to perform the assertion on.
     let client: String
@@ -226,7 +240,7 @@ struct AssertSameLsidOnLastTwoCommands: UnifiedOperationProtocol {
         ["client"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let client = try context.entities.getEntity(id: self.client).asTestClient()
         makeLsidAssertion(client: client, same: true, context: context)
         return .none
@@ -259,6 +273,7 @@ func makeLsidAssertion(client: UnifiedTestClient, same: Bool, context: Context) 
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
     /// The failpoint to set.
     let failPoint: FailPoint
@@ -270,7 +285,7 @@ struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
         ["failPoint", "session"]
     }
 
-    func execute(on _: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let session = try context.entities.getEntity(id: self.session).asSession()
         // The mongos on which to set the fail point is determined by the session argument (after resolution to a
         // session entity). Test runners MUST error if the session is not pinned to a mongos server at the time this
@@ -283,9 +298,10 @@ struct UnifiedTargetedFailPoint: UnifiedOperationProtocol {
         guard let clientForPinnedMongos = mongosClients[session.pinnedServerAddress!] else {
             throw TestError(message: "Unexpectedly missing client for mongos \(session.pinnedServerAddress!)")
         }
-        let fpGuard = try self.failPoint.enableWithGuard(using: clientForPinnedMongos)
+        let fpGuard = try await self.failPoint.enable(using: clientForPinnedMongos)
         // add to context's list of enabled failpoints to ensure we disable it later.
         context.enabledFailPoints.append(fpGuard)
         return .none
     }
 }
+#endif

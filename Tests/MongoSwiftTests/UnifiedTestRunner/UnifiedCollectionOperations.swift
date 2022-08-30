@@ -1,9 +1,9 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
-@testable import struct MongoSwift.AggregateOptions
-@testable import struct MongoSwift.FindOptions
-import MongoSwiftSync
+@testable import MongoSwift
 import TestsCommon
 
+@available(macOS 10.15, *)
 struct UnifiedAggregate: UnifiedOperationProtocol {
     /// Aggregation pipeline.
     let pipeline: [BSONDocument]
@@ -32,25 +32,26 @@ struct UnifiedAggregate: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(AggregateOptions.self)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let session = try context.entities.resolveSession(id: self.session)
         let entity = try context.entities.getEntity(from: object)
 
         let cursor: MongoCursor<BSONDocument>
         switch entity {
         case let .collection(coll):
-            cursor = try coll.aggregate(self.pipeline, options: self.options, session: session)
+            cursor = try await coll.aggregate(self.pipeline, options: self.options, session: session)
         case let .database(db):
-            cursor = try db.aggregate(self.pipeline, options: self.options, session: session)
+            cursor = try await db.aggregate(self.pipeline, options: self.options, session: session)
         default:
             throw TestError(message: "Unsupported entity \(entity) for aggregate")
         }
 
-        let docs = try cursor.map { try $0.get() }
+        let docs = try await cursor.toArray()
         return .rootDocumentArray(docs)
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedCreateIndex: UnifiedOperationProtocol {
     /// The name of the index to create.
     let name: String
@@ -65,16 +66,17 @@ struct UnifiedCreateIndex: UnifiedOperationProtocol {
         ["name", "keys", "session"]
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
         let opts = IndexOptions(name: self.name)
         let model = IndexModel(keys: self.keys, options: opts)
-        _ = try collection.createIndex(model, session: session)
+        _ = try await collection.createIndex(model, session: session)
         return .none
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedListIndexes: UnifiedOperationProtocol {
     /// Optional identifier for a session entity to use.
     let session: String?
@@ -99,7 +101,7 @@ struct UnifiedListIndexes: UnifiedOperationProtocol {
         self.batchSize = try container.decodeIfPresent(Int.self, forKey: .batchSize)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         guard self.batchSize == nil else {
             throw TestError(
                 message: "listIndexes operation specifies a batchSize, but we do not support the option -- you may " +
@@ -108,11 +110,12 @@ struct UnifiedListIndexes: UnifiedOperationProtocol {
         }
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        let results = try collection.listIndexes(session: session)
-        return .rootDocumentArray(try results.map { try $0.get() }.map { try BSONEncoder().encode($0) })
+        let results = try await collection.listIndexes(session: session).toArray()
+        return .rootDocumentArray(try results.map { try BSONEncoder().encode($0) })
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedBulkWrite: UnifiedOperationProtocol {
     /// Writes to perform.
     let requests: [WriteModel<BSONDocument>]
@@ -142,10 +145,10 @@ struct UnifiedBulkWrite: UnifiedOperationProtocol {
         self.requests = decodedRequests.map { $0.toWriteModel() }
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        guard let result = try collection.bulkWrite(self.requests, options: self.options, session: session) else {
+        guard let result = try await collection.bulkWrite(self.requests, options: self.options, session: session) else {
             return .unacknowledgedWrite
         }
         let encodedResult = try BSONEncoder().encode(result)
@@ -153,6 +156,7 @@ struct UnifiedBulkWrite: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedFind: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -181,15 +185,15 @@ struct UnifiedFind: UnifiedOperationProtocol {
         self.filter = try container.decode(BSONDocument.self, forKey: .filter)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        let cursor = try collection.find(self.filter, options: self.options, session: session)
-        let docs = try cursor.map { try $0.get() }
-        return .rootDocumentArray(docs)
+        let cursor = try await collection.find(self.filter, options: self.options, session: session).toArray()
+        return .rootDocumentArray(cursor)
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedCreateFindCursor: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -218,13 +222,14 @@ struct UnifiedCreateFindCursor: UnifiedOperationProtocol {
         self.filter = try container.decode(BSONDocument.self, forKey: .filter)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        return .findCursor(try collection.find(self.filter, options: self.options, session: session))
+        return .findCursor(try await collection.find(self.filter, options: self.options, session: session))
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedFindOneAndReplace: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -257,10 +262,10 @@ struct UnifiedFindOneAndReplace: UnifiedOperationProtocol {
         self.replacement = try container.decode(BSONDocument.self, forKey: .replacement)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        guard let result = try collection.findOneAndReplace(
+        guard let result = try await collection.findOneAndReplace(
             filter: filter,
             replacement: replacement,
             options: options,
@@ -272,6 +277,7 @@ struct UnifiedFindOneAndReplace: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -304,23 +310,23 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
         self.updateModel = try container.decode(UpdateModel.self, forKey: .update)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
         let result: BSONDocument?
-        switch updateModel {
+        switch self.updateModel {
         case let .updateDoc(update):
-            result = try collection.findOneAndUpdate(
-                filter: filter,
+            result = try await collection.findOneAndUpdate(
+                filter: self.filter,
                 update: update,
-                options: options,
+                options: self.options,
                 session: session
             )
         case let .pipeline(pipeline):
-            result = try collection.findOneAndUpdate(
-                filter: filter,
+            result = try await collection.findOneAndUpdate(
+                filter: self.filter,
                 pipeline: pipeline,
-                options: options,
+                options: self.options,
                 session: session
             )
         }
@@ -332,6 +338,7 @@ struct UnifiedFindOneAndUpdate: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedFindOneAndDelete: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -355,15 +362,16 @@ struct UnifiedFindOneAndDelete: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(FindOneAndDeleteOptions.self)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        guard let result = try collection.findOneAndDelete(filter, options: self.options) else {
+        guard let result = try await collection.findOneAndDelete(filter, options: self.options) else {
             return .none
         }
         return .rootDocument(result)
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedDeleteOne: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -392,10 +400,10 @@ struct UnifiedDeleteOne: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(DeleteOptions.self)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        guard let result = try collection.deleteOne(filter, options: options, session: session) else {
+        guard let result = try await collection.deleteOne(filter, options: options, session: session) else {
             return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
@@ -403,6 +411,7 @@ struct UnifiedDeleteOne: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedDeleteMany: UnifiedOperationProtocol {
     /// Filter to use for the operation.
     let filter: BSONDocument
@@ -426,9 +435,9 @@ struct UnifiedDeleteMany: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(DeleteOptions.self)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        guard let result = try collection.deleteMany(filter, options: self.options) else {
+        guard let result = try await collection.deleteMany(filter, options: self.options) else {
             return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
@@ -436,6 +445,7 @@ struct UnifiedDeleteMany: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedInsertOne: UnifiedOperationProtocol {
     /// Document to insert.
     let document: BSONDocument
@@ -464,16 +474,17 @@ struct UnifiedInsertOne: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(InsertOneOptions.self)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        guard let result = try collection.insertOne(self.document, options: self.options, session: session) else {
+        guard let result = try await collection.insertOne(self.document, options: self.options, session: session) else {
             return .unacknowledgedWrite
         }
         return .rootDocument(try BSONEncoder().encode(result))
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedInsertMany: UnifiedOperationProtocol {
     /// Documents to insert.
     let documents: [BSONDocument]
@@ -502,10 +513,10 @@ struct UnifiedInsertMany: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(InsertManyOptions.self)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        guard let result = try collection.insertMany(self.documents, options: options, session: session) else {
+        guard let result = try await collection.insertMany(self.documents, options: options, session: session) else {
             return .unacknowledgedWrite
         }
         let encoded = try BSONEncoder().encode(result)
@@ -513,6 +524,7 @@ struct UnifiedInsertMany: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedReplaceOne: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
@@ -545,10 +557,10 @@ struct UnifiedReplaceOne: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(ReplaceOptions.self)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        guard let result = try collection.replaceOne(
+        guard let result = try await collection.replaceOne(
             filter: filter,
             replacement: replacement,
             options: options,
@@ -561,6 +573,7 @@ struct UnifiedReplaceOne: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedCountDocuments: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
@@ -587,14 +600,15 @@ struct UnifiedCountDocuments: UnifiedOperationProtocol {
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        let result = try collection.countDocuments(filter, options: self.options, session: session)
+        let result = try await collection.countDocuments(self.filter, options: self.options, session: session)
         return .bson(BSON(result))
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedEstimatedDocumentCount: UnifiedOperationProtocol {
     let options: EstimatedDocumentCountOptions?
 
@@ -610,13 +624,14 @@ struct UnifiedEstimatedDocumentCount: UnifiedOperationProtocol {
         self.options = nil
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        let result = try collection.estimatedDocumentCount(options: self.options)
+        let result = try await collection.estimatedDocumentCount(options: self.options)
         return .bson(BSON(result))
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedRename: UnifiedOperationProtocol {
     /// Field that defines what the collection is renamed to.
     let to: String
@@ -625,14 +640,15 @@ struct UnifiedRename: UnifiedOperationProtocol {
         ["to"] // explicit argument in renameCollectionOperation
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
-        _ = try collection.renamed(to: self.to)
+        _ = try await collection.renamed(to: self.to)
 
         return .none
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedDistinct: UnifiedOperationProtocol {
     /// Field to retrieve distinct values for.
     let fieldName: String
@@ -665,10 +681,10 @@ struct UnifiedDistinct: UnifiedOperationProtocol {
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
-        let result = try collection.distinct(
+        let result = try await collection.distinct(
             fieldName: self.fieldName,
             filter: self.filter,
             options: self.options,
@@ -679,6 +695,7 @@ struct UnifiedDistinct: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedUpdateOne: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
@@ -709,16 +726,21 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
         self.session = try container.decodeIfPresent(String.self, forKey: .session)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let session = try context.entities.resolveSession(id: self.session)
         let result: UpdateResult?
-        switch updateModel {
+        switch self.updateModel {
         case let .updateDoc(update):
-            result = try collection.updateOne(filter: filter, update: update, options: self.options, session: session)
+            result = try await collection.updateOne(
+                filter: self.filter,
+                update: update,
+                options: self.options,
+                session: session
+            )
         case let .pipeline(pipeline):
-            result = try collection.updateOne(
-                filter: filter,
+            result = try await collection.updateOne(
+                filter: self.filter,
                 pipeline: pipeline,
                 options: self.options,
                 session: session
@@ -733,6 +755,7 @@ struct UnifiedUpdateOne: UnifiedOperationProtocol {
     }
 }
 
+@available(macOS 10.15, *)
 struct UnifiedUpdateMany: UnifiedOperationProtocol {
     /// Filter for the query.
     let filter: BSONDocument
@@ -760,14 +783,14 @@ struct UnifiedUpdateMany: UnifiedOperationProtocol {
         self.options = try decoder.singleValueContainer().decode(UpdateOptions.self)
     }
 
-    func execute(on object: UnifiedOperation.Object, context: Context) throws -> UnifiedOperationResult {
+    func execute(on object: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let collection = try context.entities.getEntity(from: object).asCollection()
         let result: UpdateResult?
-        switch updateModel {
+        switch self.updateModel {
         case let .updateDoc(update):
-            result = try collection.updateMany(filter: filter, update: update, options: self.options)
+            result = try await collection.updateMany(filter: self.filter, update: update, options: self.options)
         case let .pipeline(pipeline):
-            result = try collection.updateMany(filter: filter, pipeline: pipeline, options: self.options)
+            result = try await collection.updateMany(filter: self.filter, pipeline: pipeline, options: self.options)
         }
         if let updateResult = result {
             let encoded = try BSONEncoder().encode(updateResult)
@@ -799,3 +822,4 @@ enum UpdateModel: Decodable {
         }
     }
 }
+#endif

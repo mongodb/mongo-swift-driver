@@ -1,4 +1,4 @@
-import MongoSwiftSync
+import MongoSwift
 
 protocol HasListableProperties {
     var propertyNames: [String] { get }

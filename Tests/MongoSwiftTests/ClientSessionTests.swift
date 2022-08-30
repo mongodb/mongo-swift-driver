@@ -1,8 +1,10 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 @testable import MongoSwift
 import Nimble
 import NIOCore
 import TestsCommon
 
+@available(macOS 10.15, *)
 final class ClientSessionTests: MongoSwiftTestCase {
     func testSession() throws {
         try self.withTestNamespace { client, _, coll in
@@ -48,4 +50,15 @@ final class ClientSessionTests: MongoSwiftTestCase {
             expect(escapedSession?.active).to(beFalse())
         }
     }
+
+    func testSessionsUnified() async throws {
+        let tests = try retrieveSpecTestFiles(
+            specName: "sessions",
+            subdirectory: "unified",
+            asType: UnifiedTestFile.self
+        )
+        let runner = try await UnifiedTestRunner()
+        try await runner.runFiles(tests.map { $0.1 })
+    }
 }
+#endif

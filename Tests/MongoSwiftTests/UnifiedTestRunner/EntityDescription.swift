@@ -1,6 +1,7 @@
+#if compiler(>=5.5.2) && canImport(_Concurrency)
 import Foundation
-@testable import struct MongoSwift.MongoClientOptions
-import MongoSwiftSync
+@testable import MongoSwift
+import NIOPosix
 import TestsCommon
 
 /// Represents a description of an entity (client, db, etc.).
@@ -128,12 +129,12 @@ enum EntityDescription: Decodable {
 }
 
 /// Wrapper around a MongoClient used for test runner purposes.
-struct UnifiedTestClient {
+@available(macOS 10.15.0, *)
+class UnifiedTestClient {
     let client: MongoClient
-
     let commandMonitor: UnifiedTestCommandMonitor
 
-    init(_ clientDescription: EntityDescription.Client) throws {
+    init(_ clientDescription: EntityDescription.Client, elg: MultiThreadedEventLoopGroup) throws {
         let connStr = MongoSwiftTestCase.getConnectionString(
             singleMongos: clientDescription.useMultipleMongoses != true
         )
@@ -147,7 +148,7 @@ struct UnifiedTestClient {
             opts.minHeartbeatFrequencyMS = 50
             opts.heartbeatFrequencyMS = 50
         }
-        self.client = try MongoClient.makeTestClient(connStr, options: opts)
+        self.client = try MongoClient.makeTestClient(connStr, eventLoopGroup: elg, options: opts)
         self.commandMonitor = UnifiedTestCommandMonitor(
             observeEvents: clientDescription.observeEvents,
             ignoreEvents: clientDescription.ignoreCommandMonitoringEvents
@@ -263,12 +264,12 @@ typealias EntityMap = [String: Entity]
 
 extension Array where Element == EntityDescription {
     /// Converts an array of entity descriptions from a test file into an entity map.
-    func toEntityMap() throws -> EntityMap {
+    func toEntityMap(elg: MultiThreadedEventLoopGroup) throws -> EntityMap {
         var map = EntityMap()
         for desc in self {
             switch desc {
             case let .client(clientDesc):
-                map[clientDesc.id] = try .client(UnifiedTestClient(clientDesc))
+                map[clientDesc.id] = try .client(UnifiedTestClient(clientDesc, elg: elg))
             case let .database(dbDesc):
                 guard let clientEntity = try map[dbDesc.client]?.asTestClient() else {
                     throw TestError(message: "No client with id \(dbDesc.client) found in entity map")
@@ -317,3 +318,4 @@ extension EntityMap {
         return try self.getEntity(id: id).asSession()
     }
 }
+#endif

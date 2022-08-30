@@ -1,7 +1,9 @@
-import MongoSwiftSync
+#if compiler(>=5.5.2) && canImport(_Concurrency)
+import MongoSwift
 import TestsCommon
 
 /// Intermediate representation of a bulk write model to match the test format, used for decoding purposes.
+@available(macOS 10.15.0, *)
 enum TestWriteModel: Decodable {
     case insertOne(BSONDocument)
     case deleteOne(BSONDocument, options: DeleteModelOptions)
@@ -116,6 +118,7 @@ enum TestWriteModel: Decodable {
     }
 }
 
+@available(macOS 10.15.0, *)
 extension UpdateModel {
     func asDocument() -> BSONDocument {
         switch self {
@@ -130,3 +133,5 @@ extension UpdateModel {
         }
     }
 }
+
+#endif
