@@ -66,7 +66,7 @@ final class APMTests: MongoSwiftTestCase {
             let cmdBufferTask = Task { () -> Int in
                 var i = 0
                 let stream = client.commandEventStream()
-                try await assertIsEventuallyTrue(description: "inserts done") {
+                try await assertIsEventuallyTrue(description: "inserts done", timeout: 10) {
                     insertsDone.load()
                 }
 
