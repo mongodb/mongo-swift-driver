@@ -29,9 +29,10 @@ extension FailPoint {
     /// Enables the failpoint, and returns a `EnabledFailpoint` which can handle disabling when needed
     internal func enable(
         using client: MongoClient,
-        options: RunCommandOptions? = nil
+        options: RunCommandOptions? = nil,
+        session: ClientSession? = nil
     ) async throws -> EnabledFailpoint {
-        try await client.db("admin").runCommand(self.failPoint, options: options)
+        try await client.db("admin").runCommand(self.failPoint, options: options, session: session)
         return EnabledFailpoint(failPoint: self, client: client)
     }
 

@@ -171,7 +171,9 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             // TODO: SWIFT-1458 Unskip.
             "change-streams-showExpandedEvents.json",
             // TODO: SWIFT-1472 Unskip.
-            "change-streams-pre_and_post_images.json"
+            "change-streams-pre_and_post_images.json",
+            // TODO: SWIFT-1614 Unskip.
+            "change-streams-disambiguatedPaths.json"
         ]
         let tests = try retrieveSpecTestFiles(
             specName: "change-streams",
