@@ -184,5 +184,24 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         let testRunner = try await UnifiedTestRunner()
         try await testRunner.runFiles(tests)
     }
+
+    func testClusterTime() async throws {
+        try await self.withTestClient { client in
+            let unmetRequirement = try await client.getUnmetRequirement(.changeStreamOnCollectionSupport)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+            let db = client.db(Self.testDatabase)
+            try await db.collection(self.getCollectionName()).drop()
+            let coll = try await db.createCollection(self.getCollectionName())
+
+            let stream = try await coll.watch()
+
+            _ = try await coll.insertOne(["x": 1])
+            let event = try await stream.next()
+            expect(event?.clusterTime).toNot(beNil())
+        }
+    }
 }
 #endif

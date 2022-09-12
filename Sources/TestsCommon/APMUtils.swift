@@ -82,7 +82,7 @@ public class TestCommandMonitor: CommandEventHandler {
 
 public enum EventType: String, Decodable {
     case commandStartedEvent, commandSucceededEvent, commandFailedEvent, connectionCreatedEvent, connectionReadyEvent,
-        connectionClosedEvent, connectionCheckedInEvent, connectionCheckOutStartedEvent, connectionCheckedOutEvent,
+         connectionClosedEvent, connectionCheckedInEvent, connectionCheckOutStartedEvent, connectionCheckedOutEvent,
          connectionCheckOutFailedEvent, poolCreatedEvent, poolReadyEvent, poolClearedEvent, poolClosedEvent,
          topologyDescriptionChanged, topologyOpening, topologyClosed, serverDescriptionChanged, serverOpening,
          serverClosed, serverHeartbeatStarted, serverHeartbeatSucceeded, serverHeartbeatFailed
