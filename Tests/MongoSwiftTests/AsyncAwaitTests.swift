@@ -234,7 +234,7 @@ final class MongoCursorAsyncAwaitTests: MongoSwiftTestCase {
         }
 
         testAsync {
-            let opts = CreateCollectionOptions(capped: true, max: 5, size: 100000)
+            let opts = CreateCollectionOptions(capped: true, max: 5, size: 100_000)
             try await self.withTestNamespace(collectionOptions: opts) { _, _, coll in
                 try await coll.insertMany([["x": 1], ["x": 2], ["x": 3]])
 

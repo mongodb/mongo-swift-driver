@@ -187,7 +187,12 @@ final class ChangeStreamTests: MongoSwiftTestCase {
 
     func testClusterTime() async throws {
         try await self.withTestClient { client in
-            let unmetRequirement = try await client.getUnmetRequirement(.changeStreamOnCollectionSupport)
+            // cluster time is only included as of 4.0.
+            let requirement = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 0, patch: 0),
+                acceptableTopologies: [.replicaSet, .sharded, .shardedReplicaSet, .loadBalanced]
+            )
+            let unmetRequirement = try await client.getUnmetRequirement(requirement)
             guard unmetRequirement == nil else {
                 printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
                 return
