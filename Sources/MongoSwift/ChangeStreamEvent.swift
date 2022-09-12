@@ -122,8 +122,8 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     /// Only present for server versions 6.0 and above.
     public let wallTime: Date?
 
-    /// The cluster time at which the change occurred.
-    public let clusterTime: BSONTimestamp
+    /// The cluster time at which the change occurred. Only present for server versions 4.0 and above.
+    public let clusterTime: BSONTimestamp?
 
     /**
      * Always present for operations of type `insert` and `replace`. Also present for operations of type `update` if
@@ -167,7 +167,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
 
         self.documentKey = try container.decodeIfPresent(BSONDocument.self, forKey: .documentKey)
         self.wallTime = try container.decodeIfPresent(Date.self, forKey: .wallTime)
-        self.clusterTime = try container.decode(BSONTimestamp.self, forKey: .clusterTime)
+        self.clusterTime = try container.decodeIfPresent(BSONTimestamp.self, forKey: .clusterTime)
         self.updateDescription = try container.decodeIfPresent(UpdateDescription.self, forKey: .updateDescription)
         self.fullDocument = try container.decodeIfPresent(T.self, forKey: .fullDocument)
     }
