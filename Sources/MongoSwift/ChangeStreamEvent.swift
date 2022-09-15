@@ -122,6 +122,9 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     /// Only present for server versions 6.0 and above.
     public let wallTime: Date?
 
+    /// The cluster time at which the change occurred. Only present for server versions 4.0 and above.
+    public let clusterTime: BSONTimestamp?
+
     /**
      * Always present for operations of type `insert` and `replace`. Also present for operations of type `update` if
      * the user has specified `.updateLookup` for the `fullDocument` option in the `ChangeStreamOptions` used to create
@@ -136,7 +139,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
     public let fullDocument: T?
 
     private enum CodingKeys: String, CodingKey {
-        case operationType, _id, ns, to, documentKey, updateDescription, wallTime, fullDocument
+        case operationType, _id, ns, to, documentKey, updateDescription, wallTime, clusterTime, fullDocument
     }
 
     // Custom decode method to work around the fact that `invalidate` events do not have an `ns` field in the raw
@@ -164,6 +167,7 @@ public struct ChangeStreamEvent<T: Codable>: Codable {
 
         self.documentKey = try container.decodeIfPresent(BSONDocument.self, forKey: .documentKey)
         self.wallTime = try container.decodeIfPresent(Date.self, forKey: .wallTime)
+        self.clusterTime = try container.decodeIfPresent(BSONTimestamp.self, forKey: .clusterTime)
         self.updateDescription = try container.decodeIfPresent(UpdateDescription.self, forKey: .updateDescription)
         self.fullDocument = try container.decodeIfPresent(T.self, forKey: .fullDocument)
     }

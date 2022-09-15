@@ -12,14 +12,18 @@ struct UnifiedFailPoint: UnifiedOperationProtocol {
     /// The client entity to use for setting the failpoint.
     let client: String
 
+    /// Optional name of a session entity to use for setting the failpoint.
+    let session: String?
+
     static var knownArguments: Set<String> {
-        ["failPoint", "client"]
+        ["failPoint", "client", "session"]
     }
 
     func execute(on _: UnifiedOperation.Object, context: Context) async throws -> UnifiedOperationResult {
         let testClient = try context.entities.getEntity(id: self.client).asTestClient()
+        let session = try context.entities.resolveSession(id: self.session)
         let opts = RunCommandOptions(readPreference: .primary)
-        let fpGuard = try await self.failPoint.enable(using: testClient.client, options: opts)
+        let fpGuard = try await self.failPoint.enable(using: testClient.client, options: opts, session: session)
         context.enabledFailPoints.append(fpGuard)
         return .none
     }

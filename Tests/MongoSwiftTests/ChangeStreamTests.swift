@@ -171,7 +171,9 @@ final class ChangeStreamTests: MongoSwiftTestCase {
             // TODO: SWIFT-1458 Unskip.
             "change-streams-showExpandedEvents.json",
             // TODO: SWIFT-1472 Unskip.
-            "change-streams-pre_and_post_images.json"
+            "change-streams-pre_and_post_images.json",
+            // TODO: SWIFT-1614 Unskip.
+            "change-streams-disambiguatedPaths.json"
         ]
         let tests = try retrieveSpecTestFiles(
             specName: "change-streams",
@@ -181,6 +183,30 @@ final class ChangeStreamTests: MongoSwiftTestCase {
         ).map { $0.1 }
         let testRunner = try await UnifiedTestRunner()
         try await testRunner.runFiles(tests)
+    }
+
+    func testClusterTime() async throws {
+        try await self.withTestClient { client in
+            // cluster time is only included as of 4.0.
+            let requirement = TestRequirement(
+                minServerVersion: ServerVersion(major: 4, minor: 0, patch: 0),
+                acceptableTopologies: [.replicaSet, .sharded, .shardedReplicaSet, .loadBalanced]
+            )
+            let unmetRequirement = try await client.getUnmetRequirement(requirement)
+            guard unmetRequirement == nil else {
+                printSkipMessage(testName: self.name, unmetRequirement: unmetRequirement!)
+                return
+            }
+            let db = client.db(Self.testDatabase)
+            try await db.collection(self.getCollectionName()).drop()
+            let coll = try await db.createCollection(self.getCollectionName())
+
+            let stream = try await coll.watch()
+
+            _ = try await coll.insertOne(["x": 1])
+            let event = try await stream.next()
+            expect(event?.clusterTime).toNot(beNil())
+        }
     }
 }
 #endif
