@@ -98,6 +98,8 @@ public struct MongoDatabase {
      *
      * - Throws:
      *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *     If a collection with this name already exists, a `MongoError.CommandError` with code `48`
+     *     will be thrown.
      *   - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `MongoError.LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.
@@ -125,6 +127,8 @@ public struct MongoDatabase {
      *
      * - Throws:
      *   - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *     If a collection with this name already exists, a `MongoError.CommandError` with code `48`
+     *     will be thrown.
      *   - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
      *   - `MongoError.LogicError` if the provided session is inactive.
      *   - `EncodingError` if an error occurs while encoding the options to BSON.

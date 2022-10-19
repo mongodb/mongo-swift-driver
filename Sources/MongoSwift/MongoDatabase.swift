@@ -191,6 +191,8 @@ public struct MongoDatabase {
      *
      *    If the future fails, the error is likely one of the following:
      *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *      If a collection with this name already exists, a `MongoError.CommandError` with code `48`
+     *      will be returned.
      *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `MongoError.LogicError` if the provided session is inactive.
      *    - `MongoError.LogicError` if this databases's parent client has already been closed.
@@ -219,7 +221,9 @@ public struct MongoDatabase {
      *    An `EventLoopFuture<MongoCollection<T>>`. On success, contains the newly created collection.
      *
      *    If the future fails, the error is likely one of the following:
-     *    - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+          - `MongoError.CommandError` if an error occurs that prevents the command from executing.
+     *      If a collection with this name already exists, a `MongoError.CommandError` with code `48`
+     *      will be returned.
      *    - `MongoError.InvalidArgumentError` if the options passed in form an invalid combination.
      *    - `MongoError.LogicError` if the provided session is inactive.
      *    - `MongoError.LogicError` if this databases's parent client has already been closed.
