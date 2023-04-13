@@ -278,7 +278,7 @@ private func versionedAPI() throws {
         )
         let client = try MongoClient(uri, using: myEventLoopGroup, options: opts)
 
-        // End Versioned API Example 3
+        // End Versioned API Example 4
 
         try client.syncClose()
     }
