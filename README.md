@@ -1,4 +1,4 @@
-# End of Life Notice
+# Development Pause
 We are announcing our decision to stop development of the MongoDB server-side Swift driver. No further development, bug fixes, enhancements, documentation changes or maintenance will be provided by this project and pull requests will no longer be accepted.
 
 There are still ways to use MongoDB with Swift:
